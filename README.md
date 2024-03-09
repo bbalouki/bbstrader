@@ -32,6 +32,47 @@ BBSTrader is a trading system suite developed for MetaTrader 5 (MT5) and IBKR pl
 
 Refer to the README.md file of each module within `bbstrader` for detailed instructions on configuring and running the individual components. Customize strategy parameters, backtest with historical data, and execute trades on MT5 as per your requirements.
 
+## Examples
+### Backtesting Module
+```python
+from btengine.backtests.klf import run_kf_backtest
+import datetime
+
+if __name__ == "__main__":
+    # KLF IEI TLT Event Driven backtest with Hidden Markov Model as a risk manager.
+    symbol_list = ["IEI", "TLT"]
+    kwargs = {
+        "tickers": symbol_list,
+        "quantity": 2000,
+        "time_frame": "D1",
+        "trading_hours": 6.5,
+        "benchmark": "TLT",
+        "window": 50,
+        "hmm_tiker": "TLT",
+        "iterations": 100,
+        'strategy_name': 'Kalman Filter & HMM'
+    }
+    start_date = datetime.datetime(2009, 8, 3, 10, 40, 0)
+    csv_dir = '../backtests/results/klf_hmm/'
+    hmm_csv = '../backtests/results/klf_hmm/tlt_train.csv'
+    run_kf_backtest(symbol_list, csv_dir, hmm_csv, start_date, **kwargs)
+```
+### Backtesting Results
+#### Hidden States
+![Hidden States](/bbstrader/btengine/backtests/results/klf_hmm/hidden_states.png)
+
+#### Performance
+![Performance](/bbstrader/btengine/backtests/results/klf_hmm/performance.png)
+
+#### Risk Return
+![Risk Return](/bbstrader/btengine/backtests/results/klf_hmm/rr.png)
+
+#### Returns Distribution
+![Returns Distribution](/bbstrader/btengine/backtests/results/klf_hmm/returns_distribution.png)
+
+#### Portfolio
+![Portfolio](/bbstrader/btengine/backtests/results/klf_hmm/summary_stats.png)
+
 ## Customization and Contribution
 
 `bbstrader`'s modular design allows for easy customization and extension. Traders and developers are encouraged to modify existing strategies, add new ones, or enhance the system's capabilities. Contributions to the `bbstrader` project are welcome.
