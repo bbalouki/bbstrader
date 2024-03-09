@@ -1,4 +1,4 @@
-# BBSTrader:  Simplified & Accessible Trading Toolkit  
+# BBSTrader: Simplified Investment & Trading Toolkit  
 
 ## Overview
 
