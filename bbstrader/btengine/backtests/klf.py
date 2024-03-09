@@ -128,8 +128,8 @@ class KLFStrategyBacktester(Strategy):
                 self.theta[1] = intercept
 
                 # Create the observation matrix of the latest prices
-                # of TLT and the intercept value (1.0) as well as the
-                # scalar value of the latest price from IEI
+                # of Y and the intercept value (1.0) as well as the
+                # scalar value of the latest price from X
                 F = np.asarray([self.latest_prices[0], 1.0]).reshape((1, 2))
                 y = self.latest_prices[1]
 
