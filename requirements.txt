@@ -1,0 +1,13 @@
+MetaTrader5
+pandas
+numpy
+yfinance
+scikit-learn
+scipy
+ibapi
+hmmlearn
+arch
+seaborn
+statsmodels
+matplotlib
+filterpy
