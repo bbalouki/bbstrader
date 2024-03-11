@@ -1,8 +1,7 @@
 import numpy as np
 from arch import arch_model
 from statsmodels.tsa.arima.model import ARIMA
-from concurrent.futures import ProcessPoolExecutor
-import itertools
+from pmdarima import auto_arima
 
 def load_and_prepare_data(df):
     """
@@ -53,22 +52,16 @@ def fit_best_arima(window_data):
         - ARIMA result object: The fitted ARIMA 
             model with the lowest AIC.
     """
-    final_aic = np.inf
-    final_order = (0, 0, 0)
-    for p in range(6):  # Range of p values
-        for q in range(6):  # Range of q values
-            if p == 0 and q == 0:
-                continue  # Skip the (0,0,0) combination
-            try:
-                model = ARIMA(window_data, order=(p, 0, q))
-                results = model.fit()
-                current_aic = results.aic
-                if current_aic < final_aic:
-                    final_aic = current_aic
-                    final_order = (p, 0, q)
-            except:  # Catching all exceptions to continue the loop
-                continue
-    # Fit ARIMA with the best order
+    model = auto_arima(
+        window_data, 
+        start_p=1, 
+        start_q=1, 
+        max_p=6, 
+        max_q=6, 
+        seasonal=False,   
+        stepwise=True
+    )
+    final_order = model.order
     best_arima_model = ARIMA(window_data, order=final_order).fit()
     return best_arima_model
     
@@ -90,9 +83,9 @@ def fit_garch(window_data):
             object and the GARCH result object.
     """
     arima_result = fit_best_arima(window_data)
-    resid = arima_result.resid
+    resid = np.asarray(arima_result.resid)
     resid = resid[~(np.isnan(resid) | np.isinf(resid))]
-    garch_model = arch_model(resid, p=1, q=1)
+    garch_model = arch_model(resid, p=1, q=1, rescale=False)
     garch_result = garch_model.fit(disp='off')
     return arima_result, garch_result
 
