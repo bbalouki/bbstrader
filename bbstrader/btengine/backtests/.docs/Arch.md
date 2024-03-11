@@ -70,7 +70,8 @@ This function initiates and runs the backtest for the ARIMA-GARCH strategy with 
 
 ### Note
 
-- The `csv_dir` and `hmm_csv` should be located in the `/backtests/results/arch_hmm/` directory for practical experimentation.
-- The vectorized backtest tends to overestimate performance due to the absence of commissions and not employing HMM for risk management. It primarily aims to assess the ARIMA + GARCH model's efficacy before applying it within the event-driven backtesting engine.
+- The `csv_dir` and `hmm_csv` are located in the `/backtests/results/arch_hmm/` directory for practical experimentation.
+- The vectorized backtest tends to overestimate performance due to the absence of commissions and not employing HMM for risk management. It primarily aims to assess the ARIMA + GARCH model's efficacy before applying it within the event-driven backtesting engine. 
+- By default all bcktests uses Hidden Markov model as risk manager  , if you want to not use it , you can do so by adjusting the `ArimaGarchStrategyBacktester` and `run_arch_backtest` . In the future we will give option to use different risk manager.
 
 This documentation aims to provide a comprehensive understanding of the code's functionality, enabling users, to effectively utilize and adapt the backtesting strategy for their financial analysis and trading strategy development endeavors.

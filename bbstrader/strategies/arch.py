@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.graphics.tsaplots import plot_acf
 from statsmodels.stats.diagnostic import acorr_ljungbox
+from pmdarima import auto_arima
 sns.set_theme()
 
 
@@ -33,6 +34,7 @@ class ArimaGarchStrategy():
         :param symbol (str): The ticker symbol for the financial instrument.
         :param data (pd.DataFrame): `The raw dataset containing at least the 'Close' prices`.
         :param k (int): The window size for rolling prediction in backtesting.
+        :param jobs (int): The number of parallel jobs to run for ARIMA model fitting.
         """
         self.symbol = symbol
         self.data = self.load_and_prepare_data(data)
@@ -58,7 +60,8 @@ class ArimaGarchStrategy():
         # Calculate logarithmic returns
         data['log_return'] = np.log(data['Close'] / data['Close'].shift(1))
         # Differencing if necessary
-        data['diff_log_return'] = data['log_return'].diff().dropna()
+        data['diff_log_return'] = data['log_return'].diff()
+        data.fillna(0., inplace=True)
         return data
 
     # Step 2: Modeling (ARIMA + GARCH)
@@ -75,24 +78,37 @@ class ArimaGarchStrategy():
         ========
             ARIMA model: The best fitted ARIMA model based on AIC.
         """
-        final_aic = np.inf
-        final_order = (0, 0, 0)
-        for p in range(6):  # Range of p values
-            for q in range(6):  # Range of q values
-                if p == 0 and q == 0:
-                    continue  # Skip the (0,0,0) combination
-                try:
-                    model = ARIMA(window_data, order=(p, 0, q))
-                    results = model.fit()
-                    current_aic = results.aic
-                    if current_aic < final_aic:
-                        final_aic = current_aic
-                        final_order = (p, 0, q)
-                except:  # Catching all exceptions to continue the loop
-                    continue
-        # Fit ARIMA with the best order
+        model = auto_arima(
+            window_data,
+            start_p=1,
+            start_q=1,
+            max_p=6,
+            max_q=6,
+            seasonal=False,
+            stepwise=True
+        )
+        final_order = model.order
         best_arima_model = ARIMA(window_data, order=final_order).fit()
         return best_arima_model
+
+    def fit_garch(self, window_data):
+        """
+        Fits the GARCH model to the residuals of the best ARIMA model.
+
+        Parameters
+        ==========
+        :param window_data (np.array): The dataset for a specific window period.
+
+        Returns
+        =======
+            tuple: Contains the ARIMA result and GARCH result.
+        """
+        arima_result = self.fit_best_arima(window_data)
+        resid = np.asarray(arima_result.resid)
+        resid = resid[~(np.isnan(resid) | np.isinf(resid))]
+        garch_model = arch_model(resid, p=1, q=1, rescale=False)
+        garch_result = garch_model.fit(disp='off')
+        return arima_result, garch_result
 
     def show_arima_garch_results(self, window_data, acf=True, test_resid=True):
         """
@@ -107,9 +123,9 @@ class ArimaGarchStrategy():
             conduct Box-Pierce and Ljung-Box tests on residuals. Defaults to True.
         """
         arima_result = self.fit_best_arima(window_data)
-        resid = arima_result.resid
+        resid = np.asarray(arima_result.resid)
         resid = resid[~(np.isnan(resid) | np.isinf(resid))]
-        garch_model = arch_model(resid, p=1, q=1)
+        garch_model = arch_model(resid, p=1, q=1, rescale=False)
         garch_result = garch_model.fit(disp='off')
         residuals = garch_result.resid
 
@@ -137,28 +153,9 @@ class ArimaGarchStrategy():
         if test_resid:
             print(arima_result.summary())
             print(garch_result.summary())
-            bp_test = acorr_ljungbox(resid, lags=[10], return_df=True)
+            bp_test = acorr_ljungbox(resid, return_df=True)
             print("Box-Pierce and Ljung-Box Tests Results  for ARIMA:\n", bp_test)
-
-    def fit_garch(self, window_data):
-        """
-        Fits the GARCH model to the residuals of the best ARIMA model.
-
-        Parameters
-        ==========
-        :param window_data (np.array): The dataset for a specific window period.
-
-        Returns
-        =======
-            tuple: Contains the ARIMA result and GARCH result.
-        """
-        arima_result = self.fit_best_arima(window_data)
-        resid = arima_result.resid
-        resid = resid[~(np.isnan(resid) | np.isinf(resid))]
-        garch_model = arch_model(resid, p=1, q=1)
-        garch_result = garch_model.fit(disp='off')
-        return arima_result, garch_result
-
+    
     # Step 3: Prediction
     def predict_next_return(self, arima_result, garch_result):
         """
@@ -237,55 +234,58 @@ class ArimaGarchStrategy():
             list: A list of positions (1 for 'LONG', -1 for 'SHORT', 0 for 'HOLD').
         """
         positions = []  # Long if 1, Short if -1
-        for i in range(1, len(predictions)):
-            if predictions[i] > 0:
-                positions.append(1)  # Long
-            elif predictions[i] < 0:
-                positions.append(-1)  # Short
+        previous_position = 0  # Initial position
+        for prediction in predictions:
+            if prediction > 0:
+                current_position = 1  # Long
+            elif prediction < 0:
+                current_position = -1  # Short
             else:
-                positions.append(positions[-1])  # Hold previous position
+                current_position = previous_position  # Hold previous position
+            positions.append(current_position)
+            previous_position = current_position
 
-        # Adjust for the initial position based on the first prediction
-        initial_position = 1 if predictions[0] > 0 else -1
-        positions = [initial_position] + positions
         return positions
 
     # Step 5: Vectorized Backtesting
+    def generate_predictions(self):
+        """
+        Generator that yields predictions one by one.
+        """
+        data = self.data
+        window_size = self.k
+        for i in range(window_size, len(data)):
+            print(
+                f"Processing window {i - window_size + 1}/{len(data) - window_size}...")
+            window_data = data['diff_log_return'].iloc[i-window_size:i]
+            next_return = self.get_prediction(window_data)
+            yield next_return
+
     def backtest_strategy(self):
         """
         Performs a backtest of the strategy over 
         the entire dataset, plotting cumulative returns.
         """
-        # Calculate strategy returns
-        predictions = []
         data = self.data
         window_size = self.k
-        total_iterations = len(data) - window_size
         print(
-            f"Starting backtesting for {self.symbol} "
-            f"\nWindow size {window_size}. "
-            f"\nTotal iterations: {total_iterations}.\n")
-        for i in range(window_size, len(data)):
-            print(
-                f"Processing window {i - window_size + 1}/{total_iterations}...")
-            window_data = data['diff_log_return'].iloc[i-window_size:i]
-            next_return = self.get_prediction(window_data)
-            predictions.append(next_return)
+            f"Starting backtesting for {self.symbol}\n"
+            f"Window size {window_size}.\n"
+            f"Total iterations: {len(data) - window_size}.\n")
+        predictions_generator = self.generate_predictions()
+        
+        positions = self.execute_trading_strategy(predictions_generator)
 
-        positions = self.execute_trading_strategy(predictions)
-        # calculate strategy returns
         strategy_returns = np.array(
             positions[:-1]) * data['log_return'].iloc[window_size+1:].values
-        # Calculate buy and hold returns
         buy_and_hold = data['log_return'].iloc[window_size+1:].values
-        # Calculate cumulative returns
         buy_and_hold_returns = np.cumsum(buy_and_hold)
         cumulative_returns = np.cumsum(strategy_returns)
-        # Extract the dates for plotting
         dates = data.index[window_size+1:]
         self.plot_cumulative_returns(
             cumulative_returns, buy_and_hold_returns, dates)
-        print("Backtesting completed.")
+        
+        print("\nBacktesting completed !!")
 
     # Function to plot the cumulative returns
     def plot_cumulative_returns(self, strategy_returns, buy_and_hold_returns, dates):
@@ -308,4 +308,3 @@ class ArimaGarchStrategy():
         plt.legend()
         plt.grid(True)
         plt.show()
-

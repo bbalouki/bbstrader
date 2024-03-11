@@ -288,8 +288,15 @@ def plot_monthly_yearly_returns(df, title):
     f, (ax1, ax2) = plt.subplots(2, 1, figsize=(
         12, 8), gridspec_kw={'height_ratios': [2, 1]})
     f.suptitle(f'{title} Strategy Monthly and Yearly Returns')
+    # Find the min and max values in the data to set the color scale range.
+    vmin = monthly_returns_df.min().min()
+    vmax = monthly_returns_df.max().max()
     # Define the color palette for the heatmap
-    cmap = sns.diverging_palette(10, 150, as_cmap=True)
+    cmap = sns.diverging_palette(10, 133, sep=3, n=256, center="light")
+
+    # Create the heatmap with the larger legend
+    sns.heatmap(monthly_returns_df, annot=True, fmt=".1f",
+            linewidths=.5, ax=ax1, cbar_kws={"shrink": .8}, cmap=cmap, center=0, vmin=vmin, vmax=vmax)
 
     # Create the heatmap with the larger legend
     sns.heatmap(monthly_returns_df, annot=True, fmt=".1f",
