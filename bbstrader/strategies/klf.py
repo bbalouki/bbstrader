@@ -9,6 +9,8 @@ class KLFStrategy():
     from a series of noisy measurements. It's designed to process market data, 
     estimate dynamic parameters such as the slope and intercept of price relationships,
     and generate trading signals based on those estimates.
+
+    You can learn more here https://en.wikipedia.org/wiki/Kalman_filter
     """
 
     def __init__(self, tickers: list | tuple, **kwargs):
