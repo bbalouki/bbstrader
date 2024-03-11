@@ -1,4 +1,4 @@
-# Comprehensive Documentation: OUBacktester Strategy Implementation
+# OUBacktester Strategy with Hidden Markov Model Risk Management
 
 The `OUBacktester` is a robust framework designed to execute backtesting on financial markets using the Ornstein-Uhlenbeck (OU) mean-reverting model combined with risk management through a Hidden Markov Model (HMM). This document provides detailed insights into the implementation, usage, and integration of the `OUBacktester` within a backtesting ecosystem.
 
@@ -77,9 +77,42 @@ start_date = datetime.datetime(2015, 1, 2)
 run_ou_backtest(symbol_list, csv_dir, ou_csv, hmm_csv, start_date, **kwargs)
 ```
 
-## Note on Data Preparation
+## Notes
 
-For effectiveness, it's crucial that the `hmm_csv` data covers a period preceding the `backtest_csv` dataset to prevent look-ahead bias and ensure the integrity of the HMM's risk management.
+- For effectiveness, it's crucial that the `hmm_csv` data covers a period preceding the `backtest_csv` dataset to prevent look-ahead bias and ensure the integrity of the HMM's risk management.
+
+- By default all bcktests uses Hidden Markov model as risk manager  , if you want to not use it , you can do so by adjusting the `OUBacktester` and `run_ou_backtest`.
+In the future we will give option to use different risk manager.
+
+- This strategy is optimized for assets that exhibit mean reversion characteristics. Prior to executing this backtest, it is imperative to conduct a mean reversion test on the intended asset to ensure its suitability for this approach.
+It's important to understand that mean reversion is a theory suggesting that asset prices and returns eventually move back towards the mean or average. This concept can be applied to various financial instruments, including stocks, bonds, and currencies. Here's a more detailed explanation on how to test for mean reversion:
+1. Statistical Methods
+a. Augmented Dickey-Fuller (ADF) Test:
+The ADF test is a common statistical test used to determine if a time series is stationary, which is a prerequisite for mean reversion. It tests the null hypothesis that a unit root is present in a time series sample. If the test statistic is less than the critical value, we can reject the null hypothesis and conclude that the series is stationary and possibly mean-reverting.
+
+b. Hurst Exponent:
+The Hurst exponent measures the autocorrelation of a time series and its tendency to revert to the mean. A Hurst exponent close to 0.5 suggests a random walk (non-mean reverting), less than 0.5 indicates mean reversion, and greater than 0.5 suggests a trending market.
+
+2. Visual Inspection
+a. Moving Averages:
+Plotting short-term and long-term moving averages can provide a visual indication of mean reversion. If the asset price frequently crosses over its moving averages, it may suggest mean-reverting behavior.
+
+b. Mean and Standard Deviation:
+Plotting the mean and standard deviation bands around the price can also provide visual cues. If the price regularly oscillates around the mean and returns within the standard deviation bands, it may indicate mean reversion.
+
+3. Quantitative Models
+a. Cointegration Tests:
+For pairs trading or multiple assets, cointegration tests can identify whether a linear combination of the assets is mean-reverting, even if the individual assets themselves are not.
+
+b. Mean-Reverting Time Series Models:
+Implementing models like Ornstein-Uhlenbeck or AR(1) (Autoregressive Model) can help in identifying mean reversion. These models quantify the speed of mean reversion and the volatility of the asset around its mean.
+
+Practical Steps:
+Collect Data: Gather historical price data for the asset in question.
+Preprocess Data: Ensure the data is clean and adjusted for dividends and splits.
+Statistical Testing: Apply the ADF test and calculate the Hurst exponent for the data series.
+Model Fitting: For a more sophisticated analysis, fit a mean-reverting model to the data and estimate its parameters.
+Backtesting: After identifying mean reversion, backtest the strategy on historical data to check its viability before live implementation.
 
 ## Conclusion
 

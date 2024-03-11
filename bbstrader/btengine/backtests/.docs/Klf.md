@@ -1,8 +1,8 @@
-# KLFStrategyBacktester Documentation
+# KLFStrategyBacktester with Hidden Markov Model Risk Management
 
 ## Overview
 
-The `KLFStrategyBacktester` class implements a backtesting framework for a pairs trading strategy using Kalman Filter and Hidden Markov Models (HMM) for risk management. This document outlines the structure and usage of the `KLFStrategyBacktester`, including initialization parameters, main functions, and an example of how to run a backtest.
+The `KLFStrategyBacktester` class implements a backtesting framework for a [pairs trading](https://en.wikipedia.org/wiki/Pairs_trade) strategy using Kalman Filter and Hidden Markov Models (HMM) for risk management. This document outlines the structure and usage of the `KLFStrategyBacktester`, including initialization parameters, main functions, and an example of how to run a backtest.
 
 ## Classes and Functions
 
@@ -33,7 +33,7 @@ Implements a backtesting strategy for `KLFStrategy` that integrates a Hidden Mar
 - `calculate_signals_for_pairs()`: Calculates signals for pairs trading.
 - `calculate_signals(event)`: Entry point for calculating trading signals on market events.
 
-### run_kf_backtest
+### `run_kf_backtest`
 
 #### Description
 
@@ -77,4 +77,8 @@ hmm_csv = '/backtests/results/klf_hmm/tlt_train.csv'
 run_kf_backtest(symbol_list, csv_dir, hmm_csv, start_date, **kwargs)
 ```
 
-For experimentation, the `csv_dir` and `hmm_csv` paths are set to `/backtests/results/klf_hmm/`, indicating that the required CSV files are located in this directory.
+## Notes
+- For experimentation, the `csv_dir` and `hmm_csv` paths are set to `/backtests/results/klf_hmm/`, indicating that the required CSV files are located in this directory.
+
+- By default all bcktests uses Hidden Markov model as risk manager  , if you want to not use it , you can do so by adjusting the `KLFStrategyBacktester` and `run_kf_backtest`.
+To adjust the strategy backtester , you need to know which paramter to adjust, why and how , learn more on [Kalman filter](https://en.wikipedia.org/wiki/Kalman_filter). In the future we will give option to use different risk manager.
