@@ -76,7 +76,6 @@ class Trade(RiskManagement):
         time.sleep(1)
         print()
         self.risk_managment()
-        self.statistics()
         print("║═════════════ Everything is oK : Running ....  ═══════║")
 
     def initialize(self):
