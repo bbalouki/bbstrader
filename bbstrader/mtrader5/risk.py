@@ -45,6 +45,7 @@ class RiskManagement(Account):
         :param sl (int, optional) : Stop Loss in points, Must be a positive number
         :param tp (int, optional) : Take Profit in points, Must be a positive number
         :param be (int, optional) : Break Even in points, Must be a positive number
+        :param rr (float, optional) : Risk reward ratio, Must be a positive number
             .
         """
         super().__init__()
