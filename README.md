@@ -65,7 +65,7 @@ if __name__ == "__main__":
 ![Performance](/bbstrader/btengine/backtests/results/klf_hmm/performance.png)
 
 #### Risk Return
-![Risk Return](/bbstrader/btengine/backtests/results/klf_hmm/rr.png)
+![Risk Return](/bbstrader/btengine/backtests/results/klf_hmm/risk_return.png)
 
 #### Returns Distribution
 ![Returns Distribution](/bbstrader/btengine/backtests/results/klf_hmm/returns_distribution.png)

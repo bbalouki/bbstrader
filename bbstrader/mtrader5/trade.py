@@ -48,6 +48,7 @@ class Trade(RiskManagement):
         self.start = kwargs.get("start_time", "6:30")
         self.finishing = kwargs.get("finishing_time", "19:30")
         self.end = kwargs.get("ending_time", "20:30")
+        self.tf = kwargs.get("time_frame")
 
         self.lot = self.get_lot()
         self.stop_loss = self.get_stop_loss()
@@ -153,6 +154,7 @@ class Trade(RiskManagement):
             f"║ Expert Advisor Version          @{self.version}\n"
             f"║ Magic Number                    {self.expert_id}\n"
             f"║ Running on Symbol               {self.symbol}\n"
+            f"║ Trading Time Frame              {self.tf}\n"
             f"║ Start Trading Time              {self.start_time_hour}:{self.start_time_minutes}\n"
             f"║ Finishing Trading Time          {self.finishing_time_hour}:{self.finishing_time_minutes}\n"
             f"║ Closing Position After          {self.ending_time_hour}:{self.ending_time_minutes}\n"
