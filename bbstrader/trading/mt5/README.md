@@ -32,8 +32,8 @@ Before using the module, configure the MetaTrader 5 terminal to allow automated 
 
 This module consists of several scripts, each corresponding to a specific trading strategy. To run a strategy, execute the relevant script after configuring your MT5 details and strategy parameters. For example, to run the ARIMA+GARCH trading strategy:
 
-- First you need to create a .py file , let's say `trade.py`.
-- In and in this file , importe the strategy you want to run 
+- First, you need to create a .py file, let's say `trade.py`.
+- In  this file , import the strategy you want to run 
 
 ```python
 from trading.mt5.run import run_arch_trading
@@ -41,11 +41,11 @@ from trading.mt5.run import run_arch_trading
 if __name__ == '__main__':
     run_arch_trading()
 ```
-- And on the terminal tape:
+- And in the terminal type:
 ```bash
 $ python trade.py --symbol "QQQ" --period "week" --std_stop True  
 ```
-You can refer to `Trade` class and `run_arch_trading` for specfic paramter.
+You can refer to the `Trade` class and `run_arch_trading` for specific parameters.
 
 ## Customization
 
@@ -57,7 +57,7 @@ We welcome contributions to improve existing strategies or add new ones. If you 
 
 ## Disclaimer
 
-Trading involves significant risk of loss and is not suitable for all investors. The developers of this module are not responsible for any financial losses incurred from its use. Always trade responsibly and at your own risk.
+Trading involves a significant risk of loss and is not suitable for all investors. The developers of this module are not responsible for any financial losses incurred from its use. Always trade responsibly and at your own risk.
 
 ## License
 
