@@ -10,6 +10,18 @@ import random
 import re
 
 
+TF_MAPPING  = {
+    '1m':  1,    # 1 minute intervals
+    '3m':  3,    # 3 minute intervals
+    '5m':  5,    # 5 minute intervals
+    '10m': 10,   # 10 minute intervals
+    '15m': 15,   # 15 minute intervals
+    '30m': 30,   # 30 minute intervals
+    '1h':  60,   # 1 hour intervals
+    '2h':  120,  # 2hour intervals
+    '4h':  240,  # 4 hour intervals
+    'D1':  1440 # 1 day intervals
+}
 class RiskManagement(Account):
     """
     The RiskManagement class provides foundational 
@@ -52,7 +64,7 @@ class RiskManagement(Account):
         self.symbol = kwargs.get("symbol")
         self.start_time = kwargs.get("start_time")
         self.finishing_time = kwargs.get("finishing_time")
-        self.max_trades = kwargs.get(" max_trades")
+        self.max_trades = kwargs.get("max_trades")
         self.std = kwargs.get("std_stop", False)
         self.pchange = kwargs.get("pchange_sl")
         self.daily_dd = kwargs.get("daily_risk")
@@ -78,23 +90,14 @@ class RiskManagement(Account):
             if not isinstance(self.be, int) or self.be <= 0:
                 raise ValueError("be must be a positive integer number")
 
-        time_frame_mapping = {
-            '1m':  1,    # 1 minute intervals
-            '3m':  3,    # 3 minute intervals
-            '5m':  5,    # 5 minute intervals
-            '10m': 10,   # 10 minute intervals
-            '15m': 15,   # 15 minute intervals
-            '30m': 30,   # 30 minute intervals
-            '1h':  60,   # 1 hour intervals
-            '2h':  120,  # 2hour intervals
-            '4h':  240,  # 4 hour intervals
-            'D1':  60*24  # 1 day intervals
-        }
-        timeframe = kwargs.get("time_frame", "5m")
-        if timeframe not in time_frame_mapping:
+        self.timeframe = kwargs.get("time_frame")
+        if self.timeframe not in TF_MAPPING:
             raise ValueError("Unsupported time frame")
-        self.tf = time_frame_mapping[timeframe]
-
+        elif self.timeframe == 'D1':
+            tf =  self.get_minutes()
+        else: tf = TF_MAPPING[self.timeframe]
+        self.TF = tf
+        
     def risk_level(self) -> float:
         """
         Calculates the risk level of a trade
@@ -150,13 +153,11 @@ class RiskManagement(Account):
 
     def max_trade(self) -> int:
         """calculates the maximum number of trades allowed"""
-
-        time_frame = self.tf
         minutes = self.get_minutes()
         if self.max_trades is not None:
             max_trades = self.max_trades
-        else:
-            max_trades = round(minutes / time_frame)
+        else: 
+            max_trades = round(minutes / self.TF)
         return max(max_trades, 1)
 
     def get_minutes(self) -> int:
