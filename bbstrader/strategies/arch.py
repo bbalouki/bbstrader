@@ -88,6 +88,9 @@ class ArimaGarchStrategy():
             stepwise=True
         )
         final_order = model.order
+        import warnings
+        from statsmodels.tools.sm_exceptions import ConvergenceWarning
+        warnings.filterwarnings("ignore", category=ConvergenceWarning)
         best_arima_model = ARIMA(window_data, order=final_order, missing='drop').fit()
         return best_arima_model
 
