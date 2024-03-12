@@ -359,7 +359,6 @@ class Trade(RiskManagement):
         digits = Mt5.symbol_info(self.symbol).digits
 
         lot = self.get_lot()
-        print(lot)
         stop_loss = self.get_stop_loss()
         take_profit = self.get_take_profit()
         deviation = self.get_deviation()
