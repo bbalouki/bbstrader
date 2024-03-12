@@ -28,28 +28,72 @@ pip install MetaTrader5 pandas numpy scipy matplotlib datetime
 
 Before using the module, configure the MetaTrader 5 terminal to allow automated trading and ensure your account details are correctly set up. Edit the trading strategy files as needed to match your trading preferences and risk management profile.
 
+## New Utility Functions
+
+### Time Frame Mapping
+
+- `tf_mapping()`: Returns a dictionary mapping string representations of timeframes to their numeric value in minutes.
+
+### Initializing Trades
+
+- `init_trade(args, symbol=None)`: Initializes and returns a `Trade` object with parameters specified by `args` and optionally overrides the symbol.
+
+### Argument Parsing for Trades
+
+- `add_trade_arguments(parser, pair=False, pchange_sl=None, strategy=None)`: Adds command-line arguments for configuring trade parameters, customizable based on the strategy.
+
+### Common Trading Arguments
+
+- `add_common_trading_arguments(parser, strategy=None)`: Adds common trading-related arguments to the parser, allowing for customization based on the selected strategy.
+
+### Strategy-Specific Argument Functions
+
+- `add_sma_trading_arguments(parser)`: Adds arguments specific to the SMA trading strategy.
+- `add_pair_trading_arguments(parser, pair=True, pchange_sl=2.5)`: Adds arguments for configuring pair trading strategies.
+- `add_ou_trading_arguments(parser)`: Sets up arguments for Ornstein-Uhlenbeck strategy configuration.
+- `add_arch_trading_arguments(parser)`: Configures arguments for ARIMA+GARCH strategy execution.
+
+These utility functions enhance the module's flexibility, allowing users to easily customize and execute different trading strategies based on their requirements.
+
 ## Usage
+### Command Line Arguments
 
-This module consists of several scripts, each corresponding to a specific trading strategy. To run a strategy, execute the relevant script after configuring your MT5 details and strategy parameters. For example, to run the ARIMA+GARCH trading strategy:
+Each trading strategy can be executed with specific command line arguments. Here are examples for each supported strategy:
 
-- First, you need to create a .py file, let's say `trade.py`.
-- In  this file , import the strategy you want to run 
+#### ARIMA+GARCH Strategy
+- **Command Line Argument Example:**
 
-```python
-from trading.mt5.run import run_arch_trading
-
-if __name__ == '__main__':
-    run_arch_trading()
-```
-- And in the terminal type:
 ```bash
-$ python trade.py --symbol "QQQ" --period "week" --std_stop True  
+python trade.py --expert "YourExpertName" --id 1 --version 1.0 --symbol "QQQ" --mr 5.0 --t 2.0 --dr 0.25 --maxt 20 --acl True --tfm "D1" --start "13:35" --fint "19:50" --endt "19:55" --std False --rr 3.0 --psl 2.5
 ```
-You can refer to the `Trade` class and `run_arch_trading` for specific parameters.
+
+#### Simple Moving Averages (SMA) Strategy
+
+- **Command Line Argument Example:**
+
+```bash
+python trade.py --expert "YourExpertName" --symbol "QQQ" --tfm "1h" --start "13:35" --sma 35 --lma 80 --rm "hmm"
+```
+
+#### Pair Trading Strategy
+
+- **Command Line Argument Example:**
+
+```bash
+python trade.py --expert "YourExpertName" --tfm "D1" --start "13:35" --pair "GOOG" "MSFT" --psl 2.5
+```
+
+#### Ornstein-Uhlenbeck Strategy
+
+- **Command Line Argument Example:**
+
+```bash
+python trade.py --expert "YourExpertName" --symbol "AAPL" --tfm "1h" --start "13:35" --p 20 --n 20 --ouw 2000
+```
 
 ## Customization
 
-You can customize each trading strategy by adjusting its parameters or extending the strategy logic. For example, modify the window sizes for moving averages or adjust the risk management settings.
+You can customize each trading strategy by adjusting its parameters or extending the strategy logic. The utility functions provided in `utils.py` make it easier to add or modify command-line arguments for different trading setups.
 
 ## Contributing
 
