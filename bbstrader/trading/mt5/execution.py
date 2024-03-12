@@ -24,7 +24,7 @@ def sma_trading(
     lma: int = 80,
     mm: bool = True,
     max_t: int = 1,
-    iter_time: int | float = None,
+    iter_time: int | float = 30,
     risk_manager: str | None = 'hmm',
     period: str = 'week',
     **kwargs
@@ -44,8 +44,7 @@ def sma_trading(
     :param mm (bool, optional): Money management flag 
         to enable/disable money management, defaults to True.
     :param max_t (int, optional): Maximum number of trades allowed, defaults to 1.
-    :param iter_time (int | float, optional): Iteration time for the trading loop
-        defaults to None which will be set equal to trade time.
+    :param iter_time (int | float, optional): Iteration time for the trading loop.
     :param risk_manager (str | None, optional): Specifies the risk management strategy to use
       'hmm' for Hidden Markov Model or None for no risk management. Defaults to 'hmm'.
     :param period (str, optional): Trading period to reset statistics and close positions
@@ -79,9 +78,9 @@ def sma_trading(
             trade.break_even()
 
     time_frame_mapping = tf_mapping()
-    trade_time = time_frame_mapping[tf]
-    if iter_time is None:
-        iter_time = trade_time
+    if tf == 'D1':
+        trade_time = trade.get_minutes()
+    else: trade_time = time_frame_mapping[tf]
 
     rate = Rates(trade.symbol, tf, 0, MAX_BARS)
     data = rate.get_rate_frame()
@@ -207,7 +206,7 @@ def pair_trading(
     ols: int = 50,
     max_t: int = 1,
     mm: bool = True,
-    iter_time: int | float | None = 60,
+    iter_time: int | float = 30,
     risk_manager: str | None = 'hmm',
     hmm_ticker: str = None,
     period: str = 'month',  # day , week, month
@@ -230,8 +229,8 @@ def pair_trading(
         for each asset in the pair, defaults to 1.
     :param mm (bool, optional): Money management flag to enable/disable 
         money management, defaults to True.
-    :param iter_time (int | float | None, optional): Iteration time (in minutes) 
-        for the trading loop, defaults to 60.
+    :param iter_time (int | float ,optional): Iteration time (in minutes) 
+        for the trading loop, defaults to 30.
     :param risk_manager (str | None, optional): Specifies the risk management strategy to use
          'hmm' for Hidden Markov Model
       or None for no risk management. Defaults to 'hmm'.
@@ -271,9 +270,9 @@ def pair_trading(
             p1.break_even()
 
     time_frame_mapping = tf_mapping()
-    trade_time = time_frame_mapping[tf]
-    if iter_time is None:
-        iter_time = trade_time
+    if tf == 'D1':
+        trade_time = p0.get_minutes()
+    else: trade_time = time_frame_mapping[tf]
 
     rate = Rates(hmm_ticker, tf, 0, MAX_BARS)
     data = rate.get_rate_frame()
@@ -288,7 +287,7 @@ def pair_trading(
     short_market = False
     num_days = 0
     print(
-        f'\nRunning SMA Strategy on {pair[0]} and {pair[1]} in {tf} Interval ...\n')
+        f'\nRunning KLF Strategy on {pair[0]} and {pair[1]} in {tf} Interval ...\n')
     while True:
         try:
             # Data Retrieval
@@ -471,8 +470,8 @@ def ou_trading(
     max_t: int = 1,
     p: int = 20,
     n: int = 20,
-    iter_time: int | float = None,
-    ou_window: int | None = 2000,
+    iter_time: int | float = 30,
+    ou_window: int = 2000,
     risk_manager: str | None = 'hmm',  # will add others risk model
     hmm_window: int | None = 60,
     period: str = 'week',  # (month , week, day)
@@ -489,7 +488,6 @@ def ou_trading(
     :param p: Period length for calculating returns, default is 20.
     :param n: Window size for the Ornstein-Uhlenbeck strategy calculation, default is 20.
     :param iter_time: Iteration time for the trading loop, can be an integer or float. 
-        If `None`, defaults to the `tf` time frame.
     :param ou_window: Lookback period for the OU strategy, defaults to 2000.
     :param risk_manager: Specifies the risk management model to use
         default is 'hmm' (Hidden Markov Model). Can be `None`.
@@ -525,9 +523,10 @@ def ou_trading(
             trade.break_even()
 
     time_frame_mapping = tf_mapping()
-    trade_time = time_frame_mapping[tf]
-    if iter_time is None:
-        iter_time = trade_time
+    if tf == 'D1':
+        trade_time = trade.get_minutes()
+    else: trade_time = time_frame_mapping[tf]
+
     if regime:
         hmm = HMMRiskManager(data=data, verbose=True, **kwargs)
     strategy = OrnsteinUhlenbeck(
@@ -537,7 +536,7 @@ def ou_trading(
     long_market = False
     short_market = False
     num_days = 0
-    print(f'\nRunning SMA Strategy on {trade.symbol} in {tf} Interval ...\n')
+    print(f'\nRunning OU Strategy on {trade.symbol} in {tf} Interval ...\n')
     while True:
         try:
             buys = trade.get_current_buys()
@@ -650,7 +649,7 @@ def arch_trading(
     k: int = 500,
     mm: bool = True,
     max_t: int = 1,
-    iter_time: int | float | None = 60,
+    iter_time: int | float = 30,
     risk_manager: str | None = 'hmm',
     hmm_window: int | None = 50,
     period: str = 'month',  # (month , week, day)
@@ -666,8 +665,7 @@ def arch_trading(
     :param k: Number of past points to consider for the ARCH model analysis, default is 500.
     :param mm: Boolean flag indicating if money management strategies should be applied, default is True.
     :param max_t: Maximum number of trades allowed at any given time, default is 1.
-    :param iter_time: Time in minutes between each iteration of the trading loop. Can be an integer, float, or `None`. 
-                      If `None`, a default based on `tf` is used.
+    :param iter_time: Time in minutes between each iteration of the trading loop. Can be an integer or float.
     :param risk_manager: Specifies the risk management model to use. Default is 'hmm' for Hidden Markov Model. 
                          Can be `None` for no risk management.
     :param hmm_window: Window size for the HMM risk model, required if `risk_manager` is 'hmm'. Default is 50.
@@ -696,9 +694,9 @@ def arch_trading(
             trade.break_even()
 
     time_frame_mapping = tf_mapping()
-    trade_time = time_frame_mapping[tf]
-    if iter_time is None:
-        iter_time = trade_time
+    if tf == 'D1':
+        trade_time = trade.get_minutes()
+    else: trade_time = time_frame_mapping[tf]
 
     rate = Rates(trade.symbol, tf, 0, MAX_BARS)
     data = rate.get_rate_frame()
@@ -713,7 +711,7 @@ def arch_trading(
     long_market = False
     short_market = False
     num_days = 0
-    print(f'\nRunning SMA Strategy on {trade.symbol} in {tf} Interval ...\n')
+    print(f'\nRunning ARIMA + GARCH Strategy on {trade.symbol} in {tf} Interval ...\n')
     while True:
         try:
             buys = trade.get_current_buys()
