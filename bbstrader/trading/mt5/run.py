@@ -30,9 +30,9 @@ def run_sma_trading():
         sma=args.sma, 
         lma=args.lma, 
         mm=args.mm, 
-        max_t=args.max_t, 
-        iter_time=args.iter_time, 
-        risk_manager=args.risk_manager, 
+        max_t=args.mxt, 
+        iter_time=args.it, 
+        risk_manager=args.rm, 
         period=args.period
     )
 
@@ -59,12 +59,13 @@ def run_pair_trading(pair=True, pchange_sl=3.0):
         p0,
         p1,
         args.tf,
-        ols=args.ols,
-        max_t=args.max_t,
+        ols=args.rmw,
+        max_t=args.mxt,
         mm=args.mm,
-        iter_time=args.iter_time,
-        risk_manager=args.risk_manager,
-        hmm_ticker=args.hmm_ticker,
+        iter_time=args.it,
+        risk_manager=args.rm,
+        rm_ticker=args.rmt,
+        rm_window=args.rmw,
         period=args.period
     )
 
@@ -88,12 +89,12 @@ def run_ou_trading():
         tf=args.tf,
         n=args.n,
         p=args.p,
-        max_t=args.max_t,
+        max_t=args.mxt,
         mm=args.mm,
-        iter_time=args.iter_time,
-        ou_window=args.ou_window,
-        hmm_window=args.hmm_window,
-        risk_manager=args.risk_manager,
+        iter_time=args.it,
+        ou_window=args.ouw,
+        rm_window=args.rmw,
+        risk_manager=args.rm,
         period=args.period
     )
 
@@ -116,11 +117,11 @@ def run_arch_trading():
     arch_trading(
         trade,
         tf=args.tf,
-        max_t=args.max_t,
+        max_t=args.mxt,
         mm=args.mm,
         k=args.k,
-        hmm_window=args.hmm_window,
-        iter_time=args.iter_time,
-        risk_manager=args.risk_manager,
+        iter_time=args.it,
+        risk_manager=args.rm,
+        rm_window=args.rmw,
         period=args.period
     )
