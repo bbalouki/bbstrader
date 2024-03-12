@@ -61,7 +61,6 @@ These utility functions enhance the module's flexibility, allowing users to easi
 Each trading strategy can be executed with specific command line arguments. Here are examples for each supported strategy:
 
 #### ARIMA+GARCH Strategy
-
 - **Command Line Argument Example:**
 
 ```bash
@@ -102,7 +101,7 @@ We welcome contributions to improve existing strategies or add new ones. If you 
 
 ## Disclaimer
 
-Trading involves significant risk of loss and is not suitable for all investors. The developers of this module are not responsible for any financial losses incurred from its use. Always trade responsibly and at your own risk.
+Trading involves a significant risk of loss and is not suitable for all investors. The developers of this module are not responsible for any financial losses incurred from its use. Always trade responsibly and at your own risk.
 
 ## License
 
