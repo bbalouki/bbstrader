@@ -11,7 +11,7 @@ def tf_mapping():
         '1h':  60,   
         '2h':  120,  
         '4h':  240,  
-        'D1':  1536
+        'D1':  1440
     }
     return time_frame_mapping
 
@@ -50,12 +50,12 @@ def add_trade_arguments(parser, pair=False, pchange_sl=None, strategy=None):
     parser.add_argument('--expert_id', type=int, default=0, help='Expert ID')
     parser.add_argument('--version', type=float, default=1.0, help='Version')
     parser.add_argument('--symbol', type=str, default='SPY', help='Symbol to trade')
-    parser.add_argument('--max_risk', type=float, default=10.0, help='Maximum risk')
+    parser.add_argument('--max_risk', type=float, default=5.0, help='Maximum risk')
     parser.add_argument('--target', type=float, default=2.0, help='Target')
     parser.add_argument(
         '--daily_risk', type=float, default=0.25, help='Daily risk')
     parser.add_argument(
-        '--max_trades', type=int, default=None, help='Maximum trades', nargs='?', const=None)
+        '--max_trades', type=int, default=20, help='Maximum trades', nargs='?', const=None)
     parser.add_argument('--account_leverage', type=bool, default=True, help='Account leverage')
     if strategy is not None:
         if strategy == 'sma':
@@ -70,7 +70,7 @@ def add_trade_arguments(parser, pair=False, pchange_sl=None, strategy=None):
     parser.add_argument('--start_time', type=str, default='14:35', help='Start time')
     parser.add_argument('--finishing_time', type=str, default='20:50', help='Finishing time')
     parser.add_argument('--ending_time', type=str, default='20:55', help='Ending time')
-    parser.add_argument('--std_stop', type=bool, default=False, help='Standard stop')
+    parser.add_argument('--std_stop', type=bool, default=False, help='Standard Deviation stop')
     parser.add_argument('--rr', type=float, default=3.0, help='Risk reward ratio')
     if pair:
         if pchange_sl is not None:
@@ -99,7 +99,7 @@ def add_common_trading_arguments(parser, strategy=None):
     else: parser.add_argument('--tf', type=str, required=True, help='Time frame for trading')
     parser.add_argument('--mm', type=bool, default=True, help='Money management')
     parser.add_argument('--max_t', type=int, default=1, help='Maximum trades')
-    parser.add_argument('--iter_time', type=float,default=60, nargs='?', help='Iteration time')
+    parser.add_argument('--iter_time', type=float,default=30, help='Iteration time')
     parser.add_argument('--risk_manager', type=str, default='hmm', help='Risk manager')
     parser.add_argument('--period', type=str, default='week', choices=['day', 'week', 'month'], help='Trading period')
     return parser
@@ -135,8 +135,8 @@ def add_ou_trading_arguments(parser):
     # Add arguments for ou_trading parameters
     parser.add_argument('--p', type=int, default=20, help='Number of time steps')
     parser.add_argument('--n', type=int, default=20, help='Number of simulations to perform')
-    parser.add_argument('--ou_window', type=int, default=2000, nargs='?', help='OU window size ')
-    parser.add_argument('--hmm_window', type=int, default=60, nargs='?', help='HMM window size ')
+    parser.add_argument('--ou_window', type=int, default=2000, help='OU window size ')
+    parser.add_argument('--hmm_window', type=int, default=60, help='HMM window size ')
     return parser
 
 def add_arch_trading_arguments(parser):
@@ -146,5 +146,5 @@ def add_arch_trading_arguments(parser):
     parser = add_common_trading_arguments(parser, strategy='arch')
     # Add arguments for ou_trading parameters
     parser.add_argument('--k', type=int, default=500, help='K parameter for the strategy')
-    parser.add_argument('--hmm_window', type=int, default=50, nargs='?', help='HMM window size ')
+    parser.add_argument('--hmm_window', type=int, default=50, help='HMM window size ')
     return parser

@@ -88,7 +88,7 @@ class ArimaGarchStrategy():
             stepwise=True
         )
         final_order = model.order
-        best_arima_model = ARIMA(window_data, order=final_order).fit()
+        best_arima_model = ARIMA(window_data, order=final_order, missing='drop').fit()
         return best_arima_model
 
     def fit_garch(self, window_data):
