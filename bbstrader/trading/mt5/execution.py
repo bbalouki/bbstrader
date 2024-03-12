@@ -25,7 +25,7 @@ def sma_trading(
     mm: bool = True,
     max_t: int = 1,
     iter_time: int | float = 30,
-    risk_manager: str | None = 'hmm',
+    risk_manager: str = 'hmm',
     period: str = 'week',
     **kwargs
 ):
@@ -45,8 +45,8 @@ def sma_trading(
         to enable/disable money management, defaults to True.
     :param max_t (int, optional): Maximum number of trades allowed, defaults to 1.
     :param iter_time (int | float, optional): Iteration time for the trading loop.
-    :param risk_manager (str | None, optional): Specifies the risk management strategy to use
-      'hmm' for Hidden Markov Model or None for no risk management. Defaults to 'hmm'.
+    :param risk_manager (str ): Specifies the risk management strategy to use
+      'hmm' for Hidden Markov Model. Defaults to 'hmm'.
     :param period (str, optional): Trading period to reset statistics and close positions
         can be 'day', 'week', or 'month'. Defaults to 'week'.
     :param **kwargs: Additional keyword arguments for HMM risk manager.
@@ -62,15 +62,11 @@ def sma_trading(
           Make sure to handle exceptions and ensure proper resource management 
           when integrating into a live trading environment.
     """
-
-    if risk_manager is not None:
-        if risk_manager.lower() == 'hmm':
-            regime = True
-    else:
-        regime = False
-
-    current_date = datetime.now()
-    today = current_date.strftime("%A")
+    if risk_manager is None:
+        raise ValueError (
+            "For SMAStrategy , the Risk Manger is required",
+            "Please privde a valid risk manager or set it to 'None'"   
+        )
 
     def check(buys: list, sells: list):
         if buys is not None or sells is not None:
@@ -87,21 +83,17 @@ def sma_trading(
     data['Date'] = pd.to_datetime(data['Date'], unit='s')
     data.set_index('Date', inplace=True)
     strategy = SMAStrategy(short_window=sma, long_window=lma)
-    if regime:
-        hmm = HMMRiskManager(data=data, verbose=True,
+    hmm = HMMRiskManager(data=data, verbose=True,
                              iterations=1000, **kwargs)
-
     time_intervals = 0
     long_market = False
     short_market = False
     num_days = 0
     print(f'\nRunning SMA Strategy on {trade.symbol} in {tf} Interval ...\n')
     while True:
+        current_date = datetime.now()
+        today = current_date.strftime("%A")
         try:
-            # Data Retrieval
-            sig_rate = Rates(trade.symbol, tf, 0, lma)
-            ma_data = sig_rate.get_close.values
-
             buys = trade.get_current_buys()
             if buys is not None:
                 print(f"\nCurrent buy positions on {trade.symbol}: \n{buys}")
@@ -112,42 +104,62 @@ def sma_trading(
             short_market = sells is not None and len(sells) >= max_t
 
             time.sleep(0.5)
+            sig_rate = Rates(trade.symbol, tf, 0, lma)
+            hmm_data = sig_rate.get_returns.values
+            current_regime = hmm.which_trade_allowed(hmm_data)
+            print(f'CURRENT REGIME : {current_regime}')
+            ma_data = sig_rate.get_close.values
             signal = strategy.calculate_signals(ma_data)
-            if regime:
-                hmm_data = sig_rate.get_returns.values
-                current_regime = hmm.which_trade_allowed(hmm_data)
+            print("Calculating signal ...")
+            print(f"\nSIGNAL : {signal}")
             comment = f"{trade.expert_name}@{trade.version}"
+            now = datetime.now().strftime("%H:%M:%S")
             if trade.trading_time() and today in TRADING_DAYS:
-                if signal == "EXIT" and short_market:
-                    trade.close_all_sells()
-                elif signal == "EXIT" and long_market:
-                    trade.close_all_buys()
+                if signal is not None:
+                    if signal == "EXIT" and short_market:
+                        print(f'\nTime: {now}')
+                        trade.close_all_sells()
+                        short_market = False
+                    elif signal == "EXIT" and long_market:
+                        print(f'\nTime: {now}')
+                        trade.close_all_buys()
+                        long_market = False
 
-                if current_regime == 'LONG':
-                    if signal == "LONG" and not long_market:
-                        if time_intervals % trade_time == 0 or buys is None:
-                            print("Sending buy Order ....")
-                            trade.open_buy_position(mm=mm, comment=comment)
-                        else:
+                    if current_regime == 'LONG':
+                        if signal == "LONG" and not long_market:
+                            if time_intervals % trade_time == 0 or buys is None:
+                                print("Sending buy Order ....")
+                                trade.open_buy_position(mm=mm, comment=comment)
+                            else:
+                                print(f'\nTime: {now}')
+                                check(buys, sells)
+                        elif signal == "LONG" and long_market:
+                            print(f'\nTime: {now}')
+                            print("Sorry Risk not allowed !!!")
                             check(buys, sells)
-                    elif signal == "LONG" and long_market:
-                        print("\nSorry Risk not allowed !!!")
-                        check(buys, sells)
 
-                elif current_regime == 'SHORT':
-                    if signal == "SHORT" and not short_market:
-                        if time_intervals % trade_time == 0 or sells is None:
-                            print("Sending Sell Order ....")
-                            trade.open_sell_position(mm=mm, comment=comment)
-                        else:
+                    elif current_regime == 'SHORT':
+                        if signal == "SHORT" and not short_market:
+                            if time_intervals % trade_time == 0 or sells is None:
+                                print("Sending Sell Order ....")
+                                trade.open_sell_position(mm=mm, comment=comment)
+                            else:
+                                print(f'\nTime: {now}')
+                                check(buys, sells)
+                        elif signal == "SHORT" and short_market:
+                            print(f'\nTime: {now}')
+                            print("Sorry Risk not Allowed !!!")
                             check(buys, sells)
-                    elif signal == "SHORT" and short_market:
-                        print("Sorry Risk not Allowed !!!")
-                        check(buys, sells)
+                else:
+                    print(f'\nTime: {now}')
+                    print("There is no signal !!")
+                    check(buys, sells)
             else:
-                print("\nSorry It is Not trading Time !!!")
+                print(f'\nTime: {now}')
+                print("Sorry It is Not trading Time !!!")
                 check(buys, sells)
         except Exception as e:
+            print(f'Time: {now}')
             print(f"Error: {e}")
         time.sleep((60 * iter_time) - 1.5)
         if iter_time == 1:
@@ -203,12 +215,12 @@ def pair_trading(
     p1: Trade,
     tf: str,
     /,
-    ols: int = 50,
     max_t: int = 1,
     mm: bool = True,
     iter_time: int | float = 30,
-    risk_manager: str | None = 'hmm',
-    hmm_ticker: str = None,
+    risk_manager: str | None = None, # 'hmm',
+    rm_ticker: str = None,
+    rm_window: int = None,
     period: str = 'month',  # day , week, month
     **kwargs
 ):
@@ -224,18 +236,16 @@ def pair_trading(
     :param p0 (Trade): Trade object for the first asset in the pair.
     :param p1 (Trade): Trade object for the second asset in the pair.
     :param tf (str): Time frame for the trading strategy (e.g., '1h' for 1 hour).
-    :param ols (int, optional): The window size for the prediction , defaults to 50.
     :param max_t (int, optional): Maximum number of trades allowed at any time 
         for each asset in the pair, defaults to 1.
     :param mm (bool, optional): Money management flag to enable/disable 
         money management, defaults to True.
     :param iter_time (int | float ,optional): Iteration time (in minutes) 
         for the trading loop, defaults to 30.
-    :param risk_manager (str | None, optional): Specifies the risk management strategy to use
-         'hmm' for Hidden Markov Model
-      or None for no risk management. Defaults to 'hmm'.
-    :param hmm_ticker (str, optional): Ticker symbol used 
-        for HMM risk management analysis, must be specified if risk_manager is 'hmm'.
+    :param risk_manager: Specifies the risk management model to use
+        default is None , Hidden Markov Model ('hmm) Can be use.
+    :param rm_window: Window size for the risk model use for the prediction, defaults to None. 
+        Must be specified if `risk_manager` is not None.
     :param period (str, optional): Trading period to reset statistics 
         and close positions, can be 'day', 'week', or 'month'. Defaults to 'month'.
     :param **kwargs: Additional keyword arguments for HMM risk manager.
@@ -249,15 +259,11 @@ def pair_trading(
     designed to run continuously during market hours.
     Proper exception handling and resource management are crucial for live trading environments.
     """
-
+    regime = False
     if risk_manager is not None:
-        assert hmm_ticker is not None
+        assert rm_ticker is not None
+        assert rm_window is not None
         regime = True
-    else:
-        regime = False
-
-    current_date = datetime.now()
-    today = current_date.strftime("%A")
 
     def p0_check(p0_positions):
         if p0_positions is not None:
@@ -274,13 +280,14 @@ def pair_trading(
         trade_time = p0.get_minutes()
     else: trade_time = time_frame_mapping[tf]
 
-    rate = Rates(hmm_ticker, tf, 0, MAX_BARS)
-    data = rate.get_rate_frame()
-    data['Date'] = pd.to_datetime(data['Date'], unit='s')
-    data.set_index('Date', inplace=True)
     if regime:
-        hmm = HMMRiskManager(
-            data=data, verbose=True, iterations=5000, **kwargs)
+        if risk_manager == 'hmm':
+            rate = Rates(rm_ticker, tf, 0, MAX_BARS)
+            data = rate.get_rate_frame()
+            data['Date'] = pd.to_datetime(data['Date'], unit='s')
+            data.set_index('Date', inplace=True)
+            hmm = HMMRiskManager(
+                data=data, verbose=True, iterations=5000, **kwargs)
 
     time_intervals = 0
     long_market = False
@@ -288,23 +295,28 @@ def pair_trading(
     num_days = 0
     print(
         f'\nRunning KLF Strategy on {pair[0]} and {pair[1]} in {tf} Interval ...\n')
-    while True:
+    while True:  
+        current_date = datetime.now()
+        today = current_date.strftime("%A")
         try:
             # Data Retrieval
-            p0_ = Rates(pair[0], tf, 0, ols)
-            p1_ = Rates(pair[1], tf, 0, ols)
+            p0_ = Rates(pair[0], tf, 0, 10)
+            p1_ = Rates(pair[1], tf, 0, 10)
 
             p0_data = p0_.get_close
             p1_data = p1_.get_close
-
             prices = np.array(
                 [p0_data.values[-1], p1_data.values[-1]]
             )
             strategy = KLFStrategy(pair)
             if regime:
-                hmm_data = Rates(hmm_ticker, tf, 0, ols)
-                returns = hmm_data.get_returns.values
-                current_regime = hmm.which_trade_allowed(returns)
+                if risk_manager == 'hmm':
+                    hmm_data = Rates(rm_ticker, tf, 0, rm_window)
+                    returns = hmm_data.get_returns.values
+                    current_regime = hmm.which_trade_allowed(returns)
+                    print(f'\nCURRENT REGIME : {current_regime}')
+            else: 
+                current_regime = None
 
             p0_positions = p0.get_current_open_positions()
             time.sleep(0.5)
@@ -331,80 +343,152 @@ def pair_trading(
             p1_short_market = p1_sells is not None and len(p1_sells) >= max_t
             p0_short_market = p0_sells is not None and len(p0_sells) >= max_t
 
+            print("\nCalculating Signals ...")
             signals = strategy.calculate_signals(prices)
+            print(f'SIGNALS : {signals}')
             comment = f"{p0.expert_name}@{p0.version}"
 
             if signals is not None:
+                now = datetime.now().strftime("%H:%M:%S")
                 if p0.trading_time() and today in TRADING_DAYS:
                     p1_signal = signals[pair[1]]
                     p0_signal = signals[pair[0]]
-                    if (
-                        p1_signal == "LONG"
-                        and p0_signal == "SHORT"
-                        and current_regime == 'LONG'
-                    ):
-                        if not p1_long_market:
-                            if time_intervals % trade_time == 0 or p1_buys is None:
-                                print(f"\nGoing LONG on [{pair[1]}]")
-                                p1.open_buy_position(mm=mm, comment=comment)
-                            else:
-                                p1_check(p1_positions)
-                        else:
-                            print(f"Sorry Risk Not allowed on [{pair[1]}]")
-                            p1_check(p1_positions)
-
-                        if not p0_short_market:
-                            if time_intervals % trade_time == 0 or p0_sells is None:
-                                print(f"\nGoing SHORT on [{pair[0]}]")
-                                p0.open_sell_position(mm=mm, comment=comment)
-                            else:
-                                p0_check(p0_positions)
-                        else:
-                            print(f"Sorry Risk Not allowed on [{pair[0]}] ")
-                            p0_check(p0_positions)
-
-                    elif (
-                        p1_signal == "SHORT"
-                        and p0_signal == "LONG"
-                        and current_regime == 'SHORT'
-                    ):
-                        if not p1_short_market:
-                            if time_intervals % trade_time == 0 or p1_sells is None:
-                                print(f"\nGoing SHORT on [{pair[1]}]")
-                                p1.open_sell_position(mm=mm, comment=comment)
-                            else:
-                                p1_check(p1_positions)
-                        else:
-                            print(f"Sorry Risk Not allowed on [{pair[1]}]")
-                            p1_check(p1_positions)
-
-                        if not p0_long_market:
-                            if time_intervals % trade_time == 0 or p0_buys is None:
-                                print(f"\nGoing LONG on [{pair[0]}]")
-                                p0.open_buy_position(mm=mm, comment=comment)
-                            else:
-                                p0_check(p0_positions)
-                        else:
-                            print(f"Sorry Risk Not allowed on [{pair[0]}] ")
-                            p0_check(p0_positions)
-
-                    elif p1_signal == "EXIT" and p0_signal == "EXIT":
+                    if p1_signal == "EXIT" and p0_signal == "EXIT":
                         if p1_positions is not None:
-                            print(f"\nExiting Positions On [{pair[1]}]")
+                            print(f'\nTime: {now}')
+                            print(f"Exiting Positions On [{pair[1]}]")
                             p1.close_all_positions(comment=comment)
+                            p1_long_market = False
+                            p1_short_market = False
                         if p0_positions is not None:
-                            print(f"\nExiting Positions On [{pair[0]}]")
+                            print(f'\nTime: {now}')
+                            print(f"Exiting Positions On [{pair[0]}]")
                             p0.close_all_positions(comment=comment)
+                            p1_long_market = False
+                            p1_short_market = False
+                    if current_regime is not None:
+                        if (
+                            p1_signal == "LONG"
+                            and p0_signal == "SHORT"
+                            and current_regime == 'LONG'
+                        ):
+                            if not p1_long_market:
+                                if time_intervals % trade_time == 0 or p1_buys is None:
+                                    print(f"\nGoing LONG on [{pair[1]}]")
+                                    p1.open_buy_position(mm=mm, comment=comment)
+                                else:
+                                    print(f'\nTime: {now}')
+                                    p1_check(p1_positions)
+                            else:
+                                print(f'\nTime: {now}')
+                                print(f"Sorry Risk Not allowed on [{pair[1]}]")
+                                p1_check(p1_positions)
+
+                            if not p0_short_market:
+                                if time_intervals % trade_time == 0 or p0_sells is None:
+                                    print(f"\nGoing SHORT on [{pair[0]}]")
+                                    p0.open_sell_position(mm=mm, comment=comment)
+                                else:
+                                    print(f'\nTime: {now}')
+                                    p0_check(p0_positions)
+                            else:
+                                print(f'\nTime: {now}')
+                                print(f"Sorry Risk Not allowed on [{pair[0]}] ")
+                                p0_check(p0_positions)
+                        elif (
+                            p1_signal == "SHORT"
+                            and p0_signal == "LONG"
+                            and current_regime == 'SHORT'
+                        ):
+                            if not p1_short_market:
+                                if time_intervals % trade_time == 0 or p1_sells is None:
+                                    print(f"\nGoing SHORT on [{pair[1]}]")
+                                    p1.open_sell_position(mm=mm, comment=comment)
+                                else:
+                                    print(f'\nTime: {now}')
+                                    p1_check(p1_positions)
+                            else:
+                                print(f'\nTime: {now}')
+                                print(f"Sorry Risk Not allowed on [{pair[1]}]")
+                                p1_check(p1_positions)
+
+                            if not p0_long_market:
+                                if time_intervals % trade_time == 0 or p0_buys is None:
+                                    print(f"\nGoing LONG on [{pair[0]}]")
+                                    p0.open_buy_position(mm=mm, comment=comment)
+                                else:
+                                    print(f'\nTime: {now}')
+                                    p0_check(p0_positions)
+                            else:
+                                print(f'\nTime: {now}')
+                                print(f"Sorry Risk Not allowed on [{pair[0]}] ")
+                                p0_check(p0_positions)
+                    else:
+                        if (
+                            p1_signal == "LONG"
+                            and p0_signal == "SHORT"
+                        ):
+                            if not p1_long_market:
+                                if time_intervals % trade_time == 0 or p1_buys is None:
+                                    print(f"\nGoing LONG on [{pair[1]}]")
+                                    p1.open_buy_position(mm=mm, comment=comment)
+                                else:
+                                    p1_check(p1_positions)
+                            else:
+                                print(f'\nTime: {now}')
+                                print(f"Sorry Risk Not allowed on [{pair[1]}]")
+                                p1_check(p1_positions)
+
+                            if not p0_short_market:
+                                if time_intervals % trade_time == 0 or p0_sells is None:
+                                    print(f"\nGoing SHORT on [{pair[0]}]")
+                                    p0.open_sell_position(mm=mm, comment=comment)
+                                else:
+                                    print(f'\nTime: {now}')
+                                    p0_check(p0_positions)
+                            else:
+                                print(f'\nTime: {now}')
+                                print(f"Sorry Risk Not allowed on [{pair[0]}] ")
+                                p0_check(p0_positions)
+                        elif (
+                            p1_signal == "SHORT"
+                            and p0_signal == "LONG"
+                        ):
+                            if not p1_short_market:
+                                if time_intervals % trade_time == 0 or p1_sells is None:
+                                    print(f"\nGoing SHORT on [{pair[1]}]")
+                                    p1.open_sell_position(mm=mm, comment=comment)
+                                else:
+                                    p1_check(p1_positions)
+                            else:
+                                print(f'\nTime: {now}')
+                                print(f"Sorry Risk Not allowed on [{pair[1]}]")
+                                p1_check(p1_positions)
+
+                            if not p0_long_market:
+                                if time_intervals % trade_time == 0 or p0_buys is None:
+                                    print(f"\nGoing LONG on [{pair[0]}]")
+                                    p0.open_buy_position(mm=mm, comment=comment)
+                                else:
+                                    print(f'\nTime: {now}')
+                                    p0_check(p0_positions)
+                            else:
+                                print(f'\nTime: {now}')
+                                print(f"Sorry Risk Not allowed on [{pair[0]}] ")
+                                p0_check(p0_positions)
                 else:
-                    print("\nIt is Not trading time !!")
+                    print(f'\Time: {now}')
+                    print("It is Not trading time !!")
                     p0_check(p0_positions)
                     p1_check(p1_positions)
             else:
-                print("\nThere is no signal !!")
+                print(f'\nTime: {now}')
+                print("There is no signal !!")
                 p0_check(p0_positions)
                 p1_check(p1_positions)
 
         except Exception as e:
+            print(f'Time: {now}')
             print(f"Error: {e}")
 
         time.sleep((60 * iter_time) - 2.5)
@@ -472,8 +556,8 @@ def ou_trading(
     n: int = 20,
     iter_time: int | float = 30,
     ou_window: int = 2000,
-    risk_manager: str | None = 'hmm',  # will add others risk model
-    hmm_window: int | None = 60,
+    risk_manager: str | None = None, # 'hmm' is currently supported
+    rm_window: int | None = None,
     period: str = 'week',  # (month , week, day)
     **kwargs
 ):
@@ -490,9 +574,9 @@ def ou_trading(
     :param iter_time: Iteration time for the trading loop, can be an integer or float. 
     :param ou_window: Lookback period for the OU strategy, defaults to 2000.
     :param risk_manager: Specifies the risk management model to use
-        default is 'hmm' (Hidden Markov Model). Can be `None`.
-    :param hmm_window: Window size for the HMM risk model, defaults to 60. 
-        Must be specified if `risk_manager` is 'hmm'.
+        default is None , Hidden Markov Model ('hmm) Can be use.
+    :param rm_window: Window size for the risk model use for the prediction, defaults to None. 
+        Must be specified if `risk_manager` is not None.
     :param period: Defines the trading period as 'month', 'week', or 'day'
         affecting how and when positions are closed.
     :param kwargs: Additional keyword arguments for risk management models or other customizations.
@@ -501,16 +585,11 @@ def ou_trading(
     It includes handling of trading sessions, buy/sell signal generation, risk management through the HMM model, and period-based
     trading evaluation.
     """
-
+    regime = False
     if risk_manager is not None:
         if risk_manager.lower() == 'hmm':
-            assert hmm_window is not None
+            assert rm_window is not None
             regime = True
-    else:
-        regime = False
-
-    current_date = datetime.now()
-    today = current_date.strftime("%A")
 
     rate = Rates(trade.symbol, tf, 0, MAX_BARS)
     data = rate.get_rate_frame()
@@ -528,7 +607,8 @@ def ou_trading(
     else: trade_time = time_frame_mapping[tf]
 
     if regime:
-        hmm = HMMRiskManager(data=data, verbose=True, **kwargs)
+        if risk_manager == 'hmm':
+            hmm = HMMRiskManager(data=data, verbose=True, **kwargs)
     strategy = OrnsteinUhlenbeck(
         data['Close'].values[-ou_window:], timeframe=tf)
 
@@ -537,7 +617,9 @@ def ou_trading(
     short_market = False
     num_days = 0
     print(f'\nRunning OU Strategy on {trade.symbol} in {tf} Interval ...\n')
-    while True:
+    while True:   
+        current_date = datetime.now()
+        today = current_date.strftime("%A")
         try:
             buys = trade.get_current_buys()
             if buys is not None:
@@ -549,50 +631,93 @@ def ou_trading(
             short_market = sells is not None and len(sells) >= max_t
 
             time.sleep(0.5)
+            if regime:
+                if risk_manager ==  'hmm':
+                    hmm_returns = Rates(trade.symbol, tf, 0, rm_window)
+                    hmm_returns_val = hmm_returns.get_returns.values
+                    current_regime = hmm.which_trade_allowed(hmm_returns_val)
+                    print(f'CURRENT REGIME : {current_regime}')
+            else:
+                current_regime = None
+            print("Calculating signal ..")
             ou_returns = Rates(trade.symbol, tf, 0, p)
             returns_val = ou_returns.get_returns.values
             signal = strategy.calculate_signals(returns_val, p=p, n=n)
-            if regime:
-                hmm_returns = Rates(trade.symbol, tf, 0, hmm_window)
-                hmm_returns_val = hmm_returns.get_returns.values
-                current_regime = hmm.which_trade_allowed(hmm_returns_val)
-            else:
-                current_regime = None
-
+            print(f"SIGNAL : {signal}")
             comment = f"{trade.expert_name}@{trade.version}"
-
+            now = datetime.now().strftime("%H:%M:%S")
             if trade.trading_time() and today in TRADING_DAYS:
-                if signal == "LONG" and short_market:
-                    trade.close_all_sells()
-                elif signal == "SHORT" and long_market:
-                    trade.close_all_buys()
+                if signal is not None:
+                    if signal == "LONG" and short_market:
+                        print(f'Time: {now}')
+                        trade.close_all_sells()
+                        short_market  = False
+                    elif signal == "SHORT" and long_market:
+                        print(f'Time: {now}')
+                        trade.close_all_buys()
+                        long_market =  False
+                    if current_regime is not None:
+                        if current_regime == 'LONG':
+                            if signal == "LONG" and not long_market:
+                                if time_intervals % trade_time == 0 or buys is None:
+                                    print("Sending buy Order ....")
+                                    trade.open_buy_position(mm=mm, comment=comment)
+                                else:
+                                    print(f'\nTime: {now}')
+                                    check(buys, sells)
 
-                if current_regime == 'LONG':
-                    if signal == "LONG" and not long_market:
-                        if time_intervals % trade_time == 0 or buys is None:
-                            print("Sending buy Order ....")
-                            trade.open_buy_position(mm=mm, comment=comment)
-                        else:
+                            elif signal == "LONG" and long_market:
+                                print(f'\nTime: {now}')
+                                print("Sorry Risk not allowed !!!")
+                                check(buys, sells)
+
+                        elif current_regime == 'SHORT':
+                            if signal == "SHORT" and not short_market:
+                                if time_intervals % trade_time == 0 or sells is None:
+                                    print("Sending Sell Order ....")
+                                    trade.open_sell_position(mm=mm, comment=comment)
+                                else:
+                                    print(f'\nTime: {now}')
+                                    check(buys, sells)
+                            elif signal == "SHORT" and short_market:
+                                print(f'\nTime: {now}')
+                                print("Sorry Risk not Allowed !!!")
+                                check(buys, sells)
+                    else:
+                        if signal == "LONG" and not long_market:
+                            if time_intervals % trade_time == 0 or buys is None:
+                                print("Sending buy Order ....")
+                                trade.open_buy_position(mm=mm, comment=comment)
+                            else:
+                                print(f'\nTime: {now}')
+                                check(buys, sells)
+
+                        elif signal == "LONG" and long_market:
+                            print(f'\nTime: {now}')
+                            print("\nSorry Risk not allowed !!!")
                             check(buys, sells)
 
-                    elif signal == "LONG" and long_market:
-                        print("\nSorry Risk not allowed !!!")
-                        check(buys, sells)
-
-                elif current_regime == 'SHORT':
-                    if signal == "SHORT" and not short_market:
-                        if time_intervals % trade_time == 0 or sells is None:
-                            print("Sending Sell Order ....")
-                            trade.open_sell_position(mm=mm, comment=comment)
-                        else:
+                        if signal == "SHORT" and not short_market:
+                            if time_intervals % trade_time == 0 or sells is None:
+                                print("Sending Sell Order ....")
+                                trade.open_sell_position(mm=mm, comment=comment)
+                            else:
+                                print(f'\nTime: {now}')
+                                check(buys, sells)
+                        elif signal == "SHORT" and short_market:
+                            print(f'\nTime: {now}')
+                            print("Sorry Risk not Allowed !!!")
                             check(buys, sells)
-                    elif signal == "SHORT" and short_market:
-                        print("Sorry Risk not Allowed !!!")
-                        check(buys, sells)
+                else:
+                    print(f'\nTime: {now}')
+                    print("There is no signal !!")
+                    check(buys, sells)
             else:
-                print("\nSorry It is Not trading Time !!!")
+                print(f'\nTime: {now}')
+                print("Sorry It is Not trading Time !!!")
                 check(buys, sells)
         except Exception as e:
+            print(f'Time: {now}')
             print(f"Error: {e}")
         time.sleep((60 * iter_time) - 1.5)
         if iter_time == 1:
@@ -650,8 +775,8 @@ def arch_trading(
     mm: bool = True,
     max_t: int = 1,
     iter_time: int | float = 30,
-    risk_manager: str | None = 'hmm',
-    hmm_window: int | None = 50,
+    risk_manager: str | None = None, # 'hmm',
+    rm_window: int | None = None,
     period: str = 'month',  # (month , week, day)
     **kwargs
 ):
@@ -666,9 +791,9 @@ def arch_trading(
     :param mm: Boolean flag indicating if money management strategies should be applied, default is True.
     :param max_t: Maximum number of trades allowed at any given time, default is 1.
     :param iter_time: Time in minutes between each iteration of the trading loop. Can be an integer or float.
-    :param risk_manager: Specifies the risk management model to use. Default is 'hmm' for Hidden Markov Model. 
-                         Can be `None` for no risk management.
-    :param hmm_window: Window size for the HMM risk model, required if `risk_manager` is 'hmm'. Default is 50.
+    :param risk_manager: Specifies the risk management model to use. Default is None. 
+    :param rm_window: Window size for the risk model use for the prediction, defaults to None. 
+        Must be specified if `risk_manager` is not None.
     :param period: Trading period to consider for closing positions, options are 'month', 'week', or 'day'. 
                    This affects the frequency at which statistics are calculated and positions are closed.
     :param kwargs: Additional keyword arguments for the risk management models or other strategy-specific settings.
@@ -677,17 +802,11 @@ def arch_trading(
     applicable, and handling trade executions and position management based on the specified parameters. It includes 
     considerations for trading times, money management, and periodic evaluation of trading performance.
     """
-
+    regime = False
     if risk_manager is not None:
         if risk_manager.lower() == 'hmm':
-            assert hmm_window is not None
+            assert rm_window is not None
             regime = True
-    else:
-        regime = False
-
-    current_date = datetime.now()
-    today = current_date.strftime("%A")
-
     def check(buys: list, sells: list):
         if buys is not None or sells is not None:
             print(f"\nChecking for Break even on {trade.symbol}...")
@@ -704,15 +823,18 @@ def arch_trading(
     data.set_index('Date', inplace=True)
     strategy = ArimaGarchStrategy(trade.symbol, data, k=k)
     if regime:
-        hmm = HMMRiskManager(
-            data=data, verbose=True, iterations=5000, **kwargs)
+        if risk_manager == 'hmm':
+            hmm = HMMRiskManager(
+                data=data, verbose=True, iterations=5000, **kwargs)
 
     time_intervals = 0
     long_market = False
     short_market = False
     num_days = 0
     print(f'\nRunning ARIMA + GARCH Strategy on {trade.symbol} in {tf} Interval ...\n')
-    while True:
+    while True:  
+        current_date = datetime.now()
+        today = current_date.strftime("%A")
         try:
             buys = trade.get_current_buys()
             if buys is not None:
@@ -724,53 +846,98 @@ def arch_trading(
             short_market = sells is not None and len(sells) >= max_t
 
             time.sleep(0.5)
+            if regime:
+                if risk_manager == 'hmm':
+                    hmm_returns = Rates(trade.symbol, tf, 0, rm_window)
+                    hmm_returns_val = hmm_returns.get_returns.values
+                    current_regime = hmm.which_trade_allowed(hmm_returns_val)
+                    print(f'CURRENT REGIME : {current_regime}')
+            else:
+                current_regime = None
+            print("Calculating Signal ...")
             arch_data = Rates(trade.symbol, tf, 0, k)
             rates = arch_data.get_rate_frame()
             arch_returns = strategy.load_and_prepare_data(rates)
             window_data = arch_returns['diff_log_return'].iloc[-k:]
             signal = strategy.calculate_signals(window_data)
-            if regime:
-                hmm_returns = Rates(trade.symbol, tf, 0, hmm_window)
-                hmm_returns_val = hmm_returns.get_returns.values
-                current_regime = hmm.which_trade_allowed(hmm_returns_val)
-            else:
-                current_regime = None
+            print(f"SIGNAL : {signal}")
 
             comment = f"{trade.expert_name}@{trade.version}"
-
+            now = datetime.now().strftime("%H:%M:%S")
             if trade.trading_time() and today in TRADING_DAYS:
-                if signal == "LONG" and short_market:
-                    trade.close_all_sells()
-                elif signal == "SHORT" and long_market:
-                    trade.close_all_buys()
+                if signal is not None:
+                    if signal == "LONG" and short_market:
+                        print(f'\nTime: {now}')
+                        trade.close_all_sells()
+                        short_market = False
+                    elif signal == "SHORT" and long_market:
+                        print(f'\nTime: {now}')
+                        trade.close_all_buys()
+                        long_market = False
+                    if current_regime is not None:
+                        if current_regime == 'LONG':
+                            if signal == "LONG" and not long_market:
+                                if time_intervals % trade_time == 0 or buys is None:
+                                    print("Sending buy Order ....")
+                                    trade.open_buy_position(mm=mm, comment=comment)
+                                else:
+                                    print(f'Time: {now}')
+                                    check(buys, sells)
 
-                if current_regime == 'LONG':
-                    if signal == "LONG" and not long_market:
-                        if time_intervals % trade_time == 0 or buys is None:
-                            print("Sending buy Order ....")
-                            trade.open_buy_position(mm=mm, comment=comment)
-                        else:
+                            elif signal == "LONG" and long_market:
+                                print(f'\nTime: {now}')
+                                print("Sorry Risk not allowed !!!")
+                                check(buys, sells)
+
+                        elif current_regime == 'SHORT':
+                            if signal == "SHORT" and not short_market:
+                                if time_intervals % trade_time == 0 or sells is None:
+                                    print("Sending Sell Order ....")
+                                    trade.open_sell_position(mm=mm, comment=comment)
+                                else:
+                                    print(f'\nTime: {now}')
+                                    check(buys, sells)
+                            elif signal == "SHORT" and short_market:
+                                print(f'\nTime: {now}')
+                                print("Sorry Risk not Allowed !!!")
+                                check(buys, sells)
+                    else:
+                        if signal == "LONG" and not long_market:
+                            if time_intervals % trade_time == 0 or buys is None:
+                                print("Sending buy Order ....")
+                                trade.open_buy_position(mm=mm, comment=comment)
+                            else:
+                                print(f'\nTime: {now}')
+                                check(buys, sells)
+
+                        elif signal == "LONG" and long_market:
+                            print(f'\nTime: {now}')
+                            print("\nSorry Risk not allowed !!!")
                             check(buys, sells)
 
-                    elif signal == "LONG" and long_market:
-                        print("\nSorry Risk not allowed !!!")
-                        check(buys, sells)
+                        if signal == "SHORT" and not short_market:
+                            if time_intervals % trade_time == 0 or sells is None:
+                                print("Sending Sell Order ....")
+                                trade.open_sell_position(mm=mm, comment=comment)
+                            else:
+                                print(f'\nTime: {now}')
+                                check(buys, sells)
 
-                elif current_regime == 'SHORT':
-                    if signal == "SHORT" and not short_market:
-                        if time_intervals % trade_time == 0 or sells is None:
-                            print("Sending Sell Order ....")
-                            trade.open_sell_position(mm=mm, comment=comment)
-                        else:
+                        elif signal == "SHORT" and short_market:
+                            print(f'\nTime: {now}')
+                            print("Sorry Risk not Allowed !!!")
                             check(buys, sells)
-                    elif signal == "SHORT" and short_market:
-                        print("Sorry Risk not Allowed !!!")
-                        check(buys, sells)
+                else:
+                    print(f'\nTime: {now}')
+                    print("There is no signal !!")
+                    check(buys, sells)
             else:
-                print("\nSorry It is Not trading Time !!!")
+                print(f'\nTime: {now}')
+                print("Sorry It is Not trading Time !!!")
                 check(buys, sells)
 
         except Exception as e:
+            print(f'Time: {now}')
             print(f"Error: {e}")
 
         time.sleep((60 * iter_time) - 1.5)
