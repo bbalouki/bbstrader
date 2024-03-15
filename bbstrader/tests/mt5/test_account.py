@@ -2,6 +2,7 @@ import pytest
 from mtrader5.account import Account
 import pandas as pd
 
+# Make sure an instance of MT5 is running with a demo account
 def test_get_account_info():
     account = Account()
     info = account.get_account_info()
@@ -54,6 +55,3 @@ def test_get_trade_history():
     if history is not None:
         assert isinstance(history, pd.DataFrame)
         assert len(history) > 0
-
-if __name__ == "__main__":
-    pytest.main()
