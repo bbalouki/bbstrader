@@ -163,8 +163,7 @@ class Account():
         """
         orders = mt5.orders_get()
         if len(orders) == 0:
-            print(f"No orders on the current account")
-            quit()
+            return None
         else:
             df = pd.DataFrame(list(orders), columns=orders[0]._asdict())
             df.drop([
@@ -191,8 +190,7 @@ class Account():
         """
         positions = mt5.positions_get()
         if len(positions) == 0:
-            print(f"No positions on current account")
-            quit()
+            return None
         elif len(positions) > 0:
             df = pd.DataFrame(list(positions), columns=positions[0]._asdict())
             df['time'] = pd.to_datetime(df['time'], unit='s')
