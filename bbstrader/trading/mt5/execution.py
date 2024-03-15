@@ -477,7 +477,7 @@ def pair_trading(
                                 print(f"Sorry Risk Not allowed on [{pair[0]}] ")
                                 p0_check(p0_positions)
                 else:
-                    print(f'\Time: {now}')
+                    print(f'\nTime: {now}')
                     print("It is Not trading time !!")
                     p0_check(p0_positions)
                     p1_check(p1_positions)

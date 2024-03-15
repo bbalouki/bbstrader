@@ -39,7 +39,7 @@ class Trade(RiskManagement):
         """
         super().__init__(**kwargs)
 
-        self.symbol = kwargs.get("symbol", "MSFT")
+        self.symbol = kwargs.get("symbol", "SPY")
         self.expert_name = kwargs.get("expert_name", "bbstrader")
         self.expert_id = kwargs.get("expert_id", 9818)
         self.version = kwargs.get("version", "1.0")
@@ -48,7 +48,7 @@ class Trade(RiskManagement):
         self.start = kwargs.get("start_time", "6:30")
         self.finishing = kwargs.get("finishing_time", "19:30")
         self.end = kwargs.get("ending_time", "20:30")
-        self.tf = kwargs.get("time_frame")
+        self.tf = kwargs.get("time_frame", 'D1')
 
         self.lot = self.get_lot()
         self.stop_loss = self.get_stop_loss()
@@ -64,6 +64,7 @@ class Trade(RiskManagement):
         self.buy_positions = []
         self.sell_positions = []
         self.opened_positions = []
+        self.opened_orders = []
         self.break_even_status = []
 
         print("\nInitializing the basics.")
@@ -77,7 +78,7 @@ class Trade(RiskManagement):
         time.sleep(1)
         print()
         self.risk_managment()
-        print("║═════════════ Everything is oK : Running ....  ═══════║")
+        print("║═════════════ Everything is oK : Running ....  ═══════║\n")
 
     def initialize(self):
         """
@@ -290,112 +291,130 @@ class Trade(RiskManagement):
                     writer.writerow([stat, value])
             print(f"Session statistics saved to {filepath}")
 
-    def open_buy_position(self, id=None, mm=True, comment=""):
+    def open_buy_position(
+        self,
+        action: str = 'BMKT',
+        price: int = None,
+        mm: bool = True,
+        id: int = None,
+        comment: str = ""
+    ):
         """
         Open a Buy positin
 
         Parameters
         ==========
+        :parma action (str): 'BMKT' for Market orders 
+            or 'BLMT', 'BSTP','BSTPLMT' for pending orders
+        :price (float) : The price at which to open an order
         :param id (int) : The strategy id or expert Id
         :param mm (bool) : Weither to put stop loss and tp or not
         :param comment (str) : The comment for the closing position
         """
         Id = id if id is not None else self.expert_id
         point = Mt5.symbol_info(self.symbol).point
-        price = Mt5.symbol_info_tick(self.symbol).ask
+        if action != 'BMKT':
+            assert price is not None
+            _price = price
+        else:
+            _price = Mt5.symbol_info_tick(self.symbol).ask
         digits = Mt5.symbol_info(self.symbol).digits
 
         lot = self.get_lot()
         stop_loss = self.get_stop_loss()
         take_profit = self.get_take_profit()
         deviation = self.get_deviation()
+        request = {
+            "action": Mt5.TRADE_ACTION_DEAL,
+            "symbol": self.symbol,
+            "volume": float(lot),
+            "type": Mt5.ORDER_TYPE_BUY,
+            "price": _price,
+            "deviation": deviation,
+            "magic": Id,
+            "comment": comment,
+            "type_time": Mt5.ORDER_TIME_GTC,
+            "type_filling": Mt5.ORDER_FILLING_FOK,
+        }
         if mm:
-            request = {
-                "action": Mt5.TRADE_ACTION_DEAL,
-                "symbol": self.symbol,
-                "volume": float(lot),
-                "type": Mt5.ORDER_TYPE_BUY,
-                "price": price,
-                "sl": price - stop_loss * point,
-                "tp": price + take_profit * point,
-                "deviation": deviation,
-                "magic": Id,
-                "comment": comment,
-                "type_time": Mt5.ORDER_TIME_GTC,
-                "type_filling": Mt5.ORDER_FILLING_FOK,
-            }
-        else:
-            request = {
-                "action": Mt5.TRADE_ACTION_DEAL,
-                "symbol": self.symbol,
-                "volume": float(lot),
-                "type": Mt5.ORDER_TYPE_BUY,
-                "price": price,
-                "tp": (price + take_profit * point),
-                "deviation": deviation,
-                "magic": Id,
-                "comment": comment,
-                "type_time": Mt5.ORDER_TIME_GTC,
-                "type_filling": Mt5.ORDER_FILLING_FOK,
-            }
+            request['sl'] = (_price - stop_loss * point)
+            request['tp'] = (_price + take_profit * point)
+        if action != 'BMKT':
+            request["action"] = Mt5.TRADE_ACTION_PENDING
+            request["type"] = self._order_type()[action]
 
         self.break_even(comment)
         if self.check(comment):
-            self.request_result(price, request)
+            self.request_result(_price, request, action)
 
-    def open_sell_position(self, id=None, mm=True, comment=""):
+    def _order_type(self):
+        type = {
+            'BLMT': Mt5.TRADE_ACTION_PENDING,
+            'SLMT': Mt5.ORDER_TYPE_SELL_LIMIT,
+            'BSTP': Mt5.ORDER_TYPE_BUY_STOP,
+            'SSTP': Mt5.ORDER_TYPE_SELL_STOP,
+            'BSTPLMT': Mt5.ORDER_TYPE_BUY_STOP_LIMIT,
+            'SSTPLMT': Mt5.ORDER_TYPE_SELL_STOP_LIMIT
+        }
+        return type
+
+    def open_sell_position(
+        self,
+        action='SMKT',
+        price: int = None,
+        mm: bool = True,
+        id: int = None,
+        comment: str = ""
+    ):
         """
         Open a sell positin
 
         Parameters
         ==========
+        :parma action (str): 'SMKT' for Market orders
+            or 'SLMT', 'SSTP','SSTPLMT' for pending orders
+        :price (float) : The price at which to open an order
         :param id (int) : The strategy id or expert Id
         :param mm (bool) : Weither to put stop loss and tp or not
         :param comment (str) : The comment for the closing position
         """
         Id = id if id is not None else self.expert_id
         point = Mt5.symbol_info(self.symbol).point
-        price = Mt5.symbol_info_tick(self.symbol).bid
+        if action != 'SMKT':
+            assert price is not None
+            _price = price
+        else:
+            _price = Mt5.symbol_info_tick(self.symbol).bid
         digits = Mt5.symbol_info(self.symbol).digits
 
         lot = self.get_lot()
         stop_loss = self.get_stop_loss()
         take_profit = self.get_take_profit()
         deviation = self.get_deviation()
+        request = {
+            "action": Mt5.TRADE_ACTION_DEAL,
+            "symbol": self.symbol,
+            "volume": float(lot),
+            "type": Mt5.ORDER_TYPE_SELL,
+            "price": _price,
+            "deviation": deviation,
+            "magic": Id,
+            "comment": comment,
+            "type_time": Mt5.ORDER_TIME_GTC,
+            "type_filling": Mt5.ORDER_FILLING_FOK,
+        }
         if mm:
-            request = {
-                "action": Mt5.TRADE_ACTION_DEAL,
-                "symbol": self.symbol,
-                "volume": float(lot),
-                "type": Mt5.ORDER_TYPE_SELL,
-                "price": price,
-                "sl": (price + stop_loss * point),
-                "tp": (price - take_profit * point),
-                "deviation": deviation,
-                "magic": Id,
-                "comment": comment,
-                "type_time": Mt5.ORDER_TIME_GTC,
-                "type_filling": Mt5.ORDER_FILLING_FOK,
-            }
-        else:
-            request = {
-                "action": Mt5.TRADE_ACTION_DEAL,
-                "symbol": self.symbol,
-                "volume": float(lot),
-                "type": Mt5.ORDER_TYPE_SELL,
-                "price": price,
-                "tp": (price - take_profit * point),
-                "deviation": deviation,
-                "magic": Id,
-                "comment": comment,
-                "type_time": Mt5.ORDER_TIME_GTC,
-                "type_filling": Mt5.ORDER_FILLING_FOK,
-            }
+            request["sl"] = (_price + stop_loss * point)
+            request["tp"] = (_price - take_profit * point)
+        if action != 'SMKT':
+            request["action"] = Mt5.TRADE_ACTION_PENDING
+            request["type"] = self._order_type()[action]
+
         self.break_even(comment)
         if self.check(comment):
-            self.request_result(price, request)
+            self.request_result(_price, request, action)
 
-    def request_result(self, price, request):
+    def request_result(self, price, request, type):
         """
         Check if a trading order has been sent correctly
 
@@ -405,6 +424,8 @@ class Trade(RiskManagement):
         :param request (dict()): A trade request to sent to Mt5.order_sent()
             all detail in request can be found on:
               https://www.mql5.com/en/docs/python_metatrader5/mt5ordersend_py
+        :param type (str): The type of the order 
+            (BMKT, SMKT, BLMT, SLMT, BSTP, SSTP, BSTPLMT, SSTPLMT) 
         """
         # Send a trading request
         # Check the execution result
@@ -427,44 +448,52 @@ class Trade(RiskManagement):
             tries += 1
         # Print the result
         if result.retcode == Mt5.TRADE_RETCODE_DONE:
-            self.opened_positions.append(result.order)
+            if type != "BMKT" or type != "SMKT":
+                self.opened_orders.append(result.order)
             now = datetime.now().strftime("%H:%M:%S")
             print(
-                f"\nOrder Sent On {self.symbol}, Lot(s): {result.volume}, "
-                f"Sl: {self.get_stop_loss()}, Tp: {self.get_take_profit()} at {now}"
+                f"\nOrder #{result.order} Sent On {self.symbol}, Price: @{price} \n"
+                f"Lot(s): {result.volume}, Sl: {self.get_stop_loss()}, "
+                f"Tp: {self.get_take_profit()}, Time: {now}"
             )
             time.sleep(0.1)
-            positions = Mt5.positions_get(symbol=self.symbol)
-            for position in positions:
-                if position.ticket == result.order:
-                    if position.type == 0:
-                        order_type = "Buy"
-                        self.buy_positions.append(position.ticket)
-                    else:
-                        order_type = "Sell"
-                        self.sell_positions.append(position.ticket)
-                    profit = round(self.get_account_info().profit, 5)
-                    print(
-                        f"{order_type}, Position Opened at @{round(position.price_open,5)}, "
-                        f"Sl: at @{position.sl} Tp: at @{position.tp}\n"
-                    )
-                    print(
-                        f"== Open Positions on {self.symbol}: {len(positions)} == Open PnL: {profit} "
-                        f"{self.get_account_info().currency}\n"
-                    )
+            if type == "BMKT" or type == "SMKT":
+                self.opened_positions.append(result.order)
+                positions = Mt5.positions_get(symbol=self.symbol)
+                for position in positions:
+                    if position.ticket == result.order:
+                        if position.type == 0:
+                            order_type = "Buy"
+                            self.buy_positions.append(position.ticket)
+                        else:
+                            order_type = "Sell"
+                            self.sell_positions.append(position.ticket)
+                        profit = round(self.get_account_info().profit, 5)
+                        print(
+                            f"{order_type}, Position Opened at @{round(position.price_open,5)}, "
+                            f"Sl: at @{position.sl} Tp: at @{position.tp}\n"
+                        )
+                        print(
+                            f"== Open Positions on {self.symbol}: {len(positions)} == Open PnL: {profit} "
+                            f"{self.get_account_info().currency}\n"
+                        )
 
     def open_position(
         self,
+        action: str = ...,
         buy: bool = False,
         sell: bool = False,
         id: int = None,
         mm: bool = True,
         comment: str = ""
     ):
-        """Open a buy or sell position.
+        """
+        Open a buy or sell position.
 
         Parameters
         ==========
+        :param action (str): 'BMKT' or 'SMKT' for Market orders
+            or 'BLMT', 'SLMT', 'BSTP', 'SSTP', 'BSTPLMT', 'SSTPLMT' for pending orders
         :param buy (bool) : A boolean True or False
         :param sell (bool): A boolean True or False
         :param id (int) : The strategy id or expert Id
@@ -472,9 +501,18 @@ class Trade(RiskManagement):
         :param comment (str) : The comment for the closing position
         """
         if buy:
-            self.open_buy_position(id=id, mm=mm, comment=comment)
+            self.open_buy_position(
+                action=action, id=id, mm=mm, comment=comment)
         if sell:
-            self.open_sell_position(id=id, mm=mm, comment=comment)
+            self.open_sell_position(
+                action=action, id=id, mm=mm, comment=comment)
+
+    @property
+    def get_opened_orders(self):
+        """ Return all opened order's tickets"""
+        if len(self.opened_orders) != 0:
+            return self.opened_orders
+        return None
 
     @property
     def get_opened_positions(self):
@@ -504,6 +542,27 @@ class Trade(RiskManagement):
         if len(self.break_even_status) != 0:
             return self.break_even_status
         return None
+
+    def get_current_open_orders(self, id=None):
+        """Get All current open orders's tickets
+
+        Parameters
+        ==========
+        :param id (int) : The strategy id or expert Id
+        """
+        orders = Mt5.orders_get(symbol=self.symbol)
+        Id = id if id is not None else self.expert_id
+        current_orders = []
+        if len(orders) != 0:
+            for order in orders:
+                if order.magic == Id:
+                    current_orders.append(order.ticket)
+            if len(current_orders) != 0:
+                return current_orders
+            else:
+                return None
+        else:
+            return None
 
     def get_current_open_positions(self, id=None):
         """Get All current open position's tickets
@@ -589,7 +648,7 @@ class Trade(RiskManagement):
         if len(positions) != 0:
             for position in positions:
                 if (position.type == 0
-                        and position.magic == Id
+                            and position.magic == Id
                         ):
                     buys.append(position.ticket)
             if len(buys) != 0:
@@ -612,7 +671,7 @@ class Trade(RiskManagement):
         if len(positions) != 0:
             for position in positions:
                 if (position.type == 1
-                        and position.magic == Id
+                    and position.magic == Id
                     ):
                     sells.append(position.ticket)
             if len(sells) != 0:
@@ -752,7 +811,7 @@ class Trade(RiskManagement):
             _price = break_even_price if price is None else price
             _level = break_even_level if level is None else level
 
-            if Mt5.symbol_info_tick(self.symbol).ask > level:
+            if Mt5.symbol_info_tick(self.symbol).ask > _level:
                 # Set the stop loss to break even
                 request = {
                     "action": Mt5.TRADE_ACTION_SLTP,
@@ -770,7 +829,7 @@ class Trade(RiskManagement):
             _price = break_even_price if price is None else price
             _level = break_even_level if level is None else level
 
-            if Mt5.symbol_info_tick(self.symbol).bid < level:
+            if Mt5.symbol_info_tick(self.symbol).bid < _level:
                 # Set the stop loss to break even
                 request = {
                     "action": Mt5.TRADE_ACTION_SLTP,
@@ -893,7 +952,7 @@ class Trade(RiskManagement):
         if len(positions) != 0:
             for position in positions:
                 if (position.ticket == ticket
-                            and position.magic == Id
+                        and position.magic == Id
                         ):
                     buy = position.type == 0
                     sell = position.type == 1
@@ -1093,12 +1152,10 @@ class Trade(RiskManagement):
             inter_day_diff = 3 * 24 * 60
             total_minutes = inter_day_diff + intra_day_diff
             return total_minutes
-        else: 
-            # claculate number of minute from the end and to the start 
+        else:
+            # claculate number of minute from the end to the start
             start = datetime.strptime(self.start, '%H:%M')
             end = datetime.strptime(self.end, '%H:%M')
             minutes = (end - start).total_seconds() // 60
             sleep_time = (24*60) - minutes
             return sleep_time
-
-

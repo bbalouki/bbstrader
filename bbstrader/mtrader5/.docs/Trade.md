@@ -60,6 +60,9 @@ Processes the result of a trade request and handles retries for failed attempts.
 #### `open_position`
 Convenience method to open either a buy or sell position.
 
+#### `get_opened_orders`
+Returns a list of all opened orders tickets.
+
 #### `get_opened_positions`
 Returns a list of all opened position tickets.
 
@@ -68,6 +71,9 @@ Retrieve lists of buy, sell, and break-even position tickets, respectively.
 
 #### `get_current_open_positions`
 Gets all current open positions for the specified symbol.
+
+#### `get_current_open_orders`
+Gets all current open orders for the specified symbol.
 
 #### `get_current_win_trades`
 Identifies profitable trades that have reached or exceeded the break-even point.
