@@ -134,9 +134,7 @@ class Rates:
             data = data[['Date', 'Open', 'High',
                          'Low', 'Close', 'Adj Close', 'Volume']]
             data['Date'] = pd.to_datetime(data['Date'], unit='s')
-            data['Returns'] = data['Adj Close'].pct_change()
-            data.dropna(inplace=True)
-            data.set_index('Date', inplace=True)
+            data['Returns'] = data['Adj Close'].pct_change().dropna()
         return data
 
     def get_history(
