@@ -62,8 +62,8 @@ class RiskManagement(Account):
         """
         super().__init__()
         self.symbol = kwargs.get("symbol")
-        self.start_time = kwargs.get("start_time")
-        self.finishing_time = kwargs.get("finishing_time")
+        self.start_time = kwargs.get("start_time", "6:30")
+        self.finishing_time = kwargs.get("finishing_time","19:30")
         self.max_trades = kwargs.get("max_trades")
         self.std = kwargs.get("std_stop", False)
         self.pchange = kwargs.get("pchange_sl")
@@ -90,7 +90,7 @@ class RiskManagement(Account):
             if not isinstance(self.be, int) or self.be <= 0:
                 raise ValueError("be must be a positive integer number")
 
-        self.timeframe = kwargs.get("time_frame")
+        self.timeframe = kwargs.get("time_frame", 'D1')
         if self.timeframe not in TF_MAPPING:
             raise ValueError("Unsupported time frame")
         elif self.timeframe == 'D1':
@@ -494,4 +494,7 @@ class RiskManagement(Account):
             return be
 
     def is_risk_ok(self) -> bool:
-        return self.risk_level() <= self.max_risk
+        if self.risk_level() <= self.max_risk:
+            return True
+        else:
+            return False

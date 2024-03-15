@@ -134,7 +134,9 @@ class Rates:
             data = data[['Date', 'Open', 'High',
                          'Low', 'Close', 'Adj Close', 'Volume']]
             data['Date'] = pd.to_datetime(data['Date'], unit='s')
-            data['Returns'] = data['Adj Close'].pct_change().dropna()
+            data['Returns'] = data['Adj Close'].pct_change()
+            data.dropna(inplace=True)
+            data.set_index('Date', inplace=True)
         return data
 
     def get_history(
@@ -157,7 +159,7 @@ class Rates:
 
         Returns
         - Returns bars as the dataframe with the 
-            time, open, high, low, close, tick_volume, spread and real_volume columns. 
+            'Date', 'Open', 'High', 'Low', 'Close','Adj Close', 'Volume'. 
         - Returns None in case of an error.
 
         Example:
@@ -176,19 +178,27 @@ class Rates:
             self.symbol, self.time_frame, date_from, date_to)
         if len(rates) != None:
             # create DataFrame out of the obtained data
-            rates_frame = pd.DataFrame(rates)
-            # convert time in seconds into the 'datetime' format
-            rates_frame['time'] = pd.to_datetime(rates_frame['time'], unit='s')
+            data = pd.DataFrame(rates)
+            data = data[['time', 'open', 'high',
+                         'low', 'close', 'tick_volume']]
+            data.columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume']
+            data['Adj Close'] = data['Close']
+            # Reordering the columns
+            data = data[['Date', 'Open', 'High',
+                         'Low', 'Close', 'Adj Close', 'Volume']]
+            data['Date'] = pd.to_datetime(data['Date'], unit='s')
+            data['Returns'] = data['Adj Close'].pct_change()
+            data.dropna(inplace=True)
+            data.set_index('Date', inplace=True)
+            if save:
+                file = f"{self.symbol}.csv"
+                data.to_csv(file)
+            return data
         else:
             raise Exception(
                 f"Sorry we can't get the history, error={Mt5.last_error()}")
+            return None
 
-        # display data
-        print("\nDisplay dataframe with data")
-        print(rates_frame.head(10))
-        if save:
-            file = f"{self.symbol}.csv"
-            rates_frame.to_csv(file)
 
     def initialize(self):
         if not Mt5.initialize():
