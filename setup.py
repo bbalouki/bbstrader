@@ -2,8 +2,8 @@ from setuptools import setup
 
 import sys
 
-if sys.version_info < (3,1):
-    sys.exit("Only Python 3.1 and greater is supported") 
+if sys.version_info < (3,9):
+    sys.exit("Only Python 3.9 and greater is supported") 
 
 setup(
     name='bbstrader',
