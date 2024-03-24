@@ -1,4 +1,5 @@
 .env
+.vscode
 test.py
 __pycache__
 Researchs
