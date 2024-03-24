@@ -111,11 +111,11 @@ def sma_trading(
             ma_data = sig_rate.get_close.values
             signal = strategy.calculate_signals(ma_data)
             print("Calculating signal ...")
-            print(f"\nSIGNAL : {signal}")
             comment = f"{trade.expert_name}@{trade.version}"
             now = datetime.now().strftime("%H:%M:%S")
             if trade.trading_time() and today in TRADING_DAYS:
                 if signal is not None:
+                    print(f"\nSIGNAL : {signal}")
                     if signal == "EXIT" and short_market:
                         print(f'\nTime: {now}')
                         trade.close_all_sells()
@@ -171,10 +171,12 @@ def sma_trading(
         if period.lower() == 'month':
             if trade.days_end() and today != 'Friday':
                 sleep_time = trade.sleep_time()
+                print("\nEnd of the Day !!!")
                 time.sleep(60 * sleep_time)
                 num_days += 1
 
             elif trade.days_end() and today == 'Friday':
+                print("\nEnd of the Week !!!")
                 sleep_time = trade.sleep_time(weekend=True)
                 time.sleep(60 * sleep_time)
                 num_days += 1
@@ -345,10 +347,10 @@ def pair_trading(
 
             print("\nCalculating Signals ...")
             signals = strategy.calculate_signals(prices)
-            print(f'SIGNALS : {signals}')
             comment = f"{p0.expert_name}@{p0.version}"
 
             if signals is not None:
+                print(f'SIGNALS : {signals}')
                 now = datetime.now().strftime("%H:%M:%S")
                 if p0.trading_time() and today in TRADING_DAYS:
                     p1_signal = signals[pair[1]]
@@ -502,11 +504,13 @@ def pair_trading(
 
         if period.lower() == 'month':
             if p0.days_end() and today != 'Friday':
+                print("\nEnd of the Day !!!")
                 sleep_time = p0.sleep_time()
                 time.sleep(60 * sleep_time)
                 num_days += 1
 
             elif p0.days_end() and today == 'Friday':
+                print("\nEnd of the Week !!!")
                 sleep_time = p0.sleep_time(weekend=True)
                 time.sleep(60 * sleep_time)
                 num_days += 1
@@ -643,17 +647,17 @@ def ou_trading(
             ou_returns = Rates(trade.symbol, tf, 0, p)
             returns_val = ou_returns.get_returns.values
             signal = strategy.calculate_signals(returns_val, p=p, n=n)
-            print(f"SIGNAL : {signal}")
             comment = f"{trade.expert_name}@{trade.version}"
             now = datetime.now().strftime("%H:%M:%S")
             if trade.trading_time() and today in TRADING_DAYS:
                 if signal is not None:
+                    print(f"SIGNAL : {signal}")
                     if signal == "LONG" and short_market:
-                        print(f'Time: {now}')
+                        print(f'\nTime: {now}')
                         trade.close_all_sells()
                         short_market  = False
                     elif signal == "SHORT" and long_market:
-                        print(f'Time: {now}')
+                        print(f'\nTime: {now}')
                         trade.close_all_buys()
                         long_market =  False
                     if current_regime is not None:
@@ -694,7 +698,7 @@ def ou_trading(
 
                         elif signal == "LONG" and long_market:
                             print(f'\nTime: {now}')
-                            print("\nSorry Risk not allowed !!!")
+                            print("Sorry Risk not allowed !!!")
                             check(buys, sells)
 
                         if signal == "SHORT" and not short_market:
@@ -729,11 +733,13 @@ def ou_trading(
 
         if period.lower() == 'month':
             if trade.days_end() and today != 'Friday':
+                print("\nEnd of the Day !!!")
                 sleep_time = trade.sleep_time()
                 time.sleep(60 * sleep_time)
                 num_days += 1
 
             elif trade.days_end() and today == 'Friday':
+                print("\nEnd of the Week !!!")
                 sleep_time = trade.sleep_time(weekend=True)
                 time.sleep(60 * sleep_time)
                 num_days += 1
@@ -860,12 +866,12 @@ def arch_trading(
             arch_returns = strategy.load_and_prepare_data(rates)
             window_data = arch_returns['diff_log_return'].iloc[-k:]
             signal = strategy.calculate_signals(window_data)
-            print(f"SIGNAL : {signal}")
 
             comment = f"{trade.expert_name}@{trade.version}"
             now = datetime.now().strftime("%H:%M:%S")
             if trade.trading_time() and today in TRADING_DAYS:
                 if signal is not None:
+                    print(f"SIGNAL : {signal}")
                     if signal == "LONG" and short_market:
                         print(f'\nTime: {now}')
                         trade.close_all_sells()
@@ -881,7 +887,7 @@ def arch_trading(
                                     print("Sending buy Order ....")
                                     trade.open_buy_position(mm=mm, comment=comment)
                                 else:
-                                    print(f'Time: {now}')
+                                    print(f'\nTime: {now}')
                                     check(buys, sells)
 
                             elif signal == "LONG" and long_market:
@@ -912,7 +918,7 @@ def arch_trading(
 
                         elif signal == "LONG" and long_market:
                             print(f'\nTime: {now}')
-                            print("\nSorry Risk not allowed !!!")
+                            print("Sorry Risk not allowed !!!")
                             check(buys, sells)
 
                         if signal == "SHORT" and not short_market:
@@ -950,11 +956,13 @@ def arch_trading(
 
         if period.lower() == 'month':
             if trade.days_end() and today != 'Friday':
+                print("\nEnd of the Day !!!")
                 sleep_time = trade.sleep_time()
                 time.sleep(60 * sleep_time)
                 num_days += 1
 
             elif trade.days_end() and today == 'Friday':
+                print("\nEnd of the Week !!!")
                 sleep_time = trade.sleep_time(weekend=True)
                 time.sleep(60 * sleep_time)
                 num_days += 1

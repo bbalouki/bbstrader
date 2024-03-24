@@ -349,7 +349,7 @@ class Trade(RiskManagement):
 
     def _order_type(self):
         type = {
-            'BLMT': Mt5.TRADE_ACTION_PENDING,
+            'BLMT': Mt5.ORDER_TYPE_BUY_LIMIT,
             'SLMT': Mt5.ORDER_TYPE_SELL_LIMIT,
             'BSTP': Mt5.ORDER_TYPE_BUY_STOP,
             'SSTP': Mt5.ORDER_TYPE_SELL_STOP,
@@ -470,8 +470,8 @@ class Trade(RiskManagement):
                             self.sell_positions.append(position.ticket)
                         profit = round(self.get_account_info().profit, 5)
                         print(
-                            f"{order_type}, Position Opened at @{round(position.price_open,5)}, "
-                            f"Sl: at @{position.sl} Tp: at @{position.tp}\n"
+                            f"{order_type} Position Opened, Price: @{round(position.price_open,5)}, "
+                            f"Sl: @{position.sl} Tp: @{position.tp}\n"
                         )
                         print(
                             f"== Open Positions on {self.symbol}: {len(positions)} == Open PnL: {profit} "
@@ -817,7 +817,8 @@ class Trade(RiskManagement):
                     "action": Mt5.TRADE_ACTION_SLTP,
                     "type": Mt5.ORDER_TYPE_SELL_STOP,
                     "position": position.ticket,
-                    "sl": round(_price, digits)
+                    "sl": round(_price, digits),
+                    "tp": position.tp
                 }
                 self._break_even_request(
                     position.ticket, round(_price, digits), request)
@@ -835,7 +836,8 @@ class Trade(RiskManagement):
                     "action": Mt5.TRADE_ACTION_SLTP,
                     "type": Mt5.ORDER_TYPE_BUY_STOP,
                     "position": position.ticket,
-                    "sl": round(_price, digits)
+                    "sl": round(_price, digits),
+                    "tp": position.tp
                 }
                 self._break_even_request(
                     position.ticket, round(_price, digits), request)

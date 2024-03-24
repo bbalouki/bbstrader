@@ -1,4 +1,7 @@
 .env
+.vscode
+build
 test.py
 __pycache__
 Researchs
+bbstrader.egg-info
