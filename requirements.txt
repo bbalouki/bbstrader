@@ -1,11 +1,11 @@
 MetaTrader5
 pandas
-numpy
+numpy==1.26.4
 yfinance
 scikit-learn
 scipy
-ibapi
 hmmlearn
+pmdarima
 arch
 seaborn
 statsmodels
