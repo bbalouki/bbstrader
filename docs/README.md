@@ -9,10 +9,10 @@ BBSTrader is a trading system suite developed for MetaTrader 5 (MT5) and IBKR pl
 
 `bbstrader` is comprised of several key modules, each focus on specific aspects of trading strategy development and execution:
 
-- **Backtesting Module**: Enables traders to rigorously test their trading strategies using historical data to evaluate performance before live deployment.
-- **Trading Strategies Module**: A collection of predefined trading strategies, including ARIMA+GARCH models, Kalman Filters, Ornstein-Uhlenbeck processes, and Simple Moving Averages, equipped with risk management through Hidden Markov Models.
+- [Backtesting Module](btengine/README.md): Enables traders to rigorously test their trading strategies using historical data to evaluate performance before live deployment.
+- [Trading Strategies Module](strategies/README.md): A collection of predefined trading strategies, including ARIMA+GARCH models, Kalman Filters, Ornstein-Uhlenbeck processes, and Simple Moving Averages, equipped with risk management through Hidden Markov Models.
 - **MT5 Execution Module**: Facilitates the direct execution of trading strategies on the MetaTrader 5 platform, supporting real-time trading across multiple financial instruments.
-- **Modles Module**: Serves as a framework for implementing various types of financial models (risk managment models, Machine learing models etc).
+- [Modles Module](models/README.md): Serves as a framework for implementing various types of financial models (risk managment models, Machine learing models etc).
 
 ## Features
 
@@ -63,19 +63,19 @@ if __name__ == '__main__':
 ```
 ### Backtesting Results
 #### Hidden States
-![Hidden States](/bbstrader/btengine/assets/klf_hidden_states.png)
+![Hidden States](../bbstrader/btengine/assets/klf_hidden_states.png)
 
 #### Performance
-![Performance](/bbstrader/btengine/assets/klf_performance.png)
+![Performance](../bbstrader/btengine/assets/klf_performance.png)
 
 #### Risk Return
-![Risk Return](/bbstrader/btengine/assets/klf_risk_return.png)
+![Risk Return](../bbstrader/btengine/assets/klf_risk_return.png)
 
 #### Returns Distribution
-![Returns Distribution](/bbstrader/btengine/assets/klf_returns_distribution.png)
+![Returns Distribution](../bbstrader/btengine/assets/klf_returns_distribution.png)
 
 #### Portfolio
-![Portfolio](/bbstrader/btengine/assets/klf_summary_stats.png)
+![Portfolio](../bbstrader/btengine/assets/klf_summary_stats.png)
 
 ## Customization and Contribution
 
