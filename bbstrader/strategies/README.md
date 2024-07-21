@@ -18,7 +18,7 @@ The Trading Strategies Module is a Python-based framework designed to facilitate
 3. Install the required Python packages. While the exact dependencies may vary based on the strategy, the common ones include:
 
 ```bash
-pip install numpy pandas matplotlib seaborn scipy statsmodels arch filterpy
+pip install bbstrader
 ```
 
 ## Usage
@@ -26,7 +26,7 @@ pip install numpy pandas matplotlib seaborn scipy statsmodels arch filterpy
 Each strategy within the module is encapsulated in its class, designed to be flexible and extendable. Here’s a basic example to use the ARIMA+GARCH strategy:
 
 ```python
-from bbstrader.strategies.arch import ArimaGarchStrategy
+from bbstrader.strategies import ArimaGarchStrategy
 import pandas as pd
 
 # Load your historical price data into a DataFrame

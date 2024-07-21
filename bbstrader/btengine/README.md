@@ -29,7 +29,7 @@ This Backtesting Module provides a comprehensive suite of tools to test trading 
 3. Install required dependencies:
 
 ```bash
-pip install pandas numpy matplotlib seaborn
+pip install bbstrader
 ```
 
 ## Usage
@@ -42,10 +42,10 @@ pip install pandas numpy matplotlib seaborn
 Example:
 
 ```python
-from backtest import Backtest
-from data import HistoricCSVDataHandler
-from execution import SimulatedExecutionHandler
-from portfolio import Portfolio
+from bbstrader.btengine import (
+    Backtest, HistoricCSVDataHandler,
+    SimulatedExecutionHandler, Portfolio
+)
 from your_strategy_file import YourStrategy
 
 if __name__ == "__main__":
@@ -86,5 +86,4 @@ You can reads docs in `/btengine/.docs/` for more detail on implemention of each
 Contributions to improve the backtesting module or add new features are welcome. Please submit pull requests with your proposed changes.
 
 ## License
-
 This project is open-source and available under the MIT License.

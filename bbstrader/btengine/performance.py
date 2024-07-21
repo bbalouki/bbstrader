@@ -17,15 +17,12 @@ def create_sharpe_ratio(returns, periods=252):
     Create the Sharpe ratio for the strategy, based on a
     benchmark of zero (i.e. no risk-free rate information).
 
-    Parameters
-    ==========
-    :param returns : A pandas Series representing period percentage returns.
-    :param periods (int) :
-        Daily (252), Hourly (252*6.5), Minutely(252*6.5*60) etc.
+    Args:
+        returns : A pandas Series representing period percentage returns.
+        periods (int): Daily (252), Hourly (252*6.5), Minutely(252*6.5*60) etc.
 
-    Returns
-    =======
-    :return S (float) : Sharpe ratio
+    Returns:
+        S (float): Sharpe ratio
     """
     if np.std(returns) != 0:
         return np.sqrt(periods) * (np.mean(returns)) / np.std(returns)
@@ -40,15 +37,12 @@ def create_sortino_ratio(returns, periods=252):
     Create the Sortino ratio for the strategy, based on a
     benchmark of zero (i.e. no risk-free rate information).
 
-    Parameters
-    ==========
-    :param returns : A pandas Series representing period percentage returns.
-    :param periods (int) :
-        Daily (252), Hourly (252*6.5), Minutely(252*6.5*60) etc.
+    Args:
+        returns : A pandas Series representing period percentage returns.
+        periods (int): Daily (252), Hourly (252*6.5), Minutely(252*6.5*60) etc.
 
-    Returns
-    =======
-    :return S (float) : Sortino ratio
+    Returns:
+        S (float): Sortino ratio
     """
     # Calculate the annualized return
     annualized_return = np.power(1 + np.mean(returns), periods) - 1
@@ -68,16 +62,11 @@ def create_drawdowns(pnl):
     as well as the duration of the drawdown. Requires that the
     pnl_returns is a pandas Series.
 
-    Parameters
-    ==========
-    :param pnl : A pandas Series 
-        representing period percentage returns.
+    Args:
+        pnl : A pandas Series representing period percentage returns.
 
-    Returns
-    =======
-    :return (tuple) : (drawdown, 
-        (duration - high-water mark), duration
-    ).
+    Returns:
+        (tuple): drawdown, duration - high-water mark, duration.
     """
     # Calculate the cumulative returns curve
     # and set up the High Water Mark
@@ -101,26 +90,23 @@ def create_drawdowns(pnl):
 
 def plot_performance(df, title):
     """
-    Plot the performance of the strategy :
+    Plot the performance of the strategy:
         - (Portfolio value,  %)
         - (Period returns, %)
         - (Drawdowns, %)
-    
-    Parameters
-    ==========
-    :param df : DataFrame
-        The DataFrame containing the strategy returns
-        and drawdowns.
-    :param title : str
-        The title of the plot.
+
+    Args:
+        df (pd.DataFrame):
+        The DataFrame containing the strategy returns and drawdowns.
+        title (str): The title of the plot.
+
     Note:
-    -----
-    The DataFrame should contain the following columns:
-        - Datetime : The timestamp of the data
-        - Equity Curve : The portfolio value
-        - Returns : The period returns
-        - Drawdown : The drawdowns
-        - Total : The total returns
+        The DataFrame should contain the following columns:
+            - Datetime : The timestamp of the data
+            - Equity Curve : The portfolio value
+            - Returns : The period returns
+            - Drawdown : The drawdowns
+            - Total : The total returns
     """
     data = df.copy()
     data = data.sort_values(by='Datetime')
@@ -160,25 +146,20 @@ def plot_returns_and_dd(df, benchmark: str, title):
     Plot the returns and drawdowns of the strategy
     compared to a benchmark.
 
-    Parameters
-    ==========
-    :param df : DataFrame
-        The DataFrame containing the strategy returns
-        and drawdowns.
-    :param benchmark : str
-        The ticker symbol of the benchmark to compare
-        the strategy to.
-    :param title : str
-        The title of the plot.
-    
+    Args:
+        df (pd.DataFrame): 
+            The DataFrame containing the strategy returns and drawdowns.
+        benchmark (str): 
+            The ticker symbol of the benchmark to compare the strategy to.
+        title (str): The title of the plot.
+
     Note:
-    -----
-    The DataFrame should contain the following columns:
-        - Datetime : The timestamp of the data
-        - Equity Curve : The portfolio value
-        - Returns : The period returns
-        - Drawdown : The drawdowns
-        - Total : The total returns
+        The DataFrame should contain the following columns:
+            - Datetime : The timestamp of the data
+            - Equity Curve : The portfolio value
+            - Returns : The period returns
+            - Drawdown : The drawdowns
+            - Total : The total returns
     """
     # Ensure data is sorted by Datetime
     data = df.copy()
@@ -242,21 +223,18 @@ def plot_monthly_yearly_returns(df, title):
     """
     Plot the monthly and yearly returns of the strategy.
 
-    Parameters
-    ==========
-    :param df : DataFrame
-        The DataFrame containing the strategy returns
-        and drawdowns.
-    :param title : str
-        The title of the plot.
+    Args:
+        df (pd.DataFrame): 
+        The DataFrame containing the strategy returns and drawdowns.
+        title (str): The title of the plot.
+
     Note:
-    -----
-    The DataFrame should contain the following columns:
-        - Datetime : The timestamp of the data
-        - Equity Curve : The portfolio value
-        - Returns : The period returns
-        - Drawdown : The drawdowns
-        - Total : The total returns
+        The DataFrame should contain the following columns:
+            - Datetime : The timestamp of the data
+            - Equity Curve : The portfolio value
+            - Returns : The period returns
+            - Drawdown : The drawdowns
+            - Total : The total returns
     """
     equity_df = df.copy()
     equity_df.reset_index(inplace=True)
@@ -269,7 +247,7 @@ def plot_monthly_yearly_returns(df, title):
     # Group by year and month to get monthly returns
     monthly_returns = equity_df['Daily Returns'].groupby(
         [equity_df.index.year, equity_df.index.month]
-        ).apply(lambda x: (1 + x).prod() - 1)
+    ).apply(lambda x: (1 + x).prod() - 1)
 
     # Prepare monthly returns DataFrame
     monthly_returns_df = monthly_returns.unstack(level=-1) * 100
@@ -283,7 +261,7 @@ def plot_monthly_yearly_returns(df, title):
     # Set the aesthetics for the plots
     sns.set_theme(style="darkgrid")
 
-    # Initialize the matplotlib figure, 
+    # Initialize the matplotlib figure,
     # adjust the height_ratios to give more space to the yearly returns
     f, (ax1, ax2) = plt.subplots(2, 1, figsize=(
         12, 8), gridspec_kw={'height_ratios': [2, 1]})
@@ -296,11 +274,8 @@ def plot_monthly_yearly_returns(df, title):
 
     # Create the heatmap with the larger legend
     sns.heatmap(monthly_returns_df, annot=True, fmt=".1f",
-            linewidths=.5, ax=ax1, cbar_kws={"shrink": .8}, cmap=cmap, center=0, vmin=vmin, vmax=vmax)
-
-    # Create the heatmap with the larger legend
-    sns.heatmap(monthly_returns_df, annot=True, fmt=".1f",
-                linewidths=.5, ax=ax1, cbar_kws={"shrink": .8}, cmap=cmap)
+                linewidths=.5, ax=ax1, cbar_kws={"shrink": .8}, 
+                cmap=cmap, center=0, vmin=vmin, vmax=vmax)
 
     # Rotate the year labels on the y-axis to vertical
     ax1.set_yticklabels(ax1.get_yticklabels(), rotation=0)

@@ -1,6 +1,0 @@
-# Data Handler
-One of the goals of an event-driven trading system is to minimise duplication of code between the backtesting element and the live execution element. Ideally it would be optimal to utilise the same signal generation methodology and portfolio management components for both historical testing and live trading. In order for this to work the Strategy object which generates the Signals, and the Portfolio object which provides Orders based on them, must utilise an identical interface to a market feed for both historic and live running.
-
-This motivates the concept of a class hierarchy based on a `DataHandler object`, which givesall subclasses an interface for providing market data to the remaining components within thesystem. In this way any subclass data handler can be "swapped out", without affecting strategy or portfolio calculation.
-
-Specific example subclasses could include `HistoricCSVDataHandler`, `EODHDDataHandler`, `SecuritiesMasterDataHandler`, `IBMarketFeedDataHandler` etc. We are only going to consider the creation of a historic CSV data handler, which will load intraday CSV data for equities in an `Open-Low-High-Close-Adj Close-Volume-Returns` set of bars. This can then be used to `"drip feed"` on a bar-by-bar basis the data into the Strategy and Portfolio classes on every heartbeat of the system, thus avoiding lookahead bias.

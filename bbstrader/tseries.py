@@ -404,6 +404,7 @@ def _hurst(ts):
 
 # Function to calculate Hurst Exponent
 
+
 def hurst(time_series):
     H, c, data_range = compute_Hc(time_series, kind='price', simplified=True)
     return H
@@ -416,7 +417,7 @@ def run_hurst_test(symbol: str, start: str, end: str):
     Mean-Reverting, and Trending).
 
     The Hurst Exponent is used to determine the long-term memory of a time series.
-    
+
     Args:
         symbol (str): A valid stock ticker symbol (e.g., 'AAPL').
         start (str): The start date for the historical data in 'YYYY-MM-DD' format.
@@ -606,7 +607,7 @@ def draw_slope_intercept_changes(prices, state_means):
     plt.show()
 
 
-def run_kalman_filter(etfs: List[str] |Tuple[str, ...], start: str, end: str) -> None:
+def run_kalman_filter(etfs: List[str] | Tuple[str, ...], start: str, end: str) -> None:
     """
     Applies a Kalman filter to a pair of ETF adjusted closing prices within a specified date range
     to estimate the slope and intercept over time.

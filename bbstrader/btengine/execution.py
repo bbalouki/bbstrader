@@ -1,5 +1,6 @@
 import datetime
-from btengine.event import FillEvent
+from .event import FillEvent, OrderEvent
+from queue import Queue
 from abc import ABCMeta, abstractmethod
 
 
@@ -17,14 +18,13 @@ class ExecutionHandler(metaclass=ABCMeta):
     """
 
     @abstractmethod
-    def execute_order(self, event):
+    def execute_order(self, event: OrderEvent):
         """
         Takes an Order event and executes it, producing
         a Fill event that gets placed onto the Events queue.
 
-        Parameters
-        ==========
-        :param event : Contains an Event object with order information.
+        Args:
+            event (OrderEvent): Contains an Event object with order information.
         """
         raise NotImplementedError(
             "Should implement execute_order()"
@@ -42,27 +42,30 @@ class SimulatedExecutionHandler(ExecutionHandler):
     handler.
     """
 
-    def __init__(self, events):
+    def __init__(self, events: Queue):
         """
         Initialises the handler, setting the event queues
         up internally.
-        Parameters:
-        events - The Queue of Event objects.
+
+        Args:
+            events (Queue): The Queue of Event objects.
         """
         self.events = events
 
-    def execute_order(self, event):
+    def execute_order(self, event: OrderEvent):
         """
         Simply converts Order objects into Fill objects naively,
         i.e. without any latency, slippage or fill ratio problems.
 
-        Parameters
-        ==========
-        :param event : Contains an Event object with order information.
+        Args:
+            event (OrderEvent): Contains an Event object with order information.
         """
         if event.type == 'ORDER':
             fill_event = FillEvent(
-                datetime.datetime.utcnow(), event.symbol,
+                datetime.datetime.now(), event.symbol,
                 'ARCA', event.quantity, event.direction, None
             )
             self.events.put(fill_event)
+
+# TODO # Use in live execution
+class MT5Execution(ExecutionHandler):...

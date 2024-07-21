@@ -6,3 +6,4 @@ __pycache__
 Researchs
 bbstrader.egg-info
 WS.code-workspace
+.pytest_cache

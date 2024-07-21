@@ -1,6 +1,13 @@
 import pprint
 import queue
+from queue import Queue
 import time
+from datetime import datetime
+from .data import DataHandler
+from .execution import ExecutionHandler
+from .portfolio import Portfolio
+from .strategy import Strategy
+
 
 class Backtest(object):
     """
@@ -9,33 +16,39 @@ class Backtest(object):
     """
 
     def __init__(
-        self, csv_dir, symbol_list, initial_capital,
-        heartbeat, start_date, data_handler,
-        execution_handler, portfolio, strategy, /, **kwargs
+        self,
+        csv_dir: str,
+        symbol_list: list[str],
+        initial_capital: float,
+        heartbeat: float,
+        start_date: datetime,
+        data_handler: DataHandler,
+        execution_handler: ExecutionHandler,
+        portfolio: Portfolio,
+        strategy: Strategy,
+        /,
+        **kwargs
     ):
         """
         Initialises the backtest.
 
-        Parameters
-        ==========
-
-        :param csv_dir : The hard root to the CSV data directory.
-        :param symbol_list : The list of symbol strings.
-        :param intial_capital : The starting capital for the portfolio.
-        :param heartbeat : Backtest "heartbeat" in seconds
-        :param start_date : The start datetime of the strategy.
-        :param data_handler (Class) : Handles the market data feed.
-        :param execution_handler (Class) : Handles the orders/fills for trades.
-        :param portfolio (Class) : Keeps track of portfolio current
-            and prior positions.
-        :param strategy (Class): Generates signals based on market data.
-        :param kwargs : Optional parameters (See data_handler, portfolio, strategy classes).
+        Args:
+            csv_dir (str): The hard root to the CSV data directory.
+            symbol_list (lsit[str]): The list of symbol strings.
+            intial_capital (float): The starting capital for the portfolio.
+            heartbeat (float): Backtest "heartbeat" in seconds
+            start_date (datetime): The start datetime of the strategy.
+            data_handler (DataHandler) : Handles the market data feed.
+            execution_handler (ExecutionHandler) : Handles the orders/fills for trades.
+            portfolio (Portfolio) : Keeps track of portfolio current and prior positions.
+            strategy (Portfolio): Generates signals based on market data.
+            kwargs (dict): Optional parameters (See data_handler, portfolio, strategy classes).
         """
         self.csv_dir = csv_dir
         self.symbol_list = symbol_list
         self.initial_capital = initial_capital
         self.heartbeat = heartbeat
-        self.start_date = start_date 
+        self.start_date = start_date
 
         self.data_handler_cls = data_handler
         self.execution_handler_cls = execution_handler
@@ -68,13 +81,13 @@ class Backtest(object):
             self.data_handler, self.events, **self.kwargs
         )
         self.portfolio = self.portfolio_cls(
-            self.data_handler, 
+            self.data_handler,
             self.events,
             self.start_date,
             self.initial_capital, **self.kwargs
         )
         self.execution_handler = self.execution_handler_cls(self.events)
-    
+
     def _run_backtest(self):
         """
         Executes the backtest.
@@ -123,7 +136,7 @@ class Backtest(object):
 
         print("\nCreating summary stats...")
         stats = self.portfolio.output_summary_stats()
-        
+
         print("\nCreating equity curve...")
         print(f"{self.portfolio.equity_curve.tail(10)}\n")
         print("==== Summary Stats ====")
