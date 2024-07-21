@@ -40,16 +40,16 @@ class SignalEvent(Event):
         """
         Initialises the SignalEvent.
 
-        Parameters
-        ==========
-        :param strategy_id (int) :The unique identifier for the strategy that
-            generated the signal.
-        :param symbol (str) : The ticker symbol, e.g. 'GOOG'.
-        :param datetime (datetime) : The timestamp at which the signal was generated.
-        :param signal_type (str) : 'LONG' or 'SHORT'.
-        :param quantity (int | float) : An optional integer (or float) representing the order size.
-        :param strength (int | float) : An adjustment factor "suggestion" used to scale
-            quantity at the portfolio level. Useful for pairs strategies.
+        Args:
+            strategy_id (int): The unique identifier for the strategy that
+                generated the signal.
+
+            symbol (str): The ticker symbol, e.g. 'GOOG'.
+            datetime (datetime): The timestamp at which the signal was generated.
+            signal_type (str): 'LONG' or 'SHORT'.
+            quantity (int | float): An optional integer (or float) representing the order size.
+            strength (int | float): An adjustment factor "suggestion" used to scale
+                quantity at the portfolio level. Useful for pairs strategies.
         """
         self.type = 'SIGNAL'
         self.strategy_id = strategy_id
@@ -78,12 +78,11 @@ class OrderEvent(Event):
         a Market order ('MKT') or Limit order ('LMT'), has
         a quantity (integral or float) and its direction ('BUY' or 'SELL').
 
-        Parameters
-        ==========
-        :param symbol (str) : The instrument to trade.
-        :param order_type (str) : 'MKT' or 'LMT' for Market or Limit.
-        :param quantity (int | float): Non-negative number for quantity.
-        :param direction (str) : 'BUY' or 'SELL' for long or short.
+        Args:
+            symbol (str): The instrument to trade.
+            order_type (str): 'MKT' or 'LMT' for Market or Limit. 
+            quantity (int | float): Non-negative number for quantity.            
+            direction (str): 'BUY' or 'SELL' for long or short.
         """
         self.type = 'ORDER'
         self.symbol = symbol
@@ -127,15 +126,14 @@ class FillEvent(Event):
         calculate it based on the trade size and Interactive
         Brokers fees.
 
-        Parameters
-        ==========
-        :param timeindex (datetime) : The bar-resolution when the order was filled.
-        :param symbol (str) : The instrument which was filled.
-        :param exchange (str) : The exchange where the order was filled.
-        :param quantity (int | float) : The filled quantity.
-        :param direction (str) : The direction of fill ('BUY' or 'SELL')
-        :param fill_cost (int | float) : The holdings value in dollars.
-        :param commission (float | None) : An optional commission sent from IB.
+        Args:
+            timeindex (datetime): The bar-resolution when the order was filled.
+            symbol (str): The instrument which was filled.
+            exchange (str): The exchange where the order was filled.
+            quantity (int | float): The filled quantity.
+            direction (str): The direction of fill ('BUY' or 'SELL')
+            fill_cost (int | float): The holdings value in dollars.
+            commission (float | None): An optional commission sent from IB.
         """
         self.type = 'FILL'
         self.timeindex = timeindex
@@ -156,8 +154,7 @@ class FillEvent(Event):
         Brokers fee structure for API, in USD.
         This does not include exchange or ECN fees.
         Based on "US API Directed Orders":
-        https://www.interactivebrokers.com/en/index.php?
-        f=commission&p=stocks2
+        https://www.interactivebrokers.com/en/index.php?f=commission&p=stocks2
         """
         full_cost = 1.3
         if self.quantity <= 500:

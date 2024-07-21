@@ -1,7 +1,8 @@
 import os.path
 import numpy as np
 import pandas as pd
-from btengine.event import MarketEvent
+from .event import MarketEvent
+from queue import Queue
 from abc import ABCMeta, abstractmethod
 
 
@@ -79,14 +80,14 @@ class DataHandler(metaclass=ABCMeta):
 
 class HistoricCSVDataHandler(DataHandler):
     """
-    HistoricCSVDataHandler is designed to read CSV files for
+    `HistoricCSVDataHandler` is designed to read CSV files for
     each requested symbol from disk and provide an interface
     to obtain the "latest" bar in a manner identical to a live
     trading interface.
     """
 
     def __init__(self,
-                 events,
+                 events: Queue,
                  csv_dir: str,
                  symbol_list: list[str]
                  ):
@@ -96,11 +97,10 @@ class HistoricCSVDataHandler(DataHandler):
         It will be assumed that all files are of the form
         'symbol.csv', where symbol is a string in the list.
 
-        Parameters
-        ==========
-        :param events : The Event Queue.
-        :param csv_dir : Absolute directory path to the CSV files.
-        :param symbol_list : A list of symbol strings.
+        Args:
+            events (Queue): The Event Queue.
+            csv_dir (str): Absolute directory path to the CSV files.
+            symbol_list (list[str]): A list of symbol strings.
         """
         self.events = events
         self.csv_dir = csv_dir
@@ -148,14 +148,14 @@ class HistoricCSVDataHandler(DataHandler):
             ].pct_change().dropna()
             self.symbol_data[s] = self.symbol_data[s].iterrows()
 
-    def _get_new_bar(self, symbol):
+    def _get_new_bar(self, symbol: str):
         """
         Returns the latest bar from the data feed.
         """
         for b in self.symbol_data[symbol]:
             yield b
 
-    def get_latest_bar(self, symbol):
+    def get_latest_bar(self, symbol: str):
         """
         Returns the last bar from the latest_symbol list.
         """
@@ -167,7 +167,7 @@ class HistoricCSVDataHandler(DataHandler):
         else:
             return bars_list[-1]
 
-    def get_latest_bars(self, symbol, N=1):
+    def get_latest_bars(self, symbol: str, N=1):
         """
         Returns the last N bars from the latest_symbol list,
         or N-k if less available.
@@ -180,7 +180,7 @@ class HistoricCSVDataHandler(DataHandler):
         else:
             return bars_list[-N:]
 
-    def get_latest_bar_datetime(self, symbol):
+    def get_latest_bar_datetime(self, symbol: str):
         """
         Returns a Python datetime object for the last bar.
         """
@@ -192,7 +192,7 @@ class HistoricCSVDataHandler(DataHandler):
         else:
             return bars_list[-1][0]
 
-    def get_latest_bar_value(self, symbol, val_type):
+    def get_latest_bar_value(self, symbol: str, val_type: str):
         """
         Returns one of the Open, High, Low, Close, Volume or OI
         values from the pandas Bar series object.
@@ -205,7 +205,7 @@ class HistoricCSVDataHandler(DataHandler):
         else:
             return getattr(bars_list[-1][1], val_type)
 
-    def get_latest_bars_values(self, symbol, val_type, N=1):
+    def get_latest_bars_values(self, symbol: str, val_type: str, N=1):
         """
         Returns the last N bar values from the
         latest_symbol list, or N-k if less available.
@@ -232,3 +232,9 @@ class HistoricCSVDataHandler(DataHandler):
                 if bar is not None:
                     self.latest_symbol_data[s].append(bar)
         self.events.put(MarketEvent())
+
+# TODO # Get data from FinancialModelingPrep ()
+class FMPDataHandler(DataHandler):...
+
+# TODO
+class MT5DataHandler(DataHandler):...

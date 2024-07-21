@@ -1,6 +1,11 @@
 import pandas as pd
-from btengine.event import OrderEvent
-from btengine.performance import (
+from .event import (
+    OrderEvent, FillEvent, MarketEvent, SignalEvent
+)
+from queue import Queue
+from datetime import datetime
+from .data import DataHandler
+from .performance import (
     create_drawdowns, plot_performance,
     create_sharpe_ratio, create_sortino_ratio,
     plot_returns_and_dd, plot_monthly_yearly_returns
@@ -16,15 +21,14 @@ class Portfolio(object):
     quantity of positions held.
 
     The holdings DataFrame stores the Cash and total market
-    holdings value of each symbol for a particular
-    time-index, as well as the percentage change in
-    portfolio total across bars.
+    holdings value of each symbol for a particular time-index, 
+    as well as the percentage change in portfolio total across bars.
     """
 
     def __init__(self,
-                 bars,
-                 events,
-                 start_date,
+                 bars: DataHandler,
+                 events: Queue,
+                 start_date: datetime,
                  initial_capital=100000.0,
                  **kwargs
                  ):
@@ -33,17 +37,17 @@ class Portfolio(object):
         Also includes a starting datetime index and initial capital
         (USD unless otherwise stated).
 
-        Parameters
-        ==========
-        :param bars : The DataHandler object with current market data.
-        :param events : The Event Queue object.
-        :param start_date : The start date (bar) of the portfolio.
-        :param initial_capital : The starting capital in USD.
-        :param **kwargs : Additional arguments:
-            - time_frame : The time frame of the bars.
-            - trading_hours : The number of trading hours in a day.
-            - benchmark : The benchmark symbol to compare the portfolio.
-            - strategy_name : The name of the strategy  (the name must not include 'Strategy' in it).
+        Args:
+            bars (DataHandler): The DataHandler object with current market data.
+            events (Queue): The Event Queue object.
+            start_date (datetime): The start date (bar) of the portfolio.
+            initial_capital (float): The starting capital in USD.
+
+            kwargs (dict): Additional arguments
+                - time_frame: The time frame of the bars.
+                - trading_hours: The number of trading hours in a day.
+                - benchmark: The benchmark symbol to compare the portfolio.
+                - strategy_name: The name of the strategy  (the name must not include 'Strategy' in it).    
         """
         self.bars = bars
         self.events = events
@@ -125,7 +129,7 @@ class Portfolio(object):
         d['Total'] = self.initial_capital
         return d
 
-    def update_timeindex(self, event):
+    def update_timeindex(self, event: MarketEvent):
         """
         Adds a new record to the positions matrix for the current
         market data bar. This reflects the PREVIOUS bar, i.e. all
@@ -161,14 +165,13 @@ class Portfolio(object):
         # Append the current holdings
         self.all_holdings.append(dh)
 
-    def update_positions_from_fill(self, fill):
+    def update_positions_from_fill(self, fill: FillEvent):
         """
         Takes a Fill object and updates the position matrix to
         reflect the new position.
 
-        Parameters
-        ==========
-        :param fill : The Fill object to update the positions with.
+        Args:
+            fill (FillEvent): The Fill object to update the positions with.
         """
         # Check whether the fill is a buy or sell
         fill_dir = 0
@@ -180,12 +183,13 @@ class Portfolio(object):
         # Update positions list with new quantities
         self.current_positions[fill.symbol] += fill_dir*fill.quantity
 
-    def update_holdings_from_fill(self, fill):
+    def update_holdings_from_fill(self, fill: FillEvent):
         """
         Takes a Fill object and updates the holdings matrix to
         reflect the holdings value.
-        Parameters:
-        fill - The Fill object to update the holdings with.
+
+        Args:
+            fill (FillEvent): The Fill object to update the holdings with.
         """
         # Check whether the fill is a buy or sell
         fill_dir = 0
@@ -204,7 +208,7 @@ class Portfolio(object):
         self.current_holdings['Cash'] -= (cost + fill.commission)
         self.current_holdings['Total'] -= (cost + fill.commission)
 
-    def update_fill(self, event):
+    def update_fill(self, event: FillEvent):
         """
         Updates the portfolio current positions and holdings
         from a FillEvent.
@@ -213,15 +217,14 @@ class Portfolio(object):
             self.update_positions_from_fill(event)
             self.update_holdings_from_fill(event)
 
-    def generate_naive_order(self, signal):
+    def generate_naive_order(self, signal: SignalEvent):
         """
         Simply files an Order object as a constant quantity
         sizing of the signal object, without risk management or
         position sizing considerations.
 
-        Parameters
-        ==========
-        :param signal : The tuple containing Signal information.
+        Args:
+            signal (SignalEvent): The tuple containing Signal information.
         """
         order = None
 
@@ -246,7 +249,7 @@ class Portfolio(object):
 
         return order
 
-    def update_signal(self, event):
+    def update_signal(self, event: SignalEvent):
         """
         Acts on a SignalEvent to generate new orders
         based on the portfolio logic.
@@ -288,7 +291,8 @@ class Portfolio(object):
         ]
         self.equity_curve.to_csv('equity.csv')
         plot_performance(self.equity_curve, self.strategy_name)
-        plot_returns_and_dd(self.equity_curve, self.benchmark, self.strategy_name)
+        plot_returns_and_dd(self.equity_curve,
+                            self.benchmark, self.strategy_name)
         plot_monthly_yearly_returns(self.equity_curve, self.strategy_name)
-        
+
         return stats
