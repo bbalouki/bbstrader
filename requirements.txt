@@ -11,3 +11,4 @@ seaborn
 statsmodels
 matplotlib
 filterpy
+pytest

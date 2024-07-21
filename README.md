@@ -1,17 +1,18 @@
-# BBSTrader: Simplified Investment & Trading Toolkit  
+# Simplified Investment & Trading Toolkit
+![bbstrader](assets/BBSTrader.png)
 
 ## Overview
 
-BBSTrader is a trading system suite developed for MetaTrader 5 (MT5) and IBKR platforms (comming soon), designed to offer a comprehensive set of tools for backtesting, executing, and managing a wide array of trading strategies. With an emphasis on algorithmic and quantitative trading, BBSTrader integrates advanced statistical models, machine learning algorithms, to provide traders with a robust platform for exploring and deploying sophisticated trading strategies.
+BBSTrader is a trading system suite developed for MetaTrader 5 (MT5) and IBKR platforms (comming soon), designed to offer a comprehensive set of tools for developping, backtesting, executing, and managing a wide array of trading strategies. With an emphasis on algorithmic and quantitative trading, BBSTrader integrates advanced statistical models, machine learning algorithms, to provide traders with a robust platform for exploring and deploying sophisticated trading strategies.
 
 ## Modules Overview
 
-`bbstrader` is comprised of several key modules, each tailored to specific aspects of trading strategy development and execution:
+`bbstrader` is comprised of several key modules, each focus on specific aspects of trading strategy development and execution:
 
 - **Backtesting Module**: Enables traders to rigorously test their trading strategies using historical data to evaluate performance before live deployment.
 - **Trading Strategies Module**: A collection of predefined trading strategies, including ARIMA+GARCH models, Kalman Filters, Ornstein-Uhlenbeck processes, and Simple Moving Averages, equipped with risk management through Hidden Markov Models.
 - **MT5 Execution Module**: Facilitates the direct execution of trading strategies on the MetaTrader 5 platform, supporting real-time trading across multiple financial instruments.
-- **Submodule for Trading Execution on MT5**: Specialized scripts for automating trading strategies on MT5, incorporating risk management and dynamic position management.
+- **Modles Module**: Serves as a framework for implementing various types of financial models (risk managment models, Machine learing models etc).
 
 ## Features
 
@@ -35,10 +36,12 @@ Refer to the README.md file of each module within `bbstrader` for detailed instr
 ## Examples
 ### Backtesting Module
 ```python
-from btengine.backtests.klf import run_kf_backtest
 import datetime
+from pathlib import Path
+from btengine.backtests import run_kf_backtest
 
-if __name__ == "__main__":
+if __name__ == '__main__':
+
     # KLF IEI TLT Event Driven backtest with Hidden Markov Model as a risk manager.
     symbol_list = ["IEI", "TLT"]
     kwargs = {
@@ -53,25 +56,26 @@ if __name__ == "__main__":
         'strategy_name': 'Kalman Filter & HMM'
     }
     start_date = datetime.datetime(2009, 8, 3, 10, 40, 0)
-    csv_dir = '../backtests/results/klf_hmm/'
-    hmm_csv = '../backtests/results/klf_hmm/tlt_train.csv'
+    data_dir = Path("/bbstrader/btengine/data/")
+    csv_dir = str(Path().cwd()) + str(data_dir)
+    hmm_csv = str(Path().cwd()) + str(data_dir/"tlt_train.csv")
     run_kf_backtest(symbol_list, csv_dir, hmm_csv, start_date, **kwargs)
 ```
 ### Backtesting Results
 #### Hidden States
-![Hidden States](/bbstrader/btengine/backtests/results/klf_hmm/hidden_states.png)
+![Hidden States](/bbstrader/btengine/assets/klf_hidden_states.png)
 
 #### Performance
-![Performance](/bbstrader/btengine/backtests/results/klf_hmm/performance.png)
+![Performance](/bbstrader/btengine/assets/klf_performance.png)
 
 #### Risk Return
-![Risk Return](/bbstrader/btengine/backtests/results/klf_hmm/risk_return.png)
+![Risk Return](/bbstrader/btengine/assets/klf_risk_return.png)
 
 #### Returns Distribution
-![Returns Distribution](/bbstrader/btengine/backtests/results/klf_hmm/returns_distribution.png)
+![Returns Distribution](/bbstrader/btengine/assets/klf_returns_distribution.png)
 
 #### Portfolio
-![Portfolio](/bbstrader/btengine/backtests/results/klf_hmm/summary_stats.png)
+![Portfolio](/bbstrader/btengine/assets/klf_summary_stats.png)
 
 ## Customization and Contribution
 
@@ -115,5 +119,4 @@ We're excited to see your contributions and to welcome you to the `bbstrader` co
 Trading financial instruments involves a high level of risk and may not be suitable for all investors. The developers of `bbstrader` are not responsible for any financial losses incurred from the use of this software. Trade responsibly and at your own risk.
 
 ## License
-
 `bbstrader` is open source and available under the MIT License.
