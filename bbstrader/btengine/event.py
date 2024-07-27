@@ -6,14 +6,22 @@ class Event(object):
     Event is base class providing an interface for all subsequent
     (inherited) events, that will trigger further events in the
     trading infrastructure.
+    Since in many implementations the Event objects will likely develop greater 
+    complexity, it is thus being "future-proofed" by creating a class hierarchy. 
+    The Event class is simply a way to ensure that all events have a common interface
+    and can be handled in a consistent manner.
     """
     ...
 
 
 class MarketEvent(Event):
     """
-    Handles the event of receiving a new market update with
-    corresponding bars.
+    Market Events are triggered when the outer while loop of the backtesting 
+    system begins a new `"heartbeat"`. It occurs when the `DataHandler` object 
+    receives a new update of market data for any symbols which are currently 
+    being tracked. It is used to `trigger the Strategy object` generating 
+    new `trading signals`. The event object simply contains an identification 
+    that it is a market event, with no other structure.
     """
 
     def __init__(self):
@@ -25,8 +33,12 @@ class MarketEvent(Event):
 
 class SignalEvent(Event):
     """
-    Handles the event of sending a Signal from a Strategy object.
-    This is received by a Portfolio object and acted upon.
+    The `Strategy object` utilises market data to create new `SignalEvents`. 
+    The SignalEvent contains a `strategy ID`, a `ticker symbol`, a `timestamp` 
+    for when it was generated, a `direction` (long or short) and a `"strength"` 
+    indicator (this is useful for mean reversion strategies) and the `quantiy` 
+    to buy or sell. The `SignalEvents` are utilised by the `Portfolio object` 
+    as advice for how to trade.
     """
 
     def __init__(self,
@@ -62,9 +74,15 @@ class SignalEvent(Event):
 
 class OrderEvent(Event):
     """
-    Handles the event of sending an Order to an execution system.
-    The order contains a symbol (e.g. GOOG), a type (market or limit),
-    quantity and a direction.
+    When a Portfolio object receives `SignalEvents` it assesses them 
+    in the wider context of the portfolio, in terms of risk and position sizing. 
+    This ultimately leads to `OrderEvents` that will be sent to an `ExecutionHandler`.
+
+    The `OrderEvents` is slightly more complex than a `SignalEvents` since 
+    it contains a quantity field in addition to the aforementioned properties 
+    of SignalEvent. The quantity is determined by the Portfolio constraints. 
+    In addition the OrderEvent has a `print_order()` method, used to output the 
+    information to the console if necessary.
     """
 
     def __init__(self,
@@ -102,10 +120,21 @@ class OrderEvent(Event):
 
 class FillEvent(Event):
     """
-    Encapsulates the notion of a Filled Order, as returned
-    from a brokerage. Stores the quantity of an instrument
-    actually filled and at what price. In addition, stores
-    the commission of the trade from the brokerage.
+    When an `ExecutionHandler` receives an `OrderEvent` it must transact the order.
+    Once an order has been transacted it generates a `FillEvent`, which describes 
+    the cost of purchase or sale as well as the transaction costs, such as fees 
+    or slippage.
+
+    The `FillEvent` is the Event with the greatest complexity. 
+    It contains a `timestamp` for when an order was filled, the `symbol` 
+    of the order and the `exchange` it was executed on, the `quantity` 
+    of shares transacted, the `actual price of the purchase` and the `commission 
+    incurred`.
+
+    The commission is calculated using the Interactive Brokers commissions. 
+    For US API orders this commission is `1.30 USD` minimum per order, with a flat 
+    rate of either 0.013 USD or 0.08 USD per share depending upon whether 
+    the trade size is below or above `500 units` of stock.
     """
 
     def __init__(self,
