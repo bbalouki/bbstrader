@@ -1,1 +1,1 @@
-from .ts import *
+from bbstrader.strategies.ts import *

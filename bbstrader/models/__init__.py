@@ -1,2 +1,2 @@
-from . import *
-from .risk import *
+from bbstrader.models import *
+from bbstrader.models.risk import *

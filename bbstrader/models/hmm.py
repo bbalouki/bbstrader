@@ -5,7 +5,7 @@ import pandas as pd
 import seaborn as sns
 
 from hmmlearn.hmm import GaussianHMM
-from .risk import RiskModel
+from bbstrader.models.risk import RiskModel
 from matplotlib import cm, pyplot as plt
 from matplotlib.dates import YearLocator, MonthLocator
 
@@ -19,6 +19,13 @@ class HMMRiskManager(RiskModel):
     and utilizes Gaussian HMM to model the financial market's hidden states. These states
     are used to make decisions on permissible trading actions based on the identified market
     trends, thus facilitating a risk-aware trading strategy.
+    
+    Exemple:
+    >>> # Assuming `data` is a DataFrame containing your market data
+    >>> risk_manager = HMMRiskManager(data=data, states=3, iterations=200, verbose=True)
+    >>> current_regime = risk_manager.get_current_regime(data['Returns'].values)
+    >>> print(f"Current Market Regime: {current_regime}")
+
     """
 
     def __init__(self, **kwargs):
@@ -41,6 +48,7 @@ class HMMRiskManager(RiskModel):
             cov_variance (str): Type of covariance to use in the HMM.
                 possibles values are "spherical", "tied", "diag", "full".
                 see https://hmmlearn.readthedocs.io/en/latest/api.html#gaussianhmm for more details.
+
         """
         self.data = kwargs.get("data")
         self.states = kwargs.get("states", 2)

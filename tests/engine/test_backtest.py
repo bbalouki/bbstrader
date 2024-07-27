@@ -1,10 +1,10 @@
 import unittest
 from unittest.mock import MagicMock, PropertyMock, create_autospec
-from btengine.backtest import Backtest
-from btengine.data import DataHandler
-from btengine.execution import ExecutionHandler
-from btengine.portfolio import Portfolio
-from btengine.strategy import Strategy
+from bbstrader.btengine.backtest import Backtest
+from bbstrader.btengine.data import DataHandler
+from bbstrader.btengine.execution import ExecutionHandler
+from bbstrader.btengine.portfolio import Portfolio
+from bbstrader.btengine.strategy import Strategy
 
 
 class TestBacktest(unittest.TestCase):

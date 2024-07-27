@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock
-from btengine.portfolio import Portfolio
-from btengine.event import FillEvent, SignalEvent
+from bbstrader.btengine.portfolio import Portfolio
+from bbstrader.btengine.event import FillEvent, SignalEvent
 
 
 class MockPortfolio(Portfolio):
