@@ -1,22 +1,29 @@
 import os.path
 import numpy as np
 import pandas as pd
-from .event import MarketEvent
+from bbstrader.btengine.event import MarketEvent
 from queue import Queue
 from abc import ABCMeta, abstractmethod
 
 
 class DataHandler(metaclass=ABCMeta):
     """
-    DataHandler is an abstract base class providing an interface for
-    all subsequent (inherited) data handlers (both live and historic).
+    One of the goals of an event-driven trading system is to minimise 
+    duplication of code between the backtesting element and the live execution 
+    element. Ideally it would be optimal to utilise the same signal generation 
+    methodology and portfolio management components for both historical testing 
+    and live trading. In order for this to work the Strategy object which generates
+    the Signals, and the `Portfolio` object which provides Orders based on them, 
+    must utilise an identical interface to a market feed for both historic and live 
+    running.
 
-    The goal of a (derived) DataHandler object is to output a generated
-    set of bars (OHLCVI) for each symbol requested.
+    This motivates the concept of a class hierarchy based on a `DataHandler` object,
+    which givesall subclasses an interface for providing market data to the remaining 
+    components within thesystem. In this way any subclass data handler can be "swapped out", 
+    without affecting strategy or portfolio calculation.
 
-    This will replicate how a live strategy would function as current
-    market data would be sent "down the pipe". Thus a historic and live
-    system will be treated identically by the rest of the backtesting suite.
+    Specific example subclasses could include `HistoricCSVDataHandler`, 
+    `EODHDDataHandler`, `FMPDataHandler`, `IBMarketFeedDataHandler` etc.
     """
 
     @abstractmethod

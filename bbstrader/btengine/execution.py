@@ -1,5 +1,5 @@
 import datetime
-from .event import FillEvent, OrderEvent
+from bbstrader.btengine.event import FillEvent, OrderEvent
 from queue import Queue
 from abc import ABCMeta, abstractmethod
 
@@ -15,6 +15,10 @@ class ExecutionHandler(metaclass=ABCMeta):
     or live brokerages, with identical interfaces. This allows
     strategies to be backtested in a very similar manner to the
     live trading engine.
+
+    The ExecutionHandler described here is exceedingly simple, 
+    since it fills all orders at the current market price. 
+    This is highly unrealistic, but serves as a good baseline for improvement.
     """
 
     @abstractmethod
