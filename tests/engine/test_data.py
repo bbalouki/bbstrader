@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock
-from btengine.data import HistoricCSVDataHandler
-from btengine.event import MarketEvent
+from bbstrader.btengine.data import HistoricCSVDataHandler
+from bbstrader.btengine.event import MarketEvent
 
 class MockHistoricCSVDataHandler(HistoricCSVDataHandler):
     def _open_convert_csv_files(self):

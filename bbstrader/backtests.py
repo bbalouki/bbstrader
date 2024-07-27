@@ -445,7 +445,7 @@ def run_kf_backtest(
             ```python
             import datetime
             from pathlib import Path
-            from btengine.backtests import run_kf_backtest
+            from bbstrader.backtests import run_kf_backtest
 
             if __name__ == '__main__':
 

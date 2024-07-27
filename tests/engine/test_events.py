@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime
 from unittest.mock import MagicMock
-from btengine.event import (
+from bbstrader.btengine.event import (
     Event, MarketEvent, SignalEvent, OrderEvent, FillEvent
 )
 # Event Test Cases
