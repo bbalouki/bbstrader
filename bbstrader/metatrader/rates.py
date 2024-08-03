@@ -4,32 +4,55 @@ import pandas as pd
 import time
 
 
-class Rates:
+class Rates(object):
     """
-    The Rates class is used to retrieve financial instrument data.
+
+    The `Rates` class facilitates the retrieval of financial instrument data 
+    from the MetaTrader 5 (MT5) terminal. It provides access to historical data 
+    for a specified symbol and time frame, including open, high, low, close prices,  
+    volume, and Returns calculated as percentage change.
+
+    Exemple:
+    >>> from datetime import datetime, timedelta
+    >>> import pytz
+
+    >>> # Example usage of the Rates class
+    >>> symbol = "EURUSD"
+    >>> time_frame = "1h"
+    >>> start_pos = 0
+    >>> count = 100
+
+    >>> # Initialize the Rates class
+    >>> rates = Rates(symbol=symbol, time_frame=time_frame, start_pos=start_pos, count=count)
+
+    >>> # Retrieve and display the data frame
+    >>> rates_data_frame = rates.get_rates()
+    >>> print(rates_data_frame.head())
+
+    >>> # Example to fetch historical data within a specific date range
+    >>> timezone = pytz.timezone("Etc/UTC")
+    >>> date_from = datetime(2020, 1, 1, tzinfo=timezone)
+    >>> date_to = datetime.now(tz=timezone)
+
+    >>> # Fetch historical data and save to CSV
+    >>> rates.get_history(date_from=date_from, date_to=date_to, save=True)
     """
     def __init__(
         self,
         symbol: str,
-        time_frame: str,
-        start_pos: int,
-        count: int
+        time_frame: str = "D1",
+        start_pos: int = 0,
+        count: int = 100
     ):
         """
         Initialize the Rates class to retrieve financial instrument data.
 
-        Parameters
-        ==========
-        :param symbol (str) : Financial instrument name (e.g., "EURUSD").
-        :param time_frame (str) : The time frame on which the program is working
-            (1m, 3m, 5m, 10m, 15m, 30m, 1h, 2h, 4h, D1)
-        :param start_pos (int): Initial index of the bar the data are requested from.
-        :count (int): Number of bars to receive.
-        :returns : Bars as the numpy array with the named 
-            time, open, high, low, close, tick_volume, spread, and real_volume columns. 
-
-        Returns
-        :return: None in case of an error.
+        Args:
+            symbol (str): Financial instrument name (e.g., `"EURUSD"`).
+            time_frame (str): The time frame on which the program is working
+                `(1m, 3m, 5m, 10m, 15m, 30m, 1h, 2h, 4h, D1)`.
+            start_pos (int): Initial index of the bar the data are requested from.
+            count (int): Number of bars to receive.
         """
         self.symbol = symbol
         time_frame_mapping = {
@@ -50,73 +73,13 @@ class Rates:
         self.start_pos = start_pos
         self.count = count
         self.initialize()
-        self.data = self.get_rate()
-
-    def get_rate_frame(self):
-        return self.data
     
-    @property
-    def get_time(self):
-        """
-        Returns the date associated with the data.
-        """
-        return self.data['Date']
-    
-    @property
-    def get_open(self):
-        """
-        Returns the open price of the financial instrument.
-        """
-        return self.data['Open']
-    
-    @property
-    def get_high(self):
-        """
-        Returns the high price of the financial instrument.
-        """
-        return self.data['High']
-    
-    @property
-    def get_low(self):
-        """
-        Returns the low price of the financial instrument.
-        """
-        return self.data['Low']
-    
-    @property
-    def get_close(self):
-        """
-        Returns the close price of the financial instrument.
-        """
-        return self.data['Close']
-
-    @property
-    def get_adj_close(self):
-        """
-        Returns the adjusted close price of the financial instrument.
-        """
-        return self.data['Adj Close']
-    
-    @property
-    def get_returns(self):
-        """
-        Returns the Returns of the current symbol
-        """
-        return self.data['Returns']
-    
-    @property
-    def get_volume(self):
-        """
-        Returns the volume of the financial instrument.
-        """
-        return self.data['Volume']
-    
-    def get_rate(self):
+    def get_rates(self) -> pd.DataFrame:
         """
         Get bars from the MetaTrader 5 terminal.
 
-        Returns
-        :return : Bars as the pd.DataFrame
+        Returns:
+        -   Bars as the pd.DataFrame
         """
         data = Mt5.copy_rates_from_pos(
             self.symbol, self.time_frame, self.start_pos, self.count)
@@ -142,35 +105,33 @@ class Rates:
         date_from:  datetime,
         date_to:  datetime = datetime.now(),
         save:  bool = False
-    ) -> None:
+    ) -> pd.DataFrame | None:
         """
         Get bars in the specified date range from the MetaTrader 5 terminal.
 
-        Parameters
-        ==========
-        :param date_from (datetime) : Date the bars are requested from. 
-            Set by the 'datetime' object or as a number of seconds elapsed since 1970.01.01. 
-            Bars with the open time >= date_from are returned. Required unnamed parameter.
-        :param : date_to (datetime): Same as  date_from
-        :param save (bool) : Boolean value , if set to True ;
-            a csv file will be create a to save data loaded
+        Args:
+            date_from (datetime): Date the bars are requested from. 
+                Set by the 'datetime' object or as a number of seconds elapsed since 1970.01.01. 
+                Bars with the open time >= date_from are returned. Required unnamed parameter.
+            
+            date_to (datetime): Same as `date_from`
+            save (bool): If set to True, a csv file will be create a to save data loaded
 
-        Returns
-        - Returns bars as the dataframe with the 
-            'Date', 'Open', 'High', 'Low', 'Close','Adj Close', 'Volume'. 
-        - Returns None in case of an error.
+        Returns:
+        -   Bars as the dataframe with `'Date', 'Open', 'High', 'Low', 'Close','Adj Close', 'Volume'`. 
+        -   None in case of an error.
 
         Example:
-        ```
-        # set time zone to UTC
-        timezone = pytz.timezone("Etc/UTC")
-        # create 'datetime' objects in UTC time zone to avoid 
-        # the implementation of a local time zone offset
-        utc_from = datetime(2020, 1, 10, tzinfo=timezone)
-        utc_to = datetime(2020, 1, 11, hour = 13, tzinfo=timezone)
-        # get bars from USDJPY M5 within the interval of 2020.01.10 00:00 - 2020.01.11 13:00 in UTC time zone
-        history = get_history(utc_from, utc_to, save=True)
-        ```
+        >>> # set time zone to UTC
+        >>> timezone = pytz.timezone("Etc/UTC")
+        >>> # create 'datetime' objects in UTC time zone to avoid 
+        >>> # the implementation of a local time zone offset
+        >>> utc_from = datetime(2020, 1, 10, tzinfo=timezone)
+        >>> utc_to = datetime(2020, 1, 11, hour = 13, tzinfo=timezone)
+        >>> # get bars from USDJPY M5 within the interval 
+        >>> # of 2020.01.10 00:00 - 2020.01.11 13:00 in UTC time zone
+        >>> rates = Rates("USDJPY", time_frame="m5")
+        >>> history = rates.get_history(utc_from, utc_to, save=True)
         """
         rates = Mt5.copy_rates_range(
             self.symbol, self.time_frame, date_from, date_to)
@@ -199,7 +160,9 @@ class Rates:
 
 
     def initialize(self):
-        if not Mt5.initialize():
+        try:
+            Mt5.initialize()
+        except Exception as e:
             if Mt5.last_error() == Mt5.RES_E_INTERNAL_FAIL_TIMEOUT:
                 print("initialize() failed, error code =", Mt5.last_error())
                 print("Trying again ....")

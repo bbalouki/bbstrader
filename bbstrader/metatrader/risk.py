@@ -1,5 +1,5 @@
-from mtrader5.account import Account
-from mtrader5.rates import Rates
+from bbstrader.metatrader.account import Account
+from bbstrader.metatrader.rates import Rates
 import MetaTrader5 as Mt5
 import numpy as np
 from scipy.stats import norm
@@ -10,7 +10,7 @@ import random
 import re
 
 
-TF_MAPPING  = {
+TF_MAPPING = {
     '1m':  1,    # 1 minute intervals
     '3m':  3,    # 3 minute intervals
     '5m':  5,    # 5 minute intervals
@@ -20,50 +20,75 @@ TF_MAPPING  = {
     '1h':  60,   # 1 hour intervals
     '2h':  120,  # 2hour intervals
     '4h':  240,  # 4 hour intervals
-    'D1':  1440 # 1 day intervals
+    'D1':  1440  # 1 day intervals
 }
+
+
 class RiskManagement(Account):
     """
     The RiskManagement class provides foundational 
     risk management functionalities for trading activities.
     It calculates risk levels, determines stop loss and take profit levels, 
     and ensures trading activities align with predefined risk parameters.
+
+    Exemple:
+    >>> risk_manager = RiskManagement(
+        symbol="EURUSD", 
+        max_risk=5.0, 
+        daily_risk=2.0, 
+        max_trades=10, 
+        std_stop=True, 
+        account_leverage=True, 
+        start_time="09:00", 
+        finishing_time="17:00", 
+        time_frame="1h"
+    )
+    >>> # Calculate risk level
+    >>> risk_level = risk_manager.risk_level()
+
+    >>> # Get appropriate lot size for a trade
+    >>> lot_size = risk_manager.get_lot()
+
+    >>> # Determine stop loss and take profit levels
+    >>> stop_loss = risk_manager.get_stop_loss()
+    >>> take_profit = risk_manager.get_take_profit()
+
+    >>> # Check if current risk is acceptable
+    >>> is_risk_acceptable = risk_manager.is_risk_ok()
     """
 
     def __init__(self, **kwargs):
         """
         Initialize the RiskManagement class to manage risk in trading activities.
 
-        Parameters
-        ==========
-        :param symbol (str) : The symbol of the financial instrument to trade.
-        :param max_risk (float): The `maximum risk allowed` on the trading account.
-        :param daily_risk (float) : `Daily Max risk allowed`
-            If Set to None it will be determine based on Maximum risk
-        :param max_trades (int) : Maximum number of trades in a trading session
-            If set to None it will be determine based on the timeframe of trading 
-        :param std_stop (bool) : If set to True , the Stop loss is claculated based
-            On `historical volatility` of the trading instrument
-        :param pchange_sl (float) : If set , the Stop loss is claculated based
-            On `percentage change` of the trading instrument
-        :param account_leverage (bool) : If set to True the account leverage will be used
-            In risk managment setting
-        :param time_frame (str) :The time frame on which the program is working
-            (1m, 3m, 5m, 10m, 15m, 30m, 1h, 2h, 4h, D1)
-        :param start_time (str)  : The starting time for the trading strategy 
-            `(HH:MM, H an M do not star with 0)`.
-        :param finishing_time (str) : The finishing time for the trading strategy
-            `(HH:MM, H an M do not star with 0)`.
-        :param sl (int, optional) : Stop Loss in points, Must be a positive number
-        :param tp (int, optional) : Take Profit in points, Must be a positive number
-        :param be (int, optional) : Break Even in points, Must be a positive number
-        :param rr (float, optional) : Risk reward ratio, Must be a positive number
-            .
+        Args:
+            symbol (str): The symbol of the financial instrument to trade.
+            max_risk (float): The `maximum risk allowed` on the trading account.
+            aily_risk (float): `Daily Max risk allowed`
+                If Set to None it will be determine based on Maximum risk.
+            max_trades (int): Maximum number of trades in a trading session
+                If set to None it will be determine based on the timeframe of trading. 
+            std_stop (bool): If set to True , the Stop loss is claculated based
+                On `historical volatility` of the trading instrument.
+            pchange_sl (float): If set , the Stop loss is claculated based
+                On `percentage change` of the trading instrument.
+            account_leverage (bool): If set to True the account leverage will be used
+                In risk managment setting.
+            ime_frame (str): The time frame on which the program is working
+                `(1m, 3m, 5m, 10m, 15m, 30m, 1h, 2h, 4h, D1)`.
+            start_time (str): The starting time for the trading strategy 
+                `(HH:MM, H an M do not star with 0)`.
+            finishing_time (str): The finishing time for the trading strategy
+                `(HH:MM, H an M do not star with 0)`.
+            sl (int, optional): Stop Loss in points, Must be a positive number.
+            tp (int, optional): Take Profit in points, Must be a positive number.
+            be (int, optional): Break Even in points, Must be a positive number.
+            rr (float, optional): Risk reward ratio, Must be a positive number.
         """
         super().__init__()
         self.symbol = kwargs.get("symbol")
         self.start_time = kwargs.get("start_time", "6:30")
-        self.finishing_time = kwargs.get("finishing_time","19:30")
+        self.finishing_time = kwargs.get("finishing_time", "19:30")
         self.max_trades = kwargs.get("max_trades")
         self.std = kwargs.get("std_stop", False)
         self.pchange = kwargs.get("pchange_sl")
@@ -94,17 +119,17 @@ class RiskManagement(Account):
         if self.timeframe not in TF_MAPPING:
             raise ValueError("Unsupported time frame")
         elif self.timeframe == 'D1':
-            tf =  self.get_minutes()
-        else: tf = TF_MAPPING[self.timeframe]
+            tf = self.get_minutes()
+        else:
+            tf = TF_MAPPING[self.timeframe]
         self.TF = tf
-        
+
     def risk_level(self) -> float:
         """
         Calculates the risk level of a trade
 
-        Returns
-        =======
-        :return : Risk level in the form of a float percentage .
+        Returns:
+        -   Risk level in the form of a float percentage.
         """
         account_info = self.get_account_info()
         balance = account_info.balance
@@ -156,7 +181,7 @@ class RiskManagement(Account):
         minutes = self.get_minutes()
         if self.max_trades is not None:
             max_trades = self.max_trades
-        else: 
+        else:
             max_trades = round(minutes / self.TF)
         return max(max_trades, 1)
 
@@ -196,20 +221,17 @@ class RiskManagement(Account):
         Calculate the standard deviation-based stop loss level 
         for a given financial instrument.
 
-        Parameters
-        ==========
-        :param tf (str): Timeframe for data, default is 'D1' (Daily).
-        :param interval (int): Number of historical data points to consider 
-            for calculating standard deviation, default is 252.
+        Args:
+            tf (str): Timeframe for data, default is 'D1' (Daily).
+            interval (int): Number of historical data points to consider 
+                for calculating standard deviation, default is 252.
 
-        Returns
-        =======
-        int: Standard deviation-based stop loss level, 
-            rounded to the nearest point. 
-            Returns 0 if the calculated stop loss is less than or equal to 0.
+        Returns:
+        -   Standard deviation-based stop loss level, rounded to the nearest point. 
+        -   0 if the calculated stop loss is less than or equal to 0.
         """
         rate = Rates(self.symbol, tf, 0, interval)
-        data = rate.get_rate_frame()
+        data = rate.get_rates()
         returns = np.diff(data['Close'])
         std = np.std(returns)
         point = Mt5.symbol_info(self.symbol).point
@@ -225,17 +247,13 @@ class RiskManagement(Account):
         Calculate the percentage change-based stop loss level 
         for a given financial instrument.
 
-        Parameters
-        ==========
-        :param pchange (float): Percentage change in price 
-            to use for calculating stop loss level.
-            If pchange is set to None , the stop loss is calculate using std.
+        Args:
+            pchange (float): Percentage change in price to use for calculating stop loss level.
+                If pchange is set to None, the stop loss is calculate using std.
 
-        Returns
-        =======
-        int: Percentage change-based stop loss level, 
-            rounded to the nearest point. 
-            Returns 0 if the calculated stop loss is less than or equal to 0.
+        Returns:
+        -   Percentage change-based stop loss level, rounded to the nearest point. 
+        -   0 if the calculated stop loss is less than or equal to 0.
         """
         if pchange is not None:
             av_price = (self.symbol_info.bid + self.symbol_info.ask)/2
@@ -252,17 +270,16 @@ class RiskManagement(Account):
         """
         Calculate Value at Risk (VaR) for a given portfolio.
 
-        Parameters
-        ==========
-        :param tf (str) : Time frame to use to calculate volatility.
-        :param interval (int): How many periods to use based on time frame.
-        :param c (float): Confidence level for VaR calculation (default is 95%).
+        Args:
+            tf (str): Time frame to use to calculate volatility.
+            interval (int): How many periods to use based on time frame.
+            c (float): Confidence level for VaR calculation (default is 95%).
 
         Returns:
-        - VaR value
+        -   VaR value
         """
         rate = Rates(self.symbol, tf, 0, interval)
-        prices = rate.get_rate_frame()
+        prices = rate.get_rates()
         prices['return'] = prices['Close'].pct_change()
         prices.dropna(inplace=True)
         P = self.get_account_info().margin_free
@@ -275,17 +292,14 @@ class RiskManagement(Account):
         """
         Variance-Covariance calculation of daily Value-at-Risk.
 
-        Parameters
-        ==========
-        :param P (float): Portfolio value in USD.
-        :param c (float): Confidence level for Value-at-Risk, 
-            e.g., 0.99 for 99% confidence interval.
-        :param mu (float): Mean of the returns of the portfolio.
-        :param sigma (float): Standard deviation of the returns of the portfolio.
+        Args:
+            P (float): Portfolio value in USD.
+            c (float): Confidence level for Value-at-Risk,e.g., 0.99 for 99% confidence interval.
+            mu (float): Mean of the returns of the portfolio.
+            sigma (float): Standard deviation of the returns of the portfolio.
 
-        Returns
-        =======
-        float: Value-at-Risk for the given portfolio.
+        Returns:
+        -   float: Value-at-Risk for the given portfolio.
         """
         alpha = norm.ppf(1 - c, mu, sigma)
         return P - P * (alpha + 1)
@@ -331,15 +345,13 @@ class RiskManagement(Account):
         """
         calculates the currency risk of a trade
 
-        Returns
-        -------
-        dict: 
-        A dictionary containing the following keys:
-            'currency_risk': dollars amount risk on a single trade,
-            'trade_loss': Loss value per tick in dollars,
-            'trade_profit': Profit value per tick in dollars,
-            'volume': Contract size * average price,
-            'lot': Lot size per trade
+        Returns:
+            A dictionary containing the following keys:
+                `'currency_risk'`: dollars amount risk on a single trade,
+                `'trade_loss'`: Loss value per tick in dollars,
+                `'trade_profit'`: Profit value per tick in dollars,
+                `'volume'`: Contract size * average price,
+                `'lot'`: Lot size per trade
         """
         account_info = self.get_account_info()
         s_info = self.symbol_info
@@ -403,12 +415,11 @@ class RiskManagement(Account):
         """
         Calculate the stop loss level based on standard deviation or percentage change.
 
-        Parameters
-        ==========
-        :param currency_risk (float): The amount of risk in dollars.
-        :param sl (int): Stop loss level in points.
-        :param size (int): Contract size.
-        :param loss (float): Loss value per tick in dollars.
+        Args:
+            currency_risk (float): The amount of risk in dollars.
+            sl (int): Stop loss level in points.
+            size (int): Contract size.
+            loss (float): Loss value per tick in dollars.
 
         """
         trade_loss = currency_risk/sl
@@ -452,10 +463,9 @@ class RiskManagement(Account):
         """
         get the Laverage for each symbol
 
-        Parameters
-        ==========
-        :param account (bool): If set to True, the account leverage will be used
-            in risk managment setting
+        Args:
+            account (bool): If set to True, the account leverage will be used
+                in risk managment setting
         """
         if account:
             account_info = self.get_account_info()
