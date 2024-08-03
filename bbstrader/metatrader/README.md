@@ -40,13 +40,10 @@ pip install MetaTrader5
 
 The module consists of several components, each responsible for different aspects of trading on the MT5 platform:
 
-- **Account Management (`account.py`)**: Access and manage your MT5 account information.
-- **Market Data (`rates.py`)**: Fetch real-time and historical market data.
-- **Risk Management (`risk.py`)**: Apply risk management strategies to your trading.
-- **Trade Execution (`trade.py`)**: Execute trades based on your strategies.
-
-### Basic Example
-Please see the `Trade` class documentation in `/mtrader5/.docs/` for a more detailled examples.
+- **Account Management (`Account()`)**: Access and manage your MT5 account information.
+- **Market Data (`Rates()`)**: Fetch real-time and historical market data.
+- **Risk Management (`RiskManagment()`)**: Apply risk management strategies to your trading.
+- **Trade Execution (`Trade()`)**: Execute trades based on your strategies.
 
 ## Customization
 

@@ -1,7 +1,7 @@
 import os
 import csv
 from datetime import datetime
-from mtrader5.risk import RiskManagement
+from bbstrader.metatrader.risk import RiskManagement
 import MetaTrader5 as Mt5
 import numpy as np
 import time
@@ -9,32 +9,86 @@ import time
 
 class Trade(RiskManagement):
     """
-    Extends the RiskManagement class to include specific trading operations, 
+    Extends the `RiskManagement` class to include specific trading operations, 
     incorporating risk management strategies directly into trade executions.
     It offers functionalities to execute trades while managing risks 
     according to the inherited RiskManagement parameters and methods.
+
+    Exemple:
+
+    >>> import time
+    >>> # Initialize the Trade class with parameters
+    >>> trade = Trade(
+        symbol="AAPL",                # Symbol to trade
+        expert_name="MyExpertAdvisor",# Name of the expert advisor
+        expert_id=12345,              # Unique ID for the expert advisor
+        version="1.0",                # Version of the expert advisor
+        target=5.0,                   # Daily profit target in percentage
+        start_time="09:00",           # Start time for trading
+        finishing_time="17:00",       # Time to stop opening new positions
+        ending_time="17:30",          # Time to close any open positions
+        max_risk=2.0,                 # Maximum risk allowed on the account in percentage
+        daily_risk=1.0,               # Daily risk allowed in percentage
+        max_trades=5,                 # Maximum number of trades per session
+        rr=2.0,                       # Risk-reward ratio
+        account_leverage=True,        # Use account leverage in calculations
+        std_stop=True,                # Use standard deviation for stop loss calculation
+        sl=20,                        # Stop loss in points (optional)
+        tp=30,                        # Take profit in points (optional)
+        be=10                         # Break-even in points (optional)
+    )
+
+    >>> # Example to open a buy position
+    >>> trade.open_buy_position(mm=True, comment="Opening Buy Position")
+
+    >>> # Example to open a sell position
+    >>> trade.open_sell_position(mm=True, comment="Opening Sell Position")
+
+    >>> # Check current open positions
+    >>> opened_positions = trade.get_opened_positions
+    >>> if opened_positions is not None:
+            print(f"Current open positions: {opened_positions}")
+
+    >>> # Close all open positions at the end of the trading session
+    >>> if trade.days_end():
+            trade.close_all_positions(comment="Closing all positions at day's end")
+
+    >>> # Print trading session statistics
+    >>> trade.statistics(save=True, dir="my_trading_stats")
+
+    >>> # Sleep until the next trading session if needed (example usage)
+    >>> sleep_time = trade.sleep_time()
+    >>> print(f"Sleeping for {sleep_time} minutes until the next trading session.")
+    >>> time.sleep(sleep_time * 60)
     """
 
     def __init__(self, **kwargs):
         """
         Initializes the Trade class with the specified parameters.
 
-        Parameters
-        ==========
-        :param symbol (str): The `symbol` that the expert advisor will trade.
-        :param expert_name (str): The name of the `expert advisor`.
-        :param expert_id (int): The `unique ID` used to identify the expert advisor 
-            or the strategy used on the symbol.
-        :param version (str): The `version` of the expert advisor.
-        :param target (float): `Trading period (day, week, month) profit target` in percentage
-        :param start_time (str): The` hour and minutes` that the expert advisor is able to start to run.
-        :param finishing_time (str): The time after which no new position can be opened.
-        :param ending_time (str): The time after which any open position will be closed.
+        Args:
+            symbol (str): The `symbol` that the expert advisor will trade.
+            expert_name (str): The name of the `expert advisor`.
+            expert_id (int): The `unique ID` used to identify the expert advisor 
+                or the strategy used on the symbol.
+            version (str): The `version` of the expert advisor.
+            target (float): `Trading period (day, week, month) profit target` in percentage
+            start_time (str): The` hour and minutes` that the expert advisor is able to start to run.
+            finishing_time (str): The time after which no new position can be opened.
+            ending_time (str): The time after which any open position will be closed.
 
-        Inherits
-        --------
-            - max_risk, max_trades, rr, daily_risk, account_leverage, std_stop, pchange_sl, sl, tp, be
-            See the RiskManagement class for more details on these parameters.
+        Inherits:
+            -   max_risk 
+            -   max_trades
+            -   rr
+            -   daily_risk
+            -   account_leverage
+            -   std_stop
+            -   pchange_sl
+            -   sl
+            -   tp
+            -   be
+        See the RiskManagement class for more details on these parameters.
 
         """
         super().__init__(**kwargs)
@@ -89,7 +143,7 @@ class Trade(RiskManagement):
 
         Raises:
             Exception: If initialization fails even after retrying, 
-            an exception is raised, and the terminal is shut down.
+                an exception is raised, and the terminal is shut down.
         """
         if not Mt5.initialize():
             if Mt5.last_error() == Mt5.RES_E_INTERNAL_FAIL_TIMEOUT:
@@ -115,7 +169,7 @@ class Trade(RiskManagement):
 
         Raises:
             Exception: If the symbol cannot be found or made visible in the MT5 terminal, 
-            an exception is raised, and the terminal is shut down.
+                an exception is raised, and the terminal is shut down.
         """
         Mt5.symbol_select(self.symbol, True)
 
@@ -128,7 +182,7 @@ class Trade(RiskManagement):
 
         Raises:
             Exception: If the symbol cannot be made visible for trading operations, 
-            an exception is raised, and the terminal is shut down.
+                an exception is raised, and the terminal is shut down.
         """
         symbol_info = Mt5.symbol_info(self.symbol)
         if symbol_info is None:
@@ -204,17 +258,10 @@ class Trade(RiskManagement):
         """
         Print some statistics for the trading session and save to CSV if specified.
 
-        Parameters
-        ==========
-        :param save (bool, optional): Whether to save the statistics to a CSV file.
-                Defaults to False.
-        :param dir (str, optional): The directory to save the CSV file. 
-            Defaults to "stats".
-
-        Returns
-        =======
-            None
-            """
+        Args:
+            save (bool, optional): Whether to save the statistics to a CSV file.
+            dir (str, optional): The directory to save the CSV file. 
+        """
         stats, additional_stats = self.get_stats()
 
         deals = stats["deals"]
@@ -294,7 +341,7 @@ class Trade(RiskManagement):
     def open_buy_position(
         self,
         action: str = 'BMKT',
-        price: int = None,
+        price: float = None,
         mm: bool = True,
         id: int = None,
         comment: str = ""
@@ -302,19 +349,19 @@ class Trade(RiskManagement):
         """
         Open a Buy positin
 
-        Parameters
-        ==========
-        :parma action (str): 'BMKT' for Market orders 
-            or 'BLMT', 'BSTP','BSTPLMT' for pending orders
-        :price (float) : The price at which to open an order
-        :param id (int) : The strategy id or expert Id
-        :param mm (bool) : Weither to put stop loss and tp or not
-        :param comment (str) : The comment for the closing position
+        Args:
+            action (str): `'BMKT'` for Market orders or `'BLMT', 
+                'BSTP','BSTPLMT'` for pending orders
+            price (float): The price at which to open an order
+            id (int): The strategy id or expert Id
+            mm (bool): Weither to put stop loss and tp or not
+            comment (str): The comment for the closing position
         """
         Id = id if id is not None else self.expert_id
         point = Mt5.symbol_info(self.symbol).point
         if action != 'BMKT':
-            assert price is not None
+            assert price is not None, \
+                "You need to set a price for pending orders"
             _price = price
         else:
             _price = Mt5.symbol_info_tick(self.symbol).ask
@@ -369,19 +416,19 @@ class Trade(RiskManagement):
         """
         Open a sell positin
 
-        Parameters
-        ==========
-        :parma action (str): 'SMKT' for Market orders
-            or 'SLMT', 'SSTP','SSTPLMT' for pending orders
-        :price (float) : The price at which to open an order
-        :param id (int) : The strategy id or expert Id
-        :param mm (bool) : Weither to put stop loss and tp or not
-        :param comment (str) : The comment for the closing position
+        Args:
+            action (str): `'SMKT'` for Market orders
+                or `'SLMT', 'SSTP','SSTPLMT'` for pending orders
+            price (float): The price at which to open an order
+            id (int): The strategy id or expert Id
+            mm (bool): Weither to put stop loss and tp or not
+            comment (str): The comment for the closing position
         """
         Id = id if id is not None else self.expert_id
         point = Mt5.symbol_info(self.symbol).point
         if action != 'SMKT':
-            assert price is not None
+            assert price is not None,\
+                "You need to set a price for pending orders"
             _price = price
         else:
             _price = Mt5.symbol_info_tick(self.symbol).bid
@@ -418,14 +465,13 @@ class Trade(RiskManagement):
         """
         Check if a trading order has been sent correctly
 
-        Paramters
-        =========
-        :param price (float) : Price for opening the position
-        :param request (dict()): A trade request to sent to Mt5.order_sent()
-            all detail in request can be found on:
-              https://www.mql5.com/en/docs/python_metatrader5/mt5ordersend_py
-        :param type (str): The type of the order 
-            (BMKT, SMKT, BLMT, SLMT, BSTP, SSTP, BSTPLMT, SSTPLMT) 
+        Args:
+            price (float): Price for opening the position
+            request (dict()): A trade request to sent to Mt5.order_sent()
+                all detail in request can be found on:
+                https://www.mql5.com/en/docs/python_metatrader5/mt5ordersend_py
+            type (str): The type of the order 
+                `(BMKT, SMKT, BLMT, SLMT, BSTP, SSTP, BSTPLMT, SSTPLMT)` 
         """
         # Send a trading request
         # Check the execution result
@@ -483,6 +529,7 @@ class Trade(RiskManagement):
         action: str = ...,
         buy: bool = False,
         sell: bool = False,
+        price: float = None,
         id: int = None,
         mm: bool = True,
         comment: str = ""
@@ -490,22 +537,21 @@ class Trade(RiskManagement):
         """
         Open a buy or sell position.
 
-        Parameters
-        ==========
-        :param action (str): 'BMKT' or 'SMKT' for Market orders
-            or 'BLMT', 'SLMT', 'BSTP', 'SSTP', 'BSTPLMT', 'SSTPLMT' for pending orders
-        :param buy (bool) : A boolean True or False
-        :param sell (bool): A boolean True or False
-        :param id (int) : The strategy id or expert Id
-        :param mm (bool) : Weither to put stop loss and tp or not
-        :param comment (str) : The comment for the closing position
+        Args:
+            action (str): (`'BMKT'`, `'SMKT'`) for Market orders
+                or (`'BLMT', 'SLMT', 'BSTP', 'SSTP', 'BSTPLMT', 'SSTPLMT'`) for pending orders
+            buy (bool): A boolean True or False
+            sell (bool): A boolean True or False
+            id (int): The strategy id or expert Id
+            mm (bool): Weither to put stop loss and tp or not
+            comment (str): The comment for the closing position
         """
         if buy:
             self.open_buy_position(
-                action=action, id=id, mm=mm, comment=comment)
+                action=action, price=price, id=id, mm=mm, comment=comment)
         if sell:
             self.open_sell_position(
-                action=action, id=id, mm=mm, comment=comment)
+                action=action, price=price, id=id, mm=mm, comment=comment)
 
     @property
     def get_opened_orders(self):
@@ -546,9 +592,8 @@ class Trade(RiskManagement):
     def get_current_open_orders(self, id=None):
         """Get All current open orders's tickets
 
-        Parameters
-        ==========
-        :param id (int) : The strategy id or expert Id
+        Args:
+            id (int): The strategy id or expert Id
         """
         orders = Mt5.orders_get(symbol=self.symbol)
         Id = id if id is not None else self.expert_id
@@ -567,9 +612,8 @@ class Trade(RiskManagement):
     def get_current_open_positions(self, id=None):
         """Get All current open position's tickets
 
-        Parameters
-        ==========
-        :param id (int) : The strategy id or expert Id
+        Args:
+            id (int): The strategy id or expert Id
         """
         positions = Mt5.positions_get(symbol=self.symbol)
         Id = id if id is not None else self.expert_id
@@ -588,9 +632,8 @@ class Trade(RiskManagement):
     def get_current_win_trades(self, id=None):
         """Get all active profitable trades
 
-        Parameters
-        ==========
-        :param id (int) : The strategy id or expert Id
+        Args:
+            id (int): The strategy id or expert Id
         """
         positions = Mt5.positions_get(symbol=self.symbol)
         Id = id if id is not None else self.expert_id
@@ -613,9 +656,8 @@ class Trade(RiskManagement):
         Is greater than a minimum profit express as percentage 
         of the profit target.
 
-        Parameters
-        ==========
-        :param th (float) : The minimum profit target on current positions
+        Args:
+            th (float): The minimum profit target on current positions
         """
         positions = self.get_current_open_positions()
         profit = 0.0
@@ -638,9 +680,8 @@ class Trade(RiskManagement):
     def get_current_buys(self, id=None):
         """Get current buy positions open
 
-        Parameters
-        ==========
-        :param id (int) : The strategy id or expert Id
+        Args:
+            id (int): The strategy id or expert Id
         """
         positions = Mt5.positions_get(symbol=self.symbol)
         Id = id if id is not None else self.expert_id
@@ -661,9 +702,8 @@ class Trade(RiskManagement):
     def get_current_sells(self, id=None):
         """Get current sell positions open
 
-        Parameters
-        ==========
-        :param id (int) : The strategy id or expert Id
+        Args:
+            id (int): The strategy id or expert Id
         """
         positions = Mt5.positions_get(symbol=self.symbol)
         Id = id if id is not None else self.expert_id
@@ -694,9 +734,8 @@ class Trade(RiskManagement):
         These conditions are based on the Maximum risk ,daily risk,
         the starting, the finishing, and ending trading time.
 
-        Parameters
-        ==========
-        :param comment (str) : The comment for the closing position
+        Args:
+            comment (str): The comment for the closing position
         """
         if self.days_end():
             return False
@@ -733,10 +772,9 @@ class Trade(RiskManagement):
         it checks if the price has moved in favorable direction,
         if so , it set the new break even.
 
-        Parameters
-        ==========
-        :param id(int) : The strategy Id or Expert Id
-        :param comment (str) : The comment for the closing position
+        Args:
+            id (int): The strategy Id or Expert Id
+            comment (str): The comment for the closing position
         """
         time.sleep(0.1)
         Id = id if id is not None else self.expert_id
@@ -786,15 +824,14 @@ class Trade(RiskManagement):
         """
         Sets the break-even level for a given trading position.
 
-        Parameters
-        ==========
-        :param position (namedtuple):
-            The trading position for which the break-even is to be set.
-        :param be (int): The break-even level in points.
-        :param level (float): The break-even level in price
-            if set to None , it will be calated automaticaly.
-        :param price (float): The break-even price
-            if set to None , it will be calated automaticaly.
+        Args:
+            position (namedtuple):
+                The trading position for which the break-even is to be set.
+            be (int): The break-even level in points.
+            level (float): The break-even level in price
+                if set to None , it will be calated automaticaly.
+            price (float): The break-even price
+                if set to None , it will be calated automaticaly.
         """
         point = Mt5.symbol_info(self.symbol).point
         digits = Mt5.symbol_info(self.symbol).digits
@@ -846,11 +883,10 @@ class Trade(RiskManagement):
         """
         Send a request to set the stop loss to break even for a given trading position.
 
-        Parameters
-        ==========
-        :param tiket (int): The ticket number of the trading position.
-        :param price (float): The price at which the stop loss is to be set.
-        :param request (dict): The request to set the stop loss to break even.
+        Args:
+            tiket (int): The ticket number of the trading position.
+            price (float): The price at which the stop loss is to be set.
+            request (dict): The request to set the stop loss to break even.
         """
         time.sleep(0.1)
         try:
@@ -883,9 +919,8 @@ class Trade(RiskManagement):
         Check if a positon is wining or looing
         wen it is closed before be level , tp or sl.
 
-        Parameters
-        ==========
-        :param th (int) : The minimum profit for a position in point
+        Args:
+            th (int): The minimum profit for a position in point
         """
         size = Mt5.symbol_info(self.symbol).trade_tick_size
         value = Mt5.symbol_info(self.symbol).trade_tick_value
@@ -936,12 +971,11 @@ class Trade(RiskManagement):
         """
         Close an open position by it ticket
 
-        Parameters
-        ==========
-        :param ticket (int) : Positon ticket to close
-        :param id (int) : The unique ID of the Expert or Strategy
-        :param pct (float) : Percentage of the position to close
-        :param comment (str) : Comment for the closing position
+        Args:
+            ticket (int): Positon ticket to close
+            id (int): The unique ID of the Expert or Strategy
+            pct (float): Percentage of the position to close
+            comment (str): Comment for the closing position
         """
         # get all Actives positions
         time.sleep(0.1)
