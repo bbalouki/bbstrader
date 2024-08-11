@@ -1,10 +1,13 @@
 import os
 import csv
+import time
 from datetime import datetime
 from bbstrader.metatrader.risk import RiskManagement
+from bbstrader.metatrader.utils import (
+    raise_mt5_error, trade_retcode_message, INIT_MSG
+)
 import MetaTrader5 as Mt5
 import numpy as np
-import time
 
 
 class Trade(RiskManagement):
@@ -19,7 +22,7 @@ class Trade(RiskManagement):
     >>> import time
     >>> # Initialize the Trade class with parameters
     >>> trade = Trade(
-        symbol="AAPL",                # Symbol to trade
+        symbol="#AAPL",               # Symbol to trade
         expert_name="MyExpertAdvisor",# Name of the expert advisor
         expert_id=12345,              # Unique ID for the expert advisor
         version="1.0",                # Version of the expert advisor
@@ -76,12 +79,15 @@ class Trade(RiskManagement):
             start_time (str): The` hour and minutes` that the expert advisor is able to start to run.
             finishing_time (str): The time after which no new position can be opened.
             ending_time (str): The time after which any open position will be closed.
+            verbose (bool): If set to True (default), account summary and risk managment
+                parameters are printed in the terminal.
 
         Inherits:
             -   max_risk 
             -   max_trades
             -   rr
             -   daily_risk
+            -   time_frame
             -   account_leverage
             -   std_stop
             -   pchange_sl
@@ -98,6 +104,7 @@ class Trade(RiskManagement):
         self.expert_id = kwargs.get("expert_id", 9818)
         self.version = kwargs.get("version", "1.0")
         self.target = kwargs.get("target", 1.0)
+        self.verbose = kwargs.get("verbose", True)
 
         self.start = kwargs.get("start_time", "6:30")
         self.finishing = kwargs.get("finishing_time", "19:30")
@@ -128,11 +135,13 @@ class Trade(RiskManagement):
         print("Initialization successfully completed.")
 
         print()
-        self.summary()
-        time.sleep(1)
-        print()
-        self.risk_managment()
-        print("║═════════════ Everything is oK : Running ....  ═══════║\n")
+        if self.verbose:
+            self.summary()
+            time.sleep(1)
+            print()
+            self.risk_managment()
+        print(
+            f">>> Everything is OK, @{self.expert_name} is Running ....>>>\n")
 
     def initialize(self):
         """
@@ -142,17 +151,10 @@ class Trade(RiskManagement):
         Successful initialization is crucial for the execution of trading operations.
 
         Raises:
-            Exception: If initialization fails even after retrying, 
-                an exception is raised, and the terminal is shut down.
+            MT5TerminalError: If initialization fails.
         """
         if not Mt5.initialize():
-            if Mt5.last_error() == Mt5.RES_E_INTERNAL_FAIL_TIMEOUT:
-                print("initialize() failed, error code =", Mt5.last_error())
-                print("Trying again ....")
-                time.sleep(60 * 3)
-                if not Mt5.initialize():
-                    print("initialize() failed, error code =", Mt5.last_error())
-                    Mt5.shutdown()
+            raise_mt5_error(message=INIT_MSG)
         else:
             print(
                 f"You are running the @{self.expert_name} Expert advisor,"
@@ -164,14 +166,14 @@ class Trade(RiskManagement):
         Selects the trading symbol in the MetaTrader 5 (MT5) terminal. 
         This method ensures that the specified trading 
         symbol is selected and visible in the MT5 terminal, 
-        llowing subsequent trading operations such as opening and 
+        allowing subsequent trading operations such as opening and 
         closing positions on this symbol.
 
         Raises:
-            Exception: If the symbol cannot be found or made visible in the MT5 terminal, 
-                an exception is raised, and the terminal is shut down.
+            MT5TerminalError: If symbole selection fails.
         """
-        Mt5.symbol_select(self.symbol, True)
+        if not Mt5.symbol_select(self.symbol, True):
+            raise_mt5_error(message=INIT_MSG)
 
     def prepare_symbol(self):
         """
@@ -181,25 +183,14 @@ class Trade(RiskManagement):
         This step ensures that trading operations can be performed on the selected symbol without issues.
 
         Raises:
-            Exception: If the symbol cannot be made visible for trading operations, 
-                an exception is raised, and the terminal is shut down.
+            MT5TerminalError: If the symbol cannot be made visible for trading operations.
         """
         symbol_info = Mt5.symbol_info(self.symbol)
         if symbol_info is None:
-            print(f"It was not possible to find {self.symbol}")
-            Mt5.shutdown()
-            print("Turned off")
-            quit()
+            raise_mt5_error(message=INIT_MSG)
 
         if not symbol_info.visible:
-            print(f"The {self.symbol} is not visible, needed to be switched on.")
-            if not Mt5.symbol_select(self.symbol, True):
-                print(
-                    f"The expert advisor {self.expert_name} failed in select the symbol {self.symbol}, turning off."
-                )
-                Mt5.shutdown()
-                print("Turned off")
-                quit()
+            raise_mt5_error(message=INIT_MSG)
 
     def summary(self):
         """Show a brief description about the trading program"""
@@ -388,7 +379,7 @@ class Trade(RiskManagement):
             request['tp'] = (_price + take_profit * point)
         if action != 'BMKT':
             request["action"] = Mt5.TRADE_ACTION_PENDING
-            request["type"] = self._order_type()[action]
+            request["type"] = self._order_type()[action][0]
 
         self.break_even(comment)
         if self.check(comment):
@@ -396,12 +387,14 @@ class Trade(RiskManagement):
 
     def _order_type(self):
         type = {
-            'BLMT': Mt5.ORDER_TYPE_BUY_LIMIT,
-            'SLMT': Mt5.ORDER_TYPE_SELL_LIMIT,
-            'BSTP': Mt5.ORDER_TYPE_BUY_STOP,
-            'SSTP': Mt5.ORDER_TYPE_SELL_STOP,
-            'BSTPLMT': Mt5.ORDER_TYPE_BUY_STOP_LIMIT,
-            'SSTPLMT': Mt5.ORDER_TYPE_SELL_STOP_LIMIT
+            'BMKT': (Mt5.ORDER_TYPE_BUY, 'BUY'),
+            'SMKT': (Mt5.ORDER_TYPE_BUY, 'SELL'),
+            'BLMT': (Mt5.ORDER_TYPE_BUY_LIMIT, 'BUY_LIMIT'),
+            'SLMT': (Mt5.ORDER_TYPE_SELL_LIMIT, 'SELL_LIMIT'),
+            'BSTP': (Mt5.ORDER_TYPE_BUY_STOP, 'BUY_STOP'),
+            'SSTP': (Mt5.ORDER_TYPE_SELL_STOP, 'SELL_STOP'),
+            'BSTPLMT': (Mt5.ORDER_TYPE_BUY_STOP_LIMIT, 'BUY_STOP_LIMIT'),
+            'SSTPLMT': (Mt5.ORDER_TYPE_SELL_STOP_LIMIT, 'SELL_STOP_LIMIT')
         }
         return type
 
@@ -427,7 +420,7 @@ class Trade(RiskManagement):
         Id = id if id is not None else self.expert_id
         point = Mt5.symbol_info(self.symbol).point
         if action != 'SMKT':
-            assert price is not None,\
+            assert price is not None, \
                 "You need to set a price for pending orders"
             _price = price
         else:
@@ -455,7 +448,7 @@ class Trade(RiskManagement):
             request["tp"] = (_price - take_profit * point)
         if action != 'SMKT':
             request["action"] = Mt5.TRADE_ACTION_PENDING
-            request["type"] = self._order_type()[action]
+            request["type"] = self._order_type()[action][0]
 
         self.break_even(comment)
         if self.check(comment):
@@ -475,31 +468,40 @@ class Trade(RiskManagement):
         """
         # Send a trading request
         # Check the execution result
+        pos = self._order_type()[type][1]
         try:
             result = Mt5.order_send(request)
-        except Exception as e:
-            print(e)
-        tries = 0
-        while result.retcode != Mt5.TRADE_RETCODE_DONE and tries < 5:
-            if result.retcode == Mt5.TRADE_RETCODE_CONNECTION:
-                print(
-                    f"Something went wrong while opening positon #{result.order},"
-                    f"error: {result.retcode} trying again"
-                )
-            time.sleep(1)
-            try:
-                result = Mt5.order_send(request)
-            except Exception as e:
-                print(e)
-            tries += 1
+        except:
+            trade_retcode_message(result.retcode, display=True)
+        if result.retcode != Mt5.TRADE_RETCODE_DONE:
+            if result.retcode in [
+                    Mt5.TRADE_RETCODE_CONNECTION, Mt5.TRADE_RETCODE_TIMEOUT]:
+                tries = 0
+                while result.retcode != Mt5.TRADE_RETCODE_DONE and tries < 5:
+                    msg = trade_retcode_message(result.retcode)
+                    print(
+                        f"Unable to open {pos} Positon on {self.symbol}\n"
+                        f"Error: {msg}.. Trying again"
+                    )
+                    time.sleep(1)
+                    try:
+                        result = Mt5.order_send(request)
+                    except:
+                        trade_retcode_message(result.retcode, display=True)
+                    if result.retcode == Mt5.TRADE_RETCODE_DONE:
+                        break
+                    tries += 1
+            else:
+                trade_retcode_message(result.retcode, display=True)
         # Print the result
         if result.retcode == Mt5.TRADE_RETCODE_DONE:
             if type != "BMKT" or type != "SMKT":
                 self.opened_orders.append(result.order)
+            trade_retcode_message(result.retcode, display=True)
             now = datetime.now().strftime("%H:%M:%S")
             print(
-                f"\nOrder #{result.order} Sent On {self.symbol}, Price: @{price} \n"
-                f"Lot(s): {result.volume}, Sl: {self.get_stop_loss()}, "
+                f"\n1. {pos} Order #{result.order} Sent On {self.symbol}, Price: @{price} \n"
+                f"      Lot(s): {result.volume}, Sl: {self.get_stop_loss()}, "
                 f"Tp: {self.get_take_profit()}, Time: {now}"
             )
             time.sleep(0.1)
@@ -509,19 +511,19 @@ class Trade(RiskManagement):
                 for position in positions:
                     if position.ticket == result.order:
                         if position.type == 0:
-                            order_type = "Buy"
+                            order_type = "BUY"
                             self.buy_positions.append(position.ticket)
                         else:
-                            order_type = "Sell"
+                            order_type = "SELL"
                             self.sell_positions.append(position.ticket)
                         profit = round(self.get_account_info().profit, 5)
                         print(
-                            f"{order_type} Position Opened, Price: @{round(position.price_open,5)}, "
+                            f"2. {order_type} Position Opened, Price: @{round(position.price_open,5)}, "
                             f"Sl: @{position.sl} Tp: @{position.tp}\n"
                         )
                         print(
-                            f"== Open Positions on {self.symbol}: {len(positions)} == Open PnL: {profit} "
-                            f"{self.get_account_info().currency}\n"
+                            f"**[Open Positions on {self.symbol}: {len(positions)}, Open PnL: {profit} "
+                            f"{self.get_account_info().currency}]**\n"
                         )
 
     def open_position(
@@ -689,7 +691,7 @@ class Trade(RiskManagement):
         if len(positions) != 0:
             for position in positions:
                 if (position.type == 0
-                            and position.magic == Id
+                        and position.magic == Id
                         ):
                     buys.append(position.ticket)
             if len(buys) != 0:
@@ -711,7 +713,7 @@ class Trade(RiskManagement):
         if len(positions) != 0:
             for position in positions:
                 if (position.type == 1
-                    and position.magic == Id
+                        and position.magic == Id
                     ):
                     sells.append(position.ticket)
             if len(sells) != 0:
@@ -891,26 +893,31 @@ class Trade(RiskManagement):
         time.sleep(0.1)
         try:
             result = Mt5.order_send(request)
-        except Exception as e:
-            print(e)
-        tries = 0
-        while result.retcode != Mt5.TRADE_RETCODE_DONE and tries < 10:
-            if result.retcode == Mt5.TRADE_RETCODE_NO_CHANGES:
-                break
-            elif result.retcode == Mt5.TRADE_RETCODE_CONNECTION:
-                print(
-                    "Unable to set break-even for Position: "
-                    f"#{tiket}, error: {result.retcode} trying again"
-                )
-                time.sleep(1)
-                try:
-                    result = Mt5.order_send(request)
-                except Exception as e:
-                    print(e)
+        except:
+            trade_retcode_message(result.retcode, display=True)
+        if result.retcode != Mt5.TRADE_RETCODE_DONE:
+            tries = 0
+            while result.retcode != Mt5.TRADE_RETCODE_DONE and tries < 10:
+                if result.retcode == Mt5.TRADE_RETCODE_NO_CHANGES:
+                    break
+                else:
+                    msg = trade_retcode_message(result.retcode)
+                    print(
+                        f"Unable to set break-even for Position: #{tiket}\n"
+                        f"Error: {msg}.. Trying again"
+                    )
+                    time.sleep(1)
+                    try:
+                        result = Mt5.order_send(request)
+                    except:
+                        trade_retcode_message(result.retcode, display=True)
+                    if result.retcode == Mt5.TRADE_RETCODE_DONE:
+                        break
                 tries += 1
         if result.retcode == Mt5.TRADE_RETCODE_DONE:
+            trade_retcode_message(result.retcode, display=True)
             print(
-                f"Stop loss set to break even for Position: #{tiket} at @{price}"
+                f"Stop loss set to break-even for Position: #{tiket} at @{price}"
             )
             self.break_even_status.append(tiket)
 
@@ -988,7 +995,7 @@ class Trade(RiskManagement):
         if len(positions) != 0:
             for position in positions:
                 if (position.ticket == ticket
-                        and position.magic == Id
+                            and position.magic == Id
                         ):
                     buy = position.type == 0
                     sell = position.type == 1
@@ -1005,18 +1012,29 @@ class Trade(RiskManagement):
                         "type_time": Mt5.ORDER_TIME_GTC,
                         "type_filling": Mt5.ORDER_FILLING_FOK,
                     }
-                    result = Mt5.order_send(request)
-                    tries = 0
-                    while result.retcode != Mt5.TRADE_RETCODE_DONE and tries < 5:
-                        if result.retcode == Mt5.TRADE_RETCODE_CONNECTION:
-                            print(
-                                f"Unable to close position: #{ticket}, "
-                                f"error: {result.retcode} trying again"
-                            )
-                        time.sleep(1)
+                    try:
                         result = Mt5.order_send(request)
-                        tries += 1
+                    except:
+                        trade_retcode_message(result.retcode, display=True)
+                    if result.retcode != Mt5.TRADE_RETCODE_DONE:
+                        tries = 0
+                        while result.retcode != Mt5.TRADE_RETCODE_DONE and tries < 5:
+                            msg = trade_retcode_message(result.retcode)
+                            print(
+                                f"Unable to close position: #{ticket}, \n"
+                                f"Error: {msg}.. Trying again"
+                            )
+                            time.sleep(1)
+                            try:
+                                result = Mt5.order_send(request)
+                            except:
+                                trade_retcode_message(
+                                    result.retcode, display=True)
+                            if result.retcode == Mt5.TRADE_RETCODE_DONE:
+                                break
+                            tries += 1
                     if result.retcode == Mt5.TRADE_RETCODE_DONE:
+                        trade_retcode_message(result.retcode, display=True)
                         print(
                             f"Position #{ticket} closed at @{request['price']}")
 
