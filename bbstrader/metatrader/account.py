@@ -193,7 +193,7 @@ class Account(object):
         Returns:
         -    `value / 100 ` or `value`
         """
-        rates = self.get_rates(symbol)
+        rates = self.get_currency_rates(symbol)
         for rate in rates.values():
             if rate in ['USX', 'GBX']:
                 # GBX / 100 = GBP, GBP * 100 = GBX

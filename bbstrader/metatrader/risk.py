@@ -1,5 +1,7 @@
+from tkinter import NO
 from bbstrader.metatrader.account import Account
 from bbstrader.metatrader.rates import Rates
+from bbstrader.metatrader.utils import TIMEFRAMES, raise_mt5_error
 import MetaTrader5 as Mt5
 import numpy as np
 from scipy.stats import norm
@@ -7,21 +9,9 @@ from scipy.stats import norm
 from datetime import datetime
 import time
 import random
-import re
 
 
-TF_MAPPING = {
-    '1m':  1,    # 1 minute intervals
-    '3m':  3,    # 3 minute intervals
-    '5m':  5,    # 5 minute intervals
-    '10m': 10,   # 10 minute intervals
-    '15m': 15,   # 15 minute intervals
-    '30m': 30,   # 30 minute intervals
-    '1h':  60,   # 1 hour intervals
-    '2h':  120,  # 2hour intervals
-    '4h':  240,  # 4 hour intervals
-    'D1':  1440  # 1 day intervals
-}
+TF_MAPPING = TIMEFRAMES
 
 
 class RiskManagement(Account):
@@ -74,7 +64,7 @@ class RiskManagement(Account):
                 On `percentage change` of the trading instrument.
             account_leverage (bool): If set to True the account leverage will be used
                 In risk managment setting.
-            ime_frame (str): The time frame on which the program is working
+            time_frame (str): The time frame on which the program is working
                 `(1m, 3m, 5m, 10m, 15m, 30m, 1h, 2h, 4h, D1)`.
             start_time (str): The starting time for the trading strategy 
                 `(HH:MM, H an M do not star with 0)`.
@@ -202,20 +192,6 @@ class RiskManagement(Account):
 
         return hours
 
-    def get_stop_loss(self) -> int:
-        """calculates the stop loss of a trade in points"""
-        if self.sl is not None:
-            return self.sl
-        elif self.sl is None and self.std:
-            sl = self.get_std_stop()
-            return sl
-        elif self.sl is None and not self.std:
-            risk = self.currency_risk()
-            if risk['trade_loss'] != 0:
-                sl = round((risk['currency_risk'] / risk['trade_loss']))
-                return (sl) if sl > 0 else 0
-            return 0
-
     def get_std_stop(self, tf: str = 'D1', interval: int = 252):
         """
         Calculate the standard deviation-based stop loss level 
@@ -231,7 +207,7 @@ class RiskManagement(Account):
         -   0 if the calculated stop loss is less than or equal to 0.
         """
         rate = Rates(self.symbol, tf, 0, interval)
-        data = rate.get_rates()
+        data = rate.get_rates_from_pos()
         returns = np.diff(data['Close'])
         std = np.std(returns)
         point = Mt5.symbol_info(self.symbol).point
@@ -239,8 +215,10 @@ class RiskManagement(Account):
         price_interval = av_price * ((100-std))/100
         sl_point = float((av_price - price_interval) / point)
         sl = round(sl_point)
+        min_sl = self.symbol_info.trade_stops_level \
+            + self.get_deviation()
 
-        return sl if sl > 0 else 0
+        return max(sl, min_sl)
 
     def get_pchange_stop(self, pchange):
         """
@@ -253,7 +231,7 @@ class RiskManagement(Account):
 
         Returns:
         -   Percentage change-based stop loss level, rounded to the nearest point. 
-        -   0 if the calculated stop loss is less than or equal to 0.
+        -   0 if the calculated stop loss is <= 0.
         """
         if pchange is not None:
             av_price = (self.symbol_info.bid + self.symbol_info.ask)/2
@@ -261,7 +239,9 @@ class RiskManagement(Account):
             point = Mt5.symbol_info(self.symbol).point
             sl_point = float((av_price - price_interval) / point)
             sl = round(sl_point)
-            return sl if sl > 0 else 0
+            min_sl = self.symbol_info.trade_stops_level \
+                + self.get_deviation()
+            return max(sl, min_sl)
         else:
             # Use std as default pchange
             return self.get_std_stop()
@@ -279,7 +259,7 @@ class RiskManagement(Account):
         -   VaR value
         """
         rate = Rates(self.symbol, tf, 0, interval)
-        prices = rate.get_rates()
+        prices = rate.get_rates_from_pos()
         prices['return'] = prices['Close'].pct_change()
         prices.dropna(inplace=True)
         P = self.get_account_info().margin_free
@@ -312,19 +292,37 @@ class RiskManagement(Account):
         trade_risk = self.get_trade_risk()
         loss_allowed = P * trade_risk
         var = self.calculate_var()
+        var = self.check_cents(self.symbol, var)
         return min(var, loss_allowed)
 
     def get_take_profit(self) -> int:
         """calculates the take profit of a trade in points"""
+        deviation = self.get_deviation()
         if self.tp is not None:
-            return self.tp + 10
+            return self.tp + deviation
         else:
             risk = self.currency_risk()
             if risk['trade_profit'] != 0:
                 tp = round((risk['currency_risk'] /
                             risk['trade_profit']) * self.rr)
-                return (tp+10) if tp > 0 else 0
-            return 0
+                return (tp+deviation) if tp > 0 else deviation
+            return deviation
+
+    def get_stop_loss(self) -> int:
+        """calculates the stop loss of a trade in points"""
+        min_sl = self.symbol_info.trade_stops_level \
+            + self.get_deviation()
+        if self.sl is not None:
+            return max(self.sl, min_sl)
+        elif self.sl is None and self.std:
+            sl = self.get_std_stop()
+            return max(sl, min_sl)
+        elif self.sl is None and not self.std:
+            risk = self.currency_risk()
+            if risk['trade_loss'] != 0:
+                sl = round((risk['currency_risk'] / risk['trade_loss']))
+                return max(sl, min_sl)
+            return min_sl
 
     def get_currency_risk(self) -> float:
         """calculates the currency risk of a trade"""
@@ -358,44 +356,76 @@ class RiskManagement(Account):
 
         laverage = self.get_leverage(self.account_leverage)
         contract_size = s_info.trade_contract_size
-        av_price = (s_info.bid + s_info.ask)/2
 
+        av_price = (s_info.bid + s_info.ask)/2
+        av_price = self.check_cents(self.symbol, av_price)
         trade_risk = self.get_trade_risk()
+        FX = self.get_symbol_type(self.symbol) == 'FX'
+
         if trade_risk > 0:
             currency_risk: float = round(self.var_loss_value(), 5)
             volume: float = currency_risk*laverage
             _lot: float = round((volume / (contract_size * av_price)), 2)
             lot = self._check_lot(_lot)
+            if FX:
+                __lot = round((volume / contract_size), 2)
+                lot = self._check_lot(__lot)
 
             tick_value = float(s_info.trade_tick_value)
+            tick_value = self.check_cents(self.symbol, tick_value)
             tick_value_loss = float(s_info.trade_tick_value_loss)
+            tick_value_loss = self.check_cents(self.symbol, tick_value_loss)
             tick_value_profit = float(s_info.trade_tick_value_profit)
+            tick_value_profit = self.check_cents(
+                self.symbol, tick_value_profit)
+            if (tick_value == 0
+                    or tick_value_loss == 0
+                    or tick_value_profit == 0
+                    ):
+                raise ValueError(
+                    f"The Tick Values for {self.symbol} is 0.0 \
+                    We can proced currency risk calculation \
+                    Please check your Broker trade conditions \
+                    and symbole specifications")
             point = float(s_info.point)
+
+            # Case where the stop loss is given
             if self.sl is not None:
                 trade_loss = (currency_risk/self.sl)
                 if self.tp is not None:
                     trade_profit = (currency_risk*(self.tp//self.sl))/self.tp
                 else:
                     trade_profit = (currency_risk*self.rr)/(self.sl*self.rr)
-                lot_ = round(trade_loss/(contract_size*tick_value_loss), 2)
+                lot_ = round(trade_loss / (contract_size*tick_value_loss), 2)
                 lot = self._check_lot(lot_)
                 volume = round(lot * contract_size * av_price)
+                if FX:
+                    volume = (trade_loss * contract_size) / tick_value_loss
+                    __lot = round((volume / contract_size), 2)
+                    lot = self._check_lot(__lot)
 
+            # Case where the stantard deviation is used
             elif self.std and self.pchange is None and self.sl is None:
                 sl = self.get_std_stop()
                 infos = self._std_pchange_stop(
                     currency_risk, sl, contract_size, tick_value_loss)
                 trade_loss, trade_profit, lot, volume = infos
 
+            # Case where the stop loss is based on a percentage change
             elif self.pchange is not None and not self.std and self.sl is None:
                 sl = self.get_pchange_stop(self.pchange)
                 infos = self._std_pchange_stop(
                     currency_risk, sl, contract_size, tick_value_loss)
                 trade_loss, trade_profit, lot, volume = infos
 
+            # Default case
             else:
                 trade_loss = (lot * contract_size) * tick_value_loss
                 trade_profit = (lot * contract_size) * tick_value_profit
+            # Handle FX
+            if FX:
+                trade_loss = tick_value_loss * (volume / contract_size)
+                trade_profit = tick_value_profit * (volume / contract_size)
 
             return {'currency_risk': currency_risk,
                     'trade_loss': trade_loss,
@@ -425,9 +455,14 @@ class RiskManagement(Account):
         trade_loss = currency_risk/sl
         trade_profit = (currency_risk*self.rr)/(sl*self.rr)
         av_price = (self.symbol_info.bid + self.symbol_info.ask)/2
+        av_price = self.check_cents(self.symbol, av_price)
         _lot = round(trade_loss/(size*loss), 2)
         lot = self._check_lot(_lot)
         volume = round(lot * size*av_price)
+        if self.get_symbol_type(self.symbol) == 'FX':
+            volume = (trade_loss * size) / loss
+            __lot = round((volume / size), 2)
+            lot = self._check_lot(__lot)
 
         return trade_loss, trade_profit, lot, volume
 
@@ -466,25 +501,38 @@ class RiskManagement(Account):
         Args:
             account (bool): If set to True, the account leverage will be used
                 in risk managment setting
+        Notes:
+            For FX symbols, account leverage is used by default.
+            For Other instruments the account leverage is used if any error 
+            occurs in leverage calculation.
         """
+        AL = self.get_account_info().leverage
         if account:
-            account_info = self.get_account_info()
-            return account_info.leverage
+            return AL
+
+        if self.get_symbol_type(self.symbol) == 'FX':
+            return AL
         else:
             s_info = self.symbol_info
             volume_min = s_info.volume_min
             contract_size = s_info.trade_contract_size
-            av_price = (s_info.bid + s_info.ask)//2
+            av_price = (s_info.bid + s_info.ask)/2
+            av_price = self.check_cents(self.symbol, av_price)
             action = random.choice(
                 [Mt5.ORDER_TYPE_BUY, Mt5.ORDER_TYPE_SELL]
             )
             margin = Mt5.order_calc_margin(
                 action, self.symbol, volume_min, av_price
             )
-            leverage = (
-                volume_min * contract_size * av_price
-            ) // margin
-            return round(leverage)
+            if margin == None:
+                return AL
+            try:
+                leverage = (
+                    volume_min * contract_size * av_price
+                ) / margin
+                return round(leverage)
+            except ZeroDivisionError:
+                return AL
 
     def get_deviation(self) -> int:
         return self.symbol_info.spread
