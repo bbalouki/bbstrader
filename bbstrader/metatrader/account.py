@@ -5,7 +5,7 @@ import re
 import os
 import urllib.request
 from currency_converter import SINGLE_DAY_ECB_URL, CurrencyConverter
-from bbstrader.metatrader.ckecks import raise_mt5_error, INIT_MSG
+from bbstrader.metatrader.utils import raise_mt5_error, INIT_MSG
 
 
 class Account(object):
