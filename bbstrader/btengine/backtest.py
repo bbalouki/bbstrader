@@ -48,7 +48,6 @@ class Backtest(object):
 
     def __init__(
         self,
-        csv_dir: str,
         symbol_list: list[str],
         initial_capital: float,
         heartbeat: float,
@@ -75,7 +74,6 @@ class Backtest(object):
             strategy (Portfolio): Generates signals based on market data.
             kwargs (dict): Optional parameters (See data_handler, portfolio, strategy classes).
         """
-        self.csv_dir = csv_dir
         self.symbol_list = symbol_list
         self.initial_capital = initial_capital
         self.heartbeat = heartbeat
@@ -106,7 +104,7 @@ class Backtest(object):
             f"with ${self.initial_capital} Initial Capital\n"
         )
         self.data_handler = self.data_handler_cls(
-            self.events, self.csv_dir, self.symbol_list
+            self.events, self.symbol_list, **self.kwargs
         )
         self.strategy = self.strategy_cls(
             self.data_handler, self.events, **self.kwargs

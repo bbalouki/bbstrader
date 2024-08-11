@@ -11,6 +11,15 @@ import warnings
 warnings.filterwarnings("ignore")
 sns.set_theme()
 
+__all__ = [
+    "create_drawdowns",
+    "plot_performance",
+    "create_sharpe_ratio",
+    "create_sortino_ratio",
+    "plot_returns_and_dd",
+    "plot_monthly_yearly_returns"
+]
+
 
 def create_sharpe_ratio(returns, periods=252):
     """
@@ -274,7 +283,7 @@ def plot_monthly_yearly_returns(df, title):
 
     # Create the heatmap with the larger legend
     sns.heatmap(monthly_returns_df, annot=True, fmt=".1f",
-                linewidths=.5, ax=ax1, cbar_kws={"shrink": .8}, 
+                linewidths=.5, ax=ax1, cbar_kws={"shrink": .8},
                 cmap=cmap, center=0, vmin=vmin, vmax=vmax)
 
     # Rotate the year labels on the y-axis to vertical
