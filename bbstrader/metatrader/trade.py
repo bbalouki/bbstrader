@@ -1,13 +1,39 @@
+from ctypes import Union
 import os
 import csv
 import time
 from datetime import datetime
 from bbstrader.metatrader.risk import RiskManagement
 from bbstrader.metatrader.utils import (
-    raise_mt5_error, trade_retcode_message, INIT_MSG
+    INIT_MSG, TimeFrame, TradePosition, TickInfo,
+    raise_mt5_error, trade_retcode_message
 )
+from typing import List, Tuple, Dict, Any, Optional, Literal
 import MetaTrader5 as Mt5
 import numpy as np
+import logging
+
+# Configure the logger
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+# File handler
+file_handler = logging.FileHandler('trade.log')
+file_handler.setLevel(logging.INFO)
+
+# Formatter
+formatter = logging.Formatter(
+    '%(asctime)s - %(levelname)s: %(message)s', datefmt="%Y-%m-%d %H:%M:%S")
+file_handler.setFormatter(formatter)
+
+# Add the handler to the logger
+logger.addHandler(file_handler)
+
+# handler for the console with a different level
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.DEBUG)
+console_handler.setFormatter(formatter)
+logger.addHandler(console_handler)
 
 
 class Trade(RiskManagement):
@@ -18,28 +44,27 @@ class Trade(RiskManagement):
     according to the inherited RiskManagement parameters and methods.
 
     Exemple:
-
     >>> import time
     >>> # Initialize the Trade class with parameters
     >>> trade = Trade(
-        symbol="#AAPL",               # Symbol to trade
-        expert_name="MyExpertAdvisor",# Name of the expert advisor
-        expert_id=12345,              # Unique ID for the expert advisor
-        version="1.0",                # Version of the expert advisor
-        target=5.0,                   # Daily profit target in percentage
-        start_time="09:00",           # Start time for trading
-        finishing_time="17:00",       # Time to stop opening new positions
-        ending_time="17:30",          # Time to close any open positions
-        max_risk=2.0,                 # Maximum risk allowed on the account in percentage
-        daily_risk=1.0,               # Daily risk allowed in percentage
-        max_trades=5,                 # Maximum number of trades per session
-        rr=2.0,                       # Risk-reward ratio
-        account_leverage=True,        # Use account leverage in calculations
-        std_stop=True,                # Use standard deviation for stop loss calculation
-        sl=20,                        # Stop loss in points (optional)
-        tp=30,                        # Take profit in points (optional)
-        be=10                         # Break-even in points (optional)
-    )
+    ...     symbol="#AAPL",               # Symbol to trade
+    ...     expert_name="MyExpertAdvisor",# Name of the expert advisor
+    ...     expert_id=12345,              # Unique ID for the expert advisor
+    ...     version="1.0",                # Version of the expert advisor
+    ...     target=5.0,                   # Daily profit target in percentage
+    ...     start_time="09:00",           # Start time for trading
+    ...     finishing_time="17:00",       # Time to stop opening new positions
+    ...     ending_time="17:30",          # Time to close any open positions
+    ...     max_risk=2.0,                 # Maximum risk allowed on the account in percentage
+    ...     daily_risk=1.0,               # Daily risk allowed in percentage
+    ...     max_trades=5,                 # Maximum number of trades per session
+    ...     rr=2.0,                       # Risk-reward ratio
+    ...     account_leverage=True,        # Use account leverage in calculations
+    ...     std_stop=True,                # Use standard deviation for stop loss calculation
+    ...     sl=20,                        # Stop loss in points (optional)
+    ...     tp=30,                        # Take profit in points (optional)
+    ...     be=10                         # Break-even in points (optional)
+    ... )
 
     >>> # Example to open a buy position
     >>> trade.open_buy_position(mm=True, comment="Opening Buy Position")
@@ -65,7 +90,19 @@ class Trade(RiskManagement):
     >>> time.sleep(sleep_time * 60)
     """
 
-    def __init__(self, **kwargs):
+    def __init__(
+        self,
+        symbol: str,
+        expert_name: str,
+        expert_id: int,
+        version: str,
+        target: float,
+        start_time: str = "6:30",
+        finishing_time: str = "19:30",
+        ending_time: str = "20:30",
+        verbose: Optional[bool] = None,
+        **kwargs,
+    ):
         """
         Initializes the Trade class with the specified parameters.
 
@@ -79,7 +116,7 @@ class Trade(RiskManagement):
             start_time (str): The` hour and minutes` that the expert advisor is able to start to run.
             finishing_time (str): The time after which no new position can be opened.
             ending_time (str): The time after which any open position will be closed.
-            verbose (bool): If set to True (default), account summary and risk managment
+            verbose (bool | None): If set to None (default), account summary and risk managment
                 parameters are printed in the terminal.
 
         Inherits:
@@ -95,20 +132,25 @@ class Trade(RiskManagement):
             -   tp
             -   be
         See the RiskManagement class for more details on these parameters.
-
         """
-        super().__init__(**kwargs)
+        # Call the parent class constructor first
+        super().__init__(
+            symbol=symbol,
+            start_time=start_time,
+            finishing_time=finishing_time,
+            **kwargs,  # Pass kwargs to the parent constructor
+        )
 
-        self.symbol = kwargs.get("symbol", "SPY")
-        self.expert_name = kwargs.get("expert_name", "bbstrader")
-        self.expert_id = kwargs.get("expert_id", 9818)
-        self.version = kwargs.get("version", "1.0")
-        self.target = kwargs.get("target", 1.0)
-        self.verbose = kwargs.get("verbose", True)
-
-        self.start = kwargs.get("start_time", "6:30")
-        self.finishing = kwargs.get("finishing_time", "19:30")
-        self.end = kwargs.get("ending_time", "20:30")
+        # Initialize Trade-specific attributes
+        self.symbol = symbol
+        self.expert_name = expert_name
+        self.expert_id = expert_id
+        self.version = version
+        self.target = target
+        self.verbose = verbose
+        self.start = start_time
+        self.end = ending_time
+        self.finishing = finishing_time
         self.tf = kwargs.get("time_frame", 'D1')
 
         self.lot = self.get_lot()
@@ -128,20 +170,17 @@ class Trade(RiskManagement):
         self.opened_orders = []
         self.break_even_status = []
 
-        print("\nInitializing the basics.")
         self.initialize()
         self.select_symbol()
         self.prepare_symbol()
-        print("Initialization successfully completed.")
 
-        print()
         if self.verbose:
             self.summary()
             time.sleep(1)
             print()
             self.risk_managment()
-        print(
-            f">>> Everything is OK, @{self.expert_name} is Running ....>>>\n")
+            print(
+                f">>> Everything is OK, @{self.expert_name} is Running ....>>>\n")
 
     def initialize(self):
         """
@@ -153,13 +192,18 @@ class Trade(RiskManagement):
         Raises:
             MT5TerminalError: If initialization fails.
         """
-        if not Mt5.initialize():
-            raise_mt5_error(message=INIT_MSG)
-        else:
-            print(
-                f"You are running the @{self.expert_name} Expert advisor,"
-                f" Version @{self.version}, on {self.symbol}."
-            )
+        try:
+            if self.verbose:
+                print("\nInitializing the basics.")
+            if not Mt5.initialize():
+                raise_mt5_error(message=INIT_MSG)
+            if self.verbose:
+                print(
+                    f"You are running the @{self.expert_name} Expert advisor,"
+                    f" Version @{self.version}, on {self.symbol}."
+                )
+        except Exception as e:
+            logger.error(f"During initialization: {e}")
 
     def select_symbol(self):
         """
@@ -172,8 +216,11 @@ class Trade(RiskManagement):
         Raises:
             MT5TerminalError: If symbole selection fails.
         """
-        if not Mt5.symbol_select(self.symbol, True):
-            raise_mt5_error(message=INIT_MSG)
+        try:
+            if not Mt5.symbol_select(self.symbol, True):
+                raise_mt5_error(message=INIT_MSG)
+        except Exception as e:
+            logger.error(f"Selecting symbol '{self.symbol}': {e}")
 
     def prepare_symbol(self):
         """
@@ -185,12 +232,17 @@ class Trade(RiskManagement):
         Raises:
             MT5TerminalError: If the symbol cannot be made visible for trading operations.
         """
-        symbol_info = Mt5.symbol_info(self.symbol)
-        if symbol_info is None:
-            raise_mt5_error(message=INIT_MSG)
+        try:
+            symbol_info = self.get_symbol_info(self.symbol)
+            if symbol_info is None:
+                raise_mt5_error(message=INIT_MSG)
 
-        if not symbol_info.visible:
-            raise_mt5_error(message=INIT_MSG)
+            if not symbol_info.visible:
+                raise_mt5_error(message=INIT_MSG)
+            if self.verbose:
+                print("Initialization successfully completed.")
+        except Exception as e:
+            logger.error(f"Preparing symbol '{self.symbol}': {e}")
 
     def summary(self):
         """Show a brief description about the trading program"""
@@ -216,6 +268,8 @@ class Trade(RiskManagement):
         account_info = self.get_account_info()
         _profit = round(self.get_stats()[1]["total_profit"], 2)
         currency = account_info.currency
+        rates = self.get_currency_rates(self.symbol)
+        marging_currency = rates['mc']
         print(
             "╔═════════════════  Risk Management ═════════════════════╗\n"
             f"║ Account Name                     {account_info.name}\n"
@@ -229,7 +283,7 @@ class Trade(RiskManagement):
             f"║ Account Free Margin              {account_info.margin_free} {currency}\n"
             f"║ Maximum Drawdown                 {self.max_risk}%\n"
             f"║ Risk Allowed                     {round((self.max_risk - self.risk_level()), 2)}%\n"
-            f"║ Volume                           {self.volume()} {currency}\n"
+            f"║ Volume                           {self.volume()} {marging_currency}\n"
             f"║ Risk Per trade                   {-self.get_currency_risk()} {currency}\n"
             f"║ Profit Expected Per trade        {self.expected_profit()} {currency}\n"
             f"║ Lot Size                         {self.lot} Lots\n"
@@ -245,7 +299,7 @@ class Trade(RiskManagement):
             "╚══════════════════════════════════════════════════════╝\n"
         )
 
-    def statistics(self, save=False, dir="stats"):
+    def statistics(self, save=True, dir="stats"):
         """
         Print some statistics for the trading session and save to CSV if specified.
 
@@ -288,7 +342,8 @@ class Trade(RiskManagement):
         )
 
         # Print the formatted statistics
-        print(stats_output)
+        if self.verbose:
+            print(stats_output)
 
         # Save to CSV if specified
         if save:
@@ -327,15 +382,15 @@ class Trade(RiskManagement):
                 writer.writerow(["Statistic", "Value"])
                 for stat, value in statistics_dict.items():
                     writer.writerow([stat, value])
-            print(f"Session statistics saved to {filepath}")
+            logger.info(f"Session statistics saved to {filepath}")
 
     def open_buy_position(
         self,
-        action: str = 'BMKT',
-        price: float = None,
+        action: Literal['BMKT', 'BLMT', 'BSTP', 'BSTPLMT'] = 'BMKT',
+        price: Optional[float] = None,
         mm: bool = True,
-        id: int = None,
-        comment: str = ""
+        id: Optional[int] = None,
+        comment: Optional[str] = None
     ):
         """
         Open a Buy positin
@@ -346,17 +401,17 @@ class Trade(RiskManagement):
             price (float): The price at which to open an order
             id (int): The strategy id or expert Id
             mm (bool): Weither to put stop loss and tp or not
-            comment (str): The comment for the closing position
+            comment (str): The comment for the opening position
         """
         Id = id if id is not None else self.expert_id
-        point = Mt5.symbol_info(self.symbol).point
+        point = self.get_symbol_info(self.symbol).point
         if action != 'BMKT':
             assert price is not None, \
                 "You need to set a price for pending orders"
             _price = price
         else:
-            _price = Mt5.symbol_info_tick(self.symbol).ask
-        digits = Mt5.symbol_info(self.symbol).digits
+            _price = self.get_tick_info(self.symbol).ask
+        digits = self.get_symbol_info(self.symbol).digits
 
         lot = self.get_lot()
         stop_loss = self.get_stop_loss()
@@ -370,7 +425,7 @@ class Trade(RiskManagement):
             "price": _price,
             "deviation": deviation,
             "magic": Id,
-            "comment": comment,
+            "comment": f"@{self.expert_name}" if comment is None else comment,
             "type_time": Mt5.ORDER_TIME_GTC,
             "type_filling": Mt5.ORDER_FILLING_FOK,
         }
@@ -400,11 +455,11 @@ class Trade(RiskManagement):
 
     def open_sell_position(
         self,
-        action='SMKT',
-        price: int = None,
+        action: Literal['SMKT', 'SLMT', 'SSTP', 'SSTPLMT'] = 'SMKT',
+        price: Optional[float] = None,
         mm: bool = True,
-        id: int = None,
-        comment: str = ""
+        id: Optional[int] = None,
+        comment: Optional[str] = None
     ):
         """
         Open a sell positin
@@ -418,14 +473,14 @@ class Trade(RiskManagement):
             comment (str): The comment for the closing position
         """
         Id = id if id is not None else self.expert_id
-        point = Mt5.symbol_info(self.symbol).point
+        point = self.get_symbol_info(self.symbol).point
         if action != 'SMKT':
             assert price is not None, \
                 "You need to set a price for pending orders"
             _price = price
         else:
-            _price = Mt5.symbol_info_tick(self.symbol).bid
-        digits = Mt5.symbol_info(self.symbol).digits
+            _price = self.get_tick_info(self.symbol).bid
+        digits = self.get_symbol_info(self.symbol).digits
 
         lot = self.get_lot()
         stop_loss = self.get_stop_loss()
@@ -439,7 +494,7 @@ class Trade(RiskManagement):
             "price": _price,
             "deviation": deviation,
             "magic": Id,
-            "comment": comment,
+            "comment": f"@{self.expert_name}" if comment is None else comment,
             "type_time": Mt5.ORDER_TIME_GTC,
             "type_filling": Mt5.ORDER_FILLING_FOK,
         }
@@ -454,60 +509,108 @@ class Trade(RiskManagement):
         if self.check(comment):
             self.request_result(_price, request, action)
 
-    def request_result(self, price, request, type):
+    def _risk_free(self):
+        max_trade = self.max_trade()
+        loss_trades = self.get_stats()[0]['loss_trades']
+        if loss_trades >= max_trade:
+            return False
+        return True
+
+    def check(self, comment):
+        """
+        Verify if all conditions for taking a position are valide,
+        These conditions are based on the Maximum risk ,daily risk,
+        the starting, the finishing, and ending trading time.
+
+        Args:
+            comment (str): The comment for the closing position
+        """
+        if self.days_end():
+            return False
+        elif not self.trading_time():
+            logger.info(f"\nNot Trading time, SYMBOL={self.symbol}")
+            return False
+        elif not self.is_risk_ok():
+            logger.error(f"\nRisk not allowed, SYMBOL={self.symbol}")
+            self._check(comment)
+            return False
+        elif not self._risk_free():
+            logger.error(f"Maximum trades Reached, SYMBOL={self.symbol}")
+            self._check(comment)
+            return False
+        elif self.profit_target():
+            self._check(f'Profit target Reached !!! SYMBOL={self.symbol}')
+        return True
+
+    def _check(self, txt: str = ""):
+        if self.positive_profit() or self.get_current_open_positions() is None:
+            self.close_all_positions()
+            logger.info(txt)
+            time.sleep(5)
+            self.statistics(save=True)
+
+    def request_result(
+        self,
+        price: float,
+        request: Dict[str, Any],
+        type: Literal['BMKT', 'BLMT', 'BSTP', 'BSTPLMT',
+                      'SMKT', 'SLMT', 'SSTP', 'SSTPLMT']
+    ):
         """
         Check if a trading order has been sent correctly
 
         Args:
             price (float): Price for opening the position
-            request (dict()): A trade request to sent to Mt5.order_sent()
-                all detail in request can be found on:
-                https://www.mql5.com/en/docs/python_metatrader5/mt5ordersend_py
+            request (Dict[str, Any]): A trade request to sent to Mt5.order_sent()
+                all detail in request can be found here
+                    https://www.mql5.com/en/docs/python_metatrader5/mt5ordersend_py
             type (str): The type of the order 
                 `(BMKT, SMKT, BLMT, SLMT, BSTP, SSTP, BSTPLMT, SSTPLMT)` 
         """
         # Send a trading request
         # Check the execution result
         pos = self._order_type()[type][1]
+        addtionnal = f", SYMBOL={self.symbol}"
         try:
             result = Mt5.order_send(request)
-        except:
-            trade_retcode_message(result.retcode, display=True)
+        except Exception as e:
+            print(f"{self.get_current_time()} -", end=' ')
+            trade_retcode_message(
+                result.retcode, display=True, add_msg=f"{e}{addtionnal}")
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
+            msg = trade_retcode_message(result.retcode)
+            logger.error(
+                f"Trade Order Request, RETCODE={result.retcode}: {msg}{addtionnal}")
             if result.retcode in [
                     Mt5.TRADE_RETCODE_CONNECTION, Mt5.TRADE_RETCODE_TIMEOUT]:
                 tries = 0
                 while result.retcode != Mt5.TRADE_RETCODE_DONE and tries < 5:
-                    msg = trade_retcode_message(result.retcode)
-                    print(
-                        f"Unable to open {pos} Positon on {self.symbol}\n"
-                        f"Error: {msg}.. Trying again"
-                    )
                     time.sleep(1)
                     try:
                         result = Mt5.order_send(request)
-                    except:
-                        trade_retcode_message(result.retcode, display=True)
+                    except Exception as e:
+                        print(f"{self.get_current_time()} -", end=' ')
+                        trade_retcode_message(
+                            result.retcode, display=True, add_msg=f"{e}{addtionnal}")
                     if result.retcode == Mt5.TRADE_RETCODE_DONE:
                         break
                     tries += 1
-            else:
-                trade_retcode_message(result.retcode, display=True)
         # Print the result
         if result.retcode == Mt5.TRADE_RETCODE_DONE:
+            msg = trade_retcode_message(result.retcode)
+            logger.info(f"Trade Order {msg}{addtionnal}")
             if type != "BMKT" or type != "SMKT":
                 self.opened_orders.append(result.order)
-            trade_retcode_message(result.retcode, display=True)
-            now = datetime.now().strftime("%H:%M:%S")
-            print(
-                f"\n1. {pos} Order #{result.order} Sent On {self.symbol}, Price: @{price} \n"
-                f"      Lot(s): {result.volume}, Sl: {self.get_stop_loss()}, "
-                f"Tp: {self.get_take_profit()}, Time: {now}"
+            long_msg = (
+                f"1. {pos} Order #{result.order} Sent, Symbol: {self.symbol}, Price: @{price}, "
+                f"Lot(s): {result.volume}, Sl: {self.get_stop_loss()}, "
+                f"Tp: {self.get_take_profit()}"
             )
+            logger.info(long_msg)
             time.sleep(0.1)
             if type == "BMKT" or type == "SMKT":
                 self.opened_positions.append(result.order)
-                positions = Mt5.positions_get(symbol=self.symbol)
+                positions = self.get_positions(symbol=self.symbol)
                 for position in positions:
                     if position.ticket == result.order:
                         if position.type == 0:
@@ -517,24 +620,26 @@ class Trade(RiskManagement):
                             order_type = "SELL"
                             self.sell_positions.append(position.ticket)
                         profit = round(self.get_account_info().profit, 5)
-                        print(
-                            f"2. {order_type} Position Opened, Price: @{round(position.price_open,5)}, "
-                            f"Sl: @{position.sl} Tp: @{position.tp}\n"
+                        order_info = (
+                            f"2. {order_type} Position Opened, Symbol: {self.symbol}, Price: @{round(position.price_open,5)}, "
+                            f"Sl: @{position.sl} Tp: @{position.tp}"
                         )
-                        print(
-                            f"**[Open Positions on {self.symbol}: {len(positions)}, Open PnL: {profit} "
-                            f"{self.get_account_info().currency}]**\n"
+                        logger.info(order_info)
+                        pos_info = (
+                            f"3. [OPEN POSITIONS ON {self.symbol} = {len(positions)}, ACCOUNT OPEN PnL = {profit} "
+                            f"{self.get_account_info().currency}]\n"
                         )
+                        logger.info(pos_info)
 
     def open_position(
         self,
-        action: str = ...,
+        action: Literal['BMKT', 'BLMT', 'BSTP', 'BSTPLMT', 'SMKT', 'SLMT', 'SSTP', 'SSTPLMT'],
         buy: bool = False,
         sell: bool = False,
-        price: float = None,
-        id: int = None,
+        price: Optional[float] = None,
+        id: Optional[int] = None,
         mm: bool = True,
-        comment: str = ""
+        comment: Optional[str] = None
     ):
         """
         Open a buy or sell position.
@@ -591,16 +696,17 @@ class Trade(RiskManagement):
             return self.break_even_status
         return None
 
-    def get_current_open_orders(self, id=None):
+    def get_current_open_orders(self, id: Optional[int] = None
+                                ) -> List[int] | None:
         """Get All current open orders's tickets
 
         Args:
             id (int): The strategy id or expert Id
         """
-        orders = Mt5.orders_get(symbol=self.symbol)
+        orders = self.get_orders(symbol=self.symbol)
         Id = id if id is not None else self.expert_id
         current_orders = []
-        if len(orders) != 0:
+        if orders is not None:
             for order in orders:
                 if order.magic == Id:
                     current_orders.append(order.ticket)
@@ -611,16 +717,17 @@ class Trade(RiskManagement):
         else:
             return None
 
-    def get_current_open_positions(self, id=None):
+    def get_current_open_positions(self,  id: Optional[int] = None
+                                   ) -> List[int] | None:
         """Get All current open position's tickets
 
         Args:
             id (int): The strategy id or expert Id
         """
-        positions = Mt5.positions_get(symbol=self.symbol)
+        positions = self.get_positions(symbol=self.symbol)
         Id = id if id is not None else self.expert_id
         current_positions = []
-        if len(positions) != 0:
+        if positions is not None:
             for position in positions:
                 if position.magic == Id:
                     current_positions.append(position.ticket)
@@ -631,16 +738,17 @@ class Trade(RiskManagement):
         else:
             return None
 
-    def get_current_win_trades(self, id=None):
+    def get_current_win_trades(self, id: Optional[int] = None
+                               ) -> List[int] | None:
         """Get all active profitable trades
 
         Args:
             id (int): The strategy id or expert Id
         """
-        positions = Mt5.positions_get(symbol=self.symbol)
+        positions = self.get_positions(symbol=self.symbol)
         Id = id if id is not None else self.expert_id
         be_positions = []
-        if len(positions) != 0:
+        if positions is not None:
             for position in positions:
                 if position.magic == Id:
                     if self.win_trade(position, th=self.stop_loss):
@@ -652,7 +760,8 @@ class Trade(RiskManagement):
         else:
             return None
 
-    def positive_profit(self, th: float = None):
+    def positive_profit(self, th: Optional[float] = None
+                        ) -> bool:
         """
         Check is the total profit on current open positions
         Is greater than a minimum profit express as percentage 
@@ -668,7 +777,7 @@ class Trade(RiskManagement):
         if positions is not None:
             for position in positions:
                 time.sleep(0.1)
-                history = Mt5.positions_get(
+                history = self.get_positions(
                     ticket=position
                 )
                 profit += history[0].profit
@@ -679,16 +788,17 @@ class Trade(RiskManagement):
                 return True
         return False
 
-    def get_current_buys(self, id=None):
+    def get_current_buys(self, id: Optional[int] = None
+                         ) -> List[int] | None:
         """Get current buy positions open
 
         Args:
             id (int): The strategy id or expert Id
         """
-        positions = Mt5.positions_get(symbol=self.symbol)
+        positions = self.get_positions(symbol=self.symbol)
         Id = id if id is not None else self.expert_id
         buys = []
-        if len(positions) != 0:
+        if positions is not None:
             for position in positions:
                 if (position.type == 0
                         and position.magic == Id
@@ -701,16 +811,17 @@ class Trade(RiskManagement):
         else:
             return None
 
-    def get_current_sells(self, id=None):
+    def get_current_sells(self, id: Optional[int] = None
+                          ) -> List[int] | None:
         """Get current sell positions open
 
         Args:
             id (int): The strategy id or expert Id
         """
-        positions = Mt5.positions_get(symbol=self.symbol)
+        positions = self.get_positions(symbol=self.symbol)
         Id = id if id is not None else self.expert_id
         sells = []
-        if len(positions) != 0:
+        if positions is not None:
             for position in positions:
                 if (position.type == 1
                         and position.magic == Id
@@ -723,51 +834,7 @@ class Trade(RiskManagement):
         else:
             return None
 
-    def _risk_free(self):
-        max_trade = self.max_trade()
-        loss_trades = self.get_stats()[0]['loss_trades']
-        if loss_trades >= max_trade:
-            return False
-        return True
-
-    def check(self, comment):
-        """
-        Verify if all conditions for taking a position are valide,
-        These conditions are based on the Maximum risk ,daily risk,
-        the starting, the finishing, and ending trading time.
-
-        Args:
-            comment (str): The comment for the closing position
-        """
-        if self.days_end():
-            return False
-        elif not self.trading_time():
-            print("\nSorry It is not time to trade yet.")
-            return False
-        elif not self.is_risk_ok():
-            print(f"\nSorry you can't trade, Please Check the Account balance")
-            self._check()
-            return False
-        elif not self._risk_free():
-            print("Sorry you can't take another trade for today")
-            print("Check you strategy and come back tomorrow !!!!")
-            self._check()
-            return False
-        elif self.profit_target():
-            self._check(
-                f'Congratulations, the profit target is reached for today !!!')
-        return True
-
-    def _check(self, txt: str = ""):
-        if self.positive_profit() or self.get_current_open_positions() is None:
-            self.close_all_positions()
-            print(txt)
-            time.sleep(5)
-            self.statistics(save=True)
-            time.sleep(5)
-            quit()
-
-    def break_even(self, id=None, comment=""):
+    def break_even(self, id: Optional[int] = None):
         """
         Checks if it's time to put the break even,
         if so , it will sets the break even ,and if the break even was already set,
@@ -776,19 +843,18 @@ class Trade(RiskManagement):
 
         Args:
             id (int): The strategy Id or Expert Id
-            comment (str): The comment for the closing position
         """
         time.sleep(0.1)
         Id = id if id is not None else self.expert_id
-        positions = Mt5.positions_get(symbol=self.symbol)
+        positions = self.get_positions(symbol=self.symbol)
         be = self.get_break_even()
-        if len(positions) != 0:
+        if positions is not None:
             for position in positions:
                 if position.magic == Id:
-                    size = Mt5.symbol_info(self.symbol).trade_tick_size
-                    value = Mt5.symbol_info(self.symbol).trade_tick_value
-                    point = Mt5.symbol_info(self.symbol).point
-                    digits = Mt5.symbol_info(self.symbol).digits
+                    size = self.get_symbol_info(self.symbol).trade_tick_size
+                    value = self.get_symbol_info(self.symbol).trade_tick_value
+                    point = self.get_symbol_info(self.symbol).point
+                    digits = self.get_symbol_info(self.symbol).digits
                     points = position.profit * (size / value / position.volume)
                     break_even = float(points/point) >= be
                     if break_even:
@@ -822,22 +888,27 @@ class Trade(RiskManagement):
                                     position, be, price=new_price, level=new_level
                                 )
 
-    def set_break_even(self, position, be, price=None, level=None):
+    def set_break_even(self,
+                       position: TradePosition,
+                       be: int,
+                       price: Optional[float] = None,
+                       level: Optional[float] = None):
         """
         Sets the break-even level for a given trading position.
 
         Args:
-            position (namedtuple):
-                The trading position for which the break-even is to be set.
+            position (TradePosition):
+                The trading position for which the break-even is to be set
+                This is the value return by `mt5.positions_get()`
             be (int): The break-even level in points.
             level (float): The break-even level in price
                 if set to None , it will be calated automaticaly.
             price (float): The break-even price
                 if set to None , it will be calated automaticaly.
         """
-        point = Mt5.symbol_info(self.symbol).point
-        digits = Mt5.symbol_info(self.symbol).digits
-        spread = Mt5.symbol_info(self.symbol).spread
+        point = self.get_symbol_info(self.symbol).point
+        digits = self.get_symbol_info(self.symbol).digits
+        spread = self.get_symbol_info(self.symbol).spread
         fees = self.get_stats()[0]["average_fee"] * -1
         risk = self.currency_risk()["trade_profit"]
         fees_points = round((fees / risk), 3)
@@ -850,7 +921,7 @@ class Trade(RiskManagement):
             _price = break_even_price if price is None else price
             _level = break_even_level if level is None else level
 
-            if Mt5.symbol_info_tick(self.symbol).ask > _level:
+            if self.get_tick_info(self.symbol).ask > _level:
                 # Set the stop loss to break even
                 request = {
                     "action": Mt5.TRADE_ACTION_SLTP,
@@ -869,7 +940,7 @@ class Trade(RiskManagement):
             _price = break_even_price if price is None else price
             _level = break_even_level if level is None else level
 
-            if Mt5.symbol_info_tick(self.symbol).bid < _level:
+            if self.get_tick_info(self.symbol).bid < _level:
                 # Set the stop loss to break even
                 request = {
                     "action": Mt5.TRADE_ACTION_SLTP,
@@ -890,38 +961,45 @@ class Trade(RiskManagement):
             price (float): The price at which the stop loss is to be set.
             request (dict): The request to set the stop loss to break even.
         """
+        addtionnal = f", SYMBOL={self.symbol}"
         time.sleep(0.1)
         try:
             result = Mt5.order_send(request)
-        except:
-            trade_retcode_message(result.retcode, display=True)
+        except Exception as e:
+            print(f"{self.get_current_time()} -", end=' ')
+            trade_retcode_message(
+                result.retcode, display=True, add_msg=f"{e}{addtionnal}")
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
+            msg = trade_retcode_message(result.retcode)
+            logger.error(
+                f"Break-Even Order Request, Position: #{tiket}, RETCODE={result.retcode}: {msg}{addtionnal}")
             tries = 0
             while result.retcode != Mt5.TRADE_RETCODE_DONE and tries < 10:
                 if result.retcode == Mt5.TRADE_RETCODE_NO_CHANGES:
                     break
                 else:
-                    msg = trade_retcode_message(result.retcode)
-                    print(
-                        f"Unable to set break-even for Position: #{tiket}\n"
-                        f"Error: {msg}.. Trying again"
-                    )
                     time.sleep(1)
                     try:
                         result = Mt5.order_send(request)
                     except:
-                        trade_retcode_message(result.retcode, display=True)
+                        print(f"{self.get_current_time()} -", end=' ')
+                        trade_retcode_message(
+                            result.retcode, display=True, add_msg=f"{e}{addtionnal}")
                     if result.retcode == Mt5.TRADE_RETCODE_DONE:
                         break
                 tries += 1
         if result.retcode == Mt5.TRADE_RETCODE_DONE:
-            trade_retcode_message(result.retcode, display=True)
-            print(
-                f"Stop loss set to break-even for Position: #{tiket} at @{price}"
+            msg = trade_retcode_message(result.retcode)
+            logger.info(f"Break-Even Order {msg}{addtionnal}")
+            info = (
+                f"Stop loss set to Break-even, Position: #{tiket}, Symbol: {self.symbol}, Price: @{price}"
             )
+            logger.info(info)
             self.break_even_status.append(tiket)
 
-    def win_trade(self, position, th: int = None) -> bool:
+    def win_trade(self,
+                  position: TradePosition,
+                  th: Optional[int] = None) -> bool:
         """
         Check if a positon is wining or looing
         wen it is closed before be level , tp or sl.
@@ -929,12 +1007,12 @@ class Trade(RiskManagement):
         Args:
             th (int): The minimum profit for a position in point
         """
-        size = Mt5.symbol_info(self.symbol).trade_tick_size
-        value = Mt5.symbol_info(self.symbol).trade_tick_value
+        size = self.get_symbol_info(self.symbol).trade_tick_size
+        value = self.get_symbol_info(self.symbol).trade_tick_value
         points = position.profit * (size / value / position.volume)
 
-        spread = Mt5.symbol_info(self.symbol).spread
-        point = Mt5.symbol_info(self.symbol).point
+        spread = self.get_symbol_info(self.symbol).spread
+        point = self.get_symbol_info(self.symbol).point
         fees = self.get_stats()[0]["average_fee"] * -1
         risk = self.currency_risk()["trade_profit"]
         min_be = round((fees / risk)) + 2
@@ -961,8 +1039,8 @@ class Trade(RiskManagement):
         if len(self.opened_positions) != 0:
             for position in self.opened_positions:
                 time.sleep(0.1)
-                history = Mt5.history_deals_get(
-                    position=position
+                history = self.get_trades_history(
+                    position=position, to_df=False
                 )
                 if len(history) == 2:
                     profit += history[1].profit
@@ -974,25 +1052,33 @@ class Trade(RiskManagement):
                 return True
         return False
 
-    def close_position(self, ticket, id=None, pct=1.0, comment=""):
+    def close_position(self,
+                       ticket: int,
+                       id: Optional[int] = None,
+                       pct: Optional[float] = 1.0,
+                       comment: Optional[str] = None
+                       )->bool:
         """
         Close an open position by it ticket
 
         Args:
-            ticket (int): Positon ticket to close
+            ticket (int): Positon ticket to close (e.g TradePosition.ticket)
             id (int): The unique ID of the Expert or Strategy
             pct (float): Percentage of the position to close
             comment (str): Comment for the closing position
+
+        Returns:
+        -   True if position closed, False otherwise
         """
         # get all Actives positions
         time.sleep(0.1)
         Id = id if id is not None else self.expert_id
-        positions = Mt5.positions_get(symbol=self.symbol)
-        buy_price = Mt5.symbol_info_tick(self.symbol).ask
-        sell_price = Mt5.symbol_info_tick(self.symbol).bid
-        digits = Mt5.symbol_info(self.symbol).digits
+        positions = self.get_positions(symbol=self.symbol)
+        buy_price = self.get_tick_info(self.symbol).ask
+        sell_price = self.get_tick_info(self.symbol).bid
+        digits = self.get_symbol_info(self.symbol).digits
         deviation = self.get_deviation()
-        if len(positions) != 0:
+        if positions is not None:
             for position in positions:
                 if (position.ticket == ticket
                             and position.magic == Id
@@ -1008,72 +1094,114 @@ class Trade(RiskManagement):
                         "price": sell_price if buy else buy_price,
                         "deviation": deviation,
                         "magic": Id,
-                        "comment": comment,
+                        "comment": f"@{self.expert_name}" if comment is None else comment,
                         "type_time": Mt5.ORDER_TIME_GTC,
                         "type_filling": Mt5.ORDER_FILLING_FOK,
                     }
+                    addtionnal = f", SYMBOL={self.symbol}"
                     try:
                         result = Mt5.order_send(request)
-                    except:
-                        trade_retcode_message(result.retcode, display=True)
+                    except Exception as e:
+                        print(f"{self.get_current_time()} -", end=' ')
+                        trade_retcode_message(
+                            result.retcode, display=True, add_msg=f"{e}{addtionnal}")
                     if result.retcode != Mt5.TRADE_RETCODE_DONE:
+                        msg = trade_retcode_message(result.retcode)
+                        logger.error(
+                            f"Closing Order Request, Position: #{ticket}, RETCODE={result.retcode}: {msg}{addtionnal}")
                         tries = 0
                         while result.retcode != Mt5.TRADE_RETCODE_DONE and tries < 5:
-                            msg = trade_retcode_message(result.retcode)
-                            print(
-                                f"Unable to close position: #{ticket}, \n"
-                                f"Error: {msg}.. Trying again"
-                            )
                             time.sleep(1)
                             try:
                                 result = Mt5.order_send(request)
                             except:
+                                print(f"{self.get_current_time()} -", end=' ')
                                 trade_retcode_message(
-                                    result.retcode, display=True)
+                                    result.retcode, display=True, add_msg=f"{e}{addtionnal}")
                             if result.retcode == Mt5.TRADE_RETCODE_DONE:
                                 break
                             tries += 1
                     if result.retcode == Mt5.TRADE_RETCODE_DONE:
-                        trade_retcode_message(result.retcode, display=True)
-                        print(
-                            f"Position #{ticket} closed at @{request['price']}")
+                        msg = trade_retcode_message(result.retcode)
+                        logger.info(
+                            f"Closing Order {msg}{addtionnal}")
+                        info = (
+                            f"Position #{ticket} closed, Symbol: {self.symbol}, Price: @{request['price']}")
+                        logger.info(info)
+                        return True
+                    else:
+                        return False
 
-    def close_all_positions(self, id=None, comment=""):
-        positions = Mt5.positions_get(symbol=self.symbol)
-        while len(positions) != 0:
-            positions = Mt5.positions_get(symbol=self.symbol)
-            for position in positions:
-                self.close_position(position.ticket, id=id, comment=comment)
-        if len(positions) == 0:
-            print(f"\nAll positions closed on {self.symbol}.\n")
+    def close_all_positions(self,
+                            id: Optional[int] = None,
+                            comment: Optional[str] = None):
+        """
+        Args:
+            id (int): The unique ID of the Expert or Strategy
+            comment (str): Comment for the closing position
+        """
+        raw_positions = self.get_positions(symbol=self.symbol)
+        if raw_positions is not None:
+            positions = [position.ticket for position in raw_positions]
+        else:
+            positions = []
+        if len(positions) != 0:
+            for ticket in positions.copy():
+                if self.close_position(ticket, id=id, comment=comment):
+                    positions.remove(ticket)
+                time.sleep(1)
+            if len(positions) == 0:
+                logger.info(f"ALL Positions closed, SYMBOL={self.symbol}.")
+            else:
+                logger.info(
+                    f"{len(positions)} Positions not closed, SYMBOL={self.symbol}")
 
-    def close_all_buys(self, id=None, comment=""):
+    def close_all_buys(self,
+                       id: Optional[int] = None,
+                       comment: Optional[str] = None):
+        """
+        Args:
+            id (int): The unique ID of the Expert or Strategy
+            comment (str): Comment for the closing position
+        """
         positions = self.get_current_buys()
         if positions is not None:
-            for position in positions:
-                self.close_position(position, id=id, comment=comment)
-                positions.remove(position)
-        if positions is None or len(positions) == 0:
-            print(f"\nAll Buy positions closed on {self.symbol}.\n")
-        else:
-            print(f"\nUnable to close all Buy positons on {self.symbol}\n")
+            for position in positions.copy():
+                if self.close_position(position, id=id, comment=comment):
+                    positions.remove(position)
+                time.sleep(1)
+            if len(positions) == 0:
+                logger.info(f"ALL BUY Positions closed, SYMBOL={self.symbol}.")
+            else:
+                logger.info(
+                    f"{len(positions)} BUY Positions not closed, SYMBOL={self.symbol}")
 
-    def close_all_sells(self, id=None, comment=""):
+    def close_all_sells(self,
+                        id: Optional[int] = None,
+                        comment: Optional[str] = None):
+        """
+        Args:
+            id (int): The unique ID of the Expert or Strategy
+            comment (str): Comment for the closing position
+        """
         positions = self.get_current_sells()
         if positions is not None:
-            for position in positions:
-                self.close_position(position, id=id, comment=comment)
-                positions.remove(position)
-        if positions is None or len(positions) == 0:
-            print(f"\nAll Sell positions closed on {self.symbol}.\n")
-        else:
-            print(f"\nUnable to close all Sell positons on {self.symbol}\n")
+            for position in positions.copy():
+                if self.close_position(position, id=id, comment=comment):
+                    positions.remove(position)
+                time.sleep(1)
+            if len(positions) == 0:
+                logger.info(
+                    f"ALL SELL Positions closed, SYMBOL={self.symbol}.")
+            else:
+                logger.info(
+                    f"{len(positions)} SELL Positions not closed, SYMBOL={self.symbol}")
 
-    def get_stats(self) -> tuple:
+    def get_stats(self) -> Tuple[Dict[str, Any]]:
         """
         get some stats about the trading day and trading history
 
-        :return: tuple[dict()]
+        :return: tuple[Dict[str, Any]]
         """
         # get history of deals for one trading session
         profit = 0.0
@@ -1086,7 +1214,7 @@ class Trade(RiskManagement):
         if deals != 0:
             for position in self.opened_positions:
                 time.sleep(0.1)
-                history = Mt5.history_deals_get(
+                history = self.get_trades_history(
                     position=position
                 )
                 if len(history) == 2:
@@ -1123,7 +1251,7 @@ class Trade(RiskManagement):
             }
 
         # Get total stats
-        df = self.get_trade_history()
+        df = self.get_trades_history()
         if df is not None:
             df2 = df.iloc[1:]
             profit = df2["profit"].sum()
@@ -1154,7 +1282,7 @@ class Trade(RiskManagement):
         those compared to a benchmark.
         """
         # Get total history
-        df2 = self.get_trade_history()
+        df2 = self.get_trades_history()
         if df2 is None:
             return 0.0
         df = df2.iloc[1:]
@@ -1213,3 +1341,34 @@ class Trade(RiskManagement):
             minutes = (end - start).total_seconds() // 60
             sleep_time = (24*60) - minutes
             return sleep_time
+
+    def get_current_time(self):
+        return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
+def create_trade_instance(
+        symbols: List[str],
+        params: Dict[str, Any]) -> Dict[str, Trade]:
+    """
+    Creates Trade instances for each symbol provided.
+
+    Args:
+        symbols: A list of trading symbols (e.g., ['AAPL', 'MSFT']).
+        params: A dictionary containing parameters for the Trade instance.
+
+    Returns:
+        A dictionary where keys are symbols and values are corresponding Trade instances.
+
+    Raises:
+        ValueError: If the 'symbols' list is empty or the 'params' dictionary is missing required keys.
+    """
+    instances = {}
+
+    if not symbols:
+        raise ValueError("The 'symbols' list cannot be empty.")
+    for symbol in symbols:
+        try:
+            instances[symbol] = Trade(**params, symbol=symbol)
+        except Exception as e:
+            logger.error(f"Creating Trade instance, SYMBOL={symbol} {e}")
+    return instances
