@@ -1,16 +1,15 @@
-from datetime import datetime
-import warnings, time
 import MetaTrader5 as Mt5
 import pandas as pd
+from datetime import datetime
 from bbstrader.metatrader.utils import (
-    raise_mt5_error, TIMEFRAMES, INIT_MSG
+    raise_mt5_error, TimeFrame, TIMEFRAMES, INIT_MSG
 )
 from pandas.tseries.offsets import CustomBusinessDay
 from pandas.tseries.holiday import USFederalHolidayCalendar
 from typing import Union, Optional
 
 
-class Rates:
+class Rates(object):
     """
     Provides methods to retrieve historical financial data from MetaTrader 5.
 
@@ -31,7 +30,7 @@ class Rates:
     def __init__(
         self,
         symbol: str,
-        time_frame: str = "D1",
+        time_frame: TimeFrame = 'D1',
         start_pos: Optional[int] = None,
         count: Optional[int] = None,
     ):
@@ -68,8 +67,8 @@ class Rates:
             raise_mt5_error(message=INIT_MSG)
 
     def _fetch_data(
-        self, start: Union[int | datetime], 
-        count: Union[int | datetime]
+        self, start: Union[int, datetime],
+        count: Union[int, datetime]
     ) -> Union[pd.DataFrame, None]:
         """Fetches data from MT5 and returns a DataFrame or None."""
         try:
@@ -116,12 +115,6 @@ class Rates:
                 "when calling 'get_rates_from_pos'."
             )
         df = self._fetch_data(self.start_pos, self.count)
-        if df is not None and len(df) < self.count:
-            warnings.warn(
-                f"Data retrieved is less than the requested count. "
-                f"Received {len(df)} bars, expected {self.count}.",
-                UserWarning,
-            )
         return df
 
     def get_historical_data(
@@ -150,7 +143,10 @@ class Rates:
         return df
 
 
-def get_pos_index(start_date: str, time_frame='D1', session_duration=6.5):
+def get_pos_index(
+        start_date: str,
+        time_frame: TimeFrame = 'D1',
+        session_duration: float = 6.5):
     """
     Calculate the starting index for a given time frame and session duration.
     This is use in the `Rates()` if you want to get data starting from specific
@@ -158,7 +154,7 @@ def get_pos_index(start_date: str, time_frame='D1', session_duration=6.5):
 
     Args:
         start_date (str): Start date in 'YYYY-MM-DD' format.
-        time_frame (str): Time frame (e.g., 'D1', '1h', '15m').
+        time_frame (str): TimeFrame (e.g., 'D1', '1h', '15m').
         session_duration (float): Number of trading hours per day.
 
     Returns:
@@ -186,29 +182,15 @@ def get_pos_index(start_date: str, time_frame='D1', session_duration=6.5):
     # Calculate the number of trading days
     trading_days = len(trading_days)
     td = trading_days
-    time_frame_mapping = {
-        '1m':  int(td * (60 / 1) * session_duration),
-        '2m':  int(td * (60 / 2) * session_duration),
-        '3m':  int(td * (60 / 3) * session_duration),
-        '4m':  int(td * (60 / 4) * session_duration),
-        '5m':  int(td * (60 / 5) * session_duration),
-        '6m':  int(td * (60 / 6) * session_duration),
-        '10m': int(td * (60 / 10) * session_duration),
-        '12m': int(td * (60 / 12) * session_duration),
-        '15m': int(td * (60 / 15) * session_duration),
-        '20m': int(td * (60 / 20) * session_duration),
-        '30m': int(td * (60 / 30) * session_duration),
-        '1h':  int(td * (60 / 60) * session_duration),
-        '2h':  int(td * (60 / 120) * session_duration),
-        '3h':  int(td * (60 / 180) * session_duration),
-        '4h':  int(td * (60 / 240) * session_duration),
-        '6h':  int(td * (60 / 360) * session_duration),
-        '8h':  int(td * (60 / 480) * session_duration),
-        '12h': int(td * (60 / 720) * session_duration),
-        'D1':  int(td)
-    }
+    time_frame_mapping = {}
+    for minutes in [1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30, 60, 120, 180, 240, 360, 480, 720]:
+        key = f"{minutes//60}h" if minutes >= 60 else f"{minutes}m"
+    time_frame_mapping[key] = int(td * (60 / minutes) * session_duration)
+
+    time_frame_mapping['D1'] = int(td)
     if time_frame not in time_frame_mapping:
         pv = list(time_frame_mapping.keys())
         raise ValueError(f"Unsupported time frame, Possible Values are {pv}")
+
     index = time_frame_mapping.get(time_frame, 0)-1
     return max(index, 0)
