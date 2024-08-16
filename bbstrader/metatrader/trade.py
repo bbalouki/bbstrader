@@ -528,10 +528,10 @@ class Trade(RiskManagement):
         if self.days_end():
             return False
         elif not self.trading_time():
-            logger.info(f"\nNot Trading time, SYMBOL={self.symbol}")
+            logger.info(f"Not Trading time, SYMBOL={self.symbol}")
             return False
         elif not self.is_risk_ok():
-            logger.error(f"\nRisk not allowed, SYMBOL={self.symbol}")
+            logger.error(f"Risk not allowed, SYMBOL={self.symbol}")
             self._check(comment)
             return False
         elif not self._risk_free():
@@ -572,7 +572,8 @@ class Trade(RiskManagement):
         pos = self._order_type()[type][1]
         addtionnal = f", SYMBOL={self.symbol}"
         try:
-            result = Mt5.order_send(request)
+            check_result = self.check_order(request)
+            result = self.send_order(request)
         except Exception as e:
             print(f"{self.get_current_time()} -", end=' ')
             trade_retcode_message(
@@ -587,7 +588,8 @@ class Trade(RiskManagement):
                 while result.retcode != Mt5.TRADE_RETCODE_DONE and tries < 5:
                     time.sleep(1)
                     try:
-                        result = Mt5.order_send(request)
+                        check_result = self.check_order(request)
+                        result = self.send_order(request)
                     except Exception as e:
                         print(f"{self.get_current_time()} -", end=' ')
                         trade_retcode_message(
@@ -964,7 +966,8 @@ class Trade(RiskManagement):
         addtionnal = f", SYMBOL={self.symbol}"
         time.sleep(0.1)
         try:
-            result = Mt5.order_send(request)
+            check_result = self.check_order(request)
+            result = self.send_order(request)
         except Exception as e:
             print(f"{self.get_current_time()} -", end=' ')
             trade_retcode_message(
@@ -980,8 +983,9 @@ class Trade(RiskManagement):
                 else:
                     time.sleep(1)
                     try:
-                        result = Mt5.order_send(request)
-                    except:
+                        check_result = self.check_order(request)
+                        result = self.send_order(request)
+                    except Exception as e:
                         print(f"{self.get_current_time()} -", end=' ')
                         trade_retcode_message(
                             result.retcode, display=True, add_msg=f"{e}{addtionnal}")
@@ -1039,6 +1043,9 @@ class Trade(RiskManagement):
         if len(self.opened_positions) != 0:
             for position in self.opened_positions:
                 time.sleep(0.1)
+                # This return two TradeDeal Object,
+                # The first one is the one the opening order
+                # The second is the closing order
                 history = self.get_trades_history(
                     position=position, to_df=False
                 )
@@ -1100,7 +1107,8 @@ class Trade(RiskManagement):
                     }
                     addtionnal = f", SYMBOL={self.symbol}"
                     try:
-                        result = Mt5.order_send(request)
+                        check_result = self.check_order(request)
+                        result = self.send_order(request)
                     except Exception as e:
                         print(f"{self.get_current_time()} -", end=' ')
                         trade_retcode_message(
@@ -1113,8 +1121,9 @@ class Trade(RiskManagement):
                         while result.retcode != Mt5.TRADE_RETCODE_DONE and tries < 5:
                             time.sleep(1)
                             try:
-                                result = Mt5.order_send(request)
-                            except:
+                                check_result = self.check_order(request)
+                                result = self.send_order(request)
+                            except Exception as e:
                                 print(f"{self.get_current_time()} -", end=' ')
                                 trade_retcode_message(
                                     result.retcode, display=True, add_msg=f"{e}{addtionnal}")
@@ -1215,7 +1224,7 @@ class Trade(RiskManagement):
             for position in self.opened_positions:
                 time.sleep(0.1)
                 history = self.get_trades_history(
-                    position=position
+                    position=position, to_df=False
                 )
                 if len(history) == 2:
                     result = history[1].profit

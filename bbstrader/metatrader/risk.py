@@ -6,9 +6,10 @@ import MetaTrader5 as Mt5
 from bbstrader.metatrader.account import Account
 from bbstrader.metatrader.rates import Rates
 from bbstrader.metatrader.utils import (
-    TIMEFRAMES, raise_mt5_error, TimeFrame
+    TIMEFRAMES, raise_mt5_error, TimeFrame,
+    _ADMIRAL_MARKETS_FUTURES_, _COMMD_SUPPORTED_
 )
-from typing import List, Dict, Optional, Literal
+from typing import List, Dict, Optional, Literal, Union, Any
 
 TF_MAPPING = TIMEFRAMES
 
@@ -312,12 +313,7 @@ class RiskManagement(Account):
         if self.tp is not None:
             return self.tp + deviation
         else:
-            risk = self.currency_risk()
-            if risk['trade_profit'] != 0:
-                tp = round((risk['currency_risk'] /
-                            risk['trade_profit']) * self.rr)
-                return (tp+deviation) if tp > 0 else deviation
-            return deviation
+            return self.get_stop_loss()*self.rr
 
     def get_stop_loss(self) -> int:
         """calculates the stop loss of a trade in points"""
@@ -341,21 +337,20 @@ class RiskManagement(Account):
 
     def expected_profit(self):
         """Calculate the expected profit per trade"""
-        tp = self.get_take_profit()
-        trade_profit = self.currency_risk()['trade_profit']
-        return round(tp*trade_profit, 2)
+        risk = self.get_currency_risk()
+        return round(risk*self.rr, 2)
 
     def volume(self):
         """Volume per trade"""
 
         return self.currency_risk()['volume']
 
-    def currency_risk(self) -> dict:
+    def currency_risk(self) -> Dict[str, Union[int, float, Any]]:
         """
         calculates the currency risk of a trade
 
         Returns:
-            A dictionary containing the following keys:
+        -   A dictionary containing the following keys:
                 `'currency_risk'`: dollars amount risk on a single trade,
                 `'trade_loss'`: Loss value per tick in dollars,
                 `'trade_profit'`: Profit value per tick in dollars,
@@ -373,23 +368,16 @@ class RiskManagement(Account):
         FX = self.get_symbol_type(self.symbol) == 'FX'
         COMD = self.get_symbol_type(self.symbol) == 'COMD'
         FUT = self.get_symbol_type(self.symbol) == 'FUT'
+        CRYPTO = self.get_symbol_type(self.symbol) == 'CRYPTO'
         if COMD:
-            supported = [
-                "GOLD", "XAUEUR", "SILVER", "BRENT", "CRUDOIL", "NGAS"
-            ]
-            if self.symbol not in supported:
+            supported = _COMMD_SUPPORTED_
+            if self.symbol.split('.')[0] not in supported:
                 raise ValueError(
                     f"Currency risk calculation for '{self.symbol}' is not a currently supported. \n"
                     f"Supported commodity symbols are: {', '.join(supported)}"
                 )
         if FUT:
-            supported = [
-                '#USTNote_', '#Bund_', '#USDX_', '_AUS200_', '_Canada60_', '_SouthAfrica40_',
-                '_STXE600_', '_EURO50_', '_GER40_', '_GermanyTech30_', '_MidCapGER50_',
-                '_SWISS20_', '_UK100_', '_USNASDAQ100_', '_YM_', '_ES_', '_CrudeOilUS_',
-                '_DUTCH25_', '_FRANCE40_', '_NORWAY25_', '_SPAIN35_', '_CrudeOilUK_',
-                '_XAU_', '_HK50_', '_HSCEI50_'
-            ]
+            supported = _ADMIRAL_MARKETS_FUTURES_
             if self.symbol[:-2] not in supported:
                 raise ValueError(
                     f"Currency risk calculation for '{self.symbol}' is not a currently supported. \n"
@@ -397,7 +385,7 @@ class RiskManagement(Account):
                 )
         if trade_risk > 0:
             currency_risk = round(self.var_loss_value(), 5)
-            volume = currency_risk*laverage
+            volume = round(currency_risk*laverage)
             _lot = round((volume / (contract_size * av_price)), 2)
             lot = self._check_lot(_lot)
             if COMD and contract_size > 1:
@@ -412,7 +400,7 @@ class RiskManagement(Account):
             tick_value_loss = s_info.trade_tick_value_loss
             tick_value_profit = s_info.trade_tick_value_profit
 
-            if COMD or FUT and contract_size > 1:
+            if COMD or FUT or CRYPTO and contract_size > 1:
                 tick_value_loss = tick_value_loss / contract_size
                 tick_value_profit = tick_value_profit / contract_size
             if (tick_value == 0
@@ -438,7 +426,7 @@ class RiskManagement(Account):
                 lot = self._check_lot(lot_)
                 volume = round(lot * contract_size * av_price)
 
-                if COMD and contract_size > 1:
+                if COMD or CRYPTO and contract_size > 1:
                     # trade_risk = points * tick_value_loss * lot
                     lot = currency_risk / \
                         (self.sl * tick_value_loss*contract_size)
@@ -446,7 +434,7 @@ class RiskManagement(Account):
                     trade_loss = lot * contract_size * tick_value_loss
 
                 if FX:
-                    volume = (trade_loss * contract_size) / tick_value_loss
+                    volume = round((trade_loss * contract_size) / tick_value_loss)
                     __lot = round((volume / contract_size), 2)
                     lot = self._check_lot(__lot)
 
@@ -474,6 +462,7 @@ class RiskManagement(Account):
                     trade_loss = (lot * contract_size) * tick_value_loss
                     trade_profit = (lot * contract_size) * tick_value_profit
 
+
             if self.get_symbol_type(self.symbol) == 'IDX':
                 rates = self.get_currency_rates(self.symbol)
                 if rates['mc'] == rates['pc'] == 'JPY':
@@ -484,9 +473,9 @@ class RiskManagement(Account):
                             Currency risk"""
                         )
                     lot = lot * contract_size
-                    volume = lot * av_price * contract_size
+                    volume = round(lot * av_price * contract_size)
             if contract_size == 1:
-                volume = lot * av_price
+                volume = round(lot * av_price)
 
             return {
                 'currency_risk': currency_risk,
@@ -497,9 +486,9 @@ class RiskManagement(Account):
             }
         else:
             return {
-                'currency_risk': 0,
-                'trade_loss': 0,
-                'trade_profit': 0,
+                'currency_risk': 0.0,
+                'trade_loss': 0.0,
+                'trade_profit': 0.0,
                 'volume': 0,
                 'lot': 0.01
             }
@@ -524,12 +513,13 @@ class RiskManagement(Account):
 
         volume = round(lot * size * av_price)
         if self.get_symbol_type(self.symbol) == 'FX':
-            volume = (trade_loss * size) / loss
+            volume = round((trade_loss * size) / loss)
             __lot = round((volume / size), 2)
             lot = self._check_lot(__lot)
 
         if (
             self.get_symbol_type(self.symbol) == 'COMD'
+            or self.get_symbol_type(self.symbol) == 'CRYPTO'
             and size > 1
         ):
             lot = currency_risk / (sl * loss * size)

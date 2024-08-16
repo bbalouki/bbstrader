@@ -6,8 +6,10 @@ from datetime import datetime
 import MetaTrader5 as mt5
 from currency_converter import SINGLE_DAY_ECB_URL, CurrencyConverter
 from bbstrader.metatrader.utils import (
-    raise_mt5_error, INIT_MSG, AccountInfo, TerminalInfo, SymbolInfo,
-    TradePosition, TradeOrder, TradeDeal, TickInfo
+    _BROKERS_, _ADMIRAL_MARKETS_URL_, _JUST_MARKETS_URL_, INIT_MSG,
+    raise_mt5_error, AccountInfo, TerminalInfo, _SYMBOLS_TYPE_,
+    SymbolInfo, TickInfo, TradeRequest, OrderCheckResult,
+    OrderSentResult, TradePosition, TradeOrder, TradeDeal,
 )
 from typing import Tuple, Union, List, Dict, Optional, Literal
 
@@ -51,6 +53,18 @@ class Account(object):
     def __init__(self):
         if not mt5.initialize():
             raise_mt5_error(message=INIT_MSG)
+        self._check_brokers()
+
+    def _check_brokers(self):
+        supported = _BROKERS_
+        broker = self.get_terminal_info().company
+        if broker not in supported.values():
+            raise ValueError(
+                f"{broker} is not currently supported broker for the Account() class\n"
+                f"Currently Supported brokers are: {', '.join(supported)}\n"
+                f"For {_BROKERS_['AMG']}, See {_ADMIRAL_MARKETS_URL_}\n"
+                f"For {_BROKERS_['JGM']}, See {_JUST_MARKETS_URL_}"
+            )
 
     def get_account_info(
         self,
@@ -111,22 +125,51 @@ class Account(object):
             except Exception as e:
                 raise_mt5_error(e)
 
-    def show_account_info(self):
-        """ helper function to  print account info"""
+    def _show_info(self, info_getter, info_name, symbol=None):
+        """
+        Generic function to retrieve and print information.
 
-        account_info = self.get_account_info()
-        if account_info is not None:
-            # set trading account data in the form of a dictionary
-            account_info_dict = account_info._asdict()
-            # convert the dictionary into DataFrame and print
-            df = pd.DataFrame(list(account_info_dict.items()),
+        Args:
+            info_getter (callable): Function to retrieve the information.
+            info_name (str): Name of the information being retrieved.
+            symbol (str, optional): Symbol name, required for some info types. 
+                                     Defaults to None.
+
+        Raises:
+            MT5TerminalError: A specific exception based on the error code.
+        """
+
+        # Call the provided info retrieval function
+        if symbol is not None:
+            info = info_getter(symbol)
+        else:
+            info = info_getter()
+
+        if info is not None:
+            info_dict = info._asdict()
+            df = pd.DataFrame(list(info_dict.items()),
                               columns=['PROPERTY', 'VALUE'])
-            print("\nACCOUNT INFORMATIONS:")
+
+            # Construct the print message based on whether a symbol is provided
+            if symbol:
+                print(
+                    f"\n{info_name.upper()} INFO FOR {symbol} ({info.description})")
+            else:
+                print(f"\n{info_name.upper()} INFORMATIONS:")
+
             pd.set_option('display.max_rows', None)
             pd.set_option('display.max_columns', None)
             print(df.to_string())
         else:
-            raise_mt5_error()
+            if symbol:
+                msg = self._symbol_info_msg(symbol)
+                raise_mt5_error(message=msg)
+            else:
+                raise_mt5_error()
+
+    def show_account_info(self):
+        """ Helper function to  print account info"""
+        self._show_info(self.get_account_info, "account")
 
     def get_terminal_info(self, show=False) -> Union[TerminalInfo, None]:
         """
@@ -148,6 +191,7 @@ class Account(object):
                 return None
         except Exception as e:
             raise_mt5_error(e)
+
         terminal_info_dict = terminal_info._asdict()
         # convert the dictionary into DataFrame and print
         df = pd.DataFrame(list(terminal_info_dict.items()),
@@ -183,7 +227,7 @@ class Account(object):
         supported = c.currencies
         if (from_c not in supported or
                 to_c not in supported
-            ):
+                ):
             rate = qty
         else:
             rate = c.convert(amount=qty, currency=from_c, new_currency=to_c)
@@ -213,7 +257,7 @@ class Account(object):
         return {'bc': bc, 'mc': mc, 'pc': pc, 'ac': ac}
 
     def get_symbols(self,
-                    symbol_type="all",
+                    symbol_type="ALL",
                     check_etf=False,
                     save=False,
                     file_name="symbols",
@@ -224,15 +268,15 @@ class Account(object):
         Get all specified financial instruments from the MetaTrader 5 terminal.
 
         Args:
-            symbol_type (str): The category of instrument to get. Possible values:
-                - 'all': For all available symbols
-                - 'stocks': Stocks (e.g., 'GOOGL')
-                - 'etf': ETFs (e.g., 'QQQ')
-                - 'indices': Indices (e.g., 'SP500')
-                - 'forex': Forex pairs (e.g., 'EURUSD')
-                - 'commodities': Commodities (e.g., 'CRUDOIL', 'GOLD')
-                - 'futures': Futures (e.g., 'USTNote_U4')
-                - 'cryptos': Cryptocurrencies (e.g., 'BTC', 'ETH')
+            symbol_type (str): The category of instrument to get. 
+                - `ALL`: For all available symbols
+                - `STK`: Stocks (e.g., 'GOOGL')
+                - `ETF`: ETFs (e.g., 'QQQ')
+                - `IDX`: Indices (e.g., 'SP500')
+                - `FX`: Forex pairs (e.g., 'EURUSD')
+                - `COMD`: Commodities (e.g., 'CRUDOIL', 'GOLD')
+                - `FUT`: Futures (e.g., 'USTNote_U4')
+                - `CRYPTO`: Cryptocurrencies (e.g., 'BTC', 'ETH')
 
             check_etf (bool): If True and symbol_type is 'etf', check if the 
                 ETF description contains 'ETF'.
@@ -256,17 +300,9 @@ class Account(object):
             raise_mt5_error()
 
         symbol_list = []
-        patterns = {
-            "stocks": r'\b(Stocks?)\b',
-            "etf": r'\b(ETFs?)\b',
-            "indices": r'\b(Indices?)\b',
-            "forex": r'\b(Forex)\b',
-            "commodities": r'\b(Metals?|Agricultures?|Energies?)\b',
-            "futures": r'\b(Futures?)\b',
-            "cryptos": r'\b(Cryptos?)\b'
-        }
+        patterns = _SYMBOLS_TYPE_
 
-        if symbol_type != 'all':
+        if symbol_type != 'ALL':
             if symbol_type not in patterns:
                 raise ValueError(f"Unsupported symbol type: {symbol_type}")
 
@@ -276,15 +312,14 @@ class Account(object):
             with open(file_path, mode='w', encoding='utf-8') as file:
                 for s in symbols:
                     info = self.get_symbol_info(s.name)
-                    if symbol_type == 'all':
+                    if symbol_type == 'ALL':
                         self._write_symbol(file, info, include_desc, max_lengh)
                         symbol_list.append(s.name)
                     else:
-                        pattern = re.compile(
-                            patterns[symbol_type], re.IGNORECASE)
+                        pattern = re.compile(patterns[symbol_type])
                         match = re.search(pattern, info.path)
                         if match:
-                            if symbol_type == "etf" and check_etf and "ETF" not in info.description:
+                            if symbol_type == "ETF" and check_etf and "ETF" not in info.description:
                                 raise ValueError(
                                     f"{info.name} doesn't have 'ETF' in its description. "
                                     "If this is intended, set check_etf=False."
@@ -296,13 +331,14 @@ class Account(object):
         else:  # If not saving to a file, just process the symbols
             for s in symbols:
                 info = self.get_symbol_info(s.name)
-                if symbol_type == 'all':
+                if symbol_type == 'ALL':
                     symbol_list.append(s.name)
                 else:
-                    pattern = re.compile(patterns[symbol_type], re.IGNORECASE)
+                    pattern = re.compile(
+                        patterns[symbol_type])  # , re.IGNORECASE
                     match = re.search(pattern, info.path)
                     if match:
-                        if symbol_type == "etf" and check_etf and "ETF" not in info.description:
+                        if symbol_type == "ETF" and check_etf and "ETF" not in info.description:
                             raise ValueError(
                                 f"{info.name} doesn't have 'ETF' in its description. "
                                 "If this is intended, set check_etf=False."
@@ -311,13 +347,17 @@ class Account(object):
 
         # Print a summary of the retrieved symbols
         if display_total:
-            if symbol_type == 'etf':
-                type_name = "ETFs"
-            elif symbol_type == 'forex':
-                type_name = 'Forex Pairs'
-            else:
-                type_name = symbol_type.capitalize()
-            print(f"Total {type_name}: {len(symbol_list)}")
+            names = {
+                "ALL": 'Symbols',
+                "STK": 'Stocks',
+                "ETF": 'ETFs',
+                "IDX": 'Indices',
+                "FX":  'Forex Paires',
+                "COMD": 'Commodities',
+                "FUT": 'Futures',
+                "CRYPTO": 'Cryptos Assets'
+            }
+            print(f"Total {names[symbol_type]}: {len(symbol_list)}")
 
         return symbol_list
 
@@ -342,28 +382,20 @@ class Account(object):
             symbol (str): The symbol of the financial instrument (e.g., `GOOGL`, `EURUSD`).
 
         Returns:
-            str: The type of the symbol:
-                - `STK` for  Stocks (e.g., `GOOGL')
-                - `ETF` for ETFs (e.g., `QQQ`)
-                - `IDX` for Indices (e.g., `SP500')
-                - `FX` for Forex pairs (e.g., `EURUSD`)
-                - `COMD` for Commodities (e.g., `CRUDOIL`, `GOLD`)
-                - `FUT` for Futures (e.g., `USTNote_U4`)
-                - `CRYPTO` for Cryptocurrencies (e.g., `BTC`, `ETH`) 
+        -   symbol_type (str):
+            - `STK`: For  Stocks (e.g., `GOOGL')
+            - `ETF`: For ETFs (e.g., `QQQ`)
+            - `IDX`: For Indices (e.g., `SP500')
+            - `FX` : For Forex pairs (e.g., `EURUSD`)
+            - `COMD`:For Commodities (e.g., `CRUDOIL`, `GOLD`)
+            - `FUT` : For Futures (e.g., `USTNote_U4`)
+            - `CRYPTO`: For Cryptocurrencies (e.g., `BTC`, `ETH`) 
                 Returns `unknown` if the type cannot be determined. 
         """
-        patterns = {
-            "STK": r'\b(Stocks?)\b',
-            "ETF": r'\b(ETFs?)\b',
-            "IDX": r'\b(Indices?)\b',
-            "FX": r'\b(Forex)\b',
-            "COMD": r'\b(Metals?|Agricultures?|Energies?)\b',
-            "FUT": r'\b(Futures?)\b',
-            "CRYPTO": r'\b(Cryptos?)\b'
-        }
+        patterns = _SYMBOLS_TYPE_
         info = self.get_symbol_info(symbol)
         for symbol_type, pattern in patterns.items():
-            match = re.search(pattern, info.path, re.IGNORECASE)
+            match = re.search(pattern, info.path)  # , re.IGNORECASE
             if match:
                 return symbol_type
         return "unknown"
@@ -402,6 +434,10 @@ class Account(object):
 
         Raises:
             ValueError: If an unsupported category is provided.
+        
+        Notes:
+            This mthods works primarly with Admirals Group AS products,
+            For other brokers use `get_symbols()`
         """
         fx_categories = {
             "majors": r"\b(Majors?)\b",
@@ -439,6 +475,10 @@ class Account(object):
 
         Raises:
             ValueError: If an unsupported country is provided.
+        
+        Notes:
+            This mthods works primarly with Admirals Group AS products,
+            For other brokers use `get_symbols()`
         """
         country_map = {
             "USA": r"\b(US)\b",
@@ -487,24 +527,8 @@ class Account(object):
 
         Args:
             symbol (str): Symbol name
-
-        Raises:
-            MT5TerminalError: A specific exception based on the error code.
         """
-        symbol_info = self.get_symbol_info(symbol)
-        if symbol_info is not None:
-            # display data in the form of a list
-            symbol_info_dict = symbol_info._asdict()
-            # convert the dictionary into DataFrame and print
-            df = pd.DataFrame(list(symbol_info_dict.items()),
-                              columns=['PROPERTY', 'VALUE'])
-            print(f"\nSYMBOL INFO FOR {symbol} ({symbol_info.description})")
-            pd.set_option('display.max_rows', None)
-            pd.set_option('display.max_columns', None)
-            print(df.to_string())
-        else:
-            msg = self._symbol_info_msg(symbol)
-            raise_mt5_error(message=msg)
+        self._show_info(self.get_symbol_info, "symbol", symbol=symbol)
 
     def _symbol_info_msg(self, symbol):
         return (
@@ -536,6 +560,65 @@ class Account(object):
         except Exception as e:
             msg = self._symbol_info_msg(symbol)
             raise_mt5_error(message=f"{e+msg}")
+
+    def show_tick_info(self, symbol: str):
+        """
+        Print Tick properties
+
+        Args:
+            symbol (str): Symbol name
+        """
+        self._show_info(self.get_tick_info, "tick", symbol=symbol)
+
+    def check_order(self,
+                    request: TradeRequest) -> OrderCheckResult:
+        """
+        Check funds sufficiency for performing a required trading operation.
+
+        Args:
+            request (TradeRequest): `TradeRequest` type structure describing 
+                a required trading action. Required unnamed parameter. 
+
+        Returns:
+        -   Check result as the `OrderCheckResult` structure. 
+            The request field in the answer contains the structureof a trading request 
+            passed to `check_order()`.
+
+        Raises:
+            MT5TerminalError: A specific exception based on the error code.
+
+        Notes:
+            Successful sending of a request does not entail that the requested trading 
+            operation will be executed successfully. 
+        """
+        try:
+            result = mt5.order_check(request)
+            return OrderCheckResult(**result._asdict())
+        except Exception as e:
+            raise_mt5_error(e)
+
+    def send_order(self,
+                   request: TradeRequest) -> OrderSentResult:
+        """
+        Send a request to perform a trading operation from the terminal to the trade server. 
+
+         Args:
+            request (TradeRequest): `OrderSentResult` type structure describing a required 
+            trading action. Required unnamed parameter.
+
+        Returns:
+        -   Execution result as the `OrderSentResult` structure. 
+            The request field in the answer contains the structure of a trading request 
+            passed to `send_order()`.
+
+        Raises:
+            MT5TerminalError: A specific exception based on the error code.
+        """
+        try:
+            result = mt5.order_send(request)
+            return OrderSentResult(**result._asdict())
+        except Exception as e:
+            raise_mt5_error(e)
 
     def get_positions(self,
                       symbol: Optional[str] = None,
@@ -605,7 +688,8 @@ class Account(object):
                     axis=1, inplace=True)
             return df
         else:
-            trade_positions = [TradePosition(**p._asdict()) for p in positions]
+            trade_positions = [
+                TradePosition(**p._asdict()) for p in positions]
             return tuple(trade_positions)
 
     def get_trades_history(
@@ -613,8 +697,8 @@ class Account(object):
         date_from: datetime = datetime(2000, 1, 1),
         date_to: Optional[datetime] = None,
         group: Optional[str] = None,
-        ticket: Optional[int] = None,  # TradeDeal.ticket
-        position: Optional[int] = None,  # TradeDeal.order
+        ticket: Optional[int] = None,   # TradeDeal.ticket
+        position: Optional[int] = None,  # TradePosition.ticket
         to_df: bool = True,
         save: bool = False
     ) -> Union[pd.DataFrame, Tuple[TradeDeal], None]:
@@ -700,9 +784,8 @@ class Account(object):
         if to_df:
             return df
         else:
-            position_deals = [TradeDeal(**td._asdict())
-                              for td in position_deals]
-
+            position_deals = [
+                TradeDeal(**td._asdict())for td in position_deals]
             return tuple(position_deals)
 
     def get_orders(self,
@@ -871,6 +954,6 @@ class Account(object):
         if to_df:
             return df
         else:
-            history_orders = [TradeOrder(**td._asdict())
-                              for td in history_orders]
+            history_orders = [
+                TradeOrder(**td._asdict())for td in history_orders]
             return tuple(history_orders)
