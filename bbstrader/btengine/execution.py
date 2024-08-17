@@ -1,7 +1,7 @@
 import datetime
-from bbstrader.btengine.event import FillEvent, OrderEvent
 from queue import Queue
 from abc import ABCMeta, abstractmethod
+from bbstrader.btengine.event import FillEvent, OrderEvent
 
 __all__ = [
     "ExecutionHandler",

@@ -36,7 +36,7 @@ class DataHandler(metaclass=ABCMeta):
     without affecting strategy or portfolio calculation.
 
     Specific example subclasses could include `HistoricCSVDataHandler`, 
-    `EODHDDataHandler`, `FMPDataHandler`, `IBMarketFeedDataHandler` etc.
+    `YFinanceDataHandler`, `FMPDataHandler`, `IBMarketFeedDataHandler` etc.
     """
 
     @abstractmethod
@@ -297,7 +297,7 @@ class MT5HistoricDataHandler(BaseCSVDataHandler):
         self.data_dir = kwargs.get('mt5_data', 'mt5_data')
         self.start_pos = self.get_start_pos()
         self.symbol_list = symbol_list
-        csv_dir = self._download_data()
+        csv_dir = self._download_data(self.data_dir)
         super().__init__(events, symbol_list, csv_dir)
 
     def get_start_pos(self):
@@ -310,8 +310,8 @@ class MT5HistoricDataHandler(BaseCSVDataHandler):
             index = get_pos_index(self.index, self.tf, session_duration=sd)
         return index
 
-    def _download_data(self):
-        data_dir = Path() / str(self.data_dir)
+    def _download_data(self, cache_dir: str):
+        data_dir = Path() / cache_dir
         data_dir.mkdir(parents=True, exist_ok=True)
         for symbol in self.symbol_list:
             try:
@@ -337,7 +337,7 @@ class YFHistoricDataHandler(BaseCSVDataHandler):
     This class is useful when working with historical daily prices.
     """
 
-    def __init__(self, events: Queue, symbol_list: list[str], **kwargs):
+    def __init__(self, events: Queue, symbol_list: List[str], **kwargs):
         """
         Args:
             events (Queue): The Event Queue for passing market events.
@@ -371,13 +371,15 @@ class YFHistoricDataHandler(BaseCSVDataHandler):
 
 
 # TODO # Get data from FinancialModelingPrep ()
-class BaseFMPDataHanler(DataHandler):
+class FMPHistoricDataHandler(BaseCSVDataHandler):
     ...
 
 
-class FMPHistoricDataHandler(BaseFMPDataHanler):
+class BaseFMPDataHanler(object):
     ...
 
 
 class FMPFundamentalDataHandler(BaseFMPDataHanler):
     ...
+
+# TODO Add other Handlers

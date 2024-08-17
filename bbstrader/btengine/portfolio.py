@@ -1,9 +1,9 @@
 import pandas as pd
+from queue import Queue
+from datetime import datetime
 from bbstrader.btengine.event import (
     OrderEvent, FillEvent, MarketEvent, SignalEvent
 )
-from queue import Queue
-from datetime import datetime
 from bbstrader.btengine.data import DataHandler
 from bbstrader.btengine.performance import (
     create_drawdowns, plot_performance,
@@ -81,10 +81,10 @@ class Portfolio(object):
             initial_capital (float): The starting capital in USD.
 
             kwargs (dict): Additional arguments
-                - time_frame: The time frame of the bars.
-                - trading_hours: The number of trading hours in a day.
-                - benchmark: The benchmark symbol to compare the portfolio.
-                - strategy_name: The name of the strategy  (the name must not include 'Strategy' in it).    
+                - `time_frame`: The time frame of the bars.
+                - `trading_hours`: The number of trading hours in a day.
+                - `benchmark`: The benchmark symbol to compare the portfolio.
+                - `strategy_name`: The name of the strategy  (the name must not include 'Strategy' in it).    
         """
         self.bars = bars
         self.events = events
@@ -118,19 +118,18 @@ class Portfolio(object):
         Returns a dictionary mapping the time frames
         to the number of bars in a year.
         """
-        N = 252
-        H = self.trading_hours
+        th = self.trading_hours
         time_frame_mapping = {
-            '1m':  N*60*H,
-            '3m':  N*(60/3)*H,
-            '5m':  N*(60/5)*H,
-            '10m': N*(60/10)*H,
-            '15m': N*(60/15)*H,
-            '30m': N*(60/30)*H,
-            '1h':  N*(60/60)*H,
-            '2h':  N*(60/120)*H,
-            '4h':  N*(60/240)*H,
-            'D1':  N
+            '1m':  252 * 60 * th,
+            '3m':  252 * (60/3) * th,
+            '5m':  252 * (60/5) * th,
+            '10m': 252 * (60/10) * th,
+            '15m': 252 * (60/15) * th,
+            '30m': 252 * (60/30) * th,
+            '1h':  252 * (60/60) * th,
+            '2h':  252 * (60/120) * th,
+            '4h':  252 * (60/240) * th,
+            'D1':  252
         }
         return time_frame_mapping
 

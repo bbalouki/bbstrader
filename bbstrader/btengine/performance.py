@@ -110,12 +110,12 @@ def plot_performance(df, title):
         title (str): The title of the plot.
 
     Note:
-        The DataFrame should contain the following columns:
-            - Datetime : The timestamp of the data
-            - Equity Curve : The portfolio value
-            - Returns : The period returns
-            - Drawdown : The drawdowns
-            - Total : The total returns
+    The DataFrame should contain the following columns
+    - Datetime: The timestamp of the data
+    - Equity Curve: The portfolio value
+    - Returns: The period returns
+    - Drawdown: The drawdowns
+    - Total : The total returns
     """
     data = df.copy()
     data = data.sort_values(by='Datetime')
@@ -163,12 +163,12 @@ def plot_returns_and_dd(df, benchmark: str, title):
         title (str): The title of the plot.
 
     Note:
-        The DataFrame should contain the following columns:
-            - Datetime : The timestamp of the data
-            - Equity Curve : The portfolio value
-            - Returns : The period returns
-            - Drawdown : The drawdowns
-            - Total : The total returns
+    The DataFrame should contain the following columns:
+    - Datetime : The timestamp of the data
+    - Equity Curve : The portfolio value
+    - Returns : The period returns
+    - Drawdown : The drawdowns
+    - Total : The total returns
     """
     # Ensure data is sorted by Datetime
     data = df.copy()
@@ -238,12 +238,12 @@ def plot_monthly_yearly_returns(df, title):
         title (str): The title of the plot.
 
     Note:
-        The DataFrame should contain the following columns:
-            - Datetime : The timestamp of the data
-            - Equity Curve : The portfolio value
-            - Returns : The period returns
-            - Drawdown : The drawdowns
-            - Total : The total returns
+    The DataFrame should contain the following columns:
+    - Datetime : The timestamp of the data
+    - Equity Curve : The portfolio value
+    - Returns : The period returns
+    - Drawdown : The drawdowns
+    - Total : The total returns
     """
     equity_df = df.copy()
     equity_df.reset_index(inplace=True)
