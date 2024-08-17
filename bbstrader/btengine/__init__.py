@@ -34,6 +34,19 @@ MacroEconomic Data, Fundamental Data, TICK Data and Real-time Data.
 an implementation for `SimulatedExecutionHandler`.
 - **Performance**: Utility functions for calculating performance metrics and visualizing strategy performance.
 
+Examples:
+>>> from bbstrader.btengine import run_backtest
+>>> run_backtest(test_mode=True, test_strategy='ou', test_quantity=2000)
+
+>>> run_backtest(
+...     symbol_list=['AAPL', 'GOOG'],
+...     start_date=datetime(2020, 1, 1),
+...     data_handler=CustomDataHandler(),
+...     strategy=MovingAverageStrategy(),
+...     exc_handler=CustomExecutionHandler(),
+...     initial_capital=500000.0,
+...     heartbeat=1.0
+... )
 """
 from bbstrader.btengine.data import *
 from bbstrader.btengine.event import *
