@@ -1,6 +1,6 @@
 import MetaTrader5 as MT5
 import logging
-from typing import List, NamedTuple
+from typing import List, NamedTuple, Optional
 from enum import Enum
 
 __all__ = [
@@ -604,7 +604,7 @@ _ERROR_CODE_TO_EXCEPTION_ = {
 }
 
 
-def raise_mt5_error(message=None):
+def raise_mt5_error(message: Optional[str] = None):
     """Raises an exception based on the given error code.
 
     Args:

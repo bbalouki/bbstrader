@@ -1,17 +1,17 @@
-from ctypes import Union
 import os
 import csv
 import time
+import logging
+import numpy as np
 from datetime import datetime
+import MetaTrader5 as Mt5
+from typing import List, Tuple, Dict, Any, Optional, Literal
 from bbstrader.metatrader.risk import RiskManagement
 from bbstrader.metatrader.utils import (
     INIT_MSG, TimeFrame, TradePosition, TickInfo,
     raise_mt5_error, trade_retcode_message
 )
-from typing import List, Tuple, Dict, Any, Optional, Literal
-import MetaTrader5 as Mt5
-import numpy as np
-import logging
+
 
 # Configure the logger
 logger = logging.getLogger(__name__)
@@ -544,7 +544,7 @@ class Trade(RiskManagement):
 
     def _check(self, txt: str = ""):
         if self.positive_profit() or self.get_current_open_positions() is None:
-            self.close_all_positions()
+            self.close_positions(position_type='all')
             logger.info(txt)
             time.sleep(5)
             self.statistics(save=True)
@@ -635,7 +635,9 @@ class Trade(RiskManagement):
 
     def open_position(
         self,
-        action: Literal['BMKT', 'BLMT', 'BSTP', 'BSTPLMT', 'SMKT', 'SLMT', 'SSTP', 'SSTPLMT'],
+        action: Literal[
+            'BMKT', 'BLMT', 'BSTP', 'BSTPLMT',
+            'SMKT', 'SLMT', 'SSTP', 'SSTPLMT'],
         buy: bool = False,
         sell: bool = False,
         price: Optional[float] = None,
@@ -698,69 +700,64 @@ class Trade(RiskManagement):
             return self.break_even_status
         return None
 
-    def get_current_open_orders(self, id: Optional[int] = None
-                                ) -> List[int] | None:
-        """Get All current open orders's tickets
+    def get_filtered_tickets(self,
+                             id: Optional[int] = None,
+                             filter_type: Optional[str] = None,
+                             win_trade: bool = False
+                             ) -> List[int] | None:
+        """
+        Get tickets for positions or orders based on filters.
 
         Args:
             id (int): The strategy id or expert Id
+            filter_type (str): Filter type ('orders', 'positions', 'buys', 'sells', 'win_trades')
+                - `orders` are current open orders
+                - `positions` are all current open positions
+                - `buys` and `sells` are current buy or sell open positions 
+                - `win_trades` are current open position that have a profit greater than a threshold
+            win_trade (bool): Whether to filter only profitable trades 
+                (only relevant when filter_type is 'win_trades')
+
+        Returns:
+            List[int] | None: A list of filtered tickets 
+                or None if no tickets match the criteria.
         """
-        orders = self.get_orders(symbol=self.symbol)
         Id = id if id is not None else self.expert_id
-        current_orders = []
-        if orders is not None:
-            for order in orders:
-                if order.magic == Id:
-                    current_orders.append(order.ticket)
-            if len(current_orders) != 0:
-                return current_orders
-            else:
-                return None
+
+        if filter_type == 'orders':
+            items = self.get_orders(symbol=self.symbol)
         else:
-            return None
+            items = self.get_positions(symbol=self.symbol)
 
-    def get_current_open_positions(self,  id: Optional[int] = None
-                                   ) -> List[int] | None:
-        """Get All current open position's tickets
+        filtered_tickets = []
 
-        Args:
-            id (int): The strategy id or expert Id
-        """
-        positions = self.get_positions(symbol=self.symbol)
-        Id = id if id is not None else self.expert_id
-        current_positions = []
-        if positions is not None:
-            for position in positions:
-                if position.magic == Id:
-                    current_positions.append(position.ticket)
-            if len(current_positions) != 0:
-                return current_positions
-            else:
-                return None
-        else:
-            return None
+        if items is not None:
+            for item in items:
+                if item.magic == Id:
+                    if filter_type == 'buys' and item.type != 0:
+                        continue
+                    if filter_type == 'sells' and item.type != 1:
+                        continue
+                    if filter_type == 'win_trades' and not self.win_trade(item, th=self.stop_loss):
+                        continue
+                    filtered_tickets.append(item.ticket)
+            return filtered_tickets if filtered_tickets else None
+        return None
 
-    def get_current_win_trades(self, id: Optional[int] = None
-                               ) -> List[int] | None:
-        """Get all active profitable trades
+    def get_current_open_orders(self, id: Optional[int] = None) -> List[int] | None:
+        return self.get_filtered_tickets(id=id, filter_type='orders')
 
-        Args:
-            id (int): The strategy id or expert Id
-        """
-        positions = self.get_positions(symbol=self.symbol)
-        Id = id if id is not None else self.expert_id
-        be_positions = []
-        if positions is not None:
-            for position in positions:
-                if position.magic == Id:
-                    if self.win_trade(position, th=self.stop_loss):
-                        be_positions.append(position.ticket)
-            if len(be_positions) != 0:
-                return be_positions
-            else:
-                return None
-        else:
-            return None
+    def get_current_open_positions(self, id: Optional[int] = None) -> List[int] | None:
+        return self.get_filtered_tickets(id=id, filter_type='positions')
+
+    def get_current_win_trades(self, id: Optional[int] = None) -> List[int] | None:
+        return self.get_filtered_tickets(id=id, filter_type='win_trades', win_trade=True)
+
+    def get_current_buys(self, id: Optional[int] = None) -> List[int] | None:
+        return self.get_filtered_tickets(id=id, filter_type='buys')
+
+    def get_current_sells(self, id: Optional[int] = None) -> List[int] | None:
+        return self.get_filtered_tickets(id=id, filter_type='sells')
 
     def positive_profit(self, th: Optional[float] = None
                         ) -> bool:
@@ -789,52 +786,6 @@ class Trade(RiskManagement):
             if current_profit > th_profit:
                 return True
         return False
-
-    def get_current_buys(self, id: Optional[int] = None
-                         ) -> List[int] | None:
-        """Get current buy positions open
-
-        Args:
-            id (int): The strategy id or expert Id
-        """
-        positions = self.get_positions(symbol=self.symbol)
-        Id = id if id is not None else self.expert_id
-        buys = []
-        if positions is not None:
-            for position in positions:
-                if (position.type == 0
-                        and position.magic == Id
-                        ):
-                    buys.append(position.ticket)
-            if len(buys) != 0:
-                return buys
-            else:
-                return None
-        else:
-            return None
-
-    def get_current_sells(self, id: Optional[int] = None
-                          ) -> List[int] | None:
-        """Get current sell positions open
-
-        Args:
-            id (int): The strategy id or expert Id
-        """
-        positions = self.get_positions(symbol=self.symbol)
-        Id = id if id is not None else self.expert_id
-        sells = []
-        if positions is not None:
-            for position in positions:
-                if (position.type == 1
-                        and position.magic == Id
-                    ):
-                    sells.append(position.ticket)
-            if len(sells) != 0:
-                return sells
-            else:
-                return None
-        else:
-            return None
 
     def break_even(self, id: Optional[int] = None):
         """
@@ -1064,7 +1015,7 @@ class Trade(RiskManagement):
                        id: Optional[int] = None,
                        pct: Optional[float] = 1.0,
                        comment: Optional[str] = None
-                       )->bool:
+                       ) -> bool:
         """
         Close an open position by it ticket
 
@@ -1088,7 +1039,7 @@ class Trade(RiskManagement):
         if positions is not None:
             for position in positions:
                 if (position.ticket == ticket
-                            and position.magic == Id
+                        and position.magic == Id
                         ):
                     buy = position.type == 0
                     sell = position.type == 1
@@ -1141,70 +1092,50 @@ class Trade(RiskManagement):
                     else:
                         return False
 
-    def close_all_positions(self,
-                            id: Optional[int] = None,
-                            comment: Optional[str] = None):
+    def close_positions(
+            self,
+            position_type: Literal["all", "buy", "sell"] = "all",
+            id: Optional[int] = None,
+            comment: Optional[str] = None):
         """
         Args:
+            position_type (str): Type of positions to close ("all", "buy", "sell")
             id (int): The unique ID of the Expert or Strategy
             comment (str): Comment for the closing position
         """
-        raw_positions = self.get_positions(symbol=self.symbol)
-        if raw_positions is not None:
-            positions = [position.ticket for position in raw_positions]
+        if position_type == "all":
+            positions = self.get_positions(symbol=self.symbol)
+        elif position_type == "buy":
+            positions = self.get_current_buys()
+        elif position_type == "sell":
+            positions = self.get_current_sells()
         else:
-            positions = []
-        if len(positions) != 0:
-            for ticket in positions.copy():
+            logger.error(f"Invalid position type: {position_type}")
+            return
+
+        if positions is not None:
+            if position_type == 'all':
+                tickets = [position.ticket for position in positions]
+            else:
+                tickets = positions
+        else:
+            tickets = []
+
+        if len(tickets) != 0:
+            for ticket in tickets.copy():
                 if self.close_position(ticket, id=id, comment=comment):
-                    positions.remove(ticket)
+                    tickets.remove(ticket)
                 time.sleep(1)
-            if len(positions) == 0:
-                logger.info(f"ALL Positions closed, SYMBOL={self.symbol}.")
-            else:
-                logger.info(
-                    f"{len(positions)} Positions not closed, SYMBOL={self.symbol}")
 
-    def close_all_buys(self,
-                       id: Optional[int] = None,
-                       comment: Optional[str] = None):
-        """
-        Args:
-            id (int): The unique ID of the Expert or Strategy
-            comment (str): Comment for the closing position
-        """
-        positions = self.get_current_buys()
-        if positions is not None:
-            for position in positions.copy():
-                if self.close_position(position, id=id, comment=comment):
-                    positions.remove(position)
-                time.sleep(1)
-            if len(positions) == 0:
-                logger.info(f"ALL BUY Positions closed, SYMBOL={self.symbol}.")
+            if len(tickets) == 0:
+                logger.info(
+                    f"ALL {position_type.upper()} Positions closed, SYMBOL={self.symbol}.")
             else:
                 logger.info(
-                    f"{len(positions)} BUY Positions not closed, SYMBOL={self.symbol}")
-
-    def close_all_sells(self,
-                        id: Optional[int] = None,
-                        comment: Optional[str] = None):
-        """
-        Args:
-            id (int): The unique ID of the Expert or Strategy
-            comment (str): Comment for the closing position
-        """
-        positions = self.get_current_sells()
-        if positions is not None:
-            for position in positions.copy():
-                if self.close_position(position, id=id, comment=comment):
-                    positions.remove(position)
-                time.sleep(1)
-            if len(positions) == 0:
-                logger.info(
-                    f"ALL SELL Positions closed, SYMBOL={self.symbol}.")
-            else:
-                logger.info(
-                    f"{len(positions)} SELL Positions not closed, SYMBOL={self.symbol}")
+                    f"{len(tickets)} {position_type.upper()} Positions not closed, SYMBOL={self.symbol}")
+        else:
+            logger.info(
+                f"No {position_type.upper()} Positions to close, SYMBOL={self.symbol}.")
 
     def get_stats(self) -> Tuple[Dict[str, Any]]:
         """

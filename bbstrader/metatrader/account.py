@@ -14,6 +14,10 @@ from bbstrader.metatrader.utils import (
 from typing import Tuple, Union, List, Dict, Optional, Literal
 
 
+amg_url = _ADMIRAL_MARKETS_URL_
+jgm_url = _JUST_MARKETS_URL_
+
+
 class Account(object):
     """
     The `Account` class is utilized to retrieve information about 
@@ -62,8 +66,8 @@ class Account(object):
             raise ValueError(
                 f"{broker} is not currently supported broker for the Account() class\n"
                 f"Currently Supported brokers are: {', '.join(supported)}\n"
-                f"For {_BROKERS_['AMG']}, See {_ADMIRAL_MARKETS_URL_}\n"
-                f"For {_BROKERS_['JGM']}, See {_JUST_MARKETS_URL_}"
+                f"For {supported['AMG']}, See {amg_url}\n"
+                f"For {supported['JGM']}, See {jgm_url}"
             )
 
     def get_account_info(
@@ -79,7 +83,7 @@ class Account(object):
         Args:
             account (int, optinal) : MT5 Trading account number.
             password (str, optinal): MT5 Trading account password.
-            server (str, optinal)  : MT5 Trading account server 
+            server (str, optinal): MT5 Trading account server 
                 [Brokers or terminal server ["demo", "real"]]
                 If no server is set, the last used server is applied automaticall
             timeout (int, optinal):
@@ -227,7 +231,7 @@ class Account(object):
         supported = c.currencies
         if (from_c not in supported or
                 to_c not in supported
-                ):
+            ):
             rate = qty
         else:
             rate = c.convert(amount=qty, currency=from_c, new_currency=to_c)
@@ -434,7 +438,7 @@ class Account(object):
 
         Raises:
             ValueError: If an unsupported category is provided.
-        
+
         Notes:
             This mthods works primarly with Admirals Group AS products,
             For other brokers use `get_symbols()`
@@ -475,7 +479,7 @@ class Account(object):
 
         Raises:
             ValueError: If an unsupported country is provided.
-        
+
         Notes:
             This mthods works primarly with Admirals Group AS products,
             For other brokers use `get_symbols()`

@@ -25,22 +25,24 @@ Understanding the high entry barriers in traditional asset trading, this module 
 
 ## Installation
 
-Before you can use the MT5 Trading Module, you need to have MetaTrader 5 (MT5) installed on your computer and an active MT5 trading account. Then, follow these steps to set up the module:
+Before you can use the MT5 Trading Module, you need to have MetaTrader 5 (MT5) installed on your computer and an active MT5 trading account. 
+This Module currenlty support two brokers, [Admirals Group AS](https://cabinet.a-partnership.com/visit/?bta=35537&brand=admiralmarkets) and [Just Global Markets Ltd.](https://one.justmarkets.link/a/tufvj0xugm/registration/trader), so you need to create a demo or live account with one of them.
+* If you want to trade `Stocks`, `ETFs`, `Indices`, `Commodities`, `Futures`, and `Forex`, See [Admirals Group AS](https://cabinet.a-partnership.com/visit/?bta=35537&brand=admiralmarkets)
+* If you want to trade `Stocks`, `Crypto`, `indices`, `Commodities`, and `Forex`, See [Just Global Markets Ltd.](https://one.justmarkets.link/a/tufvj0xugm/registration/trader)
+Then, follow these steps to set up the module:
 
 1. Ensure Python 3.8 or later is installed on your machine.
-2. Install the MetaTrader5 Python package:
+
+2. Clone this repository or download the module files to your local machine.
 
 ```bash
-pip install MetaTrader5
+pip install -r requirements.txt
 ```
-
-3. Clone this repository or download the module files to your local machine.
-
 ## Usage
 
 The module consists of several components, each responsible for different aspects of trading on the MT5 platform:
 
-- **Account Management (`Account()`)**: Access and manage your MT5 account information.
+- **Account Management (`Account()`)**: Access and manage your MT5 account informations, symbols and symbol inormations, trades and orders informations, trades and orders history.
 - **Market Data (`Rates()`)**: Fetch real-time and historical market data.
 - **Risk Management (`RiskManagment()`)**: Apply risk management strategies to your trading.
 - **Trade Execution (`Trade()`)**: Execute trades based on your strategies.

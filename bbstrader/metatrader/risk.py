@@ -11,8 +11,6 @@ from bbstrader.metatrader.utils import (
 )
 from typing import List, Dict, Optional, Literal, Union, Any
 
-TF_MAPPING = TIMEFRAMES
-
 
 class RiskManagement(Account):
     """
@@ -105,7 +103,7 @@ class RiskManagement(Account):
             raise ValueError("tp must be an integer number")
         if be is not None and (not isinstance(be, int) or be <= 0):
             raise ValueError("be must be a positive integer number")
-        if time_frame not in TF_MAPPING:
+        if time_frame not in TIMEFRAMES:
             raise ValueError("Unsupported time frame")
 
         self.symbol = symbol

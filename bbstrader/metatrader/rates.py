@@ -1,12 +1,12 @@
-import MetaTrader5 as Mt5
 import pandas as pd
+import MetaTrader5 as Mt5
 from datetime import datetime
+from typing import Union, Optional
 from bbstrader.metatrader.utils import (
     raise_mt5_error, TimeFrame, TIMEFRAMES, INIT_MSG
 )
 from pandas.tseries.offsets import CustomBusinessDay
 from pandas.tseries.holiday import USFederalHolidayCalendar
-from typing import Union, Optional
 
 
 class Rates(object):
@@ -85,7 +85,7 @@ class Rates(object):
 
             df = pd.DataFrame(rates)
             return self._format_dataframe(df)
-        except Exception as e:  # pylint: disable=broad-except
+        except Exception as e:
             raise_mt5_error(e)
 
     def _format_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
