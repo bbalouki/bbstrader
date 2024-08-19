@@ -93,19 +93,17 @@ class Portfolio(object):
         self.initial_capital = initial_capital
 
         self.timeframe = kwargs.get("time_frame", "D1")
-        self.trading_hours = kwargs.get("trading_hours", 6.5)
+        self.trading_hours = kwargs.get("session_duration", 6.5)
         self.benchmark = kwargs.get('benchmark', 'SPY')
         self.strategy_name = kwargs.get('strategy_name', 'Strategy')
-
-        tf = self._tf_mapping()
-        if self.timeframe not in tf:
+        if self.timeframe not in self._tf_mapping():
             raise ValueError(
                 f"Timeframe not supported,"
                 f"please choose one of the following: "
-                f"1m, 3m, 5m, 10m, 15m, 30m, 1h, 2h, 4h, D1"
+                f"{', '.join(list(self._tf_mapping().keys()))}"
             )
         else:
-            self.tf = tf[self.timeframe]
+            self.tf = self._tf_mapping()[self.timeframe]
 
         self.all_positions = self.construct_all_positions()
         self.current_positions = dict((k, v) for k, v in
@@ -119,18 +117,12 @@ class Portfolio(object):
         to the number of bars in a year.
         """
         th = self.trading_hours
-        time_frame_mapping = {
-            '1m':  252 * 60 * th,
-            '3m':  252 * (60/3) * th,
-            '5m':  252 * (60/5) * th,
-            '10m': 252 * (60/10) * th,
-            '15m': 252 * (60/15) * th,
-            '30m': 252 * (60/30) * th,
-            '1h':  252 * (60/60) * th,
-            '2h':  252 * (60/120) * th,
-            '4h':  252 * (60/240) * th,
-            'D1':  252
-        }
+        time_frame_mapping = {}
+        for minutes in [1, 2, 3, 4, 5, 6, 10, 12, 15, 20,
+                        30, 60, 120, 180, 240, 360, 480, 720]:
+            key = f"{minutes//60}h" if minutes >= 60 else f"{minutes}m"
+            time_frame_mapping[key] = int(252 * (60 / minutes) * th)
+        time_frame_mapping['D1'] = 252
         return time_frame_mapping
 
     def construct_all_positions(self):

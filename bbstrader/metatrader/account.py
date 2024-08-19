@@ -6,17 +6,44 @@ from datetime import datetime
 import MetaTrader5 as mt5
 from currency_converter import SINGLE_DAY_ECB_URL, CurrencyConverter
 from bbstrader.metatrader.utils import (
-    _BROKERS_, _ADMIRAL_MARKETS_URL_, _JUST_MARKETS_URL_, INIT_MSG,
-    raise_mt5_error, AccountInfo, TerminalInfo, _SYMBOLS_TYPE_,
+    raise_mt5_error, AccountInfo, TerminalInfo,
     SymbolInfo, TickInfo, TradeRequest, OrderCheckResult,
     OrderSentResult, TradePosition, TradeOrder, TradeDeal,
 )
-from typing import Tuple, Union, List, Dict, Optional, Literal
+from typing import Tuple, Union, List, Dict, Any, Optional, Literal
 
+
+_BROKERS_ = {
+    'AMG': "Admirals Group AS",
+    'JGM': "Just Global Markets Ltd.",
+    #'FTMO': "FTMO S.R.O."
+}
+_ADMIRAL_MARKETS_URL_ = "https://cabinet.a-partnership.com/visit/?bta=35537&brand=admiralmarkets"
+_ADMIRAL_MARKETS_PRODUCTS_ = ["Stocks", "ETFs",
+                            "Indices", "Commodities", "Futures", "Forex"]
+_JUST_MARKETS_URL_ = "https://one.justmarkets.link/a/tufvj0xugm/registration/trader"
+_JUST_MARKETS_PRODUCTS_ = ["Stocks", "Crypto", "indices", "Commodities", "Forex"]
+
+INIT_MSG = (
+    f"\n* Ensure you have a good and stable internet connexion\n"
+    f"* Ensure you have an activete MT5 terminal install on your machine\n"
+    f"* Ensure you have an active MT5 Account with {'or '.join(_BROKERS_.values())}\n"
+    f"* If you want to trade {', '.join(_ADMIRAL_MARKETS_PRODUCTS_)}, See {_ADMIRAL_MARKETS_URL_}\n"
+    f"* If you want to trade {', '.join(_JUST_MARKETS_PRODUCTS_)}, See {_JUST_MARKETS_URL_}\n"
+)
 
 amg_url = _ADMIRAL_MARKETS_URL_
 jgm_url = _JUST_MARKETS_URL_
 
+_SYMBOLS_TYPE_ = {
+    "STK": r'\b(Stocks?|Equities?|Shares?)\b',
+    "ETF": r'\b(ETFs?)\b',
+    "IDX": r'\b(?:Indices?|Cash)\b(?!.*\\(?:UKOIL|USOIL))',
+    "FX": r'\b(Forex|Exotics?)\b',
+    "COMD": r'\b(Metals?|Agricultures?|Energies?|OIL|USOIL|UKOIL)\b',
+    "FUT": r'\b(Futures?)\b',
+    "CRYPTO": r'\b(Cryptos?)\b'
+}
 
 class Account(object):
     """
@@ -60,12 +87,12 @@ class Account(object):
         self._check_brokers()
 
     def _check_brokers(self):
-        supported = _BROKERS_
+        supported = _BROKERS_.copy()
         broker = self.get_terminal_info().company
         if broker not in supported.values():
             raise ValueError(
                 f"{broker} is not currently supported broker for the Account() class\n"
-                f"Currently Supported brokers are: {', '.join(supported)}\n"
+                f"Currently Supported brokers are: {', '.join(supported.values())}\n"
                 f"For {supported['AMG']}, See {amg_url}\n"
                 f"For {supported['JGM']}, See {jgm_url}"
             )
@@ -398,10 +425,11 @@ class Account(object):
         """
         patterns = _SYMBOLS_TYPE_
         info = self.get_symbol_info(symbol)
-        for symbol_type, pattern in patterns.items():
-            match = re.search(pattern, info.path)  # , re.IGNORECASE
-            if match:
-                return symbol_type
+        if info is not None:
+            for symbol_type, pattern in patterns.items():
+                match = re.search(pattern, info.path)  # , re.IGNORECASE
+                if match:
+                    return symbol_type
         return "unknown"
 
     def _get_symbols_by_category(self, symbol_type, category, category_map):
@@ -574,8 +602,8 @@ class Account(object):
         """
         self._show_info(self.get_tick_info, "tick", symbol=symbol)
 
-    def check_order(self,
-                    request: TradeRequest) -> OrderCheckResult:
+    def check_order(self, 
+                    request: Dict[str, Any]) -> OrderCheckResult:
         """
         Check funds sufficiency for performing a required trading operation.
 
@@ -597,12 +625,15 @@ class Account(object):
         """
         try:
             result = mt5.order_check(request)
-            return OrderCheckResult(**result._asdict())
+            result_dict = result._asdict()
+            trade_request =  TradeRequest(**result.request._asdict())
+            result_dict['request'] = trade_request
+            return OrderCheckResult(**result_dict)
         except Exception as e:
             raise_mt5_error(e)
 
     def send_order(self,
-                   request: TradeRequest) -> OrderSentResult:
+                   request: Dict[str, Any]) -> OrderSentResult:
         """
         Send a request to perform a trading operation from the terminal to the trade server. 
 
@@ -620,7 +651,10 @@ class Account(object):
         """
         try:
             result = mt5.order_send(request)
-            return OrderSentResult(**result._asdict())
+            result_dict = result._asdict()
+            trade_request =  TradeRequest(**result.request._asdict())
+            result_dict['request'] = trade_request
+            return OrderSentResult(**result_dict)
         except Exception as e:
             raise_mt5_error(e)
 

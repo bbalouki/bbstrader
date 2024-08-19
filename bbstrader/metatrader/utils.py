@@ -33,49 +33,6 @@ __all__ = [
     "raise_mt5_error",
 ]
 
-_BROKERS_ = {
-    'AMG': "Admirals Group AS",
-    'JGM': "Just Global Markets Ltd.",
-    #'FTMO': "FTMO S.R.O."
-}
-_ADMIRAL_MARKETS_URL_ = "https://cabinet.a-partnership.com/visit/?bta=35537&brand=admiralmarkets"
-_ADMIRAL_MARKETS_PRODUCTS_ = ["Stocks", "ETFs",
-                            "Indices", "Commodities", "Futures", "Forex"]
-_JUST_MARKETS_URL_ = "https://one.justmarkets.link/a/tufvj0xugm/registration/trader"
-_JUST_MARKETS_PRODUCTS_ = ["Stocks", "Crypto", "indices", "Commodities", "Forex"]
-#FTMO_URL = ""
-#FTMO_PRODUCTS = JUST_MARKETS_PRODUCTS
-
-_COMMD_SUPPORTED_ = [
-    "GOLD", "XAUEUR", "SILVER", "BRENT", "CRUDOIL", "WTI", #"UKOIL",
-    'XAGEUR', 'XAGUSD', 'XAUAUD', 'XAUEUR', 'XAUUSD', 'XAUGBP', #'USOIL'
-]
-
-INIT_MSG = (
-    f"\n* Ensure you have a good and stable internet connexion\n"
-    f"* Ensure you have an activete MT5 terminal install on your machine\n"
-    f"* Ensure you have an active MT5 Account with {'or '.join(_BROKERS_.values())}\n"
-    f"* If you want to trade {', '.join(_ADMIRAL_MARKETS_PRODUCTS_)}, See {_ADMIRAL_MARKETS_URL_}\n"
-    f"* If you want to trade {', '.join(_JUST_MARKETS_PRODUCTS_)}, See {_JUST_MARKETS_URL_}\n"
-)
-
-_ADMIRAL_MARKETS_FUTURES_ = [
-    '#USTNote_', '#Bund_', '#USDX_', '_AUS200_', '_Canada60_', '_SouthAfrica40_',
-    '_STXE600_', '_EURO50_', '_GER40_', '_GermanyTech30_', '_MidCapGER50_',
-    '_SWISS20_', '_UK100_', '_USNASDAQ100_', '_YM_', '_ES_', '_CrudeOilUS_',
-    '_DUTCH25_', '_FRANCE40_', '_NORWAY25_', '_SPAIN35_', '_CrudeOilUK_',
-    '_XAU_', '_HK50_', '_HSCEI50_'
-]
-
-_SYMBOLS_TYPE_ = {
-    "STK": r'\b(Stocks?|Equities?|Shares?)\b',
-    "ETF": r'\b(ETFs?)\b',
-    "IDX": r'\b(?:Indices?|Cash)\b(?!.*\\(?:UKOIL|USOIL))',
-    "FX": r'\b(Forex|Exotics?)\b',
-    "COMD": r'\b(Metals?|Agricultures?|Energies?|OIL|USOIL|UKOIL)\b',
-    "FUT": r'\b(Futures?)\b',
-    "CRYPTO": r'\b(Cryptos?)\b'
-}
 # TIMEFRAME is an enumeration with possible chart period values
 # See https://www.mql5.com/en/docs/python_metatrader5/mt5copyratesfrom_py#timeframe
 TIMEFRAMES = {
@@ -101,6 +58,7 @@ TIMEFRAMES = {
     'W1':  MT5.TIMEFRAME_W1,
     'MN1': MT5.TIMEFRAME_MN1
 }
+
 
 class TimeFrame(Enum):
     """

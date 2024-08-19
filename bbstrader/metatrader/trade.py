@@ -7,8 +7,9 @@ from datetime import datetime
 import MetaTrader5 as Mt5
 from typing import List, Tuple, Dict, Any, Optional, Literal
 from bbstrader.metatrader.risk import RiskManagement
+from bbstrader.metatrader.account import INIT_MSG
 from bbstrader.metatrader.utils import (
-    INIT_MSG, TimeFrame, TradePosition, TickInfo,
+    TimeFrame, TradePosition, TickInfo,
     raise_mt5_error, trade_retcode_message
 )
 
@@ -92,14 +93,14 @@ class Trade(RiskManagement):
 
     def __init__(
         self,
-        symbol: str,
-        expert_name: str,
-        expert_id: int,
-        version: str,
-        target: float,
-        start_time: str = "6:30",
-        finishing_time: str = "19:30",
-        ending_time: str = "20:30",
+        symbol: str = 'EURUSD',
+        expert_name: str ='bbstrader',
+        expert_id: int = 9818 ,
+        version: str = '1.0',
+        target: float = 5.0,
+        start_time: str = "1:00",
+        finishing_time: str = "23:00",
+        ending_time: str = "23:30",
         verbose: Optional[bool] = None,
         **kwargs,
     ):
@@ -438,7 +439,7 @@ class Trade(RiskManagement):
 
         self.break_even(comment)
         if self.check(comment):
-            self.request_result(_price, request, action)
+            self.request_result(_price, request, action),
 
     def _order_type(self):
         type = {
@@ -703,7 +704,7 @@ class Trade(RiskManagement):
     def get_filtered_tickets(self,
                              id: Optional[int] = None,
                              filter_type: Optional[str] = None,
-                             win_trade: bool = False
+                             th=None
                              ) -> List[int] | None:
         """
         Get tickets for positions or orders based on filters.
@@ -715,7 +716,7 @@ class Trade(RiskManagement):
                 - `positions` are all current open positions
                 - `buys` and `sells` are current buy or sell open positions 
                 - `win_trades` are current open position that have a profit greater than a threshold
-            win_trade (bool): Whether to filter only profitable trades 
+            th (bool): the minimum treshold for winning position
                 (only relevant when filter_type is 'win_trades')
 
         Returns:
@@ -738,7 +739,7 @@ class Trade(RiskManagement):
                         continue
                     if filter_type == 'sells' and item.type != 1:
                         continue
-                    if filter_type == 'win_trades' and not self.win_trade(item, th=self.stop_loss):
+                    if filter_type == 'win_trades' and not self.win_trade(item, th=th):
                         continue
                     filtered_tickets.append(item.ticket)
             return filtered_tickets if filtered_tickets else None
@@ -750,8 +751,8 @@ class Trade(RiskManagement):
     def get_current_open_positions(self, id: Optional[int] = None) -> List[int] | None:
         return self.get_filtered_tickets(id=id, filter_type='positions')
 
-    def get_current_win_trades(self, id: Optional[int] = None) -> List[int] | None:
-        return self.get_filtered_tickets(id=id, filter_type='win_trades', win_trade=True)
+    def get_current_win_trades(self, id: Optional[int] = None, th=None) -> List[int] | None:
+        return self.get_filtered_tickets(id=id, filter_type='win_trades', th=th)
 
     def get_current_buys(self, id: Optional[int] = None) -> List[int] | None:
         return self.get_filtered_tickets(id=id, filter_type='buys')

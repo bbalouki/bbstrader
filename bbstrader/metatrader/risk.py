@@ -6,10 +6,24 @@ import MetaTrader5 as Mt5
 from bbstrader.metatrader.account import Account
 from bbstrader.metatrader.rates import Rates
 from bbstrader.metatrader.utils import (
-    TIMEFRAMES, raise_mt5_error, TimeFrame,
-    _ADMIRAL_MARKETS_FUTURES_, _COMMD_SUPPORTED_
+    TIMEFRAMES, raise_mt5_error, TimeFrame
 )
 from typing import List, Dict, Optional, Literal, Union, Any
+
+
+_COMMD_SUPPORTED_ = [
+    "GOLD", "XAUEUR", "SILVER", "BRENT", "CRUDOIL", "WTI",  # "UKOIL",
+    'XAGEUR', 'XAGUSD', 'XAUAUD', 'XAUEUR', 'XAUUSD', 'XAUGBP',  # 'USOIL'
+]
+
+
+_ADMIRAL_MARKETS_FUTURES_ = [
+    '#USTNote_', '#Bund_', '#USDX_', '_AUS200_', '_Canada60_', '_SouthAfrica40_',
+    '_STXE600_', '_EURO50_', '_GER40_', '_GermanyTech30_', '_MidCapGER50_',
+    '_SWISS20_', '_UK100_', '_USNASDAQ100_', '_YM_', '_ES_', '_CrudeOilUS_',
+    '_DUTCH25_', '_FRANCE40_', '_NORWAY25_', '_SPAIN35_', '_CrudeOilUK_',
+    '_XAU_', '_HK50_', '_HSCEI50_'
+]
 
 
 class RiskManagement(Account):
@@ -48,15 +62,15 @@ class RiskManagement(Account):
     def __init__(
         self,
         symbol: str,
-        max_risk: float,
+        max_risk: float = 10.0,
         daily_risk: Optional[float] = None,
         max_trades: Optional[int] = None,
         std_stop: bool = False,
         pchange_sl: Optional[float] = None,
         account_leverage: bool = True,
         time_frame: TimeFrame = 'D1',
-        start_time: str = "6:30",
-        finishing_time: str = "19:30",
+        start_time: str = "1:00",
+        finishing_time: str = "23:00",
         sl: Optional[int] = None,
         tp: Optional[int] = None,
         be: Optional[int] = None,
@@ -123,7 +137,7 @@ class RiskManagement(Account):
         self.symbol_info = super().get_symbol_info(self.symbol)
 
         self.TF = self.get_minutes(
-        ) if time_frame == 'D1' else TF_MAPPING[time_frame]
+        ) if time_frame == 'D1' else TIMEFRAMES[time_frame]
 
     def risk_level(self) -> float:
         """
@@ -221,7 +235,7 @@ class RiskManagement(Account):
         data = rate.get_rates_from_pos()
         returns = np.diff(data['Close'])
         std = np.std(returns)
-        point = Mt5.symbol_info(self.symbol).point
+        point = self.get_symbol_info(self.symbol).point
         av_price = (self.symbol_info.bid + self.symbol_info.ask)/2
         price_interval = av_price * ((100-std))/100
         sl_point = float((av_price - price_interval) / point)
@@ -247,7 +261,7 @@ class RiskManagement(Account):
         if pchange is not None:
             av_price = (self.symbol_info.bid + self.symbol_info.ask)/2
             price_interval = av_price*((100-pchange))/100
-            point = Mt5.symbol_info(self.symbol).point
+            point = self.get_symbol_info(self.symbol).point
             sl_point = float((av_price - price_interval) / point)
             sl = round(sl_point)
             min_sl = self.symbol_info.trade_stops_level * 2 \
@@ -311,7 +325,7 @@ class RiskManagement(Account):
         if self.tp is not None:
             return self.tp + deviation
         else:
-            return self.get_stop_loss()*self.rr
+            return round(self.get_stop_loss()*self.rr)
 
     def get_stop_loss(self) -> int:
         """calculates the stop loss of a trade in points"""
@@ -404,7 +418,7 @@ class RiskManagement(Account):
             if (tick_value == 0
                     or tick_value_loss == 0
                     or tick_value_profit == 0
-                    ):
+                ):
                 raise ValueError(
                     f"""The Tick Values for {self.symbol} is 0.0
                     We can not procced with currency risk calculation  
@@ -432,7 +446,8 @@ class RiskManagement(Account):
                     trade_loss = lot * contract_size * tick_value_loss
 
                 if FX:
-                    volume = round((trade_loss * contract_size) / tick_value_loss)
+                    volume = round(
+                        (trade_loss * contract_size) / tick_value_loss)
                     __lot = round((volume / contract_size), 2)
                     lot = self._check_lot(__lot)
 
@@ -459,7 +474,6 @@ class RiskManagement(Account):
                 else:
                     trade_loss = (lot * contract_size) * tick_value_loss
                     trade_profit = (lot * contract_size) * tick_value_profit
-
 
             if self.get_symbol_type(self.symbol) == 'IDX':
                 rates = self.get_currency_rates(self.symbol)

@@ -714,15 +714,17 @@ def _run_backtest(
     integrating a Hidden Markov Model (HMM) for risk management.
     """
     hmm_data = yf.download(
-        kwargs.get("hmm_tiker", symbol_list[0]), end=kwargs.get("hmm_end"))
+        kwargs.get("hmm_tiker", symbol_list[0]),
+        start=kwargs.get("hmm_start"), end=kwargs.get("hmm_end")
+    )
     kwargs["hmm_model"] = HMMRiskManager(data=hmm_data, verbose=True)
     kwargs["strategy_name"] = strategy_name
 
     engine = Backtest(
         symbol_list, capital, 0.0, datetime.strptime(
             kwargs['yf_start'], "%Y-%m-%d"),
-        YFHistoricDataHandler, SimulatedExecutionHandler,
-        kwargs.pop('backtester_class'), **kwargs
+        kwargs.get("data_handler", YFHistoricDataHandler), 
+        SimulatedExecutionHandler, kwargs.pop('backtester_class'), **kwargs
     )
     engine.simulate_trading()
 
@@ -777,16 +779,20 @@ def _run_kf_backtest(
 
 def _run_sma_backtest(
     capital: float = 100000.0,
-    quantity: int = 1000
+    quantity: int = 100
 ):
     kwargs = {
         "quantity": quantity,
-        "yf_start": "2004-12-30",
-        'backtester_class': SMAStrategyBacktester,
-        'hmm_end': "2004-12-30"
+        "hmm_end":  "2009-12-31",
+        "hmm_tiker": "^GSPC",
+        "yf_start": "2010-01-01",
+        "hmm_start": "1990-01-01",
+        "start_pos": "2023-01-01",
+        "session_duration": 23.0,
+        "backtester_class": SMAStrategyBacktester,
+        "data_handler": MT5HistoricDataHandler
     }
-
-    _run_backtest("SMA & HMM", capital, ["SPY"], kwargs)
+    _run_backtest("SMA & HMM", capital, ["[SP500]"], kwargs)
 
 
 _BACKTESTS = {
@@ -882,12 +888,9 @@ def run_backtest(
         _BACKTESTS[test_strategy](
             capital=initial_capital,
             quantity=test_quantity
-        )
+        )   
     else:
-        if exc_handler is None:
-            execution_handler = SimulatedExecutionHandler
-        else:
-            execution_handler = exc_handler
+        execution_handler = kwargs.get("exc_handler", SimulatedExecutionHandler)
         engine = Backtest(
             symbol_list, initial_capital, heartbeat, start_date,
             data_handler, execution_handler, strategy, **kwargs
