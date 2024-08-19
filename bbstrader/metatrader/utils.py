@@ -16,7 +16,6 @@ __all__ = [
     "TradeOrder",
     "TradePosition",
     "TradeDeal",
-    "LogLevelFilter",
     "GenericFail",
     "InvalidParams",
     "HistoryNotFound",
@@ -415,30 +414,6 @@ class TradeDeal(NamedTuple):
     symbol: str
     comment: str
     external_id: str
-
-
-class LogLevelFilter(logging.Filter):
-    def __init__(self, levels: List[int]):
-        """
-        Initializes the filter with specific logging levels.
-
-        Args:
-            levels: A list of logging level values (integers) to include.
-        """
-        super().__init__()
-        self.levels = levels
-
-    def filter(self, record: logging.LogRecord) -> bool:
-        """
-        Filters log records based on their level.
-
-        Args:
-            record: The log record to check.
-
-        Returns:
-            True if the record's level is in the allowed levels, False otherwise.
-        """
-        return record.levelno in self.levels
 
 
 class MT5TerminalError(Exception):

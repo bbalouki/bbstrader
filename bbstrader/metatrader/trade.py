@@ -8,34 +8,14 @@ import MetaTrader5 as Mt5
 from typing import List, Tuple, Dict, Any, Optional, Literal
 from bbstrader.metatrader.risk import RiskManagement
 from bbstrader.metatrader.account import INIT_MSG
+from bbstrader.utils import config_logger
 from bbstrader.metatrader.utils import (
     TimeFrame, TradePosition, TickInfo,
     raise_mt5_error, trade_retcode_message
 )
 
-
 # Configure the logger
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-
-# File handler
-file_handler = logging.FileHandler('trade.log')
-file_handler.setLevel(logging.INFO)
-
-# Formatter
-formatter = logging.Formatter(
-    '%(asctime)s - %(levelname)s: %(message)s', datefmt="%Y-%m-%d %H:%M:%S")
-file_handler.setFormatter(formatter)
-
-# Add the handler to the logger
-logger.addHandler(file_handler)
-
-# handler for the console with a different level
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.DEBUG)
-console_handler.setFormatter(formatter)
-logger.addHandler(console_handler)
-
+logger = config_logger('trade.log', console_log=True)
 
 class Trade(RiskManagement):
     """
@@ -94,8 +74,8 @@ class Trade(RiskManagement):
     def __init__(
         self,
         symbol: str = 'EURUSD',
-        expert_name: str ='bbstrader',
-        expert_id: int = 9818 ,
+        expert_name: str = 'bbstrader',
+        expert_id: int = 9818,
         version: str = '1.0',
         target: float = 5.0,
         start_time: str = "1:00",
@@ -1041,7 +1021,7 @@ class Trade(RiskManagement):
             for position in positions:
                 if (position.ticket == ticket
                         and position.magic == Id
-                        ):
+                    ):
                     buy = position.type == 0
                     sell = position.type == 1
                     request = {
