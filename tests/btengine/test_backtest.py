@@ -5,32 +5,36 @@ from bbstrader.btengine.data import DataHandler
 from bbstrader.btengine.execution import ExecutionHandler
 from bbstrader.btengine.portfolio import Portfolio
 from bbstrader.btengine.strategy import Strategy
+from datetime import datetime
 
 
 class TestBacktest(unittest.TestCase):
 
     def setUp(self):
-        self.csv_dir = "mock/csv/dir"
         self.symbol_list = ["AAPL", "GOOG"]
         self.initial_capital = 100000
         self.heartbeat = 0
-        self.start_date = "2020-01-01"
-
+        self.start_date = datetime(2020, 1, 1)  
+        # Creating mocks for classes
         self.data_handler_cls = create_autospec(DataHandler)
         self.execution_handler_cls = create_autospec(ExecutionHandler)
         self.portfolio_cls = create_autospec(Portfolio)
         self.strategy_cls = create_autospec(Strategy)
 
-        mock_equity_curve = MagicMock()
-        type(self.portfolio_cls.return_value).equity_curve = PropertyMock(
-            return_value=mock_equity_curve)
-        type(self.data_handler_cls.return_value).continue_backtest = PropertyMock(
+        # Mocking attributes and behaviors needed for the test
+        mock_data_handler_instance = self.data_handler_cls.return_value
+        mock_data_handler_instance.symbol_list = self.symbol_list
+        mock_data_handler_instance.continue_backtest = PropertyMock(
             side_effect=[True, False])
 
+        mock_portfolio_instance = self.portfolio_cls.return_value
+        mock_portfolio_instance.equity_curve = PropertyMock(
+            return_value=MagicMock())
+
         self.backtest = Backtest(
-            self.csv_dir, self.symbol_list, self.initial_capital,
+            self.symbol_list, self.initial_capital,
             self.heartbeat, self.start_date, self.data_handler_cls,
-            self.execution_handler_cls, self.portfolio_cls, self.strategy_cls
+            self.execution_handler_cls, self.strategy_cls
         )
 
     def test_backtest_initialization(self):
