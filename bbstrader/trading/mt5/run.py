@@ -1,14 +1,19 @@
 import time
 import argparse
-from mtrader5.trade import Trade
-from trading.mt5.execution import (
+from bbstrader.metatrader.trade import Trade
+from bbstrader.trading.mt5.execution import (
     sma_trading, pair_trading, ou_trading, arch_trading)
-from trading.mt5.utils import (
+from bbstrader.trading.mt5.utils import (
     add_sma_trading_arguments, add_pair_trading_arguments,
     add_ou_trading_arguments, add_arch_trading_arguments,
-    init_trade
-    )
+    init_trade)
 
+__all__ = [
+    "run_sma_trading",
+    "run_pair_trading",
+    "run_ou_trading",
+    "run_arch_trading",
+]
 def run_sma_trading():
     # Create parser
     parser = argparse.ArgumentParser(
@@ -97,7 +102,6 @@ def run_ou_trading():
         risk_manager=args.rm,
         period=args.period
     )
-
 
 def run_arch_trading():
     # Create parser

@@ -1,4 +1,4 @@
-from mtrader5.trade import Trade
+from bbstrader.metatrader.trade import Trade
 
 def tf_mapping():
     time_frame_mapping = {
@@ -37,6 +37,7 @@ def init_trade(args, symbol=None):
         ending_time=args.endt,
         std_stop=args.std,
         pchange_sl=args.psl,
+        verbose=True,
         sl=args.sl,
         tp=args.tp,
         be=args.be,
@@ -49,7 +50,7 @@ def add_trade_arguments(parser, pair=False, pchange_sl=None, strategy=None):
     parser.add_argument('--expert', type=str, default='bbstrader', help='Expert name')
     parser.add_argument('--id', type=int, default=0, help='Expert ID')
     parser.add_argument('--version', type=float, default=1.0, help='Version')
-    parser.add_argument('--symbol', type=str, default='SPY', help='Symbol to trade')
+    parser.add_argument('--symbol', type=str, default='#SPY', help='Symbol to trade')
     parser.add_argument('--mr', type=float, default=5.0, help='Maximum risk')
     parser.add_argument('--t', type=float, default=2.0, help='Target')
     parser.add_argument(
