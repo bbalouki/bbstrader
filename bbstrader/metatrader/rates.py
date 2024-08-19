@@ -62,6 +62,7 @@ class Rates(object):
         self.start_pos = self._get_start_pos(start_pos, time_frame)
         self.count = count
         self._mt5_initialized()
+        self.data = self.get_rates_from_pos()
 
     def _get_start_pos(self, index, time_frame):
         if isinstance(index, int):
@@ -167,6 +168,37 @@ class Rates(object):
             )
         df = self._fetch_data(self.start_pos, self.count)
         return df
+    
+    @property
+    def get_open(self):
+        return self.data['Open']
+        
+    @property
+    def get_high(self):
+        return self.data['High']
+    
+    @property
+    def get_low(self):
+        return self.data['Low']
+    
+    @property
+    def get_close(self):
+        return self.data['Close']
+
+    @property
+    def get_adj_close(self):
+        return self.data['Adj Close']
+    
+    @property
+    def get_returns(self):
+        data = self.data.copy()
+        data['Returns'] =  data['Adj Close'].pct_change()
+        data = data.dropna()
+        return data['Returns']
+    
+    @property
+    def get_volume(self):
+        return self.data['Volume']
 
     def get_historical_data(
         self,
