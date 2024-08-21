@@ -2,10 +2,10 @@ import pandas as pd
 import MetaTrader5 as Mt5
 from datetime import datetime
 from typing import Union, Optional
-from .utils import (
+from bbstrader.metatrader.utils import (
     raise_mt5_error, TimeFrame, TIMEFRAMES
 )
-from .account import INIT_MSG
+from bbstrader.metatrader.account import INIT_MSG
 from pandas.tseries.offsets import CustomBusinessDay
 from pandas.tseries.holiday import USFederalHolidayCalendar
 

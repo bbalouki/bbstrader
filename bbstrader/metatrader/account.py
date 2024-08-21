@@ -5,7 +5,7 @@ import urllib.request
 from datetime import datetime
 import MetaTrader5 as mt5
 from currency_converter import SINGLE_DAY_ECB_URL, CurrencyConverter
-from .utils import (
+from bbstrader.metatrader.utils import (
     raise_mt5_error, AccountInfo, TerminalInfo,
     SymbolInfo, TickInfo, TradeRequest, OrderCheckResult,
     OrderSentResult, TradePosition, TradeOrder, TradeDeal,

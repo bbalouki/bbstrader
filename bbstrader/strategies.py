@@ -13,7 +13,7 @@ from statsmodels.graphics.tsaplots import plot_acf
 from statsmodels.stats.diagnostic import acorr_ljungbox
 from filterpy.kalman import KalmanFilter
 from scipy.optimize import minimize
-from tseries import (
+from bbstrader.tseries import (
     load_and_prepare_data, fit_best_arima,
     fit_garch, predict_next_return, get_prediction
 )

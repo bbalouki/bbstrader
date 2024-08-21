@@ -1,9 +1,9 @@
 import time
 import argparse
-from metatrader.trade import Trade
-from .execution import (
+from bbstrader.metatrader.trade import Trade
+from bbstrader.trading.execution import (
     sma_trading, pair_trading, ou_trading, arch_trading)
-from .utils import (
+from bbstrader.trading.utils import (
     add_sma_trading_arguments, add_pair_trading_arguments,
     add_ou_trading_arguments, add_arch_trading_arguments,
     init_trade)

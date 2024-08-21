@@ -1,4 +1,4 @@
-from metatrader.trade import Trade
+from bbstrader.metatrader.trade import Trade
 
 def tf_mapping():
     time_frame_mapping = {

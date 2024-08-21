@@ -6,8 +6,8 @@ from pathlib import Path
 from typing import List
 from queue import Queue
 from abc import ABCMeta, abstractmethod
-from metatrader.rates import Rates
-from .event import MarketEvent
+from bbstrader.metatrader.rates import Rates
+from bbstrader.btengine.event import MarketEvent
 
 
 __all__ = [

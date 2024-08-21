@@ -6,9 +6,9 @@ import numpy as np
 from datetime import datetime
 import MetaTrader5 as Mt5
 from typing import List, Tuple, Dict, Any, Optional, Literal
-from .risk import RiskManagement
-from .account import INIT_MSG
-from .utils import (
+from bbstrader.metatrader.risk import RiskManagement
+from bbstrader.metatrader.account import INIT_MSG
+from bbstrader.metatrader.utils import (
     TimeFrame, TradePosition, TickInfo,
     raise_mt5_error, trade_retcode_message, config_logger
 )

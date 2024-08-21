@@ -3,9 +3,9 @@ import numpy as np
 from scipy.stats import norm
 from datetime import datetime
 import MetaTrader5 as Mt5
-from .account import Account
-from .rates import Rates
-from .utils import (
+from bbstrader.metatrader.account import Account
+from bbstrader.metatrader.rates import Rates
+from bbstrader.metatrader.utils import (
     TIMEFRAMES, raise_mt5_error, TimeFrame
 )
 from typing import List, Dict, Optional, Literal, Union, Any

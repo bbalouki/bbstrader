@@ -7,16 +7,16 @@ import yfinance as yf
 from queue import Queue
 from datetime import datetime
 from seaborn import saturate
-from .data import *
-from .execution import *
-from .portfolio import Portfolio
-from .strategy import Strategy
-from .event import SignalEvent
-from models import HMMRiskManager
+from bbstrader.btengine.data import *
+from bbstrader.btengine.execution import *
+from bbstrader.btengine.portfolio import Portfolio
+from bbstrader.btengine.strategy import Strategy
+from bbstrader.btengine.event import SignalEvent
+from bbstrader.models import HMMRiskManager
 from filterpy.kalman import KalmanFilter
-from strategies import OrnsteinUhlenbeck
-from tseries import load_and_prepare_data
-from tseries import get_prediction
+from bbstrader.strategies import OrnsteinUhlenbeck
+from bbstrader.tseries import load_and_prepare_data
+from bbstrader.tseries import get_prediction
 from typing import Literal, Optional, List
 
 __all__ = [
