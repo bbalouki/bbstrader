@@ -1,6 +1,7 @@
 # Simplified Investment & Trading Toolkit
 ![bbstrader](assets/bbstrader_logo.png)
 
+
 ## Overview
 
 BBSTrader is a trading system suite developed for MetaTrader 5 (MT5) and IBKR platforms (comming soon), designed to offer a comprehensive set of tools for developping, backtesting, executing, and managing a wide array of trading strategies. With an emphasis on algorithmic and quantitative trading to provide traders with a robust platform for exploring and deploying sophisticated trading strategies.
