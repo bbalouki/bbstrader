@@ -11,4 +11,6 @@ statsmodels
 matplotlib
 filterpy
 pytest
+sphinx
+sphinx-rtd-theme
 CurrencyConverter
