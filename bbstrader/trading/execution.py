@@ -2,14 +2,14 @@ import time
 import pandas as pd
 import numpy as np
 from datetime import datetime
-from metatrader.rates import Rates
-from metatrader.trade import Trade
-from .utils import tf_mapping
-from strategies import (
+from bbstrader.metatrader.rates import Rates
+from bbstrader.metatrader.trade import Trade
+from bbstrader.trading.utils import tf_mapping
+from bbstrader.strategies import (
     ArimaGarchStrategy, SMAStrategy, KLFStrategy, OrnsteinUhlenbeck,
 )
-from models import HMMRiskManager
-from metatrader.utils import config_logger
+from bbstrader.models import HMMRiskManager
+from bbstrader.metatrader.utils import config_logger
 from typing import Optional, Literal, List, Tuple
 
 logger = config_logger(log_file='trade.log', console_log=False)

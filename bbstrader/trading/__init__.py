@@ -1,4 +1,4 @@
 """
 Trading strategies execution module
 """
-from .run import *
+from bbstrader.trading.run import *
