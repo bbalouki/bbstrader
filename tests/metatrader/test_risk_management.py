@@ -82,29 +82,29 @@ class TestRiskManagement(unittest.TestCase):
 
     def test_get_minutes(self):
         result = self.risk_manager.get_minutes()
-        expected_minutes = 480.0  # Corrected expected value
+        expected_minutes = 480.0  
         self.assertEqual(result, expected_minutes)
 
     def test_get_std_stop(self):
         # Mock Rates and related properties
         rates_mock = MagicMock()
         rates_mock.get_rates_from_pos = MagicMock(return_value={'Close': [1.1, 1.2, 1.3]})
-        self.risk_manager.symbol_info.trade_stops_level = 10  # Example integer value
-        self.risk_manager.get_deviation = MagicMock(return_value=2)  # Return an int
+        self.risk_manager.symbol_info.trade_stops_level = 10 
+        self.risk_manager.get_deviation = MagicMock(return_value=2) 
 
         with patch('bbstrader.metatrader.rates.Rates', return_value=rates_mock):
             result = self.risk_manager.get_std_stop()
-            self.assertIsInstance(result, int)  # Ensuring result is an integer
+            self.assertIsInstance(result, int)  
 
 
     def test_get_pchange_stop(self):
         # Mock the necessary properties
-        self.risk_manager.symbol_info.trade_stops_level = 10  # Example integer value
-        self.risk_manager.get_deviation = MagicMock(return_value=2)  # Return an int
+        self.risk_manager.symbol_info.trade_stops_level = 10  
+        self.risk_manager.get_deviation = MagicMock(return_value=2) 
 
         # Test percentage change-based stop loss calculation
         result = self.risk_manager.get_pchange_stop(2.0)
-        self.assertIsInstance(result, int)  # Ensuring result is an integer
+        self.assertIsInstance(result, int)  
 
 
     def test_calculate_var(self):
@@ -121,18 +121,18 @@ class TestRiskManagement(unittest.TestCase):
         self.assertGreater(result, 0)
 
     def test_get_stop_loss(self):
-        self.risk_manager.symbol_info.trade_stops_level = 10  # Example integer value
-        self.risk_manager.get_deviation = MagicMock(return_value=2)  # Return an int
+        self.risk_manager.symbol_info.trade_stops_level = 10 
+        self.risk_manager.get_deviation = MagicMock(return_value=2) 
         result = self.risk_manager.get_stop_loss()
-        self.assertIsInstance(result, int)  # Ensuring result is an integer
+        self.assertIsInstance(result, int)  
 
 
     def test_get_take_profit(self):
-        self.risk_manager.symbol_info.trade_stops_level = 10  # Example integer value
-        self.risk_manager.get_deviation = MagicMock(return_value=2)  # Return an int
-        self.risk_manager.rr = 2  # Example risk-reward ratio
+        self.risk_manager.symbol_info.trade_stops_level = 10 
+        self.risk_manager.get_deviation = MagicMock(return_value=2)  
+        self.risk_manager.rr = 2  
         result = self.risk_manager.get_take_profit()
-        self.assertIsInstance(result, int)  # Ensuring result is an integer
+        self.assertIsInstance(result, int) 
 
 
     def test_get_currency_risk(self):
