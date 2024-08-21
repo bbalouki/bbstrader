@@ -1,40 +1,20 @@
-from ctypes import Union
 import os
 import csv
 import time
-from datetime import datetime
-from bbstrader.metatrader.risk import RiskManagement
-from bbstrader.metatrader.utils import (
-    INIT_MSG, TimeFrame, TradePosition, TickInfo,
-    raise_mt5_error, trade_retcode_message
-)
-from typing import List, Tuple, Dict, Any, Optional, Literal
-import MetaTrader5 as Mt5
-import numpy as np
 import logging
+import numpy as np
+from datetime import datetime
+import MetaTrader5 as Mt5
+from typing import List, Tuple, Dict, Any, Optional, Literal
+from .risk import RiskManagement
+from .account import INIT_MSG
+from .utils import (
+    TimeFrame, TradePosition, TickInfo,
+    raise_mt5_error, trade_retcode_message, config_logger
+)
 
 # Configure the logger
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-
-# File handler
-file_handler = logging.FileHandler('trade.log')
-file_handler.setLevel(logging.INFO)
-
-# Formatter
-formatter = logging.Formatter(
-    '%(asctime)s - %(levelname)s: %(message)s', datefmt="%Y-%m-%d %H:%M:%S")
-file_handler.setFormatter(formatter)
-
-# Add the handler to the logger
-logger.addHandler(file_handler)
-
-# handler for the console with a different level
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.DEBUG)
-console_handler.setFormatter(formatter)
-logger.addHandler(console_handler)
-
+logger = config_logger('trade.log', console_log=True)
 
 class Trade(RiskManagement):
     """
@@ -44,62 +24,62 @@ class Trade(RiskManagement):
     according to the inherited RiskManagement parameters and methods.
 
     Exemple:
-    >>> import time
-    >>> # Initialize the Trade class with parameters
-    >>> trade = Trade(
-    ...     symbol="#AAPL",               # Symbol to trade
-    ...     expert_name="MyExpertAdvisor",# Name of the expert advisor
-    ...     expert_id=12345,              # Unique ID for the expert advisor
-    ...     version="1.0",                # Version of the expert advisor
-    ...     target=5.0,                   # Daily profit target in percentage
-    ...     start_time="09:00",           # Start time for trading
-    ...     finishing_time="17:00",       # Time to stop opening new positions
-    ...     ending_time="17:30",          # Time to close any open positions
-    ...     max_risk=2.0,                 # Maximum risk allowed on the account in percentage
-    ...     daily_risk=1.0,               # Daily risk allowed in percentage
-    ...     max_trades=5,                 # Maximum number of trades per session
-    ...     rr=2.0,                       # Risk-reward ratio
-    ...     account_leverage=True,        # Use account leverage in calculations
-    ...     std_stop=True,                # Use standard deviation for stop loss calculation
-    ...     sl=20,                        # Stop loss in points (optional)
-    ...     tp=30,                        # Take profit in points (optional)
-    ...     be=10                         # Break-even in points (optional)
-    ... )
+        >>> import time
+        >>> # Initialize the Trade class with parameters
+        >>> trade = Trade(
+        ...     symbol="#AAPL",               # Symbol to trade
+        ...     expert_name="MyExpertAdvisor",# Name of the expert advisor
+        ...     expert_id=12345,              # Unique ID for the expert advisor
+        ...     version="1.0",                # Version of the expert advisor
+        ...     target=5.0,                   # Daily profit target in percentage
+        ...     start_time="09:00",           # Start time for trading
+        ...     finishing_time="17:00",       # Time to stop opening new positions
+        ...     ending_time="17:30",          # Time to close any open positions
+        ...     max_risk=2.0,                 # Maximum risk allowed on the account in percentage
+        ...     daily_risk=1.0,               # Daily risk allowed in percentage
+        ...     max_trades=5,                 # Maximum number of trades per session
+        ...     rr=2.0,                       # Risk-reward ratio
+        ...     account_leverage=True,        # Use account leverage in calculations
+        ...     std_stop=True,                # Use standard deviation for stop loss calculation
+        ...     sl=20,                        # Stop loss in points (optional)
+        ...     tp=30,                        # Take profit in points (optional)
+        ...     be=10                         # Break-even in points (optional)
+        ... )
 
-    >>> # Example to open a buy position
-    >>> trade.open_buy_position(mm=True, comment="Opening Buy Position")
+        >>> # Example to open a buy position
+        >>> trade.open_buy_position(mm=True, comment="Opening Buy Position")
 
-    >>> # Example to open a sell position
-    >>> trade.open_sell_position(mm=True, comment="Opening Sell Position")
+        >>> # Example to open a sell position
+        >>> trade.open_sell_position(mm=True, comment="Opening Sell Position")
 
-    >>> # Check current open positions
-    >>> opened_positions = trade.get_opened_positions
-    >>> if opened_positions is not None:
-            print(f"Current open positions: {opened_positions}")
+        >>> # Check current open positions
+        >>> opened_positions = trade.get_opened_positions
+        >>> if opened_positions is not None:
+        ...     print(f"Current open positions: {opened_positions}")
 
-    >>> # Close all open positions at the end of the trading session
-    >>> if trade.days_end():
-            trade.close_all_positions(comment="Closing all positions at day's end")
+        >>> # Close all open positions at the end of the trading session
+        >>> if trade.days_end():
+        ...    trade.close_all_positions(comment="Closing all positions at day's end")
 
-    >>> # Print trading session statistics
-    >>> trade.statistics(save=True, dir="my_trading_stats")
+        >>> # Print trading session statistics
+        >>> trade.statistics(save=True, dir="my_trading_stats")
 
-    >>> # Sleep until the next trading session if needed (example usage)
-    >>> sleep_time = trade.sleep_time()
-    >>> print(f"Sleeping for {sleep_time} minutes until the next trading session.")
-    >>> time.sleep(sleep_time * 60)
+        >>> # Sleep until the next trading session if needed (example usage)
+        >>> sleep_time = trade.sleep_time()
+        >>> print(f"Sleeping for {sleep_time} minutes until the next trading session.")
+        >>> time.sleep(sleep_time * 60)
     """
 
     def __init__(
         self,
-        symbol: str,
-        expert_name: str,
-        expert_id: int,
-        version: str,
-        target: float,
-        start_time: str = "6:30",
-        finishing_time: str = "19:30",
-        ending_time: str = "20:30",
+        symbol: str = 'EURUSD',
+        expert_name: str = 'bbstrader',
+        expert_id: int = 9818,
+        version: str = '1.0',
+        target: float = 5.0,
+        start_time: str = "1:00",
+        finishing_time: str = "23:00",
+        ending_time: str = "23:30",
         verbose: Optional[bool] = None,
         **kwargs,
     ):
@@ -438,7 +418,7 @@ class Trade(RiskManagement):
 
         self.break_even(comment)
         if self.check(comment):
-            self.request_result(_price, request, action)
+            self.request_result(_price, request, action),
 
     def _order_type(self):
         type = {
@@ -528,10 +508,10 @@ class Trade(RiskManagement):
         if self.days_end():
             return False
         elif not self.trading_time():
-            logger.info(f"\nNot Trading time, SYMBOL={self.symbol}")
+            logger.info(f"Not Trading time, SYMBOL={self.symbol}")
             return False
         elif not self.is_risk_ok():
-            logger.error(f"\nRisk not allowed, SYMBOL={self.symbol}")
+            logger.error(f"Risk not allowed, SYMBOL={self.symbol}")
             self._check(comment)
             return False
         elif not self._risk_free():
@@ -544,7 +524,7 @@ class Trade(RiskManagement):
 
     def _check(self, txt: str = ""):
         if self.positive_profit() or self.get_current_open_positions() is None:
-            self.close_all_positions()
+            self.close_positions(position_type='all')
             logger.info(txt)
             time.sleep(5)
             self.statistics(save=True)
@@ -561,9 +541,9 @@ class Trade(RiskManagement):
 
         Args:
             price (float): Price for opening the position
-            request (Dict[str, Any]): A trade request to sent to Mt5.order_sent()
-                all detail in request can be found here
-                    https://www.mql5.com/en/docs/python_metatrader5/mt5ordersend_py
+            request (Dict[str, Any]): A trade request to sent to Mt5.order_sent() 
+            all detail in request can be found here https://www.mql5.com/en/docs/python_metatrader5/mt5ordersend_py
+            
             type (str): The type of the order 
                 `(BMKT, SMKT, BLMT, SLMT, BSTP, SSTP, BSTPLMT, SSTPLMT)` 
         """
@@ -572,7 +552,8 @@ class Trade(RiskManagement):
         pos = self._order_type()[type][1]
         addtionnal = f", SYMBOL={self.symbol}"
         try:
-            result = Mt5.order_send(request)
+            check_result = self.check_order(request)
+            result = self.send_order(request)
         except Exception as e:
             print(f"{self.get_current_time()} -", end=' ')
             trade_retcode_message(
@@ -587,7 +568,8 @@ class Trade(RiskManagement):
                 while result.retcode != Mt5.TRADE_RETCODE_DONE and tries < 5:
                     time.sleep(1)
                     try:
-                        result = Mt5.order_send(request)
+                        check_result = self.check_order(request)
+                        result = self.send_order(request)
                     except Exception as e:
                         print(f"{self.get_current_time()} -", end=' ')
                         trade_retcode_message(
@@ -633,7 +615,9 @@ class Trade(RiskManagement):
 
     def open_position(
         self,
-        action: Literal['BMKT', 'BLMT', 'BSTP', 'BSTPLMT', 'SMKT', 'SLMT', 'SSTP', 'SSTPLMT'],
+        action: Literal[
+            'BMKT', 'BLMT', 'BSTP', 'BSTPLMT',
+            'SMKT', 'SLMT', 'SSTP', 'SSTPLMT'],
         buy: bool = False,
         sell: bool = False,
         price: Optional[float] = None,
@@ -696,69 +680,64 @@ class Trade(RiskManagement):
             return self.break_even_status
         return None
 
-    def get_current_open_orders(self, id: Optional[int] = None
-                                ) -> List[int] | None:
-        """Get All current open orders's tickets
+    def get_filtered_tickets(self,
+                             id: Optional[int] = None,
+                             filter_type: Optional[str] = None,
+                             th=None
+                             ) -> List[int] | None:
+        """
+        Get tickets for positions or orders based on filters.
 
         Args:
             id (int): The strategy id or expert Id
+            filter_type (str): Filter type ('orders', 'positions', 'buys', 'sells', 'win_trades')
+                - `orders` are current open orders
+                - `positions` are all current open positions
+                - `buys` and `sells` are current buy or sell open positions 
+                - `win_trades` are current open position that have a profit greater than a threshold
+            th (bool): the minimum treshold for winning position
+                (only relevant when filter_type is 'win_trades')
+
+        Returns:
+            List[int] | None: A list of filtered tickets 
+                or None if no tickets match the criteria.
         """
-        orders = self.get_orders(symbol=self.symbol)
         Id = id if id is not None else self.expert_id
-        current_orders = []
-        if orders is not None:
-            for order in orders:
-                if order.magic == Id:
-                    current_orders.append(order.ticket)
-            if len(current_orders) != 0:
-                return current_orders
-            else:
-                return None
+
+        if filter_type == 'orders':
+            items = self.get_orders(symbol=self.symbol)
         else:
-            return None
+            items = self.get_positions(symbol=self.symbol)
 
-    def get_current_open_positions(self,  id: Optional[int] = None
-                                   ) -> List[int] | None:
-        """Get All current open position's tickets
+        filtered_tickets = []
 
-        Args:
-            id (int): The strategy id or expert Id
-        """
-        positions = self.get_positions(symbol=self.symbol)
-        Id = id if id is not None else self.expert_id
-        current_positions = []
-        if positions is not None:
-            for position in positions:
-                if position.magic == Id:
-                    current_positions.append(position.ticket)
-            if len(current_positions) != 0:
-                return current_positions
-            else:
-                return None
-        else:
-            return None
+        if items is not None:
+            for item in items:
+                if item.magic == Id:
+                    if filter_type == 'buys' and item.type != 0:
+                        continue
+                    if filter_type == 'sells' and item.type != 1:
+                        continue
+                    if filter_type == 'win_trades' and not self.win_trade(item, th=th):
+                        continue
+                    filtered_tickets.append(item.ticket)
+            return filtered_tickets if filtered_tickets else None
+        return None
 
-    def get_current_win_trades(self, id: Optional[int] = None
-                               ) -> List[int] | None:
-        """Get all active profitable trades
+    def get_current_open_orders(self, id: Optional[int] = None) -> List[int] | None:
+        return self.get_filtered_tickets(id=id, filter_type='orders')
 
-        Args:
-            id (int): The strategy id or expert Id
-        """
-        positions = self.get_positions(symbol=self.symbol)
-        Id = id if id is not None else self.expert_id
-        be_positions = []
-        if positions is not None:
-            for position in positions:
-                if position.magic == Id:
-                    if self.win_trade(position, th=self.stop_loss):
-                        be_positions.append(position.ticket)
-            if len(be_positions) != 0:
-                return be_positions
-            else:
-                return None
-        else:
-            return None
+    def get_current_open_positions(self, id: Optional[int] = None) -> List[int] | None:
+        return self.get_filtered_tickets(id=id, filter_type='positions')
+
+    def get_current_win_trades(self, id: Optional[int] = None, th=None) -> List[int] | None:
+        return self.get_filtered_tickets(id=id, filter_type='win_trades', th=th)
+
+    def get_current_buys(self, id: Optional[int] = None) -> List[int] | None:
+        return self.get_filtered_tickets(id=id, filter_type='buys')
+
+    def get_current_sells(self, id: Optional[int] = None) -> List[int] | None:
+        return self.get_filtered_tickets(id=id, filter_type='sells')
 
     def positive_profit(self, th: Optional[float] = None
                         ) -> bool:
@@ -787,52 +766,6 @@ class Trade(RiskManagement):
             if current_profit > th_profit:
                 return True
         return False
-
-    def get_current_buys(self, id: Optional[int] = None
-                         ) -> List[int] | None:
-        """Get current buy positions open
-
-        Args:
-            id (int): The strategy id or expert Id
-        """
-        positions = self.get_positions(symbol=self.symbol)
-        Id = id if id is not None else self.expert_id
-        buys = []
-        if positions is not None:
-            for position in positions:
-                if (position.type == 0
-                        and position.magic == Id
-                        ):
-                    buys.append(position.ticket)
-            if len(buys) != 0:
-                return buys
-            else:
-                return None
-        else:
-            return None
-
-    def get_current_sells(self, id: Optional[int] = None
-                          ) -> List[int] | None:
-        """Get current sell positions open
-
-        Args:
-            id (int): The strategy id or expert Id
-        """
-        positions = self.get_positions(symbol=self.symbol)
-        Id = id if id is not None else self.expert_id
-        sells = []
-        if positions is not None:
-            for position in positions:
-                if (position.type == 1
-                        and position.magic == Id
-                    ):
-                    sells.append(position.ticket)
-            if len(sells) != 0:
-                return sells
-            else:
-                return None
-        else:
-            return None
 
     def break_even(self, id: Optional[int] = None):
         """
@@ -964,7 +897,8 @@ class Trade(RiskManagement):
         addtionnal = f", SYMBOL={self.symbol}"
         time.sleep(0.1)
         try:
-            result = Mt5.order_send(request)
+            check_result = self.check_order(request)
+            result = self.send_order(request)
         except Exception as e:
             print(f"{self.get_current_time()} -", end=' ')
             trade_retcode_message(
@@ -980,8 +914,9 @@ class Trade(RiskManagement):
                 else:
                     time.sleep(1)
                     try:
-                        result = Mt5.order_send(request)
-                    except:
+                        check_result = self.check_order(request)
+                        result = self.send_order(request)
+                    except Exception as e:
                         print(f"{self.get_current_time()} -", end=' ')
                         trade_retcode_message(
                             result.retcode, display=True, add_msg=f"{e}{addtionnal}")
@@ -1039,6 +974,9 @@ class Trade(RiskManagement):
         if len(self.opened_positions) != 0:
             for position in self.opened_positions:
                 time.sleep(0.1)
+                # This return two TradeDeal Object,
+                # The first one is the one the opening order
+                # The second is the closing order
                 history = self.get_trades_history(
                     position=position, to_df=False
                 )
@@ -1057,7 +995,7 @@ class Trade(RiskManagement):
                        id: Optional[int] = None,
                        pct: Optional[float] = 1.0,
                        comment: Optional[str] = None
-                       )->bool:
+                       ) -> bool:
         """
         Close an open position by it ticket
 
@@ -1081,8 +1019,8 @@ class Trade(RiskManagement):
         if positions is not None:
             for position in positions:
                 if (position.ticket == ticket
-                            and position.magic == Id
-                        ):
+                        and position.magic == Id
+                    ):
                     buy = position.type == 0
                     sell = position.type == 1
                     request = {
@@ -1100,7 +1038,8 @@ class Trade(RiskManagement):
                     }
                     addtionnal = f", SYMBOL={self.symbol}"
                     try:
-                        result = Mt5.order_send(request)
+                        check_result = self.check_order(request)
+                        result = self.send_order(request)
                     except Exception as e:
                         print(f"{self.get_current_time()} -", end=' ')
                         trade_retcode_message(
@@ -1113,8 +1052,9 @@ class Trade(RiskManagement):
                         while result.retcode != Mt5.TRADE_RETCODE_DONE and tries < 5:
                             time.sleep(1)
                             try:
-                                result = Mt5.order_send(request)
-                            except:
+                                check_result = self.check_order(request)
+                                result = self.send_order(request)
+                            except Exception as e:
                                 print(f"{self.get_current_time()} -", end=' ')
                                 trade_retcode_message(
                                     result.retcode, display=True, add_msg=f"{e}{addtionnal}")
@@ -1132,70 +1072,52 @@ class Trade(RiskManagement):
                     else:
                         return False
 
-    def close_all_positions(self,
-                            id: Optional[int] = None,
-                            comment: Optional[str] = None):
+    def close_positions(
+            self,
+            position_type: Literal["all", "buy", "sell"] = "all",
+            id: Optional[int] = None,
+            comment: Optional[str] = None):
         """
         Args:
+            position_type (str): Type of positions to close ("all", "buy", "sell")
             id (int): The unique ID of the Expert or Strategy
             comment (str): Comment for the closing position
         """
-        raw_positions = self.get_positions(symbol=self.symbol)
-        if raw_positions is not None:
-            positions = [position.ticket for position in raw_positions]
+        if position_type == "all":
+            positions = self.get_positions(symbol=self.symbol)
+        elif position_type == "buy":
+            positions = self.get_current_buys()
+        elif position_type == "sell":
+            positions = self.get_current_sells()
         else:
-            positions = []
-        if len(positions) != 0:
-            for ticket in positions.copy():
+            logger.error(f"Invalid position type: {position_type}")
+            return
+
+        if positions is not None:
+            if position_type == 'all':
+                pos_type = ""
+                tickets = [position.ticket for position in positions]
+            else:
+                tickets = positions
+                pos_type = position_type
+        else:
+            tickets = []
+            
+        if len(tickets) != 0:
+            for ticket in tickets.copy():
                 if self.close_position(ticket, id=id, comment=comment):
-                    positions.remove(ticket)
+                    tickets.remove(ticket)
                 time.sleep(1)
-            if len(positions) == 0:
-                logger.info(f"ALL Positions closed, SYMBOL={self.symbol}.")
-            else:
-                logger.info(
-                    f"{len(positions)} Positions not closed, SYMBOL={self.symbol}")
 
-    def close_all_buys(self,
-                       id: Optional[int] = None,
-                       comment: Optional[str] = None):
-        """
-        Args:
-            id (int): The unique ID of the Expert or Strategy
-            comment (str): Comment for the closing position
-        """
-        positions = self.get_current_buys()
-        if positions is not None:
-            for position in positions.copy():
-                if self.close_position(position, id=id, comment=comment):
-                    positions.remove(position)
-                time.sleep(1)
-            if len(positions) == 0:
-                logger.info(f"ALL BUY Positions closed, SYMBOL={self.symbol}.")
+            if len(tickets) == 0:
+                logger.info(
+                    f"ALL {position_type.upper()} Positions closed, SYMBOL={self.symbol}.")
             else:
                 logger.info(
-                    f"{len(positions)} BUY Positions not closed, SYMBOL={self.symbol}")
-
-    def close_all_sells(self,
-                        id: Optional[int] = None,
-                        comment: Optional[str] = None):
-        """
-        Args:
-            id (int): The unique ID of the Expert or Strategy
-            comment (str): Comment for the closing position
-        """
-        positions = self.get_current_sells()
-        if positions is not None:
-            for position in positions.copy():
-                if self.close_position(position, id=id, comment=comment):
-                    positions.remove(position)
-                time.sleep(1)
-            if len(positions) == 0:
-                logger.info(
-                    f"ALL SELL Positions closed, SYMBOL={self.symbol}.")
-            else:
-                logger.info(
-                    f"{len(positions)} SELL Positions not closed, SYMBOL={self.symbol}")
+                    f"{len(tickets)} {position_type.upper()} Positions not closed, SYMBOL={self.symbol}")
+        else:
+            logger.info(
+                f"No {position_type.upper()} Positions to close, SYMBOL={self.symbol}.")
 
     def get_stats(self) -> Tuple[Dict[str, Any]]:
         """
@@ -1215,7 +1137,7 @@ class Trade(RiskManagement):
             for position in self.opened_positions:
                 time.sleep(0.1)
                 history = self.get_trades_history(
-                    position=position
+                    position=position, to_df=False
                 )
                 if len(history) == 2:
                     result = history[1].profit

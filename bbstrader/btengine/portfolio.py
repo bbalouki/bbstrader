@@ -1,11 +1,11 @@
 import pandas as pd
-from bbstrader.btengine.event import (
-    OrderEvent, FillEvent, MarketEvent, SignalEvent
-)
 from queue import Queue
 from datetime import datetime
-from bbstrader.btengine.data import DataHandler
-from bbstrader.btengine.performance import (
+from .event import (
+    OrderEvent, FillEvent, MarketEvent, SignalEvent
+)
+from .data import DataHandler
+from .performance import (
     create_drawdowns, plot_performance,
     create_sharpe_ratio, create_sortino_ratio,
     plot_returns_and_dd, plot_monthly_yearly_returns
@@ -81,10 +81,10 @@ class Portfolio(object):
             initial_capital (float): The starting capital in USD.
 
             kwargs (dict): Additional arguments
-                - time_frame: The time frame of the bars.
-                - trading_hours: The number of trading hours in a day.
-                - benchmark: The benchmark symbol to compare the portfolio.
-                - strategy_name: The name of the strategy  (the name must not include 'Strategy' in it).    
+                - `time_frame`: The time frame of the bars.
+                - `trading_hours`: The number of trading hours in a day.
+                - `benchmark`: The benchmark symbol to compare the portfolio.
+                - `strategy_name`: The name of the strategy  (the name must not include 'Strategy' in it).    
         """
         self.bars = bars
         self.events = events
@@ -93,19 +93,17 @@ class Portfolio(object):
         self.initial_capital = initial_capital
 
         self.timeframe = kwargs.get("time_frame", "D1")
-        self.trading_hours = kwargs.get("trading_hours", 6.5)
+        self.trading_hours = kwargs.get("session_duration", 6.5)
         self.benchmark = kwargs.get('benchmark', 'SPY')
         self.strategy_name = kwargs.get('strategy_name', 'Strategy')
-
-        tf = self._tf_mapping()
-        if self.timeframe not in tf:
+        if self.timeframe not in self._tf_mapping():
             raise ValueError(
                 f"Timeframe not supported,"
                 f"please choose one of the following: "
-                f"1m, 3m, 5m, 10m, 15m, 30m, 1h, 2h, 4h, D1"
+                f"{', '.join(list(self._tf_mapping().keys()))}"
             )
         else:
-            self.tf = tf[self.timeframe]
+            self.tf = self._tf_mapping()[self.timeframe]
 
         self.all_positions = self.construct_all_positions()
         self.current_positions = dict((k, v) for k, v in
@@ -118,20 +116,13 @@ class Portfolio(object):
         Returns a dictionary mapping the time frames
         to the number of bars in a year.
         """
-        N = 252
-        H = self.trading_hours
-        time_frame_mapping = {
-            '1m':  N*60*H,
-            '3m':  N*(60/3)*H,
-            '5m':  N*(60/5)*H,
-            '10m': N*(60/10)*H,
-            '15m': N*(60/15)*H,
-            '30m': N*(60/30)*H,
-            '1h':  N*(60/60)*H,
-            '2h':  N*(60/120)*H,
-            '4h':  N*(60/240)*H,
-            'D1':  N
-        }
+        th = self.trading_hours
+        time_frame_mapping = {}
+        for minutes in [1, 2, 3, 4, 5, 6, 10, 12, 15, 20,
+                        30, 60, 120, 180, 240, 360, 480, 720]:
+            key = f"{minutes//60}h" if minutes >= 60 else f"{minutes}m"
+            time_frame_mapping[key] = int(252 * (60 / minutes) * th)
+        time_frame_mapping['D1'] = 252
         return time_frame_mapping
 
     def construct_all_positions(self):

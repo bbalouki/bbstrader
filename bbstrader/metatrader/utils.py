@@ -1,24 +1,72 @@
 import MetaTrader5 as MT5
 import logging
-from typing import List, NamedTuple
+from typing import List, NamedTuple, Optional
 from enum import Enum
-import pandas as pd
+
+def config_logger(log_file: str, console_log=True):
+    # Configure the logger
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
+
+    # File handler
+    file_handler = logging.FileHandler(log_file)
+    file_handler.setLevel(logging.INFO)
+
+    # Formatter
+    formatter = logging.Formatter(
+        '%(asctime)s - %(levelname)s: %(message)s', datefmt="%Y-%m-%d %H:%M:%S")
+    file_handler.setFormatter(formatter)
+
+    # Add the handler to the logger
+    logger.addHandler(file_handler)
+
+    if console_log:
+        # handler for the console with a different level
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.DEBUG)
+        console_handler.setFormatter(formatter)
+        logger.addHandler(console_handler)
+
+    return logger
+
+
+class LogLevelFilter(logging.Filter):
+    def __init__(self, levels: List[int]):
+        """
+        Initializes the filter with specific logging levels.
+
+        Args:
+            levels: A list of logging level values (integers) to include.
+        """
+        super().__init__()
+        self.levels = levels
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        """
+        Filters log records based on their level.
+
+        Args:
+            record: The log record to check.
+
+        Returns:
+            True if the record's level is in the allowed levels, False otherwise.
+        """
+        return record.levelno in self.levels
+
 
 __all__ = [
-    "BROKERS",
-    "ADMIRAL_MARKETS_URL",
-    "JUST_MARKETS_URL",
-    "INIT_MSG",
     "TIMEFRAMES",
     "TimeFrame",
     "TerminalInfo",
     "AccountInfo",
     "SymbolInfo",
     "TickInfo",
+    "TradeRequest",
+    "OrderCheckResult",
+    "OrderSentResult",
     "TradeOrder",
     "TradePosition",
     "TradeDeal",
-    "LogLevelFilter",
     "GenericFail",
     "InvalidParams",
     "HistoryNotFound",
@@ -33,26 +81,10 @@ __all__ = [
     "InternalFailTimeout",
     "trade_retcode_message",
     "raise_mt5_error",
-
 ]
 
-BROKERS = [
-    "Admirals Group AS",
-]
-
-ADMIRAL_MARKETS_URL = "https://cabinet.a-partnership.com/visit/?bta=35537&brand=admiralmarkets"
-ADMIRAL_MARKETS_PRODUCTS = "Stock, ETFs, Indices, Commodities, Futures and Forex"
-JUST_MARKETS_URL = "https://one.justmarkets.link/a/tufvj0xugm/registration/trader"
-
-INIT_MSG = (
-    f"\n* Ensure you have MT5 terminal install on your machine \n"
-    f"* Ensure you have an active MT5 Account \n"
-    f"* Ensure you have a good internet connexion \n"
-    f"* If you want to trade {ADMIRAL_MARKETS_PRODUCTS} see {ADMIRAL_MARKETS_URL}\n"
-    f"* If you want to trade Crypto and or Forex see {JUST_MARKETS_URL}\n"
-)
-
-
+# TIMEFRAME is an enumeration with possible chart period values
+# See https://www.mql5.com/en/docs/python_metatrader5/mt5copyratesfrom_py#timeframe
 TIMEFRAMES = {
     '1m':  MT5.TIMEFRAME_M1,
     '2m':  MT5.TIMEFRAME_M2,
@@ -79,6 +111,9 @@ TIMEFRAMES = {
 
 
 class TimeFrame(Enum):
+    """
+    Rrepresent a time frame object
+    """
     M1 = "1m"
     M2 = "2m"
     M3 = "3m"
@@ -103,7 +138,10 @@ class TimeFrame(Enum):
 
 
 class TerminalInfo(NamedTuple):
-    """Represents general information about the trading terminal."""
+    """
+    Represents general information about the trading terminal.
+    See https://www.mql5.com/en/docs/constants/environment_state/terminalstatus
+    """
     community_account: bool
     community_connection: bool
     connected: bool
@@ -129,7 +167,10 @@ class TerminalInfo(NamedTuple):
 
 
 class AccountInfo(NamedTuple):
-    """Represents information about a trading account."""
+    """
+    Represents information about a trading account.
+    See https://www.mql5.com/en/docs/constants/environment_state/accountinformation
+    """
     login: int
     trade_mode: int
     leverage: int
@@ -161,7 +202,10 @@ class AccountInfo(NamedTuple):
 
 
 class SymbolInfo(NamedTuple):
-    """Represents detailed information about a financial instrument."""
+    """
+    Represents detailed information about a financial instrument.
+    See https://www.mql5.com/en/docs/constants/environment_state/marketinfoconstants
+    """
     custom: bool
     chart_mode: int
     select: bool
@@ -261,7 +305,17 @@ class SymbolInfo(NamedTuple):
 
 
 class TickInfo(NamedTuple):
-    """Represents the last tick for the specified financial instrument."""
+    """
+    Represents the last tick for the specified financial instrument.
+    * time:     Time of the last prices update
+    * bid:      Current Bid price
+    * ask:      Current Ask price
+    * last:     Price of the last deal (Last)
+    * volume:   Volume for the current Last price
+    * time_msc: Time of a price last update in milliseconds
+    * flags:    Tick flags
+    * volume_real:  Volume for the current Last price with greater accuracy
+    """
     time: int
     bid: float
     ask: float
@@ -272,8 +326,69 @@ class TickInfo(NamedTuple):
     volume_real: float
 
 
+class TradeRequest(NamedTuple):
+    """
+    Represents a Trade Request Structure
+    See https://www.mql5.com/en/docs/constants/structures/mqltraderequest
+    """
+    action: int
+    magic: int
+    order: int
+    symbol: str
+    volume: float
+    price: float
+    stoplimit: float
+    sl: float
+    tp: float
+    deviation: int
+    type: int
+    type_filling: int
+    type_time: int
+    expiration: int
+    comment: str
+    position: int
+    position_by: int
+
+
+class OrderCheckResult(NamedTuple):
+    """
+    The Structure of Results of a Trade Request Check
+    See https://www.mql5.com/en/docs/constants/structures/mqltradecheckresult
+    """
+    retcode: int
+    balance: float
+    equity: float
+    profit: float
+    margin: float
+    margin_free: float
+    margin_level: float
+    comment: str
+    request: TradeRequest
+
+
+class OrderSentResult(NamedTuple):
+    """
+    The Structure of a Trade Request Result 
+    See https://www.mql5.com/en/docs/constants/structures/mqltraderesult
+    """
+    retcode: int
+    deal: int
+    order: int
+    volume: float
+    price: float
+    bid: float
+    ask: float
+    comment: str
+    request_id: int
+    retcode_external: int
+    request: TradeRequest
+
+
 class TradeOrder(NamedTuple):
-    """Represents a trade order."""
+    """
+    Represents a trade order.
+    See https://www.mql5.com/en/docs/constants/tradingconstants/orderproperties
+    """
     ticket: int
     time_setup: int
     time_setup_msc: int
@@ -304,6 +419,7 @@ class TradePosition(NamedTuple):
     """
     Represents a trade position with attributes like ticket, open/close prices, 
     volume, profit, and other trading details.
+    See https://www.mql5.com/en/docs/constants/tradingconstants/positionproperties
     """
     ticket: int
     time: int
@@ -327,7 +443,10 @@ class TradePosition(NamedTuple):
 
 
 class TradeDeal(NamedTuple):
-    """Represents a trade deal execution."""
+    """
+    Represents a trade deal execution.
+    See https://www.mql5.com/en/docs/constants/tradingconstants/dealproperties
+    """
     ticket: int
     order: int
     time: int
@@ -346,30 +465,6 @@ class TradeDeal(NamedTuple):
     symbol: str
     comment: str
     external_id: str
-
-
-class LogLevelFilter(logging.Filter):
-    def __init__(self, levels: List[int]):
-        """
-        Initializes the filter with specific logging levels.
-
-        Args:
-            levels: A list of logging level values (integers) to include.
-        """
-        super().__init__()
-        self.levels = levels
-
-    def filter(self, record: logging.LogRecord) -> bool:
-        """
-        Filters log records based on their level.
-
-        Args:
-            record: The log record to check.
-
-        Returns:
-            True if the record's level is in the allowed levels, False otherwise.
-        """
-        return record.levelno in self.levels
 
 
 class MT5TerminalError(Exception):
@@ -477,7 +572,7 @@ class InternalFailTimeout(InternalFailError):
 
 
 # Dictionary to map error codes to exception classes
-_ERROR_CODE_TO_EXCEPTION = {
+_ERROR_CODE_TO_EXCEPTION_ = {
     MT5.RES_E_FAIL: GenericFail,
     MT5.RES_E_INVALID_PARAMS: InvalidParams,
     MT5.RES_E_NOT_FOUND: HistoryNotFound,
@@ -493,7 +588,7 @@ _ERROR_CODE_TO_EXCEPTION = {
 }
 
 
-def raise_mt5_error(message=None):
+def raise_mt5_error(message: Optional[str] = None):
     """Raises an exception based on the given error code.
 
     Args:
@@ -502,15 +597,16 @@ def raise_mt5_error(message=None):
     Raises:
         MT5TerminalError: A specific exception based on the error code.
     """
-    error = _ERROR_CODE_TO_EXCEPTION.get(MT5.last_error()[0])
+    error = _ERROR_CODE_TO_EXCEPTION_.get(MT5.last_error()[0])
     raise Exception(f"{error(None)} {message or MT5.last_error()[1]}")
 
 
-_ORDER_FILLING_TYPE = "https://www.mql5.com/en/docs/constants/tradingconstants/orderproperties#enum_order_type_filling"
-_ORDER_TYPE = "https://www.mql5.com/en/docs/constants/tradingconstants/orderproperties#enum_order_type"
-_POSITION_IDENTIFIER = "https://www.mql5.com/en/docs/constants/tradingconstants/positionproperties#enum_position_property_integer"
-_FIFO_RULE = "https://www.mql5.com/en/docs/constants/environment_state/accountinformation#enum_account_info_integer"
-_TRADE_RETCODE_MESSAGES = {
+_ORDER_FILLING_TYPE_ = "https://www.mql5.com/en/docs/constants/tradingconstants/orderproperties#enum_order_type_filling"
+_ORDER_TYPE_ = "https://www.mql5.com/en/docs/constants/tradingconstants/orderproperties#enum_order_type"
+_POSITION_IDENTIFIER_ = "https://www.mql5.com/en/docs/constants/tradingconstants/positionproperties#enum_position_property_integer"
+_FIFO_RULE_ = "https://www.mql5.com/en/docs/constants/environment_state/accountinformation#enum_account_info_integer"
+
+_TRADE_RETCODE_MESSAGES_ = {
     10004: "Requote: The price has changed, please try again",
     10006: "Request rejected",
     10007: "Request canceled by trader",
@@ -536,13 +632,13 @@ _TRADE_RETCODE_MESSAGES = {
     10027: "Autotrading disabled by client terminal",
     10028: "Request locked for processing",
     10029: "Order or position frozen",
-    10030: "Invalid order filling type: see" + " "+_ORDER_FILLING_TYPE,
+    10030: "Invalid order filling type: see" + " "+_ORDER_FILLING_TYPE_,
     10031: "No connection with the trade server",
     10032: "Operation allowed only for live accounts",
     10033: "The number of pending orders has reached the limit",
     10034: "Order/position volume limit for the symbol reached",
-    10035: "Incorrect or prohibited order type: see" + " " + _ORDER_TYPE,
-    10036: "Position with the specified ID has already been closed: see"+" "+_POSITION_IDENTIFIER,
+    10035: "Incorrect or prohibited order type: see" + " " + _ORDER_TYPE_,
+    10036: "Position with the specified ID has already been closed: see"+" "+_POSITION_IDENTIFIER_,
     10038: "Close volume exceeds the current position volume",
     10039: "A close order already exists for this position",
     10040: "Maximum number of open positions reached",
@@ -550,7 +646,7 @@ _TRADE_RETCODE_MESSAGES = {
     10042: "Only long positions are allowed",
     10043: "Only short positions are allowed",
     10044: "Only position closing is allowed",
-    10045: "Position closing allowed only by FIFO rule: see" + " " + _FIFO_RULE,
+    10045: "Position closing allowed only by FIFO rule: see" + " " + _FIFO_RULE_,
     10046: "Opposite positions on this symbol are disabled"
 }
 
@@ -567,7 +663,7 @@ def trade_retcode_message(code, display=False, add_msg=''):
         str: The message associated with the provided trade return code. If the code is not found,
              it returns "Unknown trade error.".
     """
-    message = _TRADE_RETCODE_MESSAGES.get(code, "Unknown trade error")
+    message = _TRADE_RETCODE_MESSAGES_.get(code, "Unknown trade error")
     if display:
         print(message + add_msg)
     return message

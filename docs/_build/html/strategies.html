@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Strategies &mdash; BBSTrader 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=8d563738"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Trading Execution" href="trading.html" />
+    <link rel="prev" title="Models" href="models.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            BBSTrader
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">bbstrader</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="btengine.html">Backtesting Egine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="metatrader.html">MetaTrader5 (MT5) Trading</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models.html">Models</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Strategies</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#strategies.ArimaGarchStrategy"><code class="docutils literal notranslate"><span class="pre">ArimaGarchStrategy</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#strategies.ArimaGarchStrategy.backtest_strategy"><code class="docutils literal notranslate"><span class="pre">ArimaGarchStrategy.backtest_strategy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#strategies.ArimaGarchStrategy.calculate_signals"><code class="docutils literal notranslate"><span class="pre">ArimaGarchStrategy.calculate_signals()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#strategies.ArimaGarchStrategy.execute_trading_strategy"><code class="docutils literal notranslate"><span class="pre">ArimaGarchStrategy.execute_trading_strategy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#strategies.ArimaGarchStrategy.fit_best_arima"><code class="docutils literal notranslate"><span class="pre">ArimaGarchStrategy.fit_best_arima()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#strategies.ArimaGarchStrategy.fit_garch"><code class="docutils literal notranslate"><span class="pre">ArimaGarchStrategy.fit_garch()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#strategies.ArimaGarchStrategy.generate_predictions"><code class="docutils literal notranslate"><span class="pre">ArimaGarchStrategy.generate_predictions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#strategies.ArimaGarchStrategy.get_prediction"><code class="docutils literal notranslate"><span class="pre">ArimaGarchStrategy.get_prediction()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#strategies.ArimaGarchStrategy.load_and_prepare_data"><code class="docutils literal notranslate"><span class="pre">ArimaGarchStrategy.load_and_prepare_data()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#strategies.ArimaGarchStrategy.plot_cumulative_returns"><code class="docutils literal notranslate"><span class="pre">ArimaGarchStrategy.plot_cumulative_returns()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#strategies.ArimaGarchStrategy.predict_next_return"><code class="docutils literal notranslate"><span class="pre">ArimaGarchStrategy.predict_next_return()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#strategies.ArimaGarchStrategy.show_arima_garch_results"><code class="docutils literal notranslate"><span class="pre">ArimaGarchStrategy.show_arima_garch_results()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#strategies.KLFStrategy"><code class="docutils literal notranslate"><span class="pre">KLFStrategy</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#strategies.KLFStrategy.calc_slope_intercep"><code class="docutils literal notranslate"><span class="pre">KLFStrategy.calc_slope_intercep()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#strategies.KLFStrategy.calculate_signals"><code class="docutils literal notranslate"><span class="pre">KLFStrategy.calculate_signals()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#strategies.KLFStrategy.calculate_xy_signals"><code class="docutils literal notranslate"><span class="pre">KLFStrategy.calculate_xy_signals()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#strategies.OrnsteinUhlenbeck"><code class="docutils literal notranslate"><span class="pre">OrnsteinUhlenbeck</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#strategies.OrnsteinUhlenbeck.calculate_signals"><code class="docutils literal notranslate"><span class="pre">OrnsteinUhlenbeck.calculate_signals()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#strategies.OrnsteinUhlenbeck.estimate_parameters"><code class="docutils literal notranslate"><span class="pre">OrnsteinUhlenbeck.estimate_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#strategies.OrnsteinUhlenbeck.ornstein_uhlenbeck"><code class="docutils literal notranslate"><span class="pre">OrnsteinUhlenbeck.ornstein_uhlenbeck()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#strategies.OrnsteinUhlenbeck.simulate_process"><code class="docutils literal notranslate"><span class="pre">OrnsteinUhlenbeck.simulate_process()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#strategies.SMAStrategy"><code class="docutils literal notranslate"><span class="pre">SMAStrategy</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#strategies.SMAStrategy.calculate_signals"><code class="docutils literal notranslate"><span class="pre">SMAStrategy.calculate_signals()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#strategies.SMAStrategy.create_signal"><code class="docutils literal notranslate"><span class="pre">SMAStrategy.create_signal()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#strategies.SMAStrategy.get_data"><code class="docutils literal notranslate"><span class="pre">SMAStrategy.get_data()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="trading.html">Trading Execution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tseries.html">Time Series</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">BBSTrader</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">bbstrader</a></li>
+      <li class="breadcrumb-item active">Strategies</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/strategies.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-strategies">
+<span id="strategies"></span><h1>Strategies<a class="headerlink" href="#module-strategies" title="Link to this heading"></a></h1>
+<p>Trading Strategies module</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="strategies.ArimaGarchStrategy">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">strategies.</span></span><span class="sig-name descname"><span class="pre">ArimaGarchStrategy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">252</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/strategies.html#ArimaGarchStrategy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#strategies.ArimaGarchStrategy" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class implements a trading strategy
+that combines <cite>ARIMA (AutoRegressive Integrated Moving Average)</cite>
+and <cite>GARCH (Generalized Autoregressive Conditional Heteroskedasticity)</cite> models
+to predict future returns based on historical price data.
+It inherits from a abstract <cite>Strategy</cite> class and implement <cite>calculate_signals()</cite>.</p>
+<p>The strategy is implemented in the following steps:
+1. Data Preparation: Load and prepare the historical price data.
+2. Modeling: Fit the ARIMA model to the data and then fit the GARCH model to the residuals.
+3. Prediction: Predict the next return using the ARIMA model and the next volatility using the GARCH model.
+4. Trading Strategy: Execute the trading strategy based on the predictions.
+5. Vectorized Backtesting: Backtest the trading strategy using the historical data.</p>
+<dl>
+<dt>Exemple:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">yfinance</span> <span class="k">as</span> <span class="nn">yf</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">bbstrader.strategies</span> <span class="kn">import</span> <span class="n">ArimaGarchStrategy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">bbstrader.tseries</span> <span class="kn">import</span> <span class="n">load_and_prepare_data</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="c1"># ARCH SPY Vectorize Backtest</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">k</span> <span class="o">=</span> <span class="mi">252</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">data</span> <span class="o">=</span> <span class="n">yf</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="s2">&quot;SPY&quot;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s2">&quot;2004-01-02&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;2015-12-31&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">arch</span> <span class="o">=</span> <span class="n">ArimaGarchStrategy</span><span class="p">(</span><span class="s2">&quot;SPY&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">df</span> <span class="o">=</span> <span class="n">load_and_prepare_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">arch</span><span class="o">.</span><span class="n">show_arima_garch_results</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;diff_log_return&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="o">-</span><span class="n">k</span><span class="p">:])</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">arch</span><span class="o">.</span><span class="n">backtest_strategy</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="strategies.ArimaGarchStrategy.backtest_strategy">
+<span class="sig-name descname"><span class="pre">backtest_strategy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/strategies.html#ArimaGarchStrategy.backtest_strategy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#strategies.ArimaGarchStrategy.backtest_strategy" title="Link to this definition"></a></dt>
+<dd><p>Performs a backtest of the strategy over
+the entire dataset, plotting cumulative returns.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="strategies.ArimaGarchStrategy.calculate_signals">
+<span class="sig-name descname"><span class="pre">calculate_signals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window_data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/strategies.html#ArimaGarchStrategy.calculate_signals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#strategies.ArimaGarchStrategy.calculate_signals" title="Link to this definition"></a></dt>
+<dd><p>Calculates the trading signal based on the prediction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>window_data</strong> (<em>np.array</em>) – The dataset for a specific window period.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The trading signal (‘LONG’, ‘SHORT’, or None).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="strategies.ArimaGarchStrategy.execute_trading_strategy">
+<span class="sig-name descname"><span class="pre">execute_trading_strategy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">predictions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/strategies.html#ArimaGarchStrategy.execute_trading_strategy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#strategies.ArimaGarchStrategy.execute_trading_strategy" title="Link to this definition"></a></dt>
+<dd><p>Executes the trading strategy based on a list
+of predictions, determining positions to take.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>predictions</strong> (<em>list</em>) – A list of predicted returns.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of positions (1 for ‘LONG’, -1 for ‘SHORT’, 0 for ‘HOLD’).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="strategies.ArimaGarchStrategy.fit_best_arima">
+<span class="sig-name descname"><span class="pre">fit_best_arima</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window_data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/strategies.html#ArimaGarchStrategy.fit_best_arima"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#strategies.ArimaGarchStrategy.fit_best_arima" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Fits the ARIMA model to the provided window of data,</dt><dd><p>selecting the best model based on AIC.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>window_data</strong> (<em>np.array</em>) – The dataset for a specific window period.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The best fitted ARIMA model based on AIC.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ARIMA model</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="strategies.ArimaGarchStrategy.fit_garch">
+<span class="sig-name descname"><span class="pre">fit_garch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window_data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/strategies.html#ArimaGarchStrategy.fit_garch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#strategies.ArimaGarchStrategy.fit_garch" title="Link to this definition"></a></dt>
+<dd><p>Fits the GARCH model to the residuals of the best ARIMA model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>window_data</strong> (<em>np.array</em>) – The dataset for a specific window period.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Contains the ARIMA result and GARCH result.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="strategies.ArimaGarchStrategy.generate_predictions">
+<span class="sig-name descname"><span class="pre">generate_predictions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/strategies.html#ArimaGarchStrategy.generate_predictions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#strategies.ArimaGarchStrategy.generate_predictions" title="Link to this definition"></a></dt>
+<dd><p>Generator that yields predictions one by one.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="strategies.ArimaGarchStrategy.get_prediction">
+<span class="sig-name descname"><span class="pre">get_prediction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window_data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/strategies.html#ArimaGarchStrategy.get_prediction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#strategies.ArimaGarchStrategy.get_prediction" title="Link to this definition"></a></dt>
+<dd><p>Generates a prediction for the next return based on a window of data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>window_data</strong> (<em>np.array</em>) – The dataset for a specific window period.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The predicted next return.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="strategies.ArimaGarchStrategy.load_and_prepare_data">
+<span class="sig-name descname"><span class="pre">load_and_prepare_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/strategies.html#ArimaGarchStrategy.load_and_prepare_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#strategies.ArimaGarchStrategy.load_and_prepare_data" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Prepares the dataset by calculating logarithmic returns</dt><dd><p>and differencing if necessary.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>df</strong> (<em>pd.DataFrame</em>) – <cite>The raw dataset containing at least the ‘Close’ prices</cite>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>The dataset with additional columns</dt><dd><p>for log returns and differenced log returns.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="strategies.ArimaGarchStrategy.plot_cumulative_returns">
+<span class="sig-name descname"><span class="pre">plot_cumulative_returns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">strategy_returns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buy_and_hold_returns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dates</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/strategies.html#ArimaGarchStrategy.plot_cumulative_returns"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#strategies.ArimaGarchStrategy.plot_cumulative_returns" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Plots the cumulative returns of the ARIMA+GARCH strategy against</dt><dd><p>a buy-and-hold strategy.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>strategy_returns</strong> (<em>np.array</em>) – Cumulative returns from the strategy.</p></li>
+<li><p><strong>buy_and_hold_returns</strong> (<em>np.array</em>) – Cumulative returns from a buy-and-hold strategy.</p></li>
+<li><p><strong>dates</strong> (<em>pd.Index</em>) – The dates corresponding to the returns.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="strategies.ArimaGarchStrategy.predict_next_return">
+<span class="sig-name descname"><span class="pre">predict_next_return</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arima_result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">garch_result</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/strategies.html#ArimaGarchStrategy.predict_next_return"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#strategies.ArimaGarchStrategy.predict_next_return" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Predicts the next return using the ARIMA model</dt><dd><p>and the next volatility using the GARCH model.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>arima_result</strong> (<em>ARIMA model</em>) – The ARIMA model result.</p></li>
+<li><p><strong>garch_result</strong> (<em>GARCH model</em>) – The GARCH model result.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The predicted next return.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="strategies.ArimaGarchStrategy.show_arima_garch_results">
+<span class="sig-name descname"><span class="pre">show_arima_garch_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">acf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_resid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/strategies.html#ArimaGarchStrategy.show_arima_garch_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#strategies.ArimaGarchStrategy.show_arima_garch_results" title="Link to this definition"></a></dt>
+<dd><p>Displays the ARIMA and GARCH model results, including plotting
+ACF of residuals and conducting , Box-Pierce and Ljung-Box tests.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>window_data</strong> (<em>np.array</em>) – The dataset for a specific window period.</p></li>
+<li><p><strong>acf</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, plot the ACF of residuals. Defaults to True.</p></li>
+<li><p><strong>test_resid</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, conduct Box-Pierce and Ljung-Box tests on residuals. Defaults to True.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="strategies.KLFStrategy">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">strategies.</span></span><span class="sig-name descname"><span class="pre">KLFStrategy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tickers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">tuple</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/strategies.html#KLFStrategy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#strategies.KLFStrategy" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Implements a trading strategy based on the Kalman Filter,
+a recursive algorithm used for estimating the state of a linear dynamic system
+from a series of noisy measurements. It’s designed to process market data,
+estimate dynamic parameters such as the slope and intercept of price relationships,
+and generate trading signals based on those estimates.</p>
+<p>You can learn more here <a class="reference external" href="https://en.wikipedia.org/wiki/Kalman_filter">https://en.wikipedia.org/wiki/Kalman_filter</a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="strategies.KLFStrategy.calc_slope_intercep">
+<span class="sig-name descname"><span class="pre">calc_slope_intercep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prices</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/strategies.html#KLFStrategy.calc_slope_intercep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#strategies.KLFStrategy.calc_slope_intercep" title="Link to this definition"></a></dt>
+<dd><p>Calculates and returns the slope and intercept
+of the relationship between the provided prices using the Kalman Filter.
+This method updates the filter with the latest price and returns
+the estimated slope and intercept.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>prices</strong> – A numpy array of prices for two financial instruments.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple containing the slope and intercept of the relationship</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="strategies.KLFStrategy.calculate_signals">
+<span class="sig-name descname"><span class="pre">calculate_signals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prices</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/strategies.html#KLFStrategy.calculate_signals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#strategies.KLFStrategy.calculate_signals" title="Link to this definition"></a></dt>
+<dd><p>Calculates trading signals based on the latest prices
+and the Kalman Filter’s estimates. It updates the filter’s state
+with the latest prices, computes the slope and intercept
+and generates trading signals based on the forecast error
+and prediction standard deviation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>prices</strong> – A numpy array of prices for two financial instruments.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary containing trading signals for the two financial instruments.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="strategies.KLFStrategy.calculate_xy_signals">
+<span class="sig-name descname"><span class="pre">calculate_xy_signals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">et</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">std</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/strategies.html#KLFStrategy.calculate_xy_signals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#strategies.KLFStrategy.calculate_xy_signals" title="Link to this definition"></a></dt>
+<dd><p>Generates trading signals based on the forecast error
+and standard deviation of the predictions. It returns signals for exiting,
+going long, or shorting positions based on the comparison of
+the forecast error with the standard deviation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>et</strong> – The forecast error.</p></li>
+<li><p><strong>std</strong> – The standard deviation of the predictions.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple containing the trading signals for the two financial instruments.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="strategies.OrnsteinUhlenbeck">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">strategies.</span></span><span class="sig-name descname"><span class="pre">OrnsteinUhlenbeck</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prices</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">returns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeframe</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'D1'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/strategies.html#OrnsteinUhlenbeck"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#strategies.OrnsteinUhlenbeck" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>The Ornstein-Uhlenbeck process is a mathematical model
+used to describe the behavior of a mean-reverting stochastic process.
+We use it  to model the price dynamics of an asset that tends
+to revert to a long-term mean.</p>
+<p>We Estimate the drift (θ), volatility (σ), and long-term mean (μ)
+based on historical price data; then we Simulate the OU process
+using the estimated parameters.</p>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Ornstein%E2%80%93Uhlenbeck_process">https://en.wikipedia.org/wiki/Ornstein%E2%80%93Uhlenbeck_process</a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="strategies.OrnsteinUhlenbeck.calculate_signals">
+<span class="sig-name descname"><span class="pre">calculate_signals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">th</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/strategies.html#OrnsteinUhlenbeck.calculate_signals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#strategies.OrnsteinUhlenbeck.calculate_signals" title="Link to this definition"></a></dt>
+<dd><p>Calculate the SignalEvents based on the simulated processes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rts</strong> (<em>np.ndarray</em>) – Historical returns.</p></li>
+<li><p><strong>p</strong> (<em>int</em>) – Number of time steps.</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – Number of simulations to perform.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Returns</dt><dd><p>np.ndarray: 2D array representing simulated processes.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="strategies.OrnsteinUhlenbeck.estimate_parameters">
+<span class="sig-name descname"><span class="pre">estimate_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/strategies.html#OrnsteinUhlenbeck.estimate_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#strategies.OrnsteinUhlenbeck.estimate_parameters" title="Link to this definition"></a></dt>
+<dd><p>Estimates the mean-reverting parameters (μ, θ, σ)
+using the negative log-likelihood.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Estimated μ, θ, and σ.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="strategies.OrnsteinUhlenbeck.ornstein_uhlenbeck">
+<span class="sig-name descname"><span class="pre">ornstein_uhlenbeck</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/strategies.html#OrnsteinUhlenbeck.ornstein_uhlenbeck"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#strategies.OrnsteinUhlenbeck.ornstein_uhlenbeck" title="Link to this definition"></a></dt>
+<dd><p>Simulates the Ornstein-Uhlenbeck process.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mu</strong> (<em>float</em>) – Estimated long-term mean.</p></li>
+<li><p><strong>theta</strong> (<em>float</em>) – Estimated drift.</p></li>
+<li><p><strong>sigma</strong> (<em>float</em>) – Estimated volatility.</p></li>
+<li><p><strong>dt</strong> (<em>float</em>) – Time step.</p></li>
+<li><p><strong>X0</strong> (<em>float</em>) – Initial value.</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – Number of time steps.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Simulated process.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="strategies.OrnsteinUhlenbeck.simulate_process">
+<span class="sig-name descname"><span class="pre">simulate_process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/strategies.html#OrnsteinUhlenbeck.simulate_process"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#strategies.OrnsteinUhlenbeck.simulate_process" title="Link to this definition"></a></dt>
+<dd><p>Simulates the OU process multiple times .</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rts</strong> (<em>np.ndarray</em>) – Historical returns.</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – Number of simulations to perform.</p></li>
+<li><p><strong>p</strong> (<em>int</em>) – Number of time steps.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>2D array representing simulated processes.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="strategies.SMAStrategy">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">strategies.</span></span><span class="sig-name descname"><span class="pre">SMAStrategy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/strategies.html#SMAStrategy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#strategies.SMAStrategy" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Carries out a basic Moving Average Crossover strategy with a
+short/long simple weighted moving average. Default short/long
+windows are 50/200 periods respectively and uses Hiden Markov Model
+as risk Managment system for filteering signals.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="strategies.SMAStrategy.calculate_signals">
+<span class="sig-name descname"><span class="pre">calculate_signals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prices</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/strategies.html#SMAStrategy.calculate_signals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#strategies.SMAStrategy.calculate_signals" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="strategies.SMAStrategy.create_signal">
+<span class="sig-name descname"><span class="pre">create_signal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prices</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/strategies.html#SMAStrategy.create_signal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#strategies.SMAStrategy.create_signal" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="strategies.SMAStrategy.get_data">
+<span class="sig-name descname"><span class="pre">get_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prices</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/strategies.html#SMAStrategy.get_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#strategies.SMAStrategy.get_data" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="models.html" class="btn btn-neutral float-left" title="Models" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="trading.html" class="btn btn-neutral float-right" title="Trading Execution" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Bertin Balouki SIMYELI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

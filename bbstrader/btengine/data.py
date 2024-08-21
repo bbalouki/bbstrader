@@ -6,8 +6,8 @@ from pathlib import Path
 from typing import List
 from queue import Queue
 from abc import ABCMeta, abstractmethod
-from bbstrader.metatrader.rates import Rates, get_pos_index
-from bbstrader.btengine.event import MarketEvent
+from metatrader.rates import Rates
+from .event import MarketEvent
 
 
 __all__ = [
@@ -36,7 +36,7 @@ class DataHandler(metaclass=ABCMeta):
     without affecting strategy or portfolio calculation.
 
     Specific example subclasses could include `HistoricCSVDataHandler`, 
-    `EODHDDataHandler`, `FMPDataHandler`, `IBMarketFeedDataHandler` etc.
+    `YFinanceDataHandler`, `FMPDataHandler`, `IBMarketFeedDataHandler` etc.
     """
 
     @abstractmethod
@@ -260,7 +260,7 @@ class HistoricCSVDataHandler(BaseCSVDataHandler):
         csv_dir = kwargs.get("csv_dir")
         super().__init__(events, symbol_list, csv_dir)
 
-
+MAX_BARS = 10_000_000
 class MT5HistoricDataHandler(BaseCSVDataHandler):
     """
     Downloads historical data from MetaTrader 5 (MT5) and provides 
@@ -290,32 +290,21 @@ class MT5HistoricDataHandler(BaseCSVDataHandler):
         Note:
             Requires a working connection to an MT5 terminal.
         """
-        self.tf = kwargs.get('time_frame')
-        self.max_bars = kwargs.get('max_bars')
-        self.index = kwargs.get('start_pos')
-        self.session_duration = kwargs.get('session_duration')
+        self.tf = kwargs.get('time_frame', 'D1')
+        self.start_pos = kwargs.get('start_pos', 0)
+        self.max_bars = kwargs.get('max_bars', MAX_BARS)
+        self.sd = kwargs.get('session_duration', 6.5)
         self.data_dir = kwargs.get('mt5_data', 'mt5_data')
-        self.start_pos = self.get_start_pos()
         self.symbol_list = symbol_list
-        csv_dir = self._download_data()
+        csv_dir = self._download_data(self.data_dir)
         super().__init__(events, symbol_list, csv_dir)
 
-    def get_start_pos(self):
-        if isinstance(self.index, int):
-            index = self.index
-        elif isinstance(self.index, str):
-            sd = self.session_duration
-            assert sd is not None, \
-                ValueError("Please provide the session_duration in hour")
-            index = get_pos_index(self.index, self.tf, session_duration=sd)
-        return index
-
-    def _download_data(self):
-        data_dir = Path() / str(self.data_dir)
+    def _download_data(self, cache_dir: str):
+        data_dir = Path() / cache_dir
         data_dir.mkdir(parents=True, exist_ok=True)
         for symbol in self.symbol_list:
             try:
-                rate = Rates(symbol, self.tf, self.start_pos, self.max_bars)
+                rate = Rates(symbol, self.tf, self.start_pos, self.max_bars, self.sd)
                 data = rate.get_rates_from_pos()
                 if data is None:
                     raise ValueError(f"No data found for {symbol}")
@@ -337,7 +326,7 @@ class YFHistoricDataHandler(BaseCSVDataHandler):
     This class is useful when working with historical daily prices.
     """
 
-    def __init__(self, events: Queue, symbol_list: list[str], **kwargs):
+    def __init__(self, events: Queue, symbol_list: List[str], **kwargs):
         """
         Args:
             events (Queue): The Event Queue for passing market events.
@@ -371,13 +360,15 @@ class YFHistoricDataHandler(BaseCSVDataHandler):
 
 
 # TODO # Get data from FinancialModelingPrep ()
-class BaseFMPDataHanler(DataHandler):
+class FMPHistoricDataHandler(BaseCSVDataHandler):
     ...
 
 
-class FMPHistoricDataHandler(BaseFMPDataHanler):
+class BaseFMPDataHanler(object):
     ...
 
 
 class FMPFundamentalDataHandler(BaseFMPDataHanler):
     ...
+
+# TODO Add other Handlers

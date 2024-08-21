@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Models &mdash; BBSTrader 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=8d563738"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Strategies" href="strategies.html" />
+    <link rel="prev" title="MetaTrader5 (MT5) Trading" href="metatrader.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            BBSTrader
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">bbstrader</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="btengine.html">Backtesting Egine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="metatrader.html">MetaTrader5 (MT5) Trading</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#module-models.risk">risk</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#models.risk.HMMRiskManager"><code class="docutils literal notranslate"><span class="pre">HMMRiskManager</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#models.risk.RiskModel"><code class="docutils literal notranslate"><span class="pre">RiskModel</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="strategies.html">Strategies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="trading.html">Trading Execution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tseries.html">Time Series</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">BBSTrader</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">bbstrader</a></li>
+      <li class="breadcrumb-item active">Models</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/models.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-models">
+<span id="models"></span><h1>Models<a class="headerlink" href="#module-models" title="Link to this heading"></a></h1>
+<p>The <cite>models</cite> module provides a foundational framework for implementing various quantitative finance models.</p>
+<p>It is designed to be a versatile base module for different types of models used in financial analysis and trading.</p>
+<section id="module-models.risk">
+<span id="risk"></span><h2>risk<a class="headerlink" href="#module-models.risk" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.risk.HMMRiskManager">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">models.risk.</span></span><span class="sig-name descname"><span class="pre">HMMRiskManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">states</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iterations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_date</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datetime</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">csv_filepath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/risk.html#HMMRiskManager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.risk.HMMRiskManager" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#models.risk.RiskModel" title="models.risk.RiskModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">RiskModel</span></code></a></p>
+<p>This class represents a risk management model using Hidden Markov Models (HMM)
+to identify and manage market risks. It inherits from a generic RiskModel class
+and utilizes Gaussian HMM to model the financial market’s hidden states. These states
+are used to make decisions on permissible trading actions based on the identified market
+trends, thus facilitating a risk-aware trading strategy.</p>
+<p>To learn more about about the Hidden Markov model,
+See <a class="reference external" href="https://en.wikipedia.org/wiki/Hidden_Markov_model">https://en.wikipedia.org/wiki/Hidden_Markov_model</a></p>
+<dl>
+<dt>Exemple:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Assuming `data` is a DataFrame containing your market data</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">risk_manager</span> <span class="o">=</span> <span class="n">HMMRiskManager</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">states</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">current_regime</span> <span class="o">=</span> <span class="n">risk_manager</span><span class="o">.</span><span class="n">get_current_regime</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;Returns&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Current Market Regime: </span><span class="si">{</span><span class="n">current_regime</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.risk.HMMRiskManager.get_current_regime">
+<span class="sig-name descname"><span class="pre">get_current_regime</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">returns_val</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/risk.html#HMMRiskManager.get_current_regime"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.risk.HMMRiskManager.get_current_regime" title="Link to this definition"></a></dt>
+<dd><p>Determines the current market regime based on the latest returns.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>returns_val</strong> – Array of recent return values</p></li>
+<li><p><strong>state.</strong> (<em>to predict the current</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The predicted current market state.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.risk.HMMRiskManager.get_states">
+<span class="sig-name descname"><span class="pre">get_states</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/risk.html#HMMRiskManager.get_states"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.risk.HMMRiskManager.get_states" title="Link to this definition"></a></dt>
+<dd><p>Predicts the hidden states for the market data
+and calculates the mean returns and volatility for each state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>DataFrame containing mean returns
+and volatility for each hidden state.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.risk.HMMRiskManager.identify_market_trends">
+<span class="sig-name descname"><span class="pre">identify_market_trends</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/risk.html#HMMRiskManager.identify_market_trends"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.risk.HMMRiskManager.identify_market_trends" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Identifies bullish and bearish market trends</dt><dd><p>based on the mean returns and volatility of each state.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A dictionary with keys ‘bullish’ and ‘bearish’
+indicating the identified states.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.risk.HMMRiskManager.obtain_prices_df">
+<span class="sig-name descname"><span class="pre">obtain_prices_df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/risk.html#HMMRiskManager.obtain_prices_df"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.risk.HMMRiskManager.obtain_prices_df" title="Link to this definition"></a></dt>
+<dd><p>Processes the market data to calculate returns
+and optionally filters data up to a specified end date.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_frame</strong> – DataFrame containing the market data.</p></li>
+<li><p><strong>end</strong> – Optional datetime object specifying the end date for the data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>DataFrame with returns calculated</dt><dd><p>and data filtered up to the end date if specified.</p>
+</dd>
+</dl>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.risk.HMMRiskManager.plot_hidden_states">
+<span class="sig-name descname"><span class="pre">plot_hidden_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hmm_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/risk.html#HMMRiskManager.plot_hidden_states"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.risk.HMMRiskManager.plot_hidden_states" title="Link to this definition"></a></dt>
+<dd><p>Plots the adjusted closing prices masked
+by the in-sample hidden states as a mechanism
+to understand the market regimes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>hmm_model</strong> – The trained GaussianHMM model used for predicting states.</p></li>
+<li><p><strong>df</strong> – DataFrame containing the market data with calculated returns.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.risk.HMMRiskManager.read_csv_file">
+<span class="sig-name descname"><span class="pre">read_csv_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">csv_filepath</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/risk.html#HMMRiskManager.read_csv_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.risk.HMMRiskManager.read_csv_file" title="Link to this definition"></a></dt>
+<dd><p>Reads market data from a CSV file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>csv_filepath</strong> – Path to the CSV file containing the market data.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame containing the parsed market data.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.risk.HMMRiskManager.save_hmm_model">
+<span class="sig-name descname"><span class="pre">save_hmm_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hmm_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/risk.html#HMMRiskManager.save_hmm_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.risk.HMMRiskManager.save_hmm_model" title="Link to this definition"></a></dt>
+<dd><p>Saves the trained HMM model to a pickle file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>hmm_model</strong> – The trained GaussianHMM model to be saved.</p></li>
+<li><p><strong>filename</strong> – The filename under which to save the model.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.risk.HMMRiskManager.show_hidden_states">
+<span class="sig-name descname"><span class="pre">show_hidden_states</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/risk.html#HMMRiskManager.show_hidden_states"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.risk.HMMRiskManager.show_hidden_states" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Visualizes the market data</dt><dd><p>and the predicted hidden states from the HMM model.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.risk.HMMRiskManager.which_quantity_allowed">
+<span class="sig-name descname"><span class="pre">which_quantity_allowed</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/risk.html#HMMRiskManager.which_quantity_allowed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.risk.HMMRiskManager.which_quantity_allowed" title="Link to this definition"></a></dt>
+<dd><p>Defines the strategy for asset allocation within
+the portfolio to optimize risk-reward ratio.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.risk.HMMRiskManager.which_trade_allowed">
+<span class="sig-name descname"><span class="pre">which_trade_allowed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">returns_val</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/risk.html#HMMRiskManager.which_trade_allowed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.risk.HMMRiskManager.which_trade_allowed" title="Link to this definition"></a></dt>
+<dd><p>Decides whether a long or short trade
+is allowed based on the current market regime.
+This method override the which_trade_allowed() from
+RiskModel class .</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>returns_val</strong> – Array of recent return values</p></li>
+<li><p><strong>trade.</strong> (<em>to assess the permissible</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A string indicating “LONG” or “SHORT”</dt><dd><p>if a trade is allowed, or None if no trade is permitted.</p>
+</dd>
+</dl>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.risk.RiskModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">models.risk.</span></span><span class="sig-name descname"><span class="pre">RiskModel</span></span><a class="reference internal" href="_modules/models/risk.html#RiskModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.risk.RiskModel" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>The RiskModel class serves as an abstract base for implementing
+risk management strategies in financial markets. It is designed
+to assist in the decision-making process regarding which trades
+are permissible under current market conditions and how to allocate
+assets effectively to optimize the risk-reward ratio.</p>
+<p>Risk management is a critical component in trading and investment
+strategies, aiming to minimize potential losses without significantly
+reducing the potential for gains. This class encapsulates the core
+principles of risk management by providing a structured approach to
+evaluate market conditions and manage asset allocation.</p>
+<p>Implementing classes are required to define two key methods:</p>
+<ul class="simple">
+<li><p><cite>which_trade_allowed</cite>:
+Determines the types of trades that are permissible based on the
+analysis of current market conditions and the risk profile of the portfolio.
+This method should analyze the provided <cite>returns_val</cite> parameter,
+which could represent historical returns, volatility measures,
+or other financial metrics, to decide on the suitability of executing
+certain trades.</p></li>
+<li><p><cite>which_quantity_allowed</cite>:
+Defines how assets should be allocated across the portfolio to maintain
+an optimal balance between risk and return. This involves determining
+the quantity of each asset that can be held, considering factors such as
+diversification, liquidity, and the asset’s volatility. This method ensures
+that the portfolio adheres to predefined risk tolerance levels and
+investment objectives.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Implementing these methods requires a deep understanding of risk
+management theories, market analysis, and portfolio management principles.
+The implementation should be tailored to the specific needs of the
+investment strategy and the risk tolerance of the investor or the fund
+being managed.</p>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.risk.RiskModel.which_quantity_allowed">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">which_quantity_allowed</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/risk.html#RiskModel.which_quantity_allowed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.risk.RiskModel.which_quantity_allowed" title="Link to this definition"></a></dt>
+<dd><p>Defines the strategy for asset allocation within
+the portfolio to optimize risk-reward ratio.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.risk.RiskModel.which_trade_allowed">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">which_trade_allowed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">returns_val</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/risk.html#RiskModel.which_trade_allowed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.risk.RiskModel.which_trade_allowed" title="Link to this definition"></a></dt>
+<dd><p>Determines the types of trades permissible under current market conditions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>returns_val</strong> – A parameter representing financial metrics</p></li>
+<li><p><strong>volatility</strong> (<em>such as historical returns or</em>)</p></li>
+<li><p><strong>to</strong> (<em>used</em>)</p></li>
+<li><p><strong>conditions.</strong> (<em>assess market</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="metatrader.html" class="btn btn-neutral float-left" title="MetaTrader5 (MT5) Trading" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="strategies.html" class="btn btn-neutral float-right" title="Strategies" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Bertin Balouki SIMYELI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
