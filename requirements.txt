@@ -1,3 +1,4 @@
+Metatrader5
 pandas
 numpy==1.26.4
 yfinance
