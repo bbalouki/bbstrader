@@ -1,81 +1,53 @@
 # Simplified Investment & Trading Toolkit
-![bbstrader](assets/BBSTrader.png)
+![bbstrader](assets/bbstrader.png)
 
 ## Overview
 
-BBSTrader is a trading system suite developed for MetaTrader 5 (MT5) and IBKR platforms (comming soon), designed to offer a comprehensive set of tools for developping, backtesting, executing, and managing a wide array of trading strategies. With an emphasis on algorithmic and quantitative trading, BBSTrader integrates advanced statistical models, machine learning algorithms, to provide traders with a robust platform for exploring and deploying sophisticated trading strategies.
-
+BBSTrader is a trading system suite developed for MetaTrader 5 (MT5) and IBKR platforms (comming soon), designed to offer a comprehensive set of tools for developping, backtesting, executing, and managing a wide array of trading strategies. With an emphasis on algorithmic and quantitative trading to provide traders with a robust platform for exploring and deploying sophisticated trading strategies.
+[docs](docs/_build/html/index.html)
 ## Modules Overview
 
 `bbstrader` is comprised of several key modules, each focus on specific aspects of trading strategy development and execution:
 
-- **Backtesting Module**: Enables traders to rigorously test their trading strategies using historical data to evaluate performance before live deployment.
+- **Backtesting Module (btengine)** : Enables traders to rigorously test their trading strategies using historical data to evaluate performance before live deployment.
 - **Trading Strategies Module**: A collection of predefined trading strategies, including ARIMA+GARCH models, Kalman Filters, Ornstein-Uhlenbeck processes, and Simple Moving Averages, equipped with risk management through Hidden Markov Models.
-- **MT5 Execution Module**: Facilitates the direct execution of trading strategies on the MetaTrader 5 platform, supporting real-time trading across multiple financial instruments.
+- **MetaTrader5 Module (metatrader)**: Facilitates the direct execution of trading strategies on the MetaTrader 5 platform, supporting real-time trading across multiple financial instruments.
 - **Modles Module**: Serves as a framework for implementing various types of financial models (risk managment models, Machine learing models etc).
+- **Time serie Module (tseries)** designed for conducting advanced time series analysis in financial markets. 
+It leverages statistical models and algorithms to perform tasks such as cointegration testing, volatility modeling, and filter-based estimation to assist in trading strategy development, market analysis, and financial data exploration.
 
 ## Features
 
 - **Comprehensive Backtesting**: Assess the performance of trading strategies with historical market data to optimize parameters and strategies for live trading environments.
-- **Diverse Trading Strategies**: From statistical and econometric models to machine learning predictions and traditional technical analysis, explore a wide range of trading strategies.
 - **Integrated Risk Management**: Leverage advanced risk management techniques to adapt to changing market conditions and maintain control over risk exposure.
 - **Automated Trading**: Execute trades automatically on the MT5 platform, with support for managing orders, positions, and risk in real-time.
 - **Flexible Framework**: Customize existing strategies or develop new ones with the flexible, modular architecture designed to accommodate traders' evolving needs.
 
 ## Getting Started
 
-1. Ensure MetaTrader 5 is installed and configured on your system for automated trading.
-2. Install Python 3.8+ and the required dependencies listed in each module's documentation.
-3. Clone the `bbstrader` repository to your local machine.
-4. Configure each module according to your trading strategy and risk management preferences.
+Before you can use the bbstrader and the metratrader, you need to have MetaTrader 5 (MT5) installed on your computer and an active MT5 trading account. 
+This Module currenlty support three brokers, [Admirals Group AS](https://cabinet.a-partnership.com/visit/?bta=35537&brand=admiralmarkets), [Just Global Markets Ltd.](https://one.justmarkets.link/a/tufvj0xugm/registration/trader), and [FTMO](https://trader.ftmo.com/?affiliates=JGmeuQqepAZLMcdOEQRp), so you need to create a demo or live account with one of them.
+* If you want to trade `Stocks`, `ETFs`, `Indices`, `Commodities`, `Futures`, and `Forex`, See [click here](https://cabinet.a-partnership.com/visit/?bta=35537&brand=admiralmarkets)
+* If you want to trade `Stocks`, `Crypto`, `indices`, `Commodities`, and `Forex`, See [click here](https://one.justmarkets.link/a/tufvj0xugm/registration/trader)
+* If you are looking for a prop firm, [click here](https://trader.ftmo.com/?affiliates=JGmeuQqepAZLMcdOEQRp)
 
-## Usage
+Then, you can install `bbstrader` using pip:
+```bash
+pip install bbstrader
+```
 
-Refer to the README.md file of each module within `bbstrader` for detailed instructions on configuring and running the individual components. Customize strategy parameters, backtest with historical data, and execute trades on MT5 as per your requirements.
 
 ## Examples
 ### Backtesting Module
 ```python
-import datetime
-from pathlib import Path
-from btengine.backtests import run_kf_backtest
+from bbstrader.btengine.backtest  import run_backtest
 
 if __name__ == '__main__':
-
-    # KLF IEI TLT Event Driven backtest with Hidden Markov Model as a risk manager.
-    symbol_list = ["IEI", "TLT"]
-    kwargs = {
-        "tickers": symbol_list,
-        "quantity": 2000,
-        "time_frame": "D1",
-        "trading_hours": 6.5,
-        "benchmark": "TLT",
-        "window": 50,
-        "hmm_tiker": "TLT",
-        "iterations": 100,
-        'strategy_name': 'Kalman Filter & HMM'
-    }
-    start_date = datetime.datetime(2009, 8, 3, 10, 40, 0)
-    data_dir = Path("/bbstrader/btengine/data/")
-    csv_dir = str(Path().cwd()) + str(data_dir)
-    hmm_csv = str(Path().cwd()) + str(data_dir/"tlt_train.csv")
-    run_kf_backtest(symbol_list, csv_dir, hmm_csv, start_date, **kwargs)
+    # KLF IEI TLT Event Driven backtest using Kalman Filter pairs trading strategy integrating with # Hidden Markov Model (HMM) for risk management on `IEI` and  `TLT`.
+    run_backtest(test_strategy='klf')
 ```
 ### Backtesting Results
-#### Hidden States
-![Hidden States](/bbstrader/btengine/assets/klf_hidden_states.png)
-
-#### Performance
-![Performance](/bbstrader/btengine/assets/klf_performance.png)
-
-#### Risk Return
-![Risk Return](/bbstrader/btengine/assets/klf_risk_return.png)
-
-#### Returns Distribution
-![Returns Distribution](/bbstrader/btengine/assets/klf_returns_distribution.png)
-
-#### Portfolio
-![Portfolio](/bbstrader/btengine/assets/klf_summary_stats.png)
+![Backtesting Results](assets/btengine_results.jpg)
 
 ## Customization and Contribution
 
