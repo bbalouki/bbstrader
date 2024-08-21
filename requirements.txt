@@ -14,3 +14,5 @@ pytest
 sphinx
 sphinx-rtd-theme
 CurrencyConverter
+# Conditionally install Windows package
+Metatrader5; sys_platform == 'win32'

@@ -7,6 +7,8 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 import os
 import sys
+if sys.platform == "win32":
+    import MetaTrader5
 sys.path.insert(0, os.path.abspath('..'))
 
 project = 'BBSTrader'
