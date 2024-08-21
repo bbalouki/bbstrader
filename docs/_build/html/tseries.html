@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Time Series &mdash; BBSTrader 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=8d563738"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Trading Execution" href="trading.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            BBSTrader
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">bbstrader</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="btengine.html">Backtesting Egine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="metatrader.html">MetaTrader5 (MT5) Trading</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models.html">Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="strategies.html">Strategies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="trading.html">Trading Execution</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Time Series</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#tseries.fit_best_arima"><code class="docutils literal notranslate"><span class="pre">fit_best_arima()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tseries.fit_garch"><code class="docutils literal notranslate"><span class="pre">fit_garch()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tseries.get_corr"><code class="docutils literal notranslate"><span class="pre">get_corr()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tseries.get_prediction"><code class="docutils literal notranslate"><span class="pre">get_prediction()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tseries.load_and_prepare_data"><code class="docutils literal notranslate"><span class="pre">load_and_prepare_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tseries.predict_next_return"><code class="docutils literal notranslate"><span class="pre">predict_next_return()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tseries.run_cadf_test"><code class="docutils literal notranslate"><span class="pre">run_cadf_test()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tseries.run_coint_test"><code class="docutils literal notranslate"><span class="pre">run_coint_test()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tseries.run_hurst_test"><code class="docutils literal notranslate"><span class="pre">run_hurst_test()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tseries.run_kalman_filter"><code class="docutils literal notranslate"><span class="pre">run_kalman_filter()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">BBSTrader</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">bbstrader</a></li>
+      <li class="breadcrumb-item active">Time Series</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/tseries.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-tseries">
+<span id="time-series"></span><h1>Time Series<a class="headerlink" href="#module-tseries" title="Link to this heading"></a></h1>
+<p>The <cite>tseries</cite> module is a designed for conducting
+advanced time series analysis in financial markets.
+It leverages statistical models and algorithms to perform
+tasks such as cointegration testing, volatility modeling,
+and filter-based estimation to assist in trading strategy development,
+market analysis, and financial data exploration.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="tseries.fit_best_arima">
+<span class="sig-prename descclassname"><span class="pre">tseries.</span></span><span class="sig-name descname"><span class="pre">fit_best_arima</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#fit_best_arima"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.fit_best_arima" title="Link to this definition"></a></dt>
+<dd><p>Identifies and fits the best <cite>ARIMA</cite> model
+based on the Akaike Information Criterion <cite>(AIC)</cite>.</p>
+<p>Iterates through different combinations of <cite>p</cite> and <cite>q</cite>
+parameters (within specified ranges) for the ARIMA model,
+fits them to the provided data, and selects the combination
+with the lowest <cite>AIC</cite> value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>window_data</strong> (<em>pd.Series</em><em> or </em><em>np.ndarray</em>) – Time series data to fit the <cite>ARIMA</cite> model on.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The fitted <cite>ARIMA</cite> model with the lowest <cite>AIC</cite>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ARIMA result object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tseries.fit_garch">
+<span class="sig-prename descclassname"><span class="pre">tseries.</span></span><span class="sig-name descname"><span class="pre">fit_garch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#fit_garch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.fit_garch" title="Link to this definition"></a></dt>
+<dd><p>Fits an <cite>ARIMA</cite> model to the data to get residuals,
+then fits a <cite>GARCH(1,1)</cite> model on these residuals.</p>
+<p>Utilizes the residuals from the best <cite>ARIMA</cite> model fit to
+then model volatility using a <cite>GARCH(1,1)</cite> model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>window_data</strong> (<em>pd.Series</em><em> or </em><em>np.ndarray</em>) – Time series data for which to fit the <cite>ARIMA</cite> and <cite>GARCH</cite> models.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A tuple containing the <cite>ARIMA</cite> result</dt><dd><p>object and the <cite>GARCH</cite> result object.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tseries.get_corr">
+<span class="sig-prename descclassname"><span class="pre">tseries.</span></span><span class="sig-name descname"><span class="pre">get_corr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tickers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/tseries.html#get_corr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.get_corr" title="Link to this definition"></a></dt>
+<dd><p>Calculates and prints the correlation matrix of the adjusted closing prices
+for a given list of stock tickers within a specified date range.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tickers</strong> (<em>A list</em><em> or </em><em>tuple</em><em> of </em><em>valid stock</em>)</p></li>
+<li><p><strong>tickers</strong></p></li>
+<li><p><strong>start</strong> (<em>str</em>) – The start date for the historical data in ‘YYYY-MM-DD’ format.</p></li>
+<li><p><strong>end</strong> (<em>str</em>) – The end date for the historical data in ‘YYYY-MM-DD’ format.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:
+&gt;&gt;&gt; from bbstrader.tseries import get_corr
+&gt;&gt;&gt; get_corr([‘AAPL’, ‘MSFT’, ‘GOOG’], ‘2023-01-01’, ‘2023-12-31’)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tseries.get_prediction">
+<span class="sig-prename descclassname"><span class="pre">tseries.</span></span><span class="sig-name descname"><span class="pre">get_prediction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#get_prediction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.get_prediction" title="Link to this definition"></a></dt>
+<dd><p>Orchestrator function to get the next period’s return prediction.</p>
+<p>This function ties together the process of fitting
+both <cite>ARIMA</cite> and <cite>GARCH</cite> models on the provided data
+and then predicting the next period’s return using these models.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>window_data</strong> (<em>pd.Series</em><em> or </em><em>np.ndarray</em>) – Time series data to fit the models and predict the next return.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Returns</dt><dd><p>float: Predicted next return value.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tseries.load_and_prepare_data">
+<span class="sig-prename descclassname"><span class="pre">tseries.</span></span><span class="sig-name descname"><span class="pre">load_and_prepare_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#load_and_prepare_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.load_and_prepare_data" title="Link to this definition"></a></dt>
+<dd><p>Prepares financial time series data for analysis.</p>
+<p>This function takes a pandas DataFrame containing financial data,
+calculates logarithmic returns, and the first difference
+of these logarithmic returns. It handles missing values
+by filling them with zeros.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>df</strong> (<em>pd.DataFrame</em>) – DataFrame containing at least
+a <cite>Close</cite> column with closing prices of a financial asset.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>DataFrame with additional</dt><dd><p>columns for logarithmic returns (<cite>log_return</cite>)
+and the first difference of logarithmic returns (<cite>diff_log_return</cite>),
+with <cite>NaN</cite> values filled with <cite>0</cite>.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tseries.predict_next_return">
+<span class="sig-prename descclassname"><span class="pre">tseries.</span></span><span class="sig-name descname"><span class="pre">predict_next_return</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arima_result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">garch_result</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#predict_next_return"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.predict_next_return" title="Link to this definition"></a></dt>
+<dd><p>Predicts the next return value using fitted <cite>ARIMA</cite> and <cite>GARCH</cite> models.</p>
+<p>Combines the next period forecast from the <cite>ARIMA</cite> model
+with the next period volatility forecast from the <cite>GARCH</cite> model
+to predict the next return value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>arima_result</strong> (<em>ARIMA result object</em>) – The fitted <cite>ARIMA</cite> model result.</p></li>
+<li><p><strong>garch_result</strong> (<em>ARCH result object</em>) – The fitted <cite>GARCH</cite> model result.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The predicted next return, adjusted for predicted volatility.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tseries.run_cadf_test">
+<span class="sig-prename descclassname"><span class="pre">tseries.</span></span><span class="sig-name descname"><span class="pre">run_cadf_test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pair</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/tseries.html#run_cadf_test"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.run_cadf_test" title="Link to this definition"></a></dt>
+<dd><p>Performs the Cointegration Augmented Dickey-Fuller (CADF) test on a pair of stock tickers
+over a specified date range to check for cointegration.</p>
+<p>The function downloads historical adjusted closing prices for the specified pair of stock tickers,
+calculates the optimal hedge ratio (beta) using Ordinary Least Squares (OLS) regression, plots the
+time series and their residuals, and finally performs the CADF test on the residuals.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pair</strong> (<em>List</em><em>[</em><em>str</em><em>] or </em><em>Tuple</em><em>[</em><em>str</em><em>, </em><em>...</em><em>]</em>) – A list or tuple containing two valid stock tickers (e.g., [‘AAPL’, ‘MSFT’]).</p></li>
+<li><p><strong>start</strong> (<em>str</em>) – The start date for the historical data in ‘YYYY-MM-DD’ format.</p></li>
+<li><p><strong>end</strong> (<em>str</em>) – The end date for the historical data in ‘YYYY-MM-DD’ format.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">bbstrader.tseries</span> <span class="kn">import</span> <span class="n">run_cadf_test</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">run_cadf_test</span><span class="p">([</span><span class="s1">&#39;AAPL&#39;</span><span class="p">,</span> <span class="s1">&#39;MSFT&#39;</span><span class="p">],</span> <span class="s1">&#39;2023-01-01&#39;</span><span class="p">,</span> <span class="s1">&#39;2023-12-31&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Regression</span> <span class="n">Metrics</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Optimal</span> <span class="n">Hedge</span> <span class="n">Ratio</span> <span class="p">(</span><span class="n">Beta</span><span class="p">):</span> <span class="mf">2.2485845594120333</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Result</span> <span class="n">Parmas</span><span class="p">:</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">const</span>   <span class="o">-</span><span class="mf">74.418034</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">AAPL</span>      <span class="mf">2.248585</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dtype</span><span class="p">:</span> <span class="n">float64</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Regression</span> <span class="n">Summary</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>                             <span class="n">OLS</span> <span class="n">Regression</span> <span class="n">Results</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="o">==============================================================================</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Dep</span><span class="o">.</span> <span class="n">Variable</span><span class="p">:</span>                   <span class="n">MSFT</span>   <span class="n">R</span><span class="o">-</span><span class="n">squared</span><span class="p">:</span>                       <span class="mf">0.900</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Model</span><span class="p">:</span>                            <span class="n">OLS</span>   <span class="n">Adj</span><span class="o">.</span> <span class="n">R</span><span class="o">-</span><span class="n">squared</span><span class="p">:</span>                  <span class="mf">0.900</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Method</span><span class="p">:</span>                 <span class="n">Least</span> <span class="n">Squares</span>   <span class="n">F</span><span class="o">-</span><span class="n">statistic</span><span class="p">:</span>                     <span class="mf">2244.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Date</span><span class="p">:</span>                <span class="n">Sat</span><span class="p">,</span> <span class="mi">20</span> <span class="n">Jul</span> <span class="mi">2024</span>   <span class="n">Prob</span> <span class="p">(</span><span class="n">F</span><span class="o">-</span><span class="n">statistic</span><span class="p">):</span>          <span class="mf">2.95e-126</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Time</span><span class="p">:</span>                        <span class="mi">13</span><span class="p">:</span><span class="mi">36</span><span class="p">:</span><span class="mi">58</span>   <span class="n">Log</span><span class="o">-</span><span class="n">Likelihood</span><span class="p">:</span>                <span class="o">-</span><span class="mf">996.45</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">No</span><span class="o">.</span> <span class="n">Observations</span><span class="p">:</span>                 <span class="mi">250</span>   <span class="n">AIC</span><span class="p">:</span>                             <span class="mf">1997.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Df</span> <span class="n">Residuals</span><span class="p">:</span>                     <span class="mi">248</span>   <span class="n">BIC</span><span class="p">:</span>                             <span class="mf">2004.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Df</span> <span class="n">Model</span><span class="p">:</span>                           <span class="mi">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Covariance</span> <span class="n">Type</span><span class="p">:</span>            <span class="n">nonrobust</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="o">==============================================================================</span>
+<span class="gp">&gt;&gt;&gt; </span>                 <span class="n">coef</span>    <span class="n">std</span> <span class="n">err</span>          <span class="n">t</span>      <span class="n">P</span><span class="o">&gt;|</span><span class="n">t</span><span class="o">|</span>      <span class="p">[</span><span class="mf">0.025</span>      <span class="mf">0.975</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="o">------------------------------------------------------------------------------</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">const</span>        <span class="o">-</span><span class="mf">74.4180</span>      <span class="mf">8.191</span>     <span class="o">-</span><span class="mf">9.085</span>      <span class="mf">0.000</span>     <span class="o">-</span><span class="mf">90.551</span>     <span class="o">-</span><span class="mf">58.286</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">AAPL</span>           <span class="mf">2.2486</span>      <span class="mf">0.047</span>     <span class="mf">47.369</span>      <span class="mf">0.000</span>       <span class="mf">2.155</span>       <span class="mf">2.342</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="o">==============================================================================</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Omnibus</span><span class="p">:</span>                        <span class="mf">4.923</span>   <span class="n">Durbin</span><span class="o">-</span><span class="n">Watson</span><span class="p">:</span>                   <span class="mf">0.121</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Prob</span><span class="p">(</span><span class="n">Omnibus</span><span class="p">):</span>                  <span class="mf">0.085</span>   <span class="n">Jarque</span><span class="o">-</span><span class="n">Bera</span> <span class="p">(</span><span class="n">JB</span><span class="p">):</span>                <span class="mf">4.862</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Skew</span><span class="p">:</span>                           <span class="mf">0.342</span>   <span class="n">Prob</span><span class="p">(</span><span class="n">JB</span><span class="p">):</span>                       <span class="mf">0.0879</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Kurtosis</span><span class="p">:</span>                       <span class="mf">2.993</span>   <span class="n">Cond</span><span class="o">.</span> <span class="n">No</span><span class="o">.</span>                     <span class="mf">1.71e+03</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="o">==============================================================================</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Notes</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="n">Standard</span> <span class="n">Errors</span> <span class="n">assume</span> <span class="n">that</span> <span class="n">the</span> <span class="n">covariance</span> <span class="n">matrix</span> <span class="n">of</span> <span class="n">the</span> <span class="n">errors</span> <span class="ow">is</span> <span class="n">correctly</span> <span class="n">specified</span><span class="o">.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="n">The</span> <span class="n">condition</span> <span class="n">number</span> <span class="ow">is</span> <span class="n">large</span><span class="p">,</span> <span class="mf">1.71e+03</span><span class="o">.</span> <span class="n">This</span> <span class="n">might</span> <span class="n">indicate</span> <span class="n">that</span> <span class="n">there</span> <span class="n">are</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">strong</span> <span class="n">multicollinearity</span> <span class="ow">or</span> <span class="n">other</span> <span class="n">numerical</span> <span class="n">problems</span><span class="o">.</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Cointegration</span> <span class="n">TEST</span> <span class="n">Results</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="o">-</span><span class="mf">3.204126144947765</span><span class="p">),</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">0.019747080611767602</span><span class="p">),</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="mi">0</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="mi">249</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">{</span><span class="s1">&#39;1%&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="o">-</span><span class="mf">3.4568881317725864</span><span class="p">),</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s1">&#39;10%&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="o">-</span><span class="mf">2.5729936189738876</span><span class="p">),</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s1">&#39;5%&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="o">-</span><span class="mf">2.8732185133016057</span><span class="p">)},</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">1364.3866758546171</span><span class="p">))</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tseries.run_coint_test">
+<span class="sig-prename descclassname"><span class="pre">tseries.</span></span><span class="sig-name descname"><span class="pre">run_coint_test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tickers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/tseries.html#run_coint_test"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.run_coint_test" title="Link to this definition"></a></dt>
+<dd><p>Performs pairwise cointegration tests on a list of stock tickers over a specified date range.</p>
+<p>For each unique pair of tickers, the function downloads historical adjusted closing prices and
+tests for cointegration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tickers</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – A list of valid stock ticker symbols (e.g., [‘AAPL’, ‘MSFT’, ‘GOOG’]).</p></li>
+<li><p><strong>start</strong> (<em>str</em>) – The start date for the historical data in ‘YYYY-MM-DD’ format.</p></li>
+<li><p><strong>end</strong> (<em>str</em>) – The end date for the historical data in ‘YYYY-MM-DD’ format.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:
+&gt;&gt;&gt; from bbstrader.tseries import run_coint_test</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">run_coint_test</span><span class="p">([</span><span class="s1">&#39;AAPL&#39;</span><span class="p">,</span> <span class="s1">&#39;MSFT&#39;</span><span class="p">,</span> <span class="s1">&#39;GOOG&#39;</span><span class="p">],</span> <span class="s1">&#39;2023-01-01&#39;</span><span class="p">,</span> <span class="s1">&#39;2023-12-31&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tseries.run_hurst_test">
+<span class="sig-prename descclassname"><span class="pre">tseries.</span></span><span class="sig-name descname"><span class="pre">run_hurst_test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#run_hurst_test"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.run_hurst_test" title="Link to this definition"></a></dt>
+<dd><p>Calculates and prints the Hurst Exponent for a given stock’s adjusted closing prices
+within a specified date range, and for three generated series (Geometric Brownian Motion,
+Mean-Reverting, and Trending).</p>
+<p>The Hurst Exponent is used to determine the long-term memory of a time series.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>symbol</strong> (<em>str</em>) – A valid stock ticker symbol (e.g., ‘AAPL’).</p></li>
+<li><p><strong>start</strong> (<em>str</em>) – The start date for the historical data in ‘YYYY-MM-DD’ format.</p></li>
+<li><p><strong>end</strong> (<em>str</em>) – The end date for the historical data in ‘YYYY-MM-DD’ format.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:
+&gt;&gt;&gt; from bbstrader.tseries import run_hurst_test</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">run_hurst_test</span><span class="p">(</span><span class="s1">&#39;AAPL&#39;</span><span class="p">,</span> <span class="s1">&#39;2023-01-01&#39;</span><span class="p">,</span> <span class="s1">&#39;2023-12-31&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tseries.run_kalman_filter">
+<span class="sig-prename descclassname"><span class="pre">tseries.</span></span><span class="sig-name descname"><span class="pre">run_kalman_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">etfs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/tseries.html#run_kalman_filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.run_kalman_filter" title="Link to this definition"></a></dt>
+<dd><p>Applies a Kalman filter to a pair of ETF adjusted closing prices within a specified date range
+to estimate the slope and intercept over time.</p>
+<p>The function downloads historical adjusted closing prices for the specified pair of ETFs,
+visualizes their price relationship, calculates the Kalman filter estimates for the slope and
+intercept, and visualizes the changes in these estimates over time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>etfs</strong> (<em>List</em><em>[</em><em>str</em><em>] or </em><em>Tuple</em><em>[</em><em>str</em><em>, </em><em>...</em><em>]</em>)</p></li>
+<li><p><strong>tickers</strong> (<em>A list</em><em> or </em><em>tuple containing two valid ETF</em>)</p></li>
+<li><p><strong>start</strong> (<em>str</em>) – The start date for the historical data in ‘YYYY-MM-DD’ format.</p></li>
+<li><p><strong>end</strong> (<em>str</em>) – The end date for the historical data in ‘YYYY-MM-DD’ format.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:
+&gt;&gt;&gt; from bbstrader.tseries import run_kalman_filter</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">run_kalman_filter</span><span class="p">([</span><span class="s1">&#39;SPY&#39;</span><span class="p">,</span> <span class="s1">&#39;QQQ&#39;</span><span class="p">],</span> <span class="s1">&#39;2023-01-01&#39;</span><span class="p">,</span> <span class="s1">&#39;2023-12-31&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="trading.html" class="btn btn-neutral float-left" title="Trading Execution" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Bertin Balouki SIMYELI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

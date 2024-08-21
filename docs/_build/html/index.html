@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simplified Investment &amp; Trading Toolkit &mdash; BBSTrader 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=8d563738"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="bbstrader" href="modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="#" class="icon icon-home">
+            BBSTrader
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">bbstrader</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">BBSTrader</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Simplified Investment &amp; Trading Toolkit</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="simplified-investment-trading-toolkit">
+<h1>Simplified Investment &amp; Trading Toolkit<a class="headerlink" href="#simplified-investment-trading-toolkit" title="Link to this heading"></a></h1>
+<img alt="_images/bbstrader.png" src="_images/bbstrader.png" />
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p>BBSTrader is a trading system suite developed for MetaTrader 5 (MT5) and IBKR platforms (coming soon), designed to offer a comprehensive set of tools for developing, backtesting, executing, and managing a wide array of trading strategies. With an emphasis on algorithmic and quantitative trading, it provides traders with a robust platform for exploring and deploying sophisticated trading strategies.</p>
+<p><code class="docutils literal notranslate"><span class="pre">bbstrader</span></code> is comprised of several key modules, each focusing on specific aspects of trading strategy development and execution:</p>
+<ul class="simple">
+<li><p><strong>Backtesting Module (btengine)</strong>: Enables traders to rigorously test their trading strategies using historical data to evaluate performance before live deployment.</p></li>
+<li><p><strong>Trading Strategies Module</strong>: A collection of predefined trading strategies, including ARIMA+GARCH models, Kalman Filters, Ornstein-Uhlenbeck processes, and Simple Moving Averages, equipped with risk management through Hidden Markov Models.</p></li>
+<li><p><strong>MetaTrader5 Module (metatrader)</strong>: Facilitates the direct execution of trading strategies on the MetaTrader 5 platform, supporting real-time trading across multiple financial instruments.</p></li>
+<li><p><strong>Models Module</strong>: Serves as a framework for implementing various types of financial models (risk management models, machine learning models, etc.).</p></li>
+<li><p><strong>Time Series Module (tseries)</strong>: Designed for conducting advanced time series analysis in financial markets. It leverages statistical models and algorithms to perform tasks such as cointegration testing, volatility modeling, and filter-based estimation to assist in trading strategy development, market analysis, and financial data exploration.</p></li>
+</ul>
+</section>
+<section id="features">
+<h2>Features<a class="headerlink" href="#features" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><strong>Comprehensive Backtesting</strong>: Assess the performance of trading strategies with historical market data to optimize parameters and strategies for live trading environments.</p></li>
+<li><p><strong>Integrated Risk Management</strong>: Leverage advanced risk management techniques to adapt to changing market conditions and maintain control over risk exposure.</p></li>
+<li><p><strong>Automated Trading</strong>: Execute trades automatically on the MT5 platform, with support for managing orders, positions, and risk in real-time.</p></li>
+<li><p><strong>Flexible Framework</strong>: Customize existing strategies or develop new ones with the flexible, modular architecture designed to accommodate traders’ evolving needs.</p></li>
+</ul>
+</section>
+<section id="getting-started">
+<h2>Getting Started<a class="headerlink" href="#getting-started" title="Link to this heading"></a></h2>
+<p>Before you can use <code class="docutils literal notranslate"><span class="pre">bbstrader</span></code> and <code class="docutils literal notranslate"><span class="pre">metatrader</span></code>, you need to have MetaTrader 5 (MT5) installed on your computer and an active MT5 trading account.
+This module currently supports three brokers, <a class="reference external" href="https://cabinet.a-partnership.com/visit/?bta=35537&amp;brand=admiralmarkets">Admirals Group AS</a> , <a class="reference external" href="https://one.justmarkets.link/a/tufvj0xugm/registration/trader">Just Global Markets Ltd.</a>, and <a class="reference external" href="https://trader.ftmo.com/?affiliates=JGmeuQqepAZLMcdOEQRp">FTMO</a> so you need to create a demo or live account with one of them.</p>
+<ul class="simple">
+<li><p>For trading <cite>Stocks</cite>, <cite>ETFs</cite>, <cite>Indices</cite>, <cite>Commodities</cite>, <cite>Futures</cite>, and <cite>Forex</cite>, see <a class="reference external" href="https://cabinet.a-partnership.com/visit/?bta=35537&amp;brand=admiralmarkets">Admirals Group AS</a>.</p></li>
+<li><p>For trading <cite>Stocks</cite>, <cite>Crypto</cite>, <cite>Indices</cite>, <cite>Commodities</cite>, and <cite>Forex</cite>, see <a class="reference external" href="https://one.justmarkets.link/a/tufvj0xugm/registration/trader">Just Global Markets Ltd.</a>.</p></li>
+<li><p>If you are looking for a prop firm, See <a class="reference external" href="https://trader.ftmo.com/?affiliates=JGmeuQqepAZLMcdOEQRp">FTMO</a>.</p></li>
+</ul>
+<p>Then, you can install <cite>bbstrader</cite> using pip:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>bbstrader
+</pre></div>
+</div>
+</section>
+</section>
+<section id="examples">
+<h1>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h1>
+<section id="backtesting-module">
+<h2>Backtesting Module<a class="headerlink" href="#backtesting-module" title="Link to this heading"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bbstrader.btengine.backtest</span> <span class="kn">import</span> <span class="n">run_backtest</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="c1"># KLF IEI TLT Event Driven backtest using Kalman Filter pairs trading strategy integrating with Hidden Markov Model (HMM) for risk management on `IEI` and `TLT`.</span>
+    <span class="n">run_backtest</span><span class="p">(</span><span class="n">test_strategy</span><span class="o">=</span><span class="s1">&#39;klf&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="backtesting-results">
+<h2>Backtesting Results<a class="headerlink" href="#backtesting-results" title="Link to this heading"></a></h2>
+<img alt="_images/btengine_results.jpg" src="_images/btengine_results.jpg" />
+</section>
+</section>
+<section id="customization-and-contribution">
+<h1>Customization and Contribution<a class="headerlink" href="#customization-and-contribution" title="Link to this heading"></a></h1>
+<p><code class="docutils literal notranslate"><span class="pre">bbstrader</span></code>’s modular design allows for easy customization and extension. Traders and developers are encouraged to modify existing strategies, add new ones, or enhance the system’s capabilities. Contributions to the <code class="docutils literal notranslate"><span class="pre">bbstrader</span></code> project are welcome.</p>
+<section id="contributing-to-bbstrader">
+<h2>Contributing to BBSTrader<a class="headerlink" href="#contributing-to-bbstrader" title="Link to this heading"></a></h2>
+<p>We warmly welcome contributions from the trading and development community! Whether you’re interested in fixing bugs, adding new features, or improving documentation, your help is invaluable in making <code class="docutils literal notranslate"><span class="pre">bbstrader</span></code> more robust and versatile. Here’s how you can contribute:</p>
+</section>
+<section id="ways-to-contribute">
+<h2>Ways to Contribute<a class="headerlink" href="#ways-to-contribute" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><strong>Develop New Strategies</strong>: Implement and share your unique trading strategies or models.</p></li>
+<li><p><strong>Enhance Existing Modules</strong>: Optimize the performance, extend the functionality, or improve the usability of existing modules.</p></li>
+<li><p><strong>Report Bugs</strong>: Identify and report bugs to help us improve the system’s stability and performance.</p></li>
+<li><p><strong>Improve Documentation</strong>: Contribute to the project’s documentation for clearer guidance and better usability.</p></li>
+<li><p><strong>Share Insights and Best Practices</strong>: Provide examples, tutorials, or best practices on utilizing <code class="docutils literal notranslate"><span class="pre">bbstrader</span></code> effectively.</p></li>
+</ul>
+</section>
+<section id="how-to-get-started">
+<h2>How to Get Started<a class="headerlink" href="#how-to-get-started" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p><strong>Fork the Repository</strong>: Start by forking the <code class="docutils literal notranslate"><span class="pre">bbstrader</span></code> repository to your GitHub account.</p></li>
+<li><p><strong>Clone Your Fork</strong>: Clone your forked repository to your local machine to start making changes.</p></li>
+<li><p><strong>Set Up Your Development Environment</strong>: Ensure you have the necessary development environment set up, including Python, MetaTrader 5, and any dependencies.</p></li>
+<li><p><strong>Create a New Branch</strong>: Make your changes in a new git branch, branching off from the main branch.</p></li>
+<li><p><strong>Implement Your Changes</strong>: Work on bug fixes, features, or documentation improvements.</p></li>
+<li><p><strong>Test Your Changes</strong>: Ensure your changes do not introduce new issues and that they work as intended.</p></li>
+<li><p><strong>Submit a Pull Request</strong>: Once you’re ready, submit a pull request (PR) against the main <code class="docutils literal notranslate"><span class="pre">bbstrader</span></code> repository. Include a clear description of the changes and any other relevant information.</p></li>
+</ol>
+</section>
+<section id="contribution-guidelines">
+<h2>Contribution Guidelines<a class="headerlink" href="#contribution-guidelines" title="Link to this heading"></a></h2>
+<p>Please adhere to the following guidelines to ensure a smooth contribution process:</p>
+<ul class="simple">
+<li><p><strong>Follow the Coding Standards</strong>: Write clean, readable code and follow the coding conventions used throughout the project.</p></li>
+<li><p><strong>Document Your Changes</strong>: Add comments and update the <code class="docutils literal notranslate"><span class="pre">README.md</span></code> files as necessary to explain your changes or additions.</p></li>
+<li><p><strong>Respect the License</strong>: All contributions are subject to the MIT License under which <code class="docutils literal notranslate"><span class="pre">bbstrader</span></code> is distributed.</p></li>
+</ul>
+<p>We’re excited to see your contributions and to welcome you to the <code class="docutils literal notranslate"><span class="pre">bbstrader</span></code> community. Together, we can build a powerful tool that serves the needs of traders around the world.</p>
+</section>
+</section>
+<section id="disclaimer">
+<h1>Disclaimer<a class="headerlink" href="#disclaimer" title="Link to this heading"></a></h1>
+<p>Trading financial instruments involves a high level of risk and may not be suitable for all investors. The developers of <code class="docutils literal notranslate"><span class="pre">bbstrader</span></code> are not responsible for any financial losses incurred from the use of this software. Trade responsibly and at your own risk.</p>
+</section>
+<section id="license">
+<h1>License<a class="headerlink" href="#license" title="Link to this heading"></a></h1>
+<p><code class="docutils literal notranslate"><span class="pre">bbstrader</span></code> is open source and available under the MIT License.</p>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">bbstrader</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="btengine.html">Backtesting Egine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="metatrader.html">MetaTrader5 (MT5) Trading</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models.html">Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="strategies.html">Strategies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="trading.html">Trading Execution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tseries.html">Time Series</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="modules.html" class="btn btn-neutral float-right" title="bbstrader" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Bertin Balouki SIMYELI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
