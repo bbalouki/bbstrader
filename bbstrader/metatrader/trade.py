@@ -6,12 +6,11 @@ import numpy as np
 from datetime import datetime
 import MetaTrader5 as Mt5
 from typing import List, Tuple, Dict, Any, Optional, Literal
-from bbstrader.metatrader.risk import RiskManagement
-from bbstrader.metatrader.account import INIT_MSG
-from bbstrader.utils import config_logger
-from bbstrader.metatrader.utils import (
+from .risk import RiskManagement
+from .account import INIT_MSG
+from .utils import (
     TimeFrame, TradePosition, TickInfo,
-    raise_mt5_error, trade_retcode_message
+    raise_mt5_error, trade_retcode_message, config_logger
 )
 
 # Configure the logger
@@ -25,50 +24,50 @@ class Trade(RiskManagement):
     according to the inherited RiskManagement parameters and methods.
 
     Exemple:
-    >>> import time
-    >>> # Initialize the Trade class with parameters
-    >>> trade = Trade(
-    ...     symbol="#AAPL",               # Symbol to trade
-    ...     expert_name="MyExpertAdvisor",# Name of the expert advisor
-    ...     expert_id=12345,              # Unique ID for the expert advisor
-    ...     version="1.0",                # Version of the expert advisor
-    ...     target=5.0,                   # Daily profit target in percentage
-    ...     start_time="09:00",           # Start time for trading
-    ...     finishing_time="17:00",       # Time to stop opening new positions
-    ...     ending_time="17:30",          # Time to close any open positions
-    ...     max_risk=2.0,                 # Maximum risk allowed on the account in percentage
-    ...     daily_risk=1.0,               # Daily risk allowed in percentage
-    ...     max_trades=5,                 # Maximum number of trades per session
-    ...     rr=2.0,                       # Risk-reward ratio
-    ...     account_leverage=True,        # Use account leverage in calculations
-    ...     std_stop=True,                # Use standard deviation for stop loss calculation
-    ...     sl=20,                        # Stop loss in points (optional)
-    ...     tp=30,                        # Take profit in points (optional)
-    ...     be=10                         # Break-even in points (optional)
-    ... )
+        >>> import time
+        >>> # Initialize the Trade class with parameters
+        >>> trade = Trade(
+        ...     symbol="#AAPL",               # Symbol to trade
+        ...     expert_name="MyExpertAdvisor",# Name of the expert advisor
+        ...     expert_id=12345,              # Unique ID for the expert advisor
+        ...     version="1.0",                # Version of the expert advisor
+        ...     target=5.0,                   # Daily profit target in percentage
+        ...     start_time="09:00",           # Start time for trading
+        ...     finishing_time="17:00",       # Time to stop opening new positions
+        ...     ending_time="17:30",          # Time to close any open positions
+        ...     max_risk=2.0,                 # Maximum risk allowed on the account in percentage
+        ...     daily_risk=1.0,               # Daily risk allowed in percentage
+        ...     max_trades=5,                 # Maximum number of trades per session
+        ...     rr=2.0,                       # Risk-reward ratio
+        ...     account_leverage=True,        # Use account leverage in calculations
+        ...     std_stop=True,                # Use standard deviation for stop loss calculation
+        ...     sl=20,                        # Stop loss in points (optional)
+        ...     tp=30,                        # Take profit in points (optional)
+        ...     be=10                         # Break-even in points (optional)
+        ... )
 
-    >>> # Example to open a buy position
-    >>> trade.open_buy_position(mm=True, comment="Opening Buy Position")
+        >>> # Example to open a buy position
+        >>> trade.open_buy_position(mm=True, comment="Opening Buy Position")
 
-    >>> # Example to open a sell position
-    >>> trade.open_sell_position(mm=True, comment="Opening Sell Position")
+        >>> # Example to open a sell position
+        >>> trade.open_sell_position(mm=True, comment="Opening Sell Position")
 
-    >>> # Check current open positions
-    >>> opened_positions = trade.get_opened_positions
-    >>> if opened_positions is not None:
-            print(f"Current open positions: {opened_positions}")
+        >>> # Check current open positions
+        >>> opened_positions = trade.get_opened_positions
+        >>> if opened_positions is not None:
+        ...     print(f"Current open positions: {opened_positions}")
 
-    >>> # Close all open positions at the end of the trading session
-    >>> if trade.days_end():
-            trade.close_all_positions(comment="Closing all positions at day's end")
+        >>> # Close all open positions at the end of the trading session
+        >>> if trade.days_end():
+        ...    trade.close_all_positions(comment="Closing all positions at day's end")
 
-    >>> # Print trading session statistics
-    >>> trade.statistics(save=True, dir="my_trading_stats")
+        >>> # Print trading session statistics
+        >>> trade.statistics(save=True, dir="my_trading_stats")
 
-    >>> # Sleep until the next trading session if needed (example usage)
-    >>> sleep_time = trade.sleep_time()
-    >>> print(f"Sleeping for {sleep_time} minutes until the next trading session.")
-    >>> time.sleep(sleep_time * 60)
+        >>> # Sleep until the next trading session if needed (example usage)
+        >>> sleep_time = trade.sleep_time()
+        >>> print(f"Sleeping for {sleep_time} minutes until the next trading session.")
+        >>> time.sleep(sleep_time * 60)
     """
 
     def __init__(
@@ -542,9 +541,9 @@ class Trade(RiskManagement):
 
         Args:
             price (float): Price for opening the position
-            request (Dict[str, Any]): A trade request to sent to Mt5.order_sent()
-                all detail in request can be found here
-                    https://www.mql5.com/en/docs/python_metatrader5/mt5ordersend_py
+            request (Dict[str, Any]): A trade request to sent to Mt5.order_sent() 
+            all detail in request can be found here https://www.mql5.com/en/docs/python_metatrader5/mt5ordersend_py
+            
             type (str): The type of the order 
                 `(BMKT, SMKT, BLMT, SLMT, BSTP, SSTP, BSTPLMT, SSTPLMT)` 
         """
@@ -1096,12 +1095,14 @@ class Trade(RiskManagement):
 
         if positions is not None:
             if position_type == 'all':
+                pos_type = ""
                 tickets = [position.ticket for position in positions]
             else:
                 tickets = positions
+                pos_type = position_type
         else:
             tickets = []
-
+            
         if len(tickets) != 0:
             for ticket in tickets.copy():
                 if self.close_position(ticket, id=id, comment=comment):

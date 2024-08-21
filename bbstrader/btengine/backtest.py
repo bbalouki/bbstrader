@@ -7,16 +7,16 @@ import yfinance as yf
 from queue import Queue
 from datetime import datetime
 from seaborn import saturate
-from bbstrader.btengine.data import *
-from bbstrader.btengine.execution import *
-from bbstrader.btengine.portfolio import Portfolio
-from bbstrader.btengine.strategy import Strategy
-from bbstrader.btengine.event import SignalEvent
-from bbstrader.models import HMMRiskManager
+from .data import *
+from .execution import *
+from .portfolio import Portfolio
+from .strategy import Strategy
+from .event import SignalEvent
+from models import HMMRiskManager
 from filterpy.kalman import KalmanFilter
-from bbstrader.strategies import OrnsteinUhlenbeck
-from bbstrader.tseries import load_and_prepare_data
-from bbstrader.tseries import get_prediction
+from strategies import OrnsteinUhlenbeck
+from tseries import load_and_prepare_data
+from tseries import get_prediction
 from typing import Literal, Optional, List
 
 __all__ = [
@@ -604,18 +604,20 @@ class ArimaGarchStrategyBacktester(Strategy):
     class to implement a backtesting framework for trading strategies based on 
     ARIMA-GARCH models, incorporating a Hidden Markov Model (HMM) for risk management.
 
-    Features:
-        - **ARIMA-GARCH Model**: Utilizes ARIMA for time series forecasting and GARCH 
-        for volatility forecasting, aimed at predicting market movements.
-        - **HMM Risk Management**: Employs a Hidden Markov Model to manage risks, 
-        determining safe trading regimes.
-        - **Event-Driven Backtesting**: Capable of simulating real-time trading conditions 
-        by processing market data and signals sequentially.
+    Features
+    ========
+    - **ARIMA-GARCH Model**: Utilizes ARIMA for time series forecasting and GARCH for volatility forecasting, aimed at predicting market movements.
+    
+    - **HMM Risk Management**: Employs a Hidden Markov Model to manage risks, determining safe trading regimes.
+    
+    - **Event-Driven Backtesting**: Capable of simulating real-time trading conditions by processing market data and signals sequentially.
 
-    Key Methods:
-        - `get_data()`: Retrieves and prepares the data required for ARIMA-GARCH model predictions.
-        - `create_signal()`: Generates trading signals based on model predictions and current market positions.
-        - `calculate_signals(event)`: Listens for market events and triggers signal creation and event placement.
+    Key Methods
+    ===========
+    - `get_data()`: Retrieves and prepares the data required for ARIMA-GARCH model predictions.
+    - `create_signal()`: Generates trading signals based on model predictions and current market positions.
+    - `calculate_signals(event)`: Listens for market events and triggers signal creation and event placement.
+      
     """
 
     def __init__(self, bars: DataHandler, events: Queue, **kwargs):
@@ -628,6 +630,7 @@ class ArimaGarchStrategyBacktester(Strategy):
             `quantity`: Quantity of assets to trade.
             `hmm_window`: Lookback period for HMM.
             `hmm_model`: HMM risk management model.
+
         """
         self.bars = bars
         self.symbol_list = self.bars.symbol_list
@@ -827,10 +830,8 @@ def run_backtest(
 
         data_handler (DataHandler): An instance of the `DataHandler` class, responsible for managing 
             and processing market data. Required when `test_mode` is False.
-
             There are three DataHandler classes implemented in btengine module
            `HistoricCSVDataHandler`, `MT5HistoricDataHandler` and `YFHistoricDataHandler`
-
             See each of this class documentation for more details.
             You can create your `CustumDataHandler` but it must be a subclass of `DataHandler`.
 
@@ -860,6 +861,7 @@ def run_backtest(
             - `sma` Execute `SMAStrategyBacktester`, for more detail see this class documentation.
             - `klf` Execute `KLFStrategyBacktester`, for more detail see this class documentation.
             - `arch` Execute `ArimaGarchStrategyBacktester`, for more detail see this class documentation.
+
         test_quantity (int, optional): The quantity of assets to be used in the test backtest. Default is 1000.
 
         **kwargs: Additional parameters passed to the `Backtest` instance, which may include strategy-specific,
@@ -871,18 +873,18 @@ def run_backtest(
           `start_date`, `data_handler`, `strategy`, `exc_handler`).
 
     Examples:
-    >>> from bbstrader.btengine import run_backtest
-    >>> run_backtest(test_mode=True, test_strategy='ou', test_quantity=2000)
+        >>> from bbstrader.btengine import run_backtest
+        >>> run_backtest(test_mode=True, test_strategy='ou', test_quantity=2000)
 
-    >>> run_backtest(
-    ...     symbol_list=['AAPL', 'GOOG'],
-    ...     start_date=datetime(2020, 1, 1),
-    ...     data_handler=CustomDataHandler(),
-    ...     strategy=MovingAverageStrategy(),
-    ...     exc_handler=CustomExecutionHandler(),
-    ...     initial_capital=500000.0,
-    ...     heartbeat=1.0
-    ... )
+        >>> run_backtest(
+        ...     symbol_list=['AAPL', 'GOOG'],
+        ...     start_date=datetime(2020, 1, 1),
+        ...     data_handler=CustomDataHandler(),
+        ...     strategy=MovingAverageStrategy(),
+        ...     exc_handler=CustomExecutionHandler(),
+        ...     initial_capital=500000.0,
+        ...     heartbeat=1.0
+        ... )
     """
     if test_mode:
         _BACKTESTS[test_strategy](

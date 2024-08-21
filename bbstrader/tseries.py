@@ -194,18 +194,8 @@ def get_corr(tickers: List[str] | Tuple[str, ...], start: str, end: str) -> None
         end (str): The end date for the historical data in 'YYYY-MM-DD' format.
 
     Example:
-    ```python
-    from bbstrader.tseries import get_corr
-
-    get_corr(['AAPL', 'MSFT', 'GOOG'], '2023-01-01', '2023-12-31')
-
-    # Which returns
-    # Ticker      AAPL      GOOG      MSFT
-    # Ticker
-    # AAPL    1.000000  0.851580  0.948934
-    # GOOG    0.851580  1.000000  0.900014
-    # MSFT    0.948934  0.900014  1.000000
-    ```
+    >>> from bbstrader.tseries import get_corr
+    >>> get_corr(['AAPL', 'MSFT', 'GOOG'], '2023-01-01', '2023-12-31')
     """
     # Download historical data
     data = yf.download(tickers, start=start, end=end)['Adj Close']
@@ -301,59 +291,54 @@ def run_cadf_test(pair: List[str] | Tuple[str, ...], start: str, end: str) -> No
         end (str): The end date for the historical data in 'YYYY-MM-DD' format.
 
     Example:
-    ```python
-    from bbstrader.tseries import run_cadf_test
+        >>> from bbstrader.tseries import run_cadf_test
+        >>> run_cadf_test(['AAPL', 'MSFT'], '2023-01-01', '2023-12-31')
+        >>> Regression Metrics:
+        >>> Optimal Hedge Ratio (Beta): 2.2485845594120333
+        >>> Result Parmas: 
 
-    run_cadf_test(['AAPL', 'MSFT'], '2023-01-01', '2023-12-31')
+        >>> const   -74.418034
+        >>> AAPL      2.248585
+        >>> dtype: float64
 
-    # Which returns
-    # Regression Metrics:
-    # Optimal Hedge Ratio (Beta): 2.2485845594120333
-    # Result Parmas: 
+        >>> Regression Summary:
+        >>>                              OLS Regression Results
+        >>> ==============================================================================
+        >>> Dep. Variable:                   MSFT   R-squared:                       0.900
+        >>> Model:                            OLS   Adj. R-squared:                  0.900
+        >>> Method:                 Least Squares   F-statistic:                     2244.
+        >>> Date:                Sat, 20 Jul 2024   Prob (F-statistic):          2.95e-126
+        >>> Time:                        13:36:58   Log-Likelihood:                -996.45
+        >>> No. Observations:                 250   AIC:                             1997.
+        >>> Df Residuals:                     248   BIC:                             2004.
+        >>> Df Model:                           1
+        >>> Covariance Type:            nonrobust
+        >>> ==============================================================================
+        >>>                  coef    std err          t      P>|t|      [0.025      0.975]
+        >>> ------------------------------------------------------------------------------
+        >>> const        -74.4180      8.191     -9.085      0.000     -90.551     -58.286
+        >>> AAPL           2.2486      0.047     47.369      0.000       2.155       2.342
+        >>> ==============================================================================
+        >>> Omnibus:                        4.923   Durbin-Watson:                   0.121
+        >>> Prob(Omnibus):                  0.085   Jarque-Bera (JB):                4.862
+        >>> Skew:                           0.342   Prob(JB):                       0.0879
+        >>> Kurtosis:                       2.993   Cond. No.                     1.71e+03
+        >>> ==============================================================================
 
-    # const   -74.418034
-    # AAPL      2.248585
-    # dtype: float64
+        >>> Notes:
+        >>> [1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+        >>> [2] The condition number is large, 1.71e+03. This might indicate that there are
+        >>> strong multicollinearity or other numerical problems.
 
-    # Regression Summary:
-    #                             OLS Regression Results
-    # ==============================================================================
-    # Dep. Variable:                   MSFT   R-squared:                       0.900
-    # Model:                            OLS   Adj. R-squared:                  0.900
-    # Method:                 Least Squares   F-statistic:                     2244.
-    # Date:                Sat, 20 Jul 2024   Prob (F-statistic):          2.95e-126
-    # Time:                        13:36:58   Log-Likelihood:                -996.45
-    # No. Observations:                 250   AIC:                             1997.
-    # Df Residuals:                     248   BIC:                             2004.
-    # Df Model:                           1
-    # Covariance Type:            nonrobust
-    # ==============================================================================
-    #                 coef    std err          t      P>|t|      [0.025      0.975]
-    # ------------------------------------------------------------------------------
-    # const        -74.4180      8.191     -9.085      0.000     -90.551     -58.286
-    # AAPL           2.2486      0.047     47.369      0.000       2.155       2.342
-    # ==============================================================================
-    # Omnibus:                        4.923   Durbin-Watson:                   0.121
-    # Prob(Omnibus):                  0.085   Jarque-Bera (JB):                4.862
-    # Skew:                           0.342   Prob(JB):                       0.0879
-    # Kurtosis:                       2.993   Cond. No.                     1.71e+03
-    # ==============================================================================
-
-    # Notes:
-    # [1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
-    # [2] The condition number is large, 1.71e+03. This might indicate that there are
-    # strong multicollinearity or other numerical problems.
-
-    # Cointegration TEST Results:
-    # (np.float64(-3.204126144947765),
-    # np.float64(0.019747080611767602),
-    # 0,
-    # 249,
-    # {'1%': np.float64(-3.4568881317725864),
-    # '10%': np.float64(-2.5729936189738876),
-    # '5%': np.float64(-2.8732185133016057)},
-    # np.float64(1364.3866758546171))
-    ```
+        >>> Cointegration TEST Results:
+        >>> (np.float64(-3.204126144947765),
+        >>> np.float64(0.019747080611767602),
+        >>> 0,
+        >>> 249,
+        >>> {'1%': np.float64(-3.4568881317725864),
+        >>> '10%': np.float64(-2.5729936189738876),
+        >>> '5%': np.float64(-2.8732185133016057)},
+        >>> np.float64(1364.3866758546171))
     """
     # Download historical data for required stocks
     p0, p1 = pair[0], pair[1]
@@ -436,17 +421,9 @@ def run_hurst_test(symbol: str, start: str, end: str):
         end (str): The end date for the historical data in 'YYYY-MM-DD' format.
 
     Example:
-    ```python
-    from bbstrader.tseries import run_hurst_test
+    >>> from bbstrader.tseries import run_hurst_test
 
-    run_hurst_test('AAPL', '2023-01-01', '2023-12-31')
-
-    # Which returns
-    # Hurst(GBM):  0.49726956194528027
-    # Hurst(MR):   -0.00014716140269580594
-    # Hurst(TR):   0.9554475143862824
-    # Hurst(AAPL): 0.7851383697551865
-    ```
+    >>> run_hurst_test('AAPL', '2023-01-01', '2023-12-31')
     """
     data = yf.download(symbol, start=start, end=end)
 
@@ -499,45 +476,9 @@ def run_coint_test(tickers: List[str], start: str, end: str) -> None:
         end (str): The end date for the historical data in 'YYYY-MM-DD' format.
 
     Example:
-    ```python
-    from bbstrader.tseries import run_coint_test
+    >>> from bbstrader.tseries import run_coint_test
 
-    run_coint_test(['AAPL', 'MSFT', 'GOOG'], '2023-01-01', '2023-12-31')
-
-        # Which returns
-        # [*********************100%%**********************]  2 of 2 completed
-
-        # Traces Stats: 
-        # [17.2924205   1.66002864]
-
-        # Critical Values: 
-        # [[13.4294 15.4943 19.9349]
-        # [ 2.7055  3.8415  6.6349]]
-
-        # AAPL and MSFT are cointegrated.
-
-        # [*********************100%%**********************]  2 of 2 completed
-
-        # Traces Stats: 
-        # [11.81740859  4.64479809]
-
-        # Critical Values: 
-        # [[13.4294 15.4943 19.9349]
-        # [ 2.7055  3.8415  6.6349]]
-
-        # AAPL and GOOG are cointegrated.
-
-        # [*********************100%%**********************]  2 of 2 completed
-
-        # Traces Stats: 
-        # [7.68354204 2.07721547]
-
-        # Critical Values: 
-        # [[13.4294 15.4943 19.9349]
-        # [ 2.7055  3.8415  6.6349]]
-
-        # MSFT and GOOG are cointegrated
-    ```
+    >>> run_coint_test(['AAPL', 'MSFT', 'GOOG'], '2023-01-01', '2023-12-31')
     """
     # Loop through ticker combinations
     for ticker1, ticker2 in combinations(tickers, 2):
@@ -635,17 +576,9 @@ def run_kalman_filter(etfs: List[str] | Tuple[str, ...], start: str, end: str) -
         end (str): The end date for the historical data in 'YYYY-MM-DD' format.
 
     Example:
-    ```python
-    from bbstrader.tseries import run_kalman_filter
+    >>> from bbstrader.tseries import run_kalman_filter
 
-    run_kalman_filter(['SPY', 'QQQ'], '2023-01-01', '2023-12-31')
-
-    # Which returns
-    # [*********************100%%**********************]  1 of 1 completed
-    # [*********************100%%**********************]  1 of 1 completed
-    # First Slops : [0.70073323]
-    # First intercept : [0.70073322]
-    ```
+    >>> run_kalman_filter(['SPY', 'QQQ'], '2023-01-01', '2023-12-31')
     """
     etf_df1 = yf.download(etfs[0], start, end)
     etf_df2 = yf.download(etfs[1], start, end)

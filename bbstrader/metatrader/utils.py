@@ -3,6 +3,57 @@ import logging
 from typing import List, NamedTuple, Optional
 from enum import Enum
 
+def config_logger(log_file: str, console_log=True):
+    # Configure the logger
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
+
+    # File handler
+    file_handler = logging.FileHandler(log_file)
+    file_handler.setLevel(logging.INFO)
+
+    # Formatter
+    formatter = logging.Formatter(
+        '%(asctime)s - %(levelname)s: %(message)s', datefmt="%Y-%m-%d %H:%M:%S")
+    file_handler.setFormatter(formatter)
+
+    # Add the handler to the logger
+    logger.addHandler(file_handler)
+
+    if console_log:
+        # handler for the console with a different level
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.DEBUG)
+        console_handler.setFormatter(formatter)
+        logger.addHandler(console_handler)
+
+    return logger
+
+
+class LogLevelFilter(logging.Filter):
+    def __init__(self, levels: List[int]):
+        """
+        Initializes the filter with specific logging levels.
+
+        Args:
+            levels: A list of logging level values (integers) to include.
+        """
+        super().__init__()
+        self.levels = levels
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        """
+        Filters log records based on their level.
+
+        Args:
+            record: The log record to check.
+
+        Returns:
+            True if the record's level is in the allowed levels, False otherwise.
+        """
+        return record.levelno in self.levels
+
+
 __all__ = [
     "TIMEFRAMES",
     "TimeFrame",

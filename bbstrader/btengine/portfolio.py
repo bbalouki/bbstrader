@@ -1,11 +1,11 @@
 import pandas as pd
 from queue import Queue
 from datetime import datetime
-from bbstrader.btengine.event import (
+from .event import (
     OrderEvent, FillEvent, MarketEvent, SignalEvent
 )
-from bbstrader.btengine.data import DataHandler
-from bbstrader.btengine.performance import (
+from .data import DataHandler
+from .performance import (
     create_drawdowns, plot_performance,
     create_sharpe_ratio, create_sortino_ratio,
     plot_returns_and_dd, plot_monthly_yearly_returns

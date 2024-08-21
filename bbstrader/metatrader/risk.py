@@ -3,17 +3,17 @@ import numpy as np
 from scipy.stats import norm
 from datetime import datetime
 import MetaTrader5 as Mt5
-from bbstrader.metatrader.account import Account
-from bbstrader.metatrader.rates import Rates
-from bbstrader.metatrader.utils import (
+from .account import Account
+from .rates import Rates
+from .utils import (
     TIMEFRAMES, raise_mt5_error, TimeFrame
 )
 from typing import List, Dict, Optional, Literal, Union, Any
 
 
 _COMMD_SUPPORTED_ = [
-    "GOLD", "XAUEUR", "SILVER", "BRENT", "CRUDOIL", "WTI",  # "UKOIL",
-    'XAGEUR', 'XAGUSD', 'XAUAUD', 'XAUEUR', 'XAUUSD', 'XAUGBP',  # 'USOIL'
+    "GOLD", "XAUEUR", "SILVER", "BRENT", "CRUDOIL", "WTI",  "UKOIL",
+    'XAGEUR', 'XAGUSD', 'XAUAUD', 'XAUEUR', 'XAUUSD', 'XAUGBP',  'USOIL'
 ]
 
 
@@ -34,29 +34,29 @@ class RiskManagement(Account):
     and ensures trading activities align with predefined risk parameters.
 
     Exemple:
-    >>> risk_manager = RiskManagement(
-        symbol="EURUSD", 
-        max_risk=5.0, 
-        daily_risk=2.0, 
-        max_trades=10, 
-        std_stop=True, 
-        account_leverage=True, 
-        start_time="09:00", 
-        finishing_time="17:00", 
-        time_frame="1h"
-    )
-    >>> # Calculate risk level
-    >>> risk_level = risk_manager.risk_level()
+        >>> risk_manager = RiskManagement(
+        ...    symbol="EURUSD", 
+        ...    max_risk=5.0, 
+        ...    daily_risk=2.0, 
+        ...    max_trades=10, 
+        ...    std_stop=True, 
+        ...    account_leverage=True, 
+        ...    start_time="09:00", 
+        ...    finishing_time="17:00", 
+        ...    time_frame="1h"
+        ... )
+        >>> # Calculate risk level
+        >>> risk_level = risk_manager.risk_level()
 
-    >>> # Get appropriate lot size for a trade
-    >>> lot_size = risk_manager.get_lot()
+        >>> # Get appropriate lot size for a trade
+        >>> lot_size = risk_manager.get_lot()
 
-    >>> # Determine stop loss and take profit levels
-    >>> stop_loss = risk_manager.get_stop_loss()
-    >>> take_profit = risk_manager.get_take_profit()
+        >>> # Determine stop loss and take profit levels
+        >>> stop_loss = risk_manager.get_stop_loss()
+        >>> take_profit = risk_manager.get_take_profit()
 
-    >>> # Check if current risk is acceptable
-    >>> is_risk_acceptable = risk_manager.is_risk_ok()
+        >>> # Check if current risk is acceptable
+        >>> is_risk_acceptable = risk_manager.is_risk_ok()
     """
 
     def __init__(
@@ -359,16 +359,18 @@ class RiskManagement(Account):
 
     def currency_risk(self) -> Dict[str, Union[int, float, Any]]:
         """
-        calculates the currency risk of a trade
+        Calculates the currency risk of a trade.
 
         Returns:
-        -   A dictionary containing the following keys:
-                `'currency_risk'`: dollars amount risk on a single trade,
-                `'trade_loss'`: Loss value per tick in dollars,
-                `'trade_profit'`: Profit value per tick in dollars,
-                `'volume'`: Contract size * average price,
-                `'lot'`: Lot size per trade
+            Dict[str, Union[int, float, Any]]: A dictionary containing the following keys:
+            
+            - `'currency_risk'`: Dollar amount risk on a single trade.
+            - `'trade_loss'`: Loss value per tick in dollars.
+            - `'trade_profit'`: Profit value per tick in dollars.
+            - `'volume'`: Contract size multiplied by the average price.
+            - `'lot'`: Lot size per trade.
         """
+
         account_info = self.get_account_info()
         s_info = self.symbol_info
 

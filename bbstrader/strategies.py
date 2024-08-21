@@ -13,7 +13,7 @@ from statsmodels.graphics.tsaplots import plot_acf
 from statsmodels.stats.diagnostic import acorr_ljungbox
 from filterpy.kalman import KalmanFilter
 from scipy.optimize import minimize
-from bbstrader.tseries import (
+from tseries import (
     load_and_prepare_data, fit_best_arima,
     fit_garch, predict_next_return, get_prediction
 )
@@ -42,18 +42,18 @@ class ArimaGarchStrategy():
     5. Vectorized Backtesting: Backtest the trading strategy using the historical data.
 
     Exemple:
-    >>> import yfinance as yf
-    >>> from bbstrader.strategies import ArimaGarchStrategy
-    >>> from bbstrader.tseries import load_and_prepare_data
+        >>> import yfinance as yf
+        >>> from bbstrader.strategies import ArimaGarchStrategy
+        >>> from bbstrader.tseries import load_and_prepare_data
 
-    >>> if __name__ == '__main__':
-    >>>     # ARCH SPY Vectorize Backtest
-    >>>     k = 252
-    >>>     data = yf.download("SPY", start="2004-01-02", end="2015-12-31")
-    >>>     arch = ArimaGarchStrategy("SPY", data, k=k)
-    >>>     df = load_and_prepare_data(data)
-    >>>     arch.show_arima_garch_results(df['diff_log_return'].values[-k:])
-    >>>     arch.backtest_strategy()
+        >>> if __name__ == '__main__':
+        >>>     # ARCH SPY Vectorize Backtest
+        >>>     k = 252
+        >>>     data = yf.download("SPY", start="2004-01-02", end="2015-12-31")
+        >>>     arch = ArimaGarchStrategy("SPY", data, k=k)
+        >>>     df = load_and_prepare_data(data)
+        >>>     arch.show_arima_garch_results(df['diff_log_return'].values[-k:])
+        >>>     arch.backtest_strategy()
     """
 
     def __init__(self, symbol, data, k: int = 252):

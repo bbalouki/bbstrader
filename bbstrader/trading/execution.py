@@ -2,17 +2,17 @@ import time
 import pandas as pd
 import numpy as np
 from datetime import datetime
-from bbstrader.metatrader.rates import Rates
-from bbstrader.metatrader.trade import Trade
-from bbstrader.trading.mt5.utils import tf_mapping
-from bbstrader.strategies import (
+from metatrader.rates import Rates
+from metatrader.trade import Trade
+from .utils import tf_mapping
+from strategies import (
     ArimaGarchStrategy, SMAStrategy, KLFStrategy, OrnsteinUhlenbeck,
 )
-from bbstrader.models import HMMRiskManager
-from bbstrader.utils import config_logger
+from models import HMMRiskManager
+from metatrader.utils import config_logger
 from typing import Optional, Literal, List, Tuple
 
-logger = config_logger(log_file_name='trade.log', console_log=False)
+logger = config_logger(log_file='trade.log', console_log=False)
 
 TRADING_DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
 # ========  SMA TRADING ======================
@@ -23,7 +23,7 @@ def sma_trading(
     lma: Optional[int] = 80,
     mm: Optional[bool] = True,
     max_t: Optional[int] = 1,
-    iter_time: Optional[int | float] = 30,
+    iter_time: Optional[int |float] = 30,
     risk_manager: str = 'hmm',
     period: Literal['day', 'week', 'month'] = 'week',
     **kwargs
@@ -34,33 +34,46 @@ def sma_trading(
 
     Parameters
     ==========
-    :param trade (Trade): The Trade object that encapsulates 
-        trading operations like opening, closing positions, etc.
-    :param tf (str, optional): Time frame for the trading strategy
-        defaults to '1h' (1 hour).
-    :param sma (int, optional): Short Moving Average period, defaults to 35.
-    :param lma (int, optional): Long Moving Average period, defaults to 80.
-    :param mm (bool, optional): Money management flag 
-        to enable/disable money management, defaults to True.
-    :param max_t (int, optional): Maximum number of trades allowed, defaults to 1.
-    :param iter_time (int | float, optional): Iteration time for the trading loop.
-    :param risk_manager (str): Specifies the risk management strategy to use
-       'hmm' for Hidden Markov Model. Defaults to 'hmm'.
-    :param period (str, optional): Trading period to reset statistics and close positions
-        can be 'day', 'week', or 'month'. Defaults to 'week'.
-    :param **kwargs: Additional keyword arguments for HMM risk manager.
+    trade : Trade
+        The Trade object that encapsulates trading operations like 
+        opening, closing positions, etc.
+    tf : str, optional
+        Time frame for the trading strategy, defaults to '1h' (1 hour).
+    sma : int, optional
+        Short Moving Average period, defaults to 35.
+    lma : int, optional
+        Long Moving Average period, defaults to 80.
+    mm : bool, optional
+        Money management flag to enable/disable money management, defaults to True.
+    max_t : int, optional
+        Maximum number of trades allowed, defaults to 1.
+    iter_time : Union[int, float], optional
+        Iteration time for the trading loop, defaults to 30 seconds.
+    risk_manager : str
+        Specifies the risk management strategy to use, 
+        'hmm' for Hidden Markov Model.
+    period : Literal['day', 'week', 'month'], optional
+        Trading period to reset statistics and close positions, 
+        can be 'day', 'week', or 'month', defaults to 'week'.
+    **kwargs
+        Additional keyword arguments for the HMM risk manager.
 
-    The function integrates a trading strategy based on simple moving averages, 
+    Returns
+    =======
+    None
+
+    Notes
+    =====
+    This function integrates a trading strategy based on simple moving averages 
     with an optional risk management layer using HMM.
     It periodically checks for trading signals and executes buy or sell orders 
     based on the strategy signals and risk management conditions.
-    The trading period (day, week, month) determines when to reset statistics and close all positions.
+    The trading period (day, week, month) determines when to reset statistics 
+    and close all positions.
 
-    Note: 
-        This function includes an infinite loop with time delays
-        designed to run continuously during market hours.
-        Make sure to handle exceptions and ensure proper resource management 
-        when integrating into a live trading environment.
+    This function includes an infinite loop with time delays designed 
+    to run continuously during market hours. Ensure proper exception handling 
+    and resource management when integrating into a live trading environment.
     """
 
     def check(buys: list, sells: list):
@@ -104,10 +117,10 @@ def sma_trading(
             sig_rate = Rates(trade.symbol, tf, 0, lma)
             hmm_data = sig_rate.get_returns.values
             current_regime = hmm.which_trade_allowed(hmm_data)
-            logger.info(f'CURRENT REGIME = {current_regime} SYMBOL={trade.symbol}, STRATEGY=SMA')
+            logger.info(f'CURRENT REGIME = {current_regime}, SYMBOL={trade.symbol}, STRATEGY=SMA')
             ma_data = sig_rate.get_close.values
             signal = strategy.calculate_signals(ma_data)
-            logger.info(f"Calculating signal... SYMBOL={trade.symbol}, STRATEGY=SMA")
+            logger.info(f"Calculating signal...SYMBOL={trade.symbol}, STRATEGY=SMA")
             comment = f"{trade.expert_name}@{trade.version}"
             if trade.trading_time() and today in TRADING_DAYS:
                 if signal is not None:
@@ -219,26 +232,19 @@ def pair_trading(
     using Hidden Markov Models (HMM). This strategy trades pairs of assets 
     based on their historical price relationship, seeking to capitalize on converging prices.
 
-    Parameters
-    ==========
-    :param pair (list[str] | tuple[str]): The trading pair
-        represented as a list or tuple of symbols (e.g., ['AAPL', 'GOOG']).
+    :param pair (list[str] | tuple[str]): The trading pair represented as a list or tuple of symbols (e.g., ['AAPL', 'GOOG']).
     :param p0 (Trade): Trade object for the first asset in the pair.
     :param p1 (Trade): Trade object for the second asset in the pair.
     :param tf (str): Time frame for the trading strategy (e.g., '1h' for 1 hour).
-    :param max_t (int, optional): Maximum number of trades allowed at any time 
-        for each asset in the pair, defaults to 1.
-    :param mm (bool, optional): Money management flag to enable/disable 
-        money management, defaults to True.
-    :param iter_time (int | float ,optional): Iteration time (in minutes) 
-        for the trading loop, defaults to 30.
-    :param risk_manager: Specifies the risk management model to use
-        default is None , Hidden Markov Model ('hmm) Can be use.
-    :param rm_window: Window size for the risk model use for the prediction, defaults to None. 
-        Must be specified if `risk_manager` is not None.
-    :param period (str, optional): Trading period to reset statistics 
-        and close positions, can be 'day', 'week', or 'month'. Defaults to 'month'.
-    :param **kwargs: Additional keyword arguments for HMM risk manager.
+    :param max_t (int, optional): Maximum number of trades allowed at any time for each asset in the pair, defaults to 1.
+    
+    :param mm (bool, optional): Money management flag to enable/disable money management, defaults to True.
+    :param iter_time (int | float ,optional): Iteration time (in minutes) for the trading loop, defaults to 30.
+    :param risk_manager: Specifies the risk management model to use default is None , Hidden Markov Model ('hmm) Can be use.
+    :param rm_window: Window size for the risk model use for the prediction, defaults to None. Must be specified if `risk_manager` is not None.
+    
+    :param period (str, optional): Trading period to reset statistics and close positions, can be 'day', 'week', or 'month'. 
+    :param kwargs: Additional keyword arguments for HMM risk manager.
 
     This function continuously evaluates the defined pair for trading opportunities 
     based on the strategy logic, taking into account the specified risk management 
@@ -246,8 +252,7 @@ def pair_trading(
     observed in closely related financial instruments.
 
     Note: 
-    This function includes an infinite loop with time delays
-    designed to run continuously during market hours.
+    This function includes an infinite loop with time delays designed to run continuously during market hours.
     Proper exception handling and resource management are crucial for live trading environments.
     """
     regime = False
@@ -258,7 +263,7 @@ def pair_trading(
 
     def p0_check(p0_positions):
         if p0_positions is not None:
-            logger.info(f"Checking for breakeven on {pair[0]} positions... STRATEGY=KLF")
+            logger.info(f"Checking for breakeven on {pair[0]} positions...STRATEGY=KLF")
             p0.break_even()
 
     def p1_check(p1_positions):
@@ -332,7 +337,7 @@ def pair_trading(
             p1_short_market = p1_sells is not None and len(p1_sells) >= max_t
             p0_short_market = p0_sells is not None and len(p0_sells) >= max_t
 
-            logger.info(f"Calculating Signals SYMBOL={pair} ... STRATEGY=KLF")
+            logger.info(f"Calculating Signals SYMBOL={pair}...STRATEGY=KLF")
             signals = strategy.calculate_signals(prices)
             comment = f"{p0.expert_name}@{p0.version}"
 
@@ -629,7 +634,7 @@ def ou_trading(
                         f'CURRENT REGIME = {current_regime}, SYMBOL={trade.symbol}, STRATEGY=OU')
             else:
                 current_regime = None
-            logger.info(f"Calculating signal ... SYMBOL={trade.symbol}, STRATEGY=OU")
+            logger.info(f"Calculating signal... SYMBOL={trade.symbol}, STRATEGY=OU")
             ou_returns = Rates(trade.symbol, tf, 0, p)
             returns_val = ou_returns.get_returns.values
             signal = strategy.calculate_signals(returns_val, p=p, n=n)
@@ -805,8 +810,7 @@ def arch_trading(
     strategy = ArimaGarchStrategy(trade.symbol, data, k=k)
     if regime:
         if risk_manager == 'hmm':
-            hmm = HMMRiskManager(
-                data=data, verbose=True, iterations=5000, **kwargs)
+            hmm = HMMRiskManager(data=data, verbose=True, iterations=5000, **kwargs)
 
     time_intervals = 0
     long_market = False
@@ -833,7 +837,7 @@ def arch_trading(
                     hmm_returns = Rates(trade.symbol, tf, 0, rm_window)
                     hmm_returns_val = hmm_returns.get_returns.values
                     current_regime = hmm.which_trade_allowed(hmm_returns_val)
-                    logger.info(f'CURRENT REGIME = {current_regime} SYMBOL={trade.symbol}, STRATEGY=ARCH')
+                    logger.info(f'CURRENT REGIME = {current_regime}, SYMBOL={trade.symbol}, STRATEGY=ARCH')
             else:
                 current_regime = None
             logger.info(f"Calculating Signal ... SYMBOL={trade.symbol}, STRATEGY=ARCH")
@@ -870,7 +874,7 @@ def arch_trading(
                         elif current_regime == 'SHORT':
                             if signal == "SHORT" and not short_market:
                                 if time_intervals % trade_time == 0 or sells is None:
-                                    logger.info(f"Sending Sell Order ....  SYMBOL={trade.symbol}, STRATEGY=ARCH")
+                                    logger.info(f"Sending Sell Order .... SYMBOL={trade.symbol}, STRATEGY=ARCH")
                                     trade.open_sell_position(
                                         mm=mm, comment=comment)
                                 else:
