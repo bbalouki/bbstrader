@@ -1,5 +1,4 @@
 # Simplified Investment & Trading Toolkit
-![bbstrader](assets/bbstrade.png)
 
 ## Overview
 
