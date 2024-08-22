@@ -8,3 +8,7 @@ bbstrader.egg-info
 WS.code-workspace
 .pytest_cache
 equity.csv
+*.egg-info
+dist/
+docs/
+Odocs/
