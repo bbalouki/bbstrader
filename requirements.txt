@@ -1,11 +1,12 @@
+bbstrader
 pandas
 numpy==1.26.4
 yfinance
-scikit-learn
 scipy
 hmmlearn
 pmdarima
 arch
+hurst
 seaborn
 statsmodels
 matplotlib
