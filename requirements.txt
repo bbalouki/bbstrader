@@ -1,19 +1,1 @@
 bbstrader
-pandas
-numpy==1.26.4
-yfinance
-scipy
-hmmlearn
-pmdarima
-arch
-hurst
-seaborn
-statsmodels
-matplotlib
-filterpy
-pytest
-sphinx
-sphinx-rtd-theme
-CurrencyConverter
-# Conditionally install Windows package
-Metatrader5; sys_platform == 'win32'
