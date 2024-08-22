@@ -1,5 +1,5 @@
 # Simplified Investment & Trading Toolkit
-![bbstrader](assets/bbstrader_logo.png)
+![bbstrader](https://github.com/bbalouki/bbstrader/blob/main/assets/bbstrader_logo.png?raw=true)
 
 
 ## Overview
@@ -46,7 +46,7 @@ if __name__ == '__main__':
     run_backtest(test_strategy='klf')
 ```
 ### Backtesting Results
-![Backtesting Results](assets/backtest_results.jpg)
+![Backtesting Results](https://github.com/bbalouki/bbstrader/blob/main/assets/backtest_results.jpg?raw=true)
 
 ## Customization and Contribution
 
