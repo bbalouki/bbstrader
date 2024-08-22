@@ -1,1 +1,1 @@
-bbstrader
+bbstrader==1.0.2
