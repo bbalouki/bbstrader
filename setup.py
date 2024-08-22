@@ -7,7 +7,7 @@ if sys.version_info < (3,9):
 with open("README.md", encoding="utf-8") as fh:
     long_description = fh.read()
 
-VERSION = '0.0.1'
+VERSION = '0.0.2'
 DESCRIPTION = 'Simplified Investment & Trading Toolkit'
 
 # Setting up
@@ -25,7 +25,8 @@ setup(
     packages=[
         "bbstrader", 
         "bbstrader.btengine", 
-        "bbstrader.metatrader", 
+        "bbstrader.metatrader",
+        "bbstrader.models",
         "bbstrader.trading"
     ],
     install_requires=[

@@ -8,7 +8,7 @@ from bbstrader.trading.utils import tf_mapping
 from bbstrader.strategies import (
     ArimaGarchStrategy, SMAStrategy, KLFStrategy, OrnsteinUhlenbeck,
 )
-from bbstrader.models import HMMRiskManager
+from bbstrader.models.risk import HMMRiskManager
 from bbstrader.metatrader.utils import config_logger
 from typing import Optional, Literal, List, Tuple
 
