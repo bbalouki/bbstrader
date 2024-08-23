@@ -13,18 +13,20 @@ from unittest.mock import MagicMock
 os.system('pip install ..')
 sys.path.insert(0, os.path.abspath('../bbstrader'))
 
-# class Mock(MagicMock):
-#     @classmethod
-#     def __getattr__(cls, name):
-#         return Mock()
+# Mock the MetaTrader5 module
+class Mock(MagicMock):
+    @classmethod
+    def __getattr__(cls, name):
+        return MagicMock()
 
-# MOCK_MODULES = ['MetaTrader5']
-# sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
+# List the modules you want to mock
+MOCK_MODULES = ['MetaTrader5']
+sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 project = 'BBSTrader'
 copyright = '2024, Bertin Balouki SIMYELI'
 author = 'Bertin Balouki SIMYELI'
-release = '0.0.2'
+release = '0.1.1'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

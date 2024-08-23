@@ -37,7 +37,7 @@ This module currently supports three brokers, `Admirals Group AS <https://cabine
 
 - For trading `Stocks`, `ETFs`, `Indices`, `Commodities`, `Futures`, and `Forex`, see `Admirals Group AS`_.
 - For trading `Stocks`, `Crypto`, `Indices`, `Commodities`, and `Forex`, see `Just Global Markets Ltd.`_.
-- If you are looking for a prop firm, See `FTMO`_.
+- If you are looking for a prop firm, see `FTMO`_.
 
 Then, you can install `bbstrader` using pip:
 
