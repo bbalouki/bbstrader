@@ -74,7 +74,7 @@ def load_and_prepare_data(df: pd.DataFrame):
     return data
 
 
-def fit_best_arima(window_data: pd.Series | np.ndarray):
+def fit_best_arima(window_data: Union[pd.Series , np.ndarray]):
     """
     Identifies and fits the best `ARIMA` model 
     based on the Akaike Information Criterion `(AIC)`.
@@ -109,7 +109,7 @@ def fit_best_arima(window_data: pd.Series | np.ndarray):
     return best_arima_model
 
 
-def fit_garch(window_data: pd.Series | np.ndarray):
+def fit_garch(window_data:  Union[pd.Series , np.ndarray]):
     """
     Fits an `ARIMA` model to the data to get residuals, 
     then fits a `GARCH(1,1)` model on these residuals.
@@ -159,7 +159,7 @@ def predict_next_return(arima_result, garch_result):
     return next_return
 
 
-def get_prediction(window_data: pd.Series | np.ndarray):
+def get_prediction(window_data:  Union[pd.Series , np.ndarray]):
     """
     Orchestrator function to get the next period's return prediction.
 
@@ -168,7 +168,7 @@ def get_prediction(window_data: pd.Series | np.ndarray):
     and then predicting the next period's return using these models.
 
     Args:
-        window_data (pd.Series or np.ndarray): 
+        window_data (Union[pd.Series , np.ndarray]): 
             Time series data to fit the models and predict the next return.
 
     Returns
@@ -182,13 +182,13 @@ def get_prediction(window_data: pd.Series | np.ndarray):
 # *********************************************
 # STATS TEST (Cointegration , Mean Reverting)*
 # *********************************************
-def get_corr(tickers: List[str] | Tuple[str, ...], start: str, end: str) -> None:
+def get_corr(tickers: Union[List[str] , Tuple[str, ...]], start: str, end: str) -> None:
     """
     Calculates and prints the correlation matrix of the adjusted closing prices 
     for a given list of stock tickers within a specified date range.
 
     Args:
-        tickers (List[str] | Tuple[str, ...]): 
+        tickers (Union[List[str] , Tuple[str, ...]]): 
         A list or tuple of valid stock tickers (e.g., ['AAPL', 'MSFT', 'GOOG']).
         start (str): The start date for the historical data in 'YYYY-MM-DD' format.
         end (str): The end date for the historical data in 'YYYY-MM-DD' format.
@@ -275,7 +275,7 @@ def plot_residuals(df: pd.DataFrame):
     plt.show()
 
 
-def run_cadf_test(pair: List[str] | Tuple[str, ...], start: str, end: str) -> None:
+def run_cadf_test(pair: Union[List[str] , Tuple[str, ...]], start: str, end: str) -> None:
     """
     Performs the Cointegration Augmented Dickey-Fuller (CADF) test on a pair of stock tickers 
     over a specified date range to check for cointegration.
@@ -560,7 +560,7 @@ def draw_slope_intercept_changes(prices, state_means):
     plt.show()
 
 
-def run_kalman_filter(etfs: List[str] | Tuple[str, ...], start: str, end: str) -> None:
+def run_kalman_filter(etfs: Union[List[str] , Tuple[str, ...]], start: str, end: str) -> None:
     """
     Applies a Kalman filter to a pair of ETF adjusted closing prices within a specified date range
     to estimate the slope and intercept over time.
@@ -570,7 +570,7 @@ def run_kalman_filter(etfs: List[str] | Tuple[str, ...], start: str, end: str) -
     intercept, and visualizes the changes in these estimates over time.
 
     Args:
-        etfs (List[str] or Tuple[str, ...]):
+        etfs (Union[List[str] , Tuple[str, ...]]):
         A list or tuple containing two valid ETF tickers (e.g., ['SPY', 'QQQ']).
         start (str): The start date for the historical data in 'YYYY-MM-DD' format.
         end (str): The end date for the historical data in 'YYYY-MM-DD' format.
