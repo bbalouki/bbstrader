@@ -34,7 +34,7 @@ class Rates(object):
         self,
         symbol: str,
         time_frame: TimeFrame = 'D1',
-        start_pos: Union[int | str] = 0,
+        start_pos: Union[int , str] = 0,
         count: Optional[int] = MAX_BARS,
         session_duration: Optional[float] = None
     ):
