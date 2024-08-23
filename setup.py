@@ -1,4 +1,3 @@
-from cycler import K
 from setuptools import setup
 import sys
 
@@ -8,7 +7,7 @@ if sys.version_info < (3, 9):
 with open("README.md", encoding="utf-8") as fh:
     long_description = fh.read()
 
-VERSION = '0.0.2'
+VERSION = '0.1.0'
 DESCRIPTION = 'Simplified Investment & Trading Toolkit'
 
 KEYWORDS = [
@@ -21,7 +20,7 @@ KEYWORDS = [
 ]
 
 CLASSIFIERS = [
-    "Development Status :: 1 - Planning",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Intended Audience :: Financial and Insurance Industry",
     "Topic :: Office/Business :: Financial :: Investment",
@@ -36,8 +35,8 @@ REQUIREMENTS = [
     "pandas", "numpy==1.26.4", "yfinance", "scipy",
     "hmmlearn", "pmdarima", "arch", "hurst", "seaborn",
     "statsmodels", "matplotlib", "filterpy", "pytest",
-    "sphinx", "sphinx-rtd-theme", "CurrencyConverter",
-    "Metatrader5"
+    "CurrencyConverter",
+    #"Metatrader5"
 ]
 
 # Setting up
@@ -45,9 +44,9 @@ setup(
     name="bbstrader",
     version=VERSION,
     author='Bertin Balouki SIMYELI',
-    url='https://github.com/bbalouki/bbstrade',
+    url='https://github.com/bbalouki/bbstrader',
     license='The MIT License (MIT)',
-    author_email='<bbalouki@outlook.com>',
+    author_email='<bertin@bbstrader.com>',
     maintainer='Bertin Balouki SIMYELI',
     description=DESCRIPTION,
     long_description_content_type="text/markdown",

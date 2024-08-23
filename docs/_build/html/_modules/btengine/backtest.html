@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>btengine.backtest &mdash; BBSTrader 1.0.0 documentation</title>
+  <title>btengine.backtest &mdash; BBSTrader 0.0.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
@@ -14,7 +14,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=8d563738"></script>
+        <script src="../../_static/documentation_options.js?v=e3a6060d"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -80,16 +80,16 @@
 <span class="kn">from</span> <span class="nn">queue</span> <span class="kn">import</span> <span class="n">Queue</span>
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
 <span class="kn">from</span> <span class="nn">seaborn</span> <span class="kn">import</span> <span class="n">saturate</span>
-<span class="kn">from</span> <span class="nn">.data</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="kn">from</span> <span class="nn">.execution</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="kn">from</span> <span class="nn">.portfolio</span> <span class="kn">import</span> <span class="n">Portfolio</span>
-<span class="kn">from</span> <span class="nn">.strategy</span> <span class="kn">import</span> <span class="n">Strategy</span>
-<span class="kn">from</span> <span class="nn">.event</span> <span class="kn">import</span> <span class="n">SignalEvent</span>
-<span class="kn">from</span> <span class="nn">models</span> <span class="kn">import</span> <span class="n">HMMRiskManager</span>
+<span class="kn">from</span> <span class="nn">bbstrader.btengine.data</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">bbstrader.btengine.execution</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">bbstrader.btengine.portfolio</span> <span class="kn">import</span> <span class="n">Portfolio</span>
+<span class="kn">from</span> <span class="nn">bbstrader.btengine.strategy</span> <span class="kn">import</span> <span class="n">Strategy</span>
+<span class="kn">from</span> <span class="nn">bbstrader.btengine.event</span> <span class="kn">import</span> <span class="n">SignalEvent</span>
+<span class="kn">from</span> <span class="nn">bbstrader.models</span> <span class="kn">import</span> <span class="n">HMMRiskManager</span>
 <span class="kn">from</span> <span class="nn">filterpy.kalman</span> <span class="kn">import</span> <span class="n">KalmanFilter</span>
-<span class="kn">from</span> <span class="nn">strategies</span> <span class="kn">import</span> <span class="n">OrnsteinUhlenbeck</span>
-<span class="kn">from</span> <span class="nn">tseries</span> <span class="kn">import</span> <span class="n">load_and_prepare_data</span>
-<span class="kn">from</span> <span class="nn">tseries</span> <span class="kn">import</span> <span class="n">get_prediction</span>
+<span class="kn">from</span> <span class="nn">bbstrader.strategies</span> <span class="kn">import</span> <span class="n">OrnsteinUhlenbeck</span>
+<span class="kn">from</span> <span class="nn">bbstrader.tseries</span> <span class="kn">import</span> <span class="n">load_and_prepare_data</span>
+<span class="kn">from</span> <span class="nn">bbstrader.tseries</span> <span class="kn">import</span> <span class="n">get_prediction</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
