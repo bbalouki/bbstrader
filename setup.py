@@ -1,13 +1,13 @@
 from setuptools import setup
 import sys
 
-if sys.version_info < (3, 9):
-    sys.exit("Only Python 3.9 and greater is supported")
+if sys.version_info < (3, 10):
+    sys.exit("Only Python 3.10 and greater is supported")
 
 with open("README.md", encoding="utf-8") as fh:
     long_description = fh.read()
 
-VERSION = '0.1.0'
+VERSION = '0.1.1'
 DESCRIPTION = 'Simplified Investment & Trading Toolkit'
 
 KEYWORDS = [
@@ -20,7 +20,7 @@ KEYWORDS = [
 ]
 
 CLASSIFIERS = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Intended Audience :: Financial and Insurance Industry",
     "Topic :: Office/Business :: Financial :: Investment",
@@ -35,8 +35,7 @@ REQUIREMENTS = [
     "pandas", "numpy==1.26.4", "yfinance", "scipy",
     "hmmlearn", "pmdarima", "arch", "hurst", "seaborn",
     "statsmodels", "matplotlib", "filterpy", "pytest",
-    "CurrencyConverter",
-    #"Metatrader5"
+    "CurrencyConverter", "Metatrader5"
 ]
 
 # Setting up

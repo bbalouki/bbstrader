@@ -21,13 +21,15 @@ It leverages statistical models and algorithms to perform tasks such as cointegr
 - **Integrated Risk Management**: Leverage advanced risk management techniques to adapt to changing market conditions and maintain control over risk exposure.
 - **Automated Trading**: Execute trades automatically on the MT5 platform, with support for managing orders, positions, and risk in real-time.
 - **Flexible Framework**: Customize existing strategies or develop new ones with the flexible, modular architecture designed to accommodate traders' evolving needs.
+- **Advanced Time Series Analysis**: Conduct in-depth analysis of financial time series data to identify patterns, trends, and relationships that can inform trading strategies.
+You can read the full documentation [here](https://bbstrader.readthedocs.io/en/latest/index.html)
 
 ## Getting Started
 
 Before you can use the bbstrader and the metratrader, you need to have MetaTrader 5 (MT5) installed on your computer and an active MT5 trading account. 
 This Module currenlty support three brokers, [Admirals Group AS](https://cabinet.a-partnership.com/visit/?bta=35537&brand=admiralmarkets), [Just Global Markets Ltd.](https://one.justmarkets.link/a/tufvj0xugm/registration/trader), and [FTMO](https://trader.ftmo.com/?affiliates=JGmeuQqepAZLMcdOEQRp), so you need to create a demo or live account with one of them.
-* If you want to trade `Stocks`, `ETFs`, `Indices`, `Commodities`, `Futures`, and `Forex`, See [click here](https://cabinet.a-partnership.com/visit/?bta=35537&brand=admiralmarkets)
-* If you want to trade `Stocks`, `Crypto`, `indices`, `Commodities`, and `Forex`, See [click here](https://one.justmarkets.link/a/tufvj0xugm/registration/trader)
+* If you want to trade `Stocks`, `ETFs`, `Indices`, `Commodities`, `Futures`, and `Forex`, [click here](https://cabinet.a-partnership.com/visit/?bta=35537&brand=admiralmarkets)
+* If you want to trade `Stocks`, `Crypto`, `indices`, `Commodities`, and `Forex`, [click here](https://one.justmarkets.link/a/tufvj0xugm/registration/trader)
 * If you are looking for a prop firm, [click here](https://trader.ftmo.com/?affiliates=JGmeuQqepAZLMcdOEQRp)
 
 Then, you can install `bbstrader` using pip:
