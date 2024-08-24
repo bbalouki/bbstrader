@@ -10,3 +10,4 @@ WS.code-workspace
 equity.csv
 *.egg-info
 dist/
+Odocs/
