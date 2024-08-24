@@ -1,6 +1,7 @@
 # Simplified Investment & Trading Toolkit
 ![bbstrader](https://github.com/bbalouki/bbstrader/blob/main/assets/bbstrader_logo.png?raw=true)
 
+[![Documentation Status](https://readthedocs.org/projects/bbstrader/badge/?version=latest)](https://bbstrader.readthedocs.io/en/latest/?badge=latest)
 
 ## Overview
 
