@@ -1250,7 +1250,7 @@ class Trade(RiskManagement):
     def sleep_time(self, weekend=False):
         if weekend:
             # claculate number of minute from the friday and to monday start
-            friday_time = datetime.strptime(self.end, '%H:%M')
+            friday_time = datetime.strptime(self.current_time(), '%H:%M')
             monday_time = datetime.strptime(self.start, '%H:%M')
             intra_day_diff = (monday_time - friday_time).total_seconds() // 60
             inter_day_diff = 3 * 24 * 60
@@ -1259,14 +1259,18 @@ class Trade(RiskManagement):
         else:
             # claculate number of minute from the end to the start
             start = datetime.strptime(self.start, '%H:%M')
-            end = datetime.strptime(self.end, '%H:%M')
+            end =  datetime.strptime(self.current_time(), '%H:%M')
             minutes = (end - start).total_seconds() // 60
             sleep_time = (24*60) - minutes
             return sleep_time
 
-    def get_current_time(self):
+    def current_datetime(self):
         return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
+    
+    def current_time(self, seconds=False):
+        if seconds:
+            return datetime.now().strftime("%H:%M:%S")
+        return datetime.now().strftime("%H:%M")
 
 def create_trade_instance(
         symbols: List[str],

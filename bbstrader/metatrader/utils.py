@@ -130,7 +130,7 @@ class TimeFrame(Enum):
     H3 = "3h"
     H4 = "4h"
     H6 = "6h"
-    H = "8h"
+    H8 = "8h"
     H12 = "12h"
     D1 = "D1"
     W1 = "W1"
