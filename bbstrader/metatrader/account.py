@@ -28,10 +28,10 @@ _FTMO_URL_ = "https://trader.ftmo.com/?affiliates=JGmeuQqepAZLMcdOEQRp"
 INIT_MSG = (
     f"\n* Ensure you have a good and stable internet connexion\n"
     f"* Ensure you have an activete MT5 terminal install on your machine\n"
-    f"* Ensure you have an active MT5 Account with {'or '.join(__BROKERS__.values())}\n"
-    f"* If you want to trade {', '.join(_ADMIRAL_MARKETS_PRODUCTS_)}, See {_ADMIRAL_MARKETS_URL_}\n"
-    f"* If you want to trade {', '.join(_JUST_MARKETS_PRODUCTS_)}, See {_JUST_MARKETS_URL_}\n"
-    f"* If you are looking for a prop firm, See {_FTMO_URL_}\n"
+    f"* Ensure you have an active MT5 Account with {' or '.join(__BROKERS__.values())}\n"
+    f"* If you want to trade {', '.join(_ADMIRAL_MARKETS_PRODUCTS_)}, See [{_ADMIRAL_MARKETS_URL_}]\n"
+    f"* If you want to trade {', '.join(_JUST_MARKETS_PRODUCTS_)}, See [{_JUST_MARKETS_URL_}]\n"
+    f"* If you are looking for a prop firm, See [{_FTMO_URL_}]\n"
 )
 
 amg_url = _ADMIRAL_MARKETS_URL_
@@ -96,9 +96,9 @@ class Account(object):
             raise ValueError(
                 f"{broker} is not currently supported broker for the Account() class\n"
                 f"Currently Supported brokers are: {', '.join(supported.values())}\n"
-                f"For {supported['AMG']}, See {amg_url}\n"
-                f"For {supported['JGM']}, See {jgm_url}\n"
-                f"For {supported['FTMO']}, See {ftmo_url}\n"
+                f"For {supported['AMG']}, See [{amg_url}]\n"
+                f"For {supported['JGM']}, See [{jgm_url}]\n"
+                f"For {supported['FTMO']}, See [{ftmo_url}]\n"
             )
 
     def get_account_info(
@@ -189,8 +189,11 @@ class Account(object):
 
             # Construct the print message based on whether a symbol is provided
             if symbol:
-                print(
-                    f"\n{info_name.upper()} INFO FOR {symbol} ({info.description})")
+                if hasattr(info, 'description'):
+                    print(
+                        f"\n{info_name.upper()} INFO FOR {symbol} ({info.description})")
+                else:
+                    print(f"\n{info_name.upper()} INFO FOR {symbol}")
             else:
                 print(f"\n{info_name.upper()} INFORMATIONS:")
 
@@ -735,7 +738,7 @@ class Account(object):
         else:
             positions = mt5.positions_get()
 
-        if len(positions) == 0:
+        if positions is None:
             return None
         if to_df:
             df = pd.DataFrame(list(positions), columns=positions[0]._asdict())
@@ -838,7 +841,7 @@ class Account(object):
         else:
             position_deals = mt5.history_deals_get(date_from, date_to)
 
-        if len(position_deals) == 0:
+        if position_deals is None:
             return None
 
         df = pd.DataFrame(list(position_deals),
@@ -914,7 +917,7 @@ class Account(object):
         else:
             orders = mt5.orders_get()
 
-        if len(orders) == 0:
+        if orders is None:
             return None
 
         if to_df:
@@ -1017,7 +1020,7 @@ class Account(object):
         else:
             history_orders = mt5.history_orders_get(date_from, date_to)
 
-        if len(history_orders) == 0:
+        if history_orders is None:
             return None
 
         df = pd.DataFrame(list(history_orders),
