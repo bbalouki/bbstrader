@@ -191,6 +191,17 @@ class Rates(object):
     
     @property
     def get_returns(self):
+        """
+        Fractional change between the current and a prior element.
+
+        Computes the fractional change from the immediately previous row by default. 
+        This is useful in comparing the fraction of change in a time series of elements.
+
+        Note
+        ----
+        It calculates fractional change (also known as `per unit change or relative change`) 
+        and `not percentage change`. If you need the percentage change, multiply these values by 100.
+        """
         data = self.data.copy()
         data['Returns'] =  data['Adj Close'].pct_change()
         data = data.dropna()
