@@ -1,4 +1,5 @@
 import random
+import re
 import numpy as np
 from scipy.stats import norm
 from datetime import datetime
@@ -67,6 +68,8 @@ class RiskManagement(Account):
         max_trades: Optional[int] = None,
         std_stop: bool = False,
         pchange_sl: Optional[float] = None,
+        var_level: float = 0.95,
+        var_time_frame: TimeFrame = 'D1',
         account_leverage: bool = True,
         time_frame: TimeFrame = 'D1',
         start_time: str = "1:00",
@@ -91,6 +94,9 @@ class RiskManagement(Account):
                 On `historical volatility` of the trading instrument. Defaults to False.
             pchange_sl (float, optional): If set, the Stop loss is calculated based
                 On `percentage change` of the trading instrument.
+            var_level (float, optional): Confidence level for Value-at-Risk,e.g., 0.99 for 99% confidence interval.
+                The default is 0.95.
+            var_time_frame (str, optional): Time frame to use to calculate the VaR.
             account_leverage (bool, optional): If set to True the account leverage will be used
                 In risk management setting. Defaults to False.
             time_frame (str, optional): The time frame on which the program is working
@@ -126,6 +132,8 @@ class RiskManagement(Account):
         self.max_trades = max_trades
         self.std = std_stop
         self.pchange = pchange_sl
+        self.var_level = var_level
+        self.var_tf = var_time_frame
         self.daily_dd = daily_risk
         self.max_risk = max_risk
         self.rr = rr
@@ -136,8 +144,21 @@ class RiskManagement(Account):
         self.account_leverage = account_leverage
         self.symbol_info = super().get_symbol_info(self.symbol)
 
-        self.TF = self.get_minutes(
-        ) if time_frame == 'D1' else TIMEFRAMES[time_frame]
+        self._tf = time_frame
+    
+    def _convert_time_frame(self, tf: str) -> int:
+        """Convert time frame to minutes"""
+        if tf == 'D1':
+            tf_int = self.get_minutes()
+        elif 'm' in tf:
+            tf_int = TIMEFRAMES[tf]
+        elif 'h' in tf:
+            tf_int = int(tf[0])*60
+        elif tf == 'W1':
+            tf_int = self.get_minutes() * 5
+        elif tf == 'MN1':
+            tf_int = self.get_minutes() * 22
+        return tf_int
 
     def risk_level(self) -> float:
         """
@@ -194,10 +215,11 @@ class RiskManagement(Account):
     def max_trade(self) -> int:
         """calculates the maximum number of trades allowed"""
         minutes = self.get_minutes()
+        tf_int = self._convert_time_frame(self._tf)
         if self.max_trades is not None:
             max_trades = self.max_trades
         else:
-            max_trades = round(minutes / self.TF)
+            max_trades = round(minutes / tf_int)
         return max(max_trades, 1)
 
     def get_minutes(self) -> int:
@@ -217,24 +239,22 @@ class RiskManagement(Account):
 
         return hours
 
-    def get_std_stop(self, tf: TimeFrame = 'D1', interval: int = 252):
+    def get_std_stop(self):
         """
         Calculate the standard deviation-based stop loss level 
         for a given financial instrument.
-
-        Args:
-            tf (str): Timeframe for data, default is 'D1' (Daily).
-            interval (int): Number of historical data points to consider 
-                for calculating standard deviation, default is 252.
 
         Returns:
         -   Standard deviation-based stop loss level, rounded to the nearest point. 
         -   0 if the calculated stop loss is less than or equal to 0.
         """
-        rate = Rates(self.symbol, tf, 0, interval)
-        data = rate.get_rates_from_pos()
-        returns = np.diff(data['Close'])
-        std = np.std(returns)
+        minutes = self.get_minutes()
+        tf_int = self._convert_time_frame(self._tf)
+        interval = round((minutes / tf_int)  * 252)
+
+        rate = Rates(self.symbol, self._tf, 0, interval)
+        returns = rate.get_returns*100
+        std = returns.std()
         point = self.get_symbol_info(self.symbol).point
         av_price = (self.symbol_info.bid + self.symbol_info.ask)/2
         price_interval = av_price * ((100-std))/100
@@ -284,12 +304,10 @@ class RiskManagement(Account):
         -   VaR value
         """
         rate = Rates(self.symbol, tf, 0, interval)
-        prices = rate.get_rates_from_pos()
-        prices['return'] = prices['Close'].pct_change()
-        prices.dropna(inplace=True)
+        returns = rate.get_returns*100
         P = self.get_account_info().margin_free
-        mu = np.mean(prices['return'])
-        sigma = np.std(prices['return'])
+        mu = returns.mean()
+        sigma = returns.std()
         var = self.var_cov_var(P, c, mu, sigma)
         return var
 
@@ -312,11 +330,15 @@ class RiskManagement(Account):
     def var_loss_value(self):
         """
         Calculate the stop-loss level based on VaR.
+
+        Notes:
+            The Var is Estimated using the Variance-Covariance method on the daily returns.
+            If you want to use the VaR for a different time frame .
         """
         P = self.get_account_info().margin_free
         trade_risk = self.get_trade_risk()
         loss_allowed = P * trade_risk
-        var = self.calculate_var()
+        var = self.calculate_var(c=self.var_level, tf=self.var_tf)
         return min(var, loss_allowed)
 
     def get_take_profit(self) -> int:
@@ -480,13 +502,8 @@ class RiskManagement(Account):
             if self.get_symbol_type(self.symbol) == 'IDX':
                 rates = self.get_currency_rates(self.symbol)
                 if rates['mc'] == rates['pc'] == 'JPY':
-                    if self.std:
-                        raise ValueError(
-                            f"""Please Set std=False or use pchange_sl=True
-                            or set sl=value or use the default method calculation for {self.symbol}
-                            Currency risk"""
-                        )
                     lot = lot * contract_size
+                    lot = self._check_lot(lot)
                     volume = round(lot * av_price * contract_size)
             if contract_size == 1:
                 volume = round(lot * av_price)
