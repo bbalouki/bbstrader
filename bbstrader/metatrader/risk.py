@@ -124,7 +124,9 @@ class RiskManagement(Account):
         if be is not None and (not isinstance(be, int) or be <= 0):
             raise ValueError("be must be a positive integer number")
         if time_frame not in TIMEFRAMES:
-            raise ValueError("Unsupported time frame")
+            raise ValueError("Unsupported time frame {}".format(time_frame))
+        if var_time_frame not in TIMEFRAMES:
+            raise ValueError("Unsupported time frame {}".format(var_time_frame))
 
         self.symbol = symbol
         self.start_time = start_time
@@ -291,24 +293,27 @@ class RiskManagement(Account):
             # Use std as default pchange
             return self.get_std_stop()
 
-    def calculate_var(self, tf: TimeFrame = 'D1', interval=252, c=0.95):
+    def calculate_var(self, tf: TimeFrame = 'D1', c=0.95):
         """
         Calculate Value at Risk (VaR) for a given portfolio.
 
         Args:
             tf (str): Time frame to use to calculate volatility.
-            interval (int): How many periods to use based on time frame.
             c (float): Confidence level for VaR calculation (default is 95%).
 
         Returns:
         -   VaR value
         """
+        minutes = self.get_minutes()
+        tf_int = self._convert_time_frame(tf)
+        interval = round((minutes / tf_int)  * 252)
+
         rate = Rates(self.symbol, tf, 0, interval)
         returns = rate.get_returns*100
-        P = self.get_account_info().margin_free
+        p = self.get_account_info().margin_free
         mu = returns.mean()
         sigma = returns.std()
-        var = self.var_cov_var(P, c, mu, sigma)
+        var = self.var_cov_var(p, c, mu, sigma)
         return var
 
     def var_cov_var(self, P: float, c: float, mu: float, sigma: float):
