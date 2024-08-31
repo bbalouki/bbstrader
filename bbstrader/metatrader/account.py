@@ -615,6 +615,38 @@ class Account(object):
         """
         self._show_info(self.get_tick_info, "tick", symbol=symbol)
 
+    def calculate_margin(self, 
+                         action: Literal['buy', 'sell'], 
+                         symbol: str, 
+                         lot: float, 
+                         price: float) -> float:
+        """
+        Calculate margin required for an order.
+
+        Args:
+            action (str): The trading action, either 'buy' or 'sell'.
+            symbol (str): The symbol of the financial instrument.
+            lot (float): The lot size of the order.
+            price (float): The price of the order.
+
+        Returns:
+            float: The margin required for the order.
+        
+        Raises:
+            MT5TerminalError: A specific exception based on the error code.
+        """
+        _action = {
+            'buy': mt5.ORDER_TYPE_BUY,
+            'sell': mt5.ORDER_TYPE_SELL
+        }
+        try:
+            margin = mt5.order_calc_margin(_action[action], symbol, lot, price)
+            if margin is None:
+                return None
+            return margin
+        except Exception as e:
+            raise_mt5_error(e)
+
     def check_order(self, 
                     request: Dict[str, Any]) -> OrderCheckResult:
         """
