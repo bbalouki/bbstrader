@@ -555,7 +555,7 @@ class Trade(RiskManagement):
             check_result = self.check_order(request)
             result = self.send_order(request)
         except Exception as e:
-            print(f"{self.get_current_time()} -", end=' ')
+            print(f"{self.current_datetime()} -", end=' ')
             trade_retcode_message(
                 result.retcode, display=True, add_msg=f"{e}{addtionnal}")
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
@@ -571,7 +571,7 @@ class Trade(RiskManagement):
                         check_result = self.check_order(request)
                         result = self.send_order(request)
                     except Exception as e:
-                        print(f"{self.get_current_time()} -", end=' ')
+                        print(f"{self.current_datetime()} -", end=' ')
                         trade_retcode_message(
                             result.retcode, display=True, add_msg=f"{e}{addtionnal}")
                     if result.retcode == Mt5.TRADE_RETCODE_DONE:
@@ -900,7 +900,7 @@ class Trade(RiskManagement):
             check_result = self.check_order(request)
             result = self.send_order(request)
         except Exception as e:
-            print(f"{self.get_current_time()} -", end=' ')
+            print(f"{self.current_datetime()} -", end=' ')
             trade_retcode_message(
                 result.retcode, display=True, add_msg=f"{e}{addtionnal}")
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
@@ -917,7 +917,7 @@ class Trade(RiskManagement):
                         check_result = self.check_order(request)
                         result = self.send_order(request)
                     except Exception as e:
-                        print(f"{self.get_current_time()} -", end=' ')
+                        print(f"{self.current_datetime()} -", end=' ')
                         trade_retcode_message(
                             result.retcode, display=True, add_msg=f"{e}{addtionnal}")
                     if result.retcode == Mt5.TRADE_RETCODE_DONE:
@@ -1041,7 +1041,7 @@ class Trade(RiskManagement):
                         check_result = self.check_order(request)
                         result = self.send_order(request)
                     except Exception as e:
-                        print(f"{self.get_current_time()} -", end=' ')
+                        print(f"{self.current_datetime()} -", end=' ')
                         trade_retcode_message(
                             result.retcode, display=True, add_msg=f"{e}{addtionnal}")
                     if result.retcode != Mt5.TRADE_RETCODE_DONE:
@@ -1055,7 +1055,7 @@ class Trade(RiskManagement):
                                 check_result = self.check_order(request)
                                 result = self.send_order(request)
                             except Exception as e:
-                                print(f"{self.get_current_time()} -", end=' ')
+                                print(f"{self.current_datetime()} -", end=' ')
                                 trade_retcode_message(
                                     result.retcode, display=True, add_msg=f"{e}{addtionnal}")
                             if result.retcode == Mt5.TRADE_RETCODE_DONE:
