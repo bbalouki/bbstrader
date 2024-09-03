@@ -555,13 +555,19 @@ class Account(object):
 
         Raises:
             MT5TerminalError: A specific exception based on the error code.
+        
+        Notes:
+            The `time` property is converted to a `datetime` object using Broker server time.
         """
         try:
             symbol_info = mt5.symbol_info(symbol)
             if symbol_info is None:
                 return None
             else:
-                return SymbolInfo(**symbol_info._asdict())
+                symbol_info_dict = symbol_info._asdict()
+                time = datetime.fromtimestamp(symbol_info.time)
+                symbol_info_dict['time'] = time
+                return SymbolInfo(**symbol_info_dict)
         except Exception as e:
             msg = self._symbol_info_msg(symbol)
             raise_mt5_error(message=f"{e+msg}")
@@ -595,13 +601,19 @@ class Account(object):
 
         Raises:
             MT5TerminalError: A specific exception based on the error code.
+        
+        Notes:
+            The `time` property is converted to a `datetime` object using Broker server time.
         """
         try:
             tick_info = mt5.symbol_info_tick(symbol)
             if tick_info is None:
                 return None
             else:
-                return TickInfo(**tick_info._asdict())
+                info_dict = tick_info._asdict()
+                time = datetime.fromtimestamp(tick_info.time)
+                info_dict['time'] = time
+                return TickInfo(**info_dict)
         except Exception as e:
             msg = self._symbol_info_msg(symbol)
             raise_mt5_error(message=f"{e+msg}")
