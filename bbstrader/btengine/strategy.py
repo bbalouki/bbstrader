@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+from typing import Dict, Union
 
 
 class Strategy(metaclass=ABCMeta):
@@ -22,9 +23,10 @@ class Strategy(metaclass=ABCMeta):
     """
 
     @abstractmethod
-    def calculate_signals(self):
+    def calculate_signals(self, *args, **kwargs) -> Dict[str, Union[str, None]]:
         """
         Provides the mechanisms to calculate the list of signals.
+        This methods should return a dictionary of symbols and their respective signals.
         """
         raise NotImplementedError(
             "Should implement calculate_signals()"
