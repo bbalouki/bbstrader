@@ -555,13 +555,19 @@ class Account(object):
 
         Raises:
             MT5TerminalError: A specific exception based on the error code.
+        
+        Notes:
+            The `time` property is converted to a `datetime` object using Broker server time.
         """
         try:
             symbol_info = mt5.symbol_info(symbol)
             if symbol_info is None:
                 return None
             else:
-                return SymbolInfo(**symbol_info._asdict())
+                symbol_info_dict = symbol_info._asdict()
+                time = datetime.fromtimestamp(symbol_info.time)
+                symbol_info_dict['time'] = time
+                return SymbolInfo(**symbol_info_dict)
         except Exception as e:
             msg = self._symbol_info_msg(symbol)
             raise_mt5_error(message=f"{e+msg}")
@@ -595,13 +601,19 @@ class Account(object):
 
         Raises:
             MT5TerminalError: A specific exception based on the error code.
+        
+        Notes:
+            The `time` property is converted to a `datetime` object using Broker server time.
         """
         try:
             tick_info = mt5.symbol_info_tick(symbol)
             if tick_info is None:
                 return None
             else:
-                return TickInfo(**tick_info._asdict())
+                info_dict = tick_info._asdict()
+                time = datetime.fromtimestamp(tick_info.time)
+                info_dict['time'] = time
+                return TickInfo(**info_dict)
         except Exception as e:
             msg = self._symbol_info_msg(symbol)
             raise_mt5_error(message=f"{e+msg}")
@@ -614,6 +626,38 @@ class Account(object):
             symbol (str): Symbol name
         """
         self._show_info(self.get_tick_info, "tick", symbol=symbol)
+
+    def calculate_margin(self, 
+                         action: Literal['buy', 'sell'], 
+                         symbol: str, 
+                         lot: float, 
+                         price: float) -> float:
+        """
+        Calculate margin required for an order.
+
+        Args:
+            action (str): The trading action, either 'buy' or 'sell'.
+            symbol (str): The symbol of the financial instrument.
+            lot (float): The lot size of the order.
+            price (float): The price of the order.
+
+        Returns:
+            float: The margin required for the order.
+        
+        Raises:
+            MT5TerminalError: A specific exception based on the error code.
+        """
+        _action = {
+            'buy': mt5.ORDER_TYPE_BUY,
+            'sell': mt5.ORDER_TYPE_SELL
+        }
+        try:
+            margin = mt5.order_calc_margin(_action[action], symbol, lot, price)
+            if margin is None:
+                return None
+            return margin
+        except Exception as e:
+            raise_mt5_error(e)
 
     def check_order(self, 
                     request: Dict[str, Any]) -> OrderCheckResult:

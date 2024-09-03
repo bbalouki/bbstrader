@@ -1,3 +1,5 @@
+from datetime import date
+import datetime
 import os.path
 import numpy as np
 import pandas as pd
@@ -8,6 +10,7 @@ from queue import Queue
 from abc import ABCMeta, abstractmethod
 from bbstrader.metatrader.rates import Rates
 from bbstrader.btengine.event import MarketEvent
+from datetime import datetime
 
 
 __all__ = [
@@ -260,7 +263,7 @@ class HistoricCSVDataHandler(BaseCSVDataHandler):
         csv_dir = kwargs.get("csv_dir")
         super().__init__(events, symbol_list, csv_dir)
 
-MAX_BARS = 10_000_000
+
 class MT5HistoricDataHandler(BaseCSVDataHandler):
     """
     Downloads historical data from MetaTrader 5 (MT5) and provides 
@@ -281,19 +284,16 @@ class MT5HistoricDataHandler(BaseCSVDataHandler):
             symbol_list (List[str]): A list of symbol strings to download data for.
             **kwargs: Keyword arguments for data retrieval:
                 time_frame (str): MT5 time frame (e.g., 'D1' for daily).
-                max_bars (int): Maximum number of bars to download per symbol.
-                start_pos (int | str, optional): Starting bar position (default: 0).
-                    If it set to `str`, it must be in 'YYYY-MM-DD' format and
-                session_duration (int | float): Number of trading hours per day.
+                mt5_start (datetime): Start date for historical data.
+                mt5_end (datetime): End date for historical data.
                 mt5_data (str): Directory for storing data (default: 'mt5_data').
 
         Note:
             Requires a working connection to an MT5 terminal.
         """
         self.tf = kwargs.get('time_frame', 'D1')
-        self.start_pos = kwargs.get('start_pos', 0)
-        self.max_bars = kwargs.get('max_bars', MAX_BARS)
-        self.sd = kwargs.get('session_duration', 6.5)
+        self.start = kwargs.get('mt5_start')
+        self.end = kwargs.get('mt5_end', datetime.now())
         self.data_dir = kwargs.get('mt5_data', 'mt5_data')
         self.symbol_list = symbol_list
         csv_dir = self._download_data(self.data_dir)
@@ -304,8 +304,10 @@ class MT5HistoricDataHandler(BaseCSVDataHandler):
         data_dir.mkdir(parents=True, exist_ok=True)
         for symbol in self.symbol_list:
             try:
-                rate = Rates(symbol, self.tf, self.start_pos, self.max_bars, self.sd)
-                data = rate.get_rates_from_pos()
+                rate = Rates(symbol=symbol, time_frame=self.tf)
+                data = rate.get_historical_data(
+                    date_from=self.start, date_to=self.end
+                )
                 if data is None:
                     raise ValueError(f"No data found for {symbol}")
                 data.to_csv(data_dir / f'{symbol}.csv')
@@ -359,16 +361,27 @@ class YFHistoricDataHandler(BaseCSVDataHandler):
         return cache_dir
 
 
+# TODO # Get data from EODHD
+class EODHDHistoricDataHandler(BaseCSVDataHandler):
+    ...
+
 # TODO # Get data from FinancialModelingPrep ()
 class FMPHistoricDataHandler(BaseCSVDataHandler):
     ...
 
 
 class BaseFMPDataHanler(object):
+    """
+    This will serve as the base class for all other FMP data 
+    that is not historical data and does not have an OHLC structure.
+    """
     ...
 
 
 class FMPFundamentalDataHandler(BaseFMPDataHanler):
     ...
 
-# TODO Add other Handlers
+# TODO Add other Handlers for FMP
+
+
+# TODO Add data Handlers for Interactive Brokers

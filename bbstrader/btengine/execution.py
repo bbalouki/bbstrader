@@ -51,7 +51,7 @@ class SimulatedExecutionHandler(ExecutionHandler):
     handler.
     """
 
-    def __init__(self, events: Queue):
+    def __init__(self, events: Queue, **kwargs):
         """
         Initialises the handler, setting the event queues
         up internally.

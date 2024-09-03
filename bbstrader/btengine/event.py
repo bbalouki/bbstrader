@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Literal
 
 __all__ = [
     "Event",
@@ -150,8 +151,8 @@ class FillEvent(Event):
                  symbol: str,
                  exchange: str,
                  quantity: int | float,
-                 direction: str,
-                 fill_cost: int | float,
+                 direction: Literal['LONG', 'SHORT', 'EXIT'],
+                 fill_cost: int | float | None,
                  commission: float | None = None
                  ):
         """
@@ -168,7 +169,7 @@ class FillEvent(Event):
             symbol (str): The instrument which was filled.
             exchange (str): The exchange where the order was filled.
             quantity (int | float): The filled quantity.
-            direction (str): The direction of fill ('BUY' or 'SELL')
+            direction (str): The direction of fill `('LONG', 'SHORT', 'EXIT')`
             fill_cost (int | float): The holdings value in dollars.
             commission (float | None): An optional commission sent from IB.
         """

@@ -14,7 +14,7 @@ from bbstrader.metatrader.utils import (
 )
 
 # Configure the logger
-logger = config_logger('trade.log', console_log=True)
+logger = config_logger('trade.log', console_log=False)
 
 class Trade(RiskManagement):
     """
@@ -160,7 +160,7 @@ class Trade(RiskManagement):
             print()
             self.risk_managment()
             print(
-                f">>> Everything is OK, @{self.expert_name} is Running ....>>>\n")
+                f">>> Everything is OK, @{self.expert_name} is Running ...>>>\n")
 
     def initialize(self):
         """
@@ -416,7 +416,7 @@ class Trade(RiskManagement):
             request["action"] = Mt5.TRADE_ACTION_PENDING
             request["type"] = self._order_type()[action][0]
 
-        self.break_even(comment)
+        self.break_even(mm=mm)
         if self.check(comment):
             self.request_result(_price, request, action),
 
@@ -555,7 +555,7 @@ class Trade(RiskManagement):
             check_result = self.check_order(request)
             result = self.send_order(request)
         except Exception as e:
-            print(f"{self.get_current_time()} -", end=' ')
+            print(f"{self.current_datetime()} -", end=' ')
             trade_retcode_message(
                 result.retcode, display=True, add_msg=f"{e}{addtionnal}")
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
@@ -571,7 +571,7 @@ class Trade(RiskManagement):
                         check_result = self.check_order(request)
                         result = self.send_order(request)
                     except Exception as e:
-                        print(f"{self.get_current_time()} -", end=' ')
+                        print(f"{self.current_datetime()} -", end=' ')
                         trade_retcode_message(
                             result.retcode, display=True, add_msg=f"{e}{addtionnal}")
                     if result.retcode == Mt5.TRADE_RETCODE_DONE:
@@ -767,7 +767,7 @@ class Trade(RiskManagement):
                 return True
         return False
 
-    def break_even(self, id: Optional[int] = None):
+    def break_even(self, mm=True, id: Optional[int] = None):
         """
         Checks if it's time to put the break even,
         if so , it will sets the break even ,and if the break even was already set,
@@ -776,8 +776,11 @@ class Trade(RiskManagement):
 
         Args:
             id (int): The strategy Id or Expert Id
+            mm (bool): Weither to manage the position or not
         """
         time.sleep(0.1)
+        if not mm:
+            return
         Id = id if id is not None else self.expert_id
         positions = self.get_positions(symbol=self.symbol)
         be = self.get_break_even()
@@ -900,7 +903,7 @@ class Trade(RiskManagement):
             check_result = self.check_order(request)
             result = self.send_order(request)
         except Exception as e:
-            print(f"{self.get_current_time()} -", end=' ')
+            print(f"{self.current_datetime()} -", end=' ')
             trade_retcode_message(
                 result.retcode, display=True, add_msg=f"{e}{addtionnal}")
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
@@ -917,7 +920,7 @@ class Trade(RiskManagement):
                         check_result = self.check_order(request)
                         result = self.send_order(request)
                     except Exception as e:
-                        print(f"{self.get_current_time()} -", end=' ')
+                        print(f"{self.current_datetime()} -", end=' ')
                         trade_retcode_message(
                             result.retcode, display=True, add_msg=f"{e}{addtionnal}")
                     if result.retcode == Mt5.TRADE_RETCODE_DONE:
@@ -1041,7 +1044,7 @@ class Trade(RiskManagement):
                         check_result = self.check_order(request)
                         result = self.send_order(request)
                     except Exception as e:
-                        print(f"{self.get_current_time()} -", end=' ')
+                        print(f"{self.current_datetime()} -", end=' ')
                         trade_retcode_message(
                             result.retcode, display=True, add_msg=f"{e}{addtionnal}")
                     if result.retcode != Mt5.TRADE_RETCODE_DONE:
@@ -1055,7 +1058,7 @@ class Trade(RiskManagement):
                                 check_result = self.check_order(request)
                                 result = self.send_order(request)
                             except Exception as e:
-                                print(f"{self.get_current_time()} -", end=' ')
+                                print(f"{self.current_datetime()} -", end=' ')
                                 trade_retcode_message(
                                     result.retcode, display=True, add_msg=f"{e}{addtionnal}")
                             if result.retcode == Mt5.TRADE_RETCODE_DONE:
@@ -1111,13 +1114,13 @@ class Trade(RiskManagement):
 
             if len(tickets) == 0:
                 logger.info(
-                    f"ALL {position_type.upper()} Positions closed, SYMBOL={self.symbol}.")
+                    f"ALL {pos_type.upper()} Positions closed, SYMBOL={self.symbol}.")
             else:
                 logger.info(
-                    f"{len(tickets)} {position_type.upper()} Positions not closed, SYMBOL={self.symbol}")
+                    f"{len(tickets)} {pos_type.upper()} Positions not closed, SYMBOL={self.symbol}")
         else:
             logger.info(
-                f"No {position_type.upper()} Positions to close, SYMBOL={self.symbol}.")
+                f"No {pos_type.upper()} Positions to close, SYMBOL={self.symbol}.")
 
     def get_stats(self) -> Tuple[Dict[str, Any]]:
         """

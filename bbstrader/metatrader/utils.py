@@ -1,3 +1,4 @@
+from datetime import datetime
 import MetaTrader5 as MT5
 import logging
 from typing import List, NamedTuple, Optional
@@ -216,7 +217,7 @@ class SymbolInfo(NamedTuple):
     volume: int
     volumehigh: int
     volumelow: int
-    time: int
+    time: datetime
     digits: int
     spread: int
     spread_float: bool
@@ -316,7 +317,7 @@ class TickInfo(NamedTuple):
     * flags:    Tick flags
     * volume_real:  Volume for the current Last price with greater accuracy
     """
-    time: int
+    time: datetime
     bid: float
     ask: float
     last: float

@@ -21,6 +21,10 @@ class Rates(object):
     flexibility in retrieving data either by specifying a starting position
     and count of bars or by providing a specific date range.
 
+    Notes:
+        The `get_open, get_high, get_low, get_close, get_adj_close, get_returns,
+        get_volume` properties return data in  Broker's timezone.
+
     Example:
         >>> rates = Rates("EURUSD", "1h")
         >>> df = rates.get_historical_data(
@@ -62,8 +66,14 @@ class Rates(object):
         self.start_pos = self._get_start_pos(start_pos, time_frame)
         self.count = count
         self._mt5_initialized()
-        self.data = self.get_rates_from_pos()
+        self.__data = self.get_rates_from_pos()
 
+
+    def _mt5_initialized(self):
+        """Ensures the MetaTrader 5 Terminal is initialized."""
+        if not Mt5.initialize():
+            raise_mt5_error(message=INIT_MSG)
+    
     def _get_start_pos(self, index, time_frame):
         if isinstance(index, int):
             start_pos = index
@@ -112,11 +122,6 @@ class Rates(object):
             )
         return TIMEFRAMES[time_frame]
 
-    def _mt5_initialized(self):
-        """Ensures the MetaTrader 5 Terminal is initialized."""
-        if not Mt5.initialize():
-            raise_mt5_error(message=INIT_MSG)
-
     def _fetch_data(
         self, start: Union[int, datetime],
         count: Union[int, datetime]
@@ -160,6 +165,13 @@ class Rates(object):
         Returns:
             Union[pd.DataFrame, None]: A DataFrame containing historical
             data if successful, otherwise None.
+        
+        Raises:
+            ValueError: If `start_pos` or `count` is not provided during
+                initialization.
+
+        Notes:
+            The Datetime for this method is in Broker's timezone.
         """
         if self.start_pos is None or self.count is None:
             raise ValueError(
@@ -171,27 +183,38 @@ class Rates(object):
     
     @property
     def get_open(self):
-        return self.data['Open']
+        return self.__data['Open']
         
     @property
     def get_high(self):
-        return self.data['High']
+        return self.__data['High']
     
     @property
     def get_low(self):
-        return self.data['Low']
+        return self.__data['Low']
     
     @property
     def get_close(self):
-        return self.data['Close']
+        return self.__data['Close']
 
     @property
     def get_adj_close(self):
-        return self.data['Adj Close']
+        return self.__data['Adj Close']
     
     @property
     def get_returns(self):
-        data = self.data.copy()
+        """
+        Fractional change between the current and a prior element.
+
+        Computes the fractional change from the immediately previous row by default. 
+        This is useful in comparing the fraction of change in a time series of elements.
+
+        Note
+        ----
+        It calculates fractional change (also known as `per unit change or relative change`) 
+        and `not percentage change`. If you need the percentage change, multiply these values by 100.
+        """
+        data = self.__data.copy()
         data['Returns'] =  data['Adj Close'].pct_change()
         data = data.dropna()
         return data['Returns']
@@ -219,6 +242,12 @@ class Rates(object):
         Returns:
             Union[pd.DataFrame, None]: A DataFrame containing historical data
                 if successful, otherwise None.
+        
+        Raises:
+            ValueError: If the starting date is greater than the ending date.
+        
+        Notes:
+            The Datetime for this method is in UTC timezone.
         """
         df = self._fetch_data(date_from, date_to)
         if save_csv and df is not None:
