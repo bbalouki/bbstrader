@@ -6,7 +6,6 @@ import pandas as pd
 import yfinance as yf
 from queue import Queue
 from datetime import datetime
-from seaborn import saturate
 from bbstrader.btengine.data import *
 from bbstrader.btengine.execution import *
 from bbstrader.btengine.portfolio import Portfolio
@@ -132,7 +131,8 @@ class Backtest(object):
             self.start_date,
             self.initial_capital, **self.kwargs
         )
-        self.execution_handler: ExecutionHandler = self.eh_cls(self.events)
+        self.execution_handler: ExecutionHandler = self.eh_cls(
+            self.events, **self.kwargs)
 
     def _run_backtest(self):
         """
@@ -172,7 +172,7 @@ class Backtest(object):
                             self.fills += 1
                             self.portfolio.update_fill(event)
 
-        time.sleep(self.heartbeat)
+            time.sleep(self.heartbeat)
 
     def _output_performance(self):
         """
@@ -788,10 +788,10 @@ def _run_sma_backtest(
         "quantity": quantity,
         "hmm_end":  "2009-12-31",
         "hmm_tiker": "^GSPC",
-        "yf_start": "2010-01-01",
+        "yf_start": "2010-01-04",
         "hmm_start": "1990-01-01",
-        "start_pos": "2023-01-01",
-        "session_duration": 23.0,
+        "mt5_start": datetime(2010, 1, 4),
+        "mt5_end": datetime(2023, 1, 1),
         "backtester_class": SMAStrategyBacktester,
         "data_handler": MT5HistoricDataHandler
     }
@@ -892,7 +892,10 @@ def run_backtest(
             quantity=test_quantity
         )   
     else:
-        execution_handler = kwargs.get("exc_handler", SimulatedExecutionHandler)
+        if exc_handler is None:
+            execution_handler = SimulatedExecutionHandler
+        else:
+            execution_handler = exc_handler
         engine = Backtest(
             symbol_list, initial_capital, heartbeat, start_date,
             data_handler, execution_handler, strategy, **kwargs
