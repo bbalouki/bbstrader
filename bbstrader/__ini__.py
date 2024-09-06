@@ -13,5 +13,4 @@ from bbstrader import btengine
 from bbstrader import metatrader
 from bbstrader import models
 from bbstrader import trading
-from bbstrader import strategies
 from bbstrader import tseries
