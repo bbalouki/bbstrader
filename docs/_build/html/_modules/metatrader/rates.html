@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>metatrader.rates &mdash; BBSTrader 0.1.1 documentation</title>
+  <title>metatrader.rates &mdash; BBSTrader 0.1.07 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
@@ -14,7 +14,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=a58bc63e"></script>
+        <script src="../../_static/documentation_options.js?v=15bc9eb9"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -96,6 +96,15 @@
 <span class="sd">    flexibility in retrieving data either by specifying a starting position</span>
 <span class="sd">    and count of bars or by providing a specific date range.</span>
 
+<span class="sd">    Notes:</span>
+<span class="sd">        1. Befor using this class, ensure that the `Max bars in chart` in you terminal</span>
+<span class="sd">        is set to a value that is greater than the number of bars you want to retrieve</span>
+<span class="sd">        or just set it to Unlimited.</span>
+<span class="sd">        In your MT5 terminal, go to `Tools` -&gt; `Options` -&gt; `Charts` -&gt; `Max bars in chart`.</span>
+<span class="sd">        </span>
+<span class="sd">        2. The `get_open, get_high, get_low, get_close, get_adj_close, get_returns,</span>
+<span class="sd">        get_volume` properties return data in  Broker&#39;s timezone.</span>
+
 <span class="sd">    Example:</span>
 <span class="sd">        &gt;&gt;&gt; rates = Rates(&quot;EURUSD&quot;, &quot;1h&quot;)</span>
 <span class="sd">        &gt;&gt;&gt; df = rates.get_historical_data(</span>
@@ -109,7 +118,7 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">time_frame</span><span class="p">:</span> <span class="n">TimeFrame</span> <span class="o">=</span> <span class="s1">&#39;D1&#39;</span><span class="p">,</span>
-        <span class="n">start_pos</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">start_pos</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span> <span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
         <span class="n">count</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">MAX_BARS</span><span class="p">,</span>
         <span class="n">session_duration</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">):</span>
@@ -137,8 +146,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">start_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_start_pos</span><span class="p">(</span><span class="n">start_pos</span><span class="p">,</span> <span class="n">time_frame</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="n">count</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_mt5_initialized</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_rates_from_pos</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_rates_from_pos</span><span class="p">()</span>
 
+
+    <span class="k">def</span> <span class="nf">_mt5_initialized</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Ensures the MetaTrader 5 Terminal is initialized.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">Mt5</span><span class="o">.</span><span class="n">initialize</span><span class="p">():</span>
+            <span class="n">raise_mt5_error</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">INIT_MSG</span><span class="p">)</span>
+    
     <span class="k">def</span> <span class="nf">_get_start_pos</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">time_frame</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
             <span class="n">start_pos</span> <span class="o">=</span> <span class="n">index</span>
@@ -187,11 +202,6 @@
             <span class="p">)</span>
         <span class="k">return</span> <span class="n">TIMEFRAMES</span><span class="p">[</span><span class="n">time_frame</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="nf">_mt5_initialized</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Ensures the MetaTrader 5 Terminal is initialized.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">Mt5</span><span class="o">.</span><span class="n">initialize</span><span class="p">():</span>
-            <span class="n">raise_mt5_error</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">INIT_MSG</span><span class="p">)</span>
-
     <span class="k">def</span> <span class="nf">_fetch_data</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">datetime</span><span class="p">],</span>
         <span class="n">count</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">datetime</span><span class="p">]</span>
@@ -237,6 +247,13 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            Union[pd.DataFrame, None]: A DataFrame containing historical</span>
 <span class="sd">            data if successful, otherwise None.</span>
+<span class="sd">        </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If `start_pos` or `count` is not provided during</span>
+<span class="sd">                initialization.</span>
+
+<span class="sd">        Notes:</span>
+<span class="sd">            The Datetime for this method is in Broker&#39;s timezone.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_pos</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
@@ -249,27 +266,38 @@
     
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">get_open</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;Open&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">[</span><span class="s1">&#39;Open&#39;</span><span class="p">]</span>
         
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">get_high</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;High&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">[</span><span class="s1">&#39;High&#39;</span><span class="p">]</span>
     
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">get_low</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;Low&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">[</span><span class="s1">&#39;Low&#39;</span><span class="p">]</span>
     
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">get_close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;Close&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">[</span><span class="s1">&#39;Close&#39;</span><span class="p">]</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">get_adj_close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;Adj Close&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">[</span><span class="s1">&#39;Adj Close&#39;</span><span class="p">]</span>
     
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">get_returns</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fractional change between the current and a prior element.</span>
+
+<span class="sd">        Computes the fractional change from the immediately previous row by default. </span>
+<span class="sd">        This is useful in comparing the fraction of change in a time series of elements.</span>
+
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        It calculates fractional change (also known as `per unit change or relative change`) </span>
+<span class="sd">        and `not percentage change`. If you need the percentage change, multiply these values by 100.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">data</span><span class="p">[</span><span class="s1">&#39;Returns&#39;</span><span class="p">]</span> <span class="o">=</span>  <span class="n">data</span><span class="p">[</span><span class="s1">&#39;Adj Close&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">pct_change</span><span class="p">()</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;Returns&#39;</span><span class="p">]</span>
@@ -299,6 +327,12 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            Union[pd.DataFrame, None]: A DataFrame containing historical data</span>
 <span class="sd">                if successful, otherwise None.</span>
+<span class="sd">        </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If the starting date is greater than the ending date.</span>
+<span class="sd">        </span>
+<span class="sd">        Notes:</span>
+<span class="sd">            The Datetime for this method is in UTC timezone.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fetch_data</span><span class="p">(</span><span class="n">date_from</span><span class="p">,</span> <span class="n">date_to</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">save_csv</span> <span class="ow">and</span> <span class="n">df</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>

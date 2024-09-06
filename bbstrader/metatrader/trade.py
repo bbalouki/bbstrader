@@ -1,10 +1,10 @@
 import os
 import csv
 import time
-import logging
 import numpy as np
 from datetime import datetime
 import MetaTrader5 as Mt5
+from logging import Logger
 from typing import List, Tuple, Dict, Any, Optional, Literal
 from bbstrader.metatrader.risk import RiskManagement
 from bbstrader.metatrader.account import INIT_MSG
@@ -12,9 +12,6 @@ from bbstrader.metatrader.utils import (
     TimeFrame, TradePosition, TickInfo,
     raise_mt5_error, trade_retcode_message, config_logger
 )
-
-# Configure the logger
-logger = config_logger('trade.log', console_log=False)
 
 class Trade(RiskManagement):
     """
@@ -81,6 +78,8 @@ class Trade(RiskManagement):
         finishing_time: str = "23:00",
         ending_time: str = "23:30",
         verbose: Optional[bool] = None,
+        console_log: Optional[bool] = False,
+        logger: Logger | str = 'bbstrader.log',
         **kwargs,
     ):
         """
@@ -98,6 +97,8 @@ class Trade(RiskManagement):
             ending_time (str): The time after which any open position will be closed.
             verbose (bool | None): If set to None (default), account summary and risk managment
                 parameters are printed in the terminal.
+            console_log (bool): If set to True, log messages are displayed in the console.
+            logger (Logger | str): The logger object to use for logging messages could be a string or a logger object.
 
         Inherits:
             -   max_risk 
@@ -131,6 +132,8 @@ class Trade(RiskManagement):
         self.start = start_time
         self.end = ending_time
         self.finishing = finishing_time
+        self.console_log = console_log
+        self.logger = self._get_logger(logger, console_log)
         self.tf = kwargs.get("time_frame", 'D1')
 
         self.lot = self.get_lot()
@@ -162,6 +165,12 @@ class Trade(RiskManagement):
             print(
                 f">>> Everything is OK, @{self.expert_name} is Running ...>>>\n")
 
+    def  _get_logger(self, logger: str | Logger, consol_log: bool) -> Logger:
+        """Get the logger object"""
+        if isinstance(logger, str):
+            return config_logger(logger, consol_log)
+        return logger
+    
     def initialize(self):
         """
         Initializes the MetaTrader 5 (MT5) terminal for trading operations. 
@@ -183,7 +192,7 @@ class Trade(RiskManagement):
                     f" Version @{self.version}, on {self.symbol}."
                 )
         except Exception as e:
-            logger.error(f"During initialization: {e}")
+            self.logger.error(f"During initialization: {e}")
 
     def select_symbol(self):
         """
@@ -200,7 +209,7 @@ class Trade(RiskManagement):
             if not Mt5.symbol_select(self.symbol, True):
                 raise_mt5_error(message=INIT_MSG)
         except Exception as e:
-            logger.error(f"Selecting symbol '{self.symbol}': {e}")
+            self.logger.error(f"Selecting symbol '{self.symbol}': {e}")
 
     def prepare_symbol(self):
         """
@@ -222,7 +231,7 @@ class Trade(RiskManagement):
             if self.verbose:
                 print("Initialization successfully completed.")
         except Exception as e:
-            logger.error(f"Preparing symbol '{self.symbol}': {e}")
+            self.logger.error(f"Preparing symbol '{self.symbol}': {e}")
 
     def summary(self):
         """Show a brief description about the trading program"""
@@ -327,7 +336,7 @@ class Trade(RiskManagement):
 
         # Save to CSV if specified
         if save:
-            today_date = datetime.now().strftime("%Y-%m-%d")
+            today_date = datetime.now().strftime('%Y%m%d%H%M%S')
             # Create a dictionary with the statistics
             statistics_dict = {
                 "Total Trades": deals,
@@ -351,7 +360,7 @@ class Trade(RiskManagement):
             else:
                 symbol = self.symbol
 
-            filename = f"{symbol}_{today_date}_session.csv"
+            filename = f"{symbol}_{today_date}@{self.expert_id}_session.csv"
             filepath = os.path.join(dir, filename)
 
             # Updated code to write to CSV
@@ -362,7 +371,7 @@ class Trade(RiskManagement):
                 writer.writerow(["Statistic", "Value"])
                 for stat, value in statistics_dict.items():
                     writer.writerow([stat, value])
-            logger.info(f"Session statistics saved to {filepath}")
+            self.logger.info(f"Session statistics saved to {filepath}")
 
     def open_buy_position(
         self,
@@ -508,14 +517,14 @@ class Trade(RiskManagement):
         if self.days_end():
             return False
         elif not self.trading_time():
-            logger.info(f"Not Trading time, SYMBOL={self.symbol}")
+            self.logger.info(f"Not Trading time, SYMBOL={self.symbol}")
             return False
         elif not self.is_risk_ok():
-            logger.error(f"Risk not allowed, SYMBOL={self.symbol}")
+            self.logger.error(f"Risk not allowed, SYMBOL={self.symbol}")
             self._check(comment)
             return False
         elif not self._risk_free():
-            logger.error(f"Maximum trades Reached, SYMBOL={self.symbol}")
+            self.logger.error(f"Maximum trades Reached, SYMBOL={self.symbol}")
             self._check(comment)
             return False
         elif self.profit_target():
@@ -525,7 +534,7 @@ class Trade(RiskManagement):
     def _check(self, txt: str = ""):
         if self.positive_profit() or self.get_current_open_positions() is None:
             self.close_positions(position_type='all')
-            logger.info(txt)
+            self.logger.info(txt)
             time.sleep(5)
             self.statistics(save=True)
 
@@ -560,7 +569,7 @@ class Trade(RiskManagement):
                 result.retcode, display=True, add_msg=f"{e}{addtionnal}")
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
             msg = trade_retcode_message(result.retcode)
-            logger.error(
+            self.logger.error(
                 f"Trade Order Request, RETCODE={result.retcode}: {msg}{addtionnal}")
             if result.retcode in [
                     Mt5.TRADE_RETCODE_CONNECTION, Mt5.TRADE_RETCODE_TIMEOUT]:
@@ -580,7 +589,7 @@ class Trade(RiskManagement):
         # Print the result
         if result.retcode == Mt5.TRADE_RETCODE_DONE:
             msg = trade_retcode_message(result.retcode)
-            logger.info(f"Trade Order {msg}{addtionnal}")
+            self.logger.info(f"Trade Order {msg}{addtionnal}")
             if type != "BMKT" or type != "SMKT":
                 self.opened_orders.append(result.order)
             long_msg = (
@@ -588,7 +597,7 @@ class Trade(RiskManagement):
                 f"Lot(s): {result.volume}, Sl: {self.get_stop_loss()}, "
                 f"Tp: {self.get_take_profit()}"
             )
-            logger.info(long_msg)
+            self.logger.info(long_msg)
             time.sleep(0.1)
             if type == "BMKT" or type == "SMKT":
                 self.opened_positions.append(result.order)
@@ -606,12 +615,12 @@ class Trade(RiskManagement):
                             f"2. {order_type} Position Opened, Symbol: {self.symbol}, Price: @{round(position.price_open,5)}, "
                             f"Sl: @{position.sl} Tp: @{position.tp}"
                         )
-                        logger.info(order_info)
+                        self.logger.info(order_info)
                         pos_info = (
                             f"3. [OPEN POSITIONS ON {self.symbol} = {len(positions)}, ACCOUNT OPEN PnL = {profit} "
                             f"{self.get_account_info().currency}]\n"
                         )
-                        logger.info(pos_info)
+                        self.logger.info(pos_info)
 
     def open_position(
         self,
@@ -908,7 +917,7 @@ class Trade(RiskManagement):
                 result.retcode, display=True, add_msg=f"{e}{addtionnal}")
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
             msg = trade_retcode_message(result.retcode)
-            logger.error(
+            self.logger.error(
                 f"Break-Even Order Request, Position: #{tiket}, RETCODE={result.retcode}: {msg}{addtionnal}")
             tries = 0
             while result.retcode != Mt5.TRADE_RETCODE_DONE and tries < 10:
@@ -928,11 +937,11 @@ class Trade(RiskManagement):
                 tries += 1
         if result.retcode == Mt5.TRADE_RETCODE_DONE:
             msg = trade_retcode_message(result.retcode)
-            logger.info(f"Break-Even Order {msg}{addtionnal}")
+            self.logger.info(f"Break-Even Order {msg}{addtionnal}")
             info = (
                 f"Stop loss set to Break-even, Position: #{tiket}, Symbol: {self.symbol}, Price: @{price}"
             )
-            logger.info(info)
+            self.logger.info(info)
             self.break_even_status.append(tiket)
 
     def win_trade(self,
@@ -1049,7 +1058,7 @@ class Trade(RiskManagement):
                             result.retcode, display=True, add_msg=f"{e}{addtionnal}")
                     if result.retcode != Mt5.TRADE_RETCODE_DONE:
                         msg = trade_retcode_message(result.retcode)
-                        logger.error(
+                        self.logger.error(
                             f"Closing Order Request, Position: #{ticket}, RETCODE={result.retcode}: {msg}{addtionnal}")
                         tries = 0
                         while result.retcode != Mt5.TRADE_RETCODE_DONE and tries < 5:
@@ -1066,11 +1075,11 @@ class Trade(RiskManagement):
                             tries += 1
                     if result.retcode == Mt5.TRADE_RETCODE_DONE:
                         msg = trade_retcode_message(result.retcode)
-                        logger.info(
+                        self.logger.info(
                             f"Closing Order {msg}{addtionnal}")
                         info = (
                             f"Position #{ticket} closed, Symbol: {self.symbol}, Price: @{request['price']}")
-                        logger.info(info)
+                        self.logger.info(info)
                         return True
                     else:
                         return False
@@ -1098,13 +1107,16 @@ class Trade(RiskManagement):
 
         if positions is not None:
             if position_type == 'all':
-                pos_type = ""
                 tickets = [position.ticket for position in positions]
             else:
                 tickets = positions
-                pos_type = position_type
         else:
             tickets = []
+        
+        if position_type == 'all':
+            pos_type = ''
+        else:
+            pos_type = position_type
             
         if len(tickets) != 0:
             for ticket in tickets.copy():
@@ -1113,13 +1125,13 @@ class Trade(RiskManagement):
                 time.sleep(1)
 
             if len(tickets) == 0:
-                logger.info(
+                self.logger.info(
                     f"ALL {pos_type.upper()} Positions closed, SYMBOL={self.symbol}.")
             else:
-                logger.info(
+                self.logger.info(
                     f"{len(tickets)} {pos_type.upper()} Positions not closed, SYMBOL={self.symbol}")
         else:
-            logger.info(
+            self.logger.info(
                 f"No {pos_type.upper()} Positions to close, SYMBOL={self.symbol}.")
 
     def get_stats(self) -> Tuple[Dict[str, Any]]:
@@ -1277,7 +1289,8 @@ class Trade(RiskManagement):
 
 def create_trade_instance(
         symbols: List[str],
-        params: Dict[str, Any]) -> Dict[str, Trade]:
+        params: Dict[str, Any],
+        logger: Logger = ...) -> Dict[str, Trade]:
     """
     Creates Trade instances for each symbol provided.
 
@@ -1292,7 +1305,6 @@ def create_trade_instance(
         ValueError: If the 'symbols' list is empty or the 'params' dictionary is missing required keys.
     """
     instances = {}
-
     if not symbols:
         raise ValueError("The 'symbols' list cannot be empty.")
     for symbol in symbols:
@@ -1300,4 +1312,5 @@ def create_trade_instance(
             instances[symbol] = Trade(**params, symbol=symbol)
         except Exception as e:
             logger.error(f"Creating Trade instance, SYMBOL={symbol} {e}")
+    assert len(instances) == len(symbols), "Failed to create Trade instances for all symbols."
     return instances

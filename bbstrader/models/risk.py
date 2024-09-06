@@ -7,12 +7,14 @@ from hmmlearn.hmm import GaussianHMM
 from abc import ABCMeta, abstractmethod
 from matplotlib import cm, pyplot as plt
 from matplotlib.dates import YearLocator, MonthLocator
-from typing import Optional
+from typing import Optional, Dict
+from bbstrader.metatrader.rates import Rates
 sns.set_theme()
 
 __all__ = [
     "RiskModel",
-    "HMMRiskManager"
+    "HMMRiskManager",
+    "build_hmm_models"
 ]
 
 
@@ -347,3 +349,38 @@ class HMMRiskManager(RiskModel):
             ax.xaxis.set_minor_locator(MonthLocator())
             ax.grid(True)
         plt.show()
+
+def build_hmm_models(symbol_list=None, **kwargs
+                     ) -> Dict[str, HMMRiskManager]:
+    mt5_data = kwargs.get("use_mt5_data", False)
+    data = kwargs.get("hmm_data")
+    tf = kwargs.get("time_frame", 'D1')
+    hmm_end =  kwargs.get("hmm_end", 0)
+    sd = kwargs.get("session_duration", 23.0)
+    hmm_tickers = kwargs.get("hmm_tickers")
+    if hmm_tickers is not None:
+        symbols = hmm_tickers
+    else:
+        symbols = symbol_list
+    hmm_models = {symbol: None for symbol in symbols}
+    if data is not None:
+        if isinstance(data, pd.DataFrame):
+            hmm_data = data
+            hmm = HMMRiskManager(
+                data=hmm_data, verbose=True, iterations=1000, **kwargs)
+            for symbol in symbols:
+                hmm_models[symbol] = hmm
+        elif isinstance(data, dict):
+            for symbol, data in data.items():
+                hmm = HMMRiskManager(
+                    data=data, verbose=True, iterations=1000, **kwargs)
+                hmm_models[symbol] = hmm
+    if mt5_data:
+        for symbol in symbols:
+            rates = Rates(symbol, tf, start_pos=hmm_end, session_duration=sd)
+            data = rates.get_rates_from_pos()
+            assert data is not None, f"No data for {symbol}"
+            hmm = HMMRiskManager(
+                data=data, verbose=True, iterations=1000, **kwargs)
+            hmm_models[symbol] = hmm
+    return hmm_models

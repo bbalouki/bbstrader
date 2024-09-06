@@ -54,9 +54,10 @@ class SignalEvent(Event):
                  strategy_id: int,
                  symbol: str,
                  datetime: datetime,
-                 signal_type: str,
+                 signal_type: Literal['LONG', 'SHORT', 'EXIT'],
                  quantity: int | float = 100,
-                 strength: int | float = 1.0
+                 strength: int | float = 1.0,
+                 price: int | float = None
                  ):
         """
         Initialises the SignalEvent.
@@ -67,10 +68,11 @@ class SignalEvent(Event):
 
             symbol (str): The ticker symbol, e.g. 'GOOG'.
             datetime (datetime): The timestamp at which the signal was generated.
-            signal_type (str): 'LONG' or 'SHORT'.
+            signal_type (str): 'LONG' or 'SHORT' or 'EXIT'.
             quantity (int | float): An optional integer (or float) representing the order size.
             strength (int | float): An adjustment factor "suggestion" used to scale
                 quantity at the portfolio level. Useful for pairs strategies.
+            price (int | float): An optional price to be used when the signal is generated.
         """
         self.type = 'SIGNAL'
         self.strategy_id = strategy_id
@@ -79,6 +81,7 @@ class SignalEvent(Event):
         self.signal_type = signal_type
         self.quantity = quantity
         self.strength = strength
+        self.price = price
 
 
 class OrderEvent(Event):
@@ -96,9 +99,10 @@ class OrderEvent(Event):
 
     def __init__(self,
                  symbol: str,
-                 order_type: str,
+                 order_type: Literal['MKT', 'LMT'],
                  quantity: int | float,
-                 direction: str
+                 direction: Literal['BUY', 'SELL'],
+                 price: int | float = None
                  ):
         """
         Initialises the order type, setting whether it is
@@ -110,20 +114,22 @@ class OrderEvent(Event):
             order_type (str): 'MKT' or 'LMT' for Market or Limit. 
             quantity (int | float): Non-negative number for quantity.            
             direction (str): 'BUY' or 'SELL' for long or short.
+            price (int | float): The price at which to order.
         """
         self.type = 'ORDER'
         self.symbol = symbol
         self.order_type = order_type
         self.quantity = quantity
         self.direction = direction
+        self.price = price
 
         def print_order(self):
             """
             Outputs the values within the Order.
             """
             print(
-                "Order: Symbol=%s, Type=%s, Quantity=%s, Direction=%s" %
-                (self.symbol, self.order_type, self.quantity, self.direction)
+                "Order: Symbol=%s, Type=%s, Quantity=%s, Direction=%s, Price=%s" %
+                (self.symbol, self.order_type, self.quantity, self.direction, self.price)
             )
 
 
@@ -151,7 +157,7 @@ class FillEvent(Event):
                  symbol: str,
                  exchange: str,
                  quantity: int | float,
-                 direction: Literal['LONG', 'SHORT', 'EXIT'],
+                 direction: Literal['BUY', 'SELL'],
                  fill_cost: int | float | None,
                  commission: float | None = None
                  ):
@@ -170,7 +176,7 @@ class FillEvent(Event):
             exchange (str): The exchange where the order was filled.
             quantity (int | float): The filled quantity.
             direction (str): The direction of fill `('LONG', 'SHORT', 'EXIT')`
-            fill_cost (int | float): The holdings value in dollars.
+            fill_cost (int | float): Price of the shares when filled.
             commission (float | None): An optional commission sent from IB.
         """
         self.type = 'FILL'

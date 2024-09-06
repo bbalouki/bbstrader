@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>btengine.data &mdash; BBSTrader 0.1.1 documentation</title>
+  <title>btengine.data &mdash; BBSTrader 0.1.07 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
@@ -14,7 +14,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=a58bc63e"></script>
+        <script src="../../_static/documentation_options.js?v=15bc9eb9"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -81,6 +81,7 @@
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span> <span class="nn">bbstrader.metatrader.rates</span> <span class="kn">import</span> <span class="n">Rates</span>
 <span class="kn">from</span> <span class="nn">bbstrader.btengine.event</span> <span class="kn">import</span> <span class="n">MarketEvent</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
 
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
@@ -378,7 +379,7 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">events</span><span class="p">,</span> <span class="n">symbol_list</span><span class="p">,</span> <span class="n">csv_dir</span><span class="p">)</span></div>
 
 
-<span class="n">MAX_BARS</span> <span class="o">=</span> <span class="mi">10_000_000</span>
+
 <div class="viewcode-block" id="MT5HistoricDataHandler">
 <a class="viewcode-back" href="../../btengine.html#btengine.data.MT5HistoricDataHandler">[docs]</a>
 <span class="k">class</span> <span class="nc">MT5HistoricDataHandler</span><span class="p">(</span><span class="n">BaseCSVDataHandler</span><span class="p">):</span>
@@ -401,19 +402,16 @@
 <span class="sd">            symbol_list (List[str]): A list of symbol strings to download data for.</span>
 <span class="sd">            **kwargs: Keyword arguments for data retrieval:</span>
 <span class="sd">                time_frame (str): MT5 time frame (e.g., &#39;D1&#39; for daily).</span>
-<span class="sd">                max_bars (int): Maximum number of bars to download per symbol.</span>
-<span class="sd">                start_pos (int | str, optional): Starting bar position (default: 0).</span>
-<span class="sd">                    If it set to `str`, it must be in &#39;YYYY-MM-DD&#39; format and</span>
-<span class="sd">                session_duration (int | float): Number of trading hours per day.</span>
+<span class="sd">                mt5_start (datetime): Start date for historical data.</span>
+<span class="sd">                mt5_end (datetime): End date for historical data.</span>
 <span class="sd">                mt5_data (str): Directory for storing data (default: &#39;mt5_data&#39;).</span>
 
 <span class="sd">        Note:</span>
 <span class="sd">            Requires a working connection to an MT5 terminal.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tf</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;time_frame&#39;</span><span class="p">,</span> <span class="s1">&#39;D1&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">start_pos</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;start_pos&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">max_bars</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;max_bars&#39;</span><span class="p">,</span> <span class="n">MAX_BARS</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">sd</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;session_duration&#39;</span><span class="p">,</span> <span class="mf">6.5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mt5_start&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">end</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mt5_end&#39;</span><span class="p">,</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">())</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data_dir</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mt5_data&#39;</span><span class="p">,</span> <span class="s1">&#39;mt5_data&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">symbol_list</span> <span class="o">=</span> <span class="n">symbol_list</span>
         <span class="n">csv_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_download_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_dir</span><span class="p">)</span>
@@ -424,8 +422,10 @@
         <span class="n">data_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol_list</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">rate</span> <span class="o">=</span> <span class="n">Rates</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_pos</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_bars</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sd</span><span class="p">)</span>
-                <span class="n">data</span> <span class="o">=</span> <span class="n">rate</span><span class="o">.</span><span class="n">get_rates_from_pos</span><span class="p">()</span>
+                <span class="n">rate</span> <span class="o">=</span> <span class="n">Rates</span><span class="p">(</span><span class="n">symbol</span><span class="o">=</span><span class="n">symbol</span><span class="p">,</span> <span class="n">time_frame</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tf</span><span class="p">)</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">rate</span><span class="o">.</span><span class="n">get_historical_data</span><span class="p">(</span>
+                    <span class="n">date_from</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">date_to</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">end</span>
+                <span class="p">)</span>
                 <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No data found for </span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="n">data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">data_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s1">.csv&#39;</span><span class="p">)</span>
@@ -483,19 +483,32 @@
 
 
 
-<span class="c1"># TODO # Get data from FinancialModelingPrep ()</span>
+<span class="c1"># TODO # Get data from EODHD</span>
+<span class="c1"># https://eodhd.com/</span>
+<span class="k">class</span> <span class="nc">EODHDHistoricDataHandler</span><span class="p">(</span><span class="n">BaseCSVDataHandler</span><span class="p">):</span>
+    <span class="o">...</span>
+
+<span class="c1"># TODO # Get data from FMP using Financialtoolkit API</span>
+<span class="c1"># https://github.com/bbalouki/FinanceToolkit</span>
 <span class="k">class</span> <span class="nc">FMPHistoricDataHandler</span><span class="p">(</span><span class="n">BaseCSVDataHandler</span><span class="p">):</span>
     <span class="o">...</span>
 
 
 <span class="k">class</span> <span class="nc">BaseFMPDataHanler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This will serve as the base class for all other FMP data </span>
+<span class="sd">    that is not historical data and does not have an OHLC structure.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="o">...</span>
 
 
 <span class="k">class</span> <span class="nc">FMPFundamentalDataHandler</span><span class="p">(</span><span class="n">BaseFMPDataHanler</span><span class="p">):</span>
     <span class="o">...</span>
 
-<span class="c1"># TODO Add other Handlers</span>
+<span class="c1"># TODO Add other Handlers for FMP</span>
+
+
+<span class="c1"># TODO Add data Handlers for Interactive Brokers</span>
 </pre></div>
 
            </div>

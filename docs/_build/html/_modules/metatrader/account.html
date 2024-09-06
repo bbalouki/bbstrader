@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>metatrader.account &mdash; BBSTrader 0.1.1 documentation</title>
+  <title>metatrader.account &mdash; BBSTrader 0.1.07 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
@@ -14,7 +14,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=a58bc63e"></script>
+        <script src="../../_static/documentation_options.js?v=15bc9eb9"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -101,10 +101,10 @@
 <span class="n">INIT_MSG</span> <span class="o">=</span> <span class="p">(</span>
     <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">* Ensure you have a good and stable internet connexion</span><span class="se">\n</span><span class="s2">&quot;</span>
     <span class="sa">f</span><span class="s2">&quot;* Ensure you have an activete MT5 terminal install on your machine</span><span class="se">\n</span><span class="s2">&quot;</span>
-    <span class="sa">f</span><span class="s2">&quot;* Ensure you have an active MT5 Account with </span><span class="si">{</span><span class="s1">&#39;or &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">__BROKERS__</span><span class="o">.</span><span class="n">values</span><span class="p">())</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-    <span class="sa">f</span><span class="s2">&quot;* If you want to trade </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_ADMIRAL_MARKETS_PRODUCTS_</span><span class="p">)</span><span class="si">}</span><span class="s2">, See </span><span class="si">{</span><span class="n">_ADMIRAL_MARKETS_URL_</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-    <span class="sa">f</span><span class="s2">&quot;* If you want to trade </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_JUST_MARKETS_PRODUCTS_</span><span class="p">)</span><span class="si">}</span><span class="s2">, See </span><span class="si">{</span><span class="n">_JUST_MARKETS_URL_</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-    <span class="sa">f</span><span class="s2">&quot;* If you are looking for a prop firm, See </span><span class="si">{</span><span class="n">_FTMO_URL_</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="sa">f</span><span class="s2">&quot;* Ensure you have an active MT5 Account with </span><span class="si">{</span><span class="s1">&#39; or &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">__BROKERS__</span><span class="o">.</span><span class="n">values</span><span class="p">())</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="sa">f</span><span class="s2">&quot;* If you want to trade </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_ADMIRAL_MARKETS_PRODUCTS_</span><span class="p">)</span><span class="si">}</span><span class="s2">, See [</span><span class="si">{</span><span class="n">_ADMIRAL_MARKETS_URL_</span><span class="si">}</span><span class="s2">]</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="sa">f</span><span class="s2">&quot;* If you want to trade </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_JUST_MARKETS_PRODUCTS_</span><span class="p">)</span><span class="si">}</span><span class="s2">, See [</span><span class="si">{</span><span class="n">_JUST_MARKETS_URL_</span><span class="si">}</span><span class="s2">]</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="sa">f</span><span class="s2">&quot;* If you are looking for a prop firm, See [</span><span class="si">{</span><span class="n">_FTMO_URL_</span><span class="si">}</span><span class="s2">]</span><span class="se">\n</span><span class="s2">&quot;</span>
 <span class="p">)</span>
 
 <span class="n">amg_url</span> <span class="o">=</span> <span class="n">_ADMIRAL_MARKETS_URL_</span>
@@ -171,9 +171,9 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">broker</span><span class="si">}</span><span class="s2"> is not currently supported broker for the Account() class</span><span class="se">\n</span><span class="s2">&quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;Currently Supported brokers are: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">supported</span><span class="o">.</span><span class="n">values</span><span class="p">())</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;For </span><span class="si">{</span><span class="n">supported</span><span class="p">[</span><span class="s1">&#39;AMG&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">, See </span><span class="si">{</span><span class="n">amg_url</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;For </span><span class="si">{</span><span class="n">supported</span><span class="p">[</span><span class="s1">&#39;JGM&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">, See </span><span class="si">{</span><span class="n">jgm_url</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;For </span><span class="si">{</span><span class="n">supported</span><span class="p">[</span><span class="s1">&#39;FTMO&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">, See </span><span class="si">{</span><span class="n">ftmo_url</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;For </span><span class="si">{</span><span class="n">supported</span><span class="p">[</span><span class="s1">&#39;AMG&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">, See [</span><span class="si">{</span><span class="n">amg_url</span><span class="si">}</span><span class="s2">]</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;For </span><span class="si">{</span><span class="n">supported</span><span class="p">[</span><span class="s1">&#39;JGM&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">, See [</span><span class="si">{</span><span class="n">jgm_url</span><span class="si">}</span><span class="s2">]</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;For </span><span class="si">{</span><span class="n">supported</span><span class="p">[</span><span class="s1">&#39;FTMO&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">, See [</span><span class="si">{</span><span class="n">ftmo_url</span><span class="si">}</span><span class="s2">]</span><span class="se">\n</span><span class="s2">&quot;</span>
             <span class="p">)</span>
 
 <div class="viewcode-block" id="Account.get_account_info">
@@ -267,8 +267,11 @@
 
             <span class="c1"># Construct the print message based on whether a symbol is provided</span>
             <span class="k">if</span> <span class="n">symbol</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">info_name</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="si">}</span><span class="s2"> INFO FOR </span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">info</span><span class="o">.</span><span class="n">description</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="s1">&#39;description&#39;</span><span class="p">):</span>
+                    <span class="nb">print</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">info_name</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="si">}</span><span class="s2"> INFO FOR </span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">info</span><span class="o">.</span><span class="n">description</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">info_name</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="si">}</span><span class="s2"> INFO FOR </span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">info_name</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="si">}</span><span class="s2"> INFORMATIONS:&quot;</span><span class="p">)</span>
 
@@ -656,13 +659,19 @@
 
 <span class="sd">        Raises:</span>
 <span class="sd">            MT5TerminalError: A specific exception based on the error code.</span>
+<span class="sd">        </span>
+<span class="sd">        Notes:</span>
+<span class="sd">            The `time` property is converted to a `datetime` object using Broker server time.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">symbol_info</span> <span class="o">=</span> <span class="n">mt5</span><span class="o">.</span><span class="n">symbol_info</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">symbol_info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">return</span> <span class="kc">None</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">SymbolInfo</span><span class="p">(</span><span class="o">**</span><span class="n">symbol_info</span><span class="o">.</span><span class="n">_asdict</span><span class="p">())</span>
+                <span class="n">symbol_info_dict</span> <span class="o">=</span> <span class="n">symbol_info</span><span class="o">.</span><span class="n">_asdict</span><span class="p">()</span>
+                <span class="n">time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="n">symbol_info</span><span class="o">.</span><span class="n">time</span><span class="p">)</span>
+                <span class="n">symbol_info_dict</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span>
+                <span class="k">return</span> <span class="n">SymbolInfo</span><span class="p">(</span><span class="o">**</span><span class="n">symbol_info_dict</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_symbol_info_msg</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
             <span class="n">raise_mt5_error</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">e</span><span class="o">+</span><span class="n">msg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
@@ -702,13 +711,19 @@
 
 <span class="sd">        Raises:</span>
 <span class="sd">            MT5TerminalError: A specific exception based on the error code.</span>
+<span class="sd">        </span>
+<span class="sd">        Notes:</span>
+<span class="sd">            The `time` property is converted to a `datetime` object using Broker server time.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">tick_info</span> <span class="o">=</span> <span class="n">mt5</span><span class="o">.</span><span class="n">symbol_info_tick</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">tick_info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">return</span> <span class="kc">None</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">TickInfo</span><span class="p">(</span><span class="o">**</span><span class="n">tick_info</span><span class="o">.</span><span class="n">_asdict</span><span class="p">())</span>
+                <span class="n">info_dict</span> <span class="o">=</span> <span class="n">tick_info</span><span class="o">.</span><span class="n">_asdict</span><span class="p">()</span>
+                <span class="n">time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="n">tick_info</span><span class="o">.</span><span class="n">time</span><span class="p">)</span>
+                <span class="n">info_dict</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span>
+                <span class="k">return</span> <span class="n">TickInfo</span><span class="p">(</span><span class="o">**</span><span class="n">info_dict</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_symbol_info_msg</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
             <span class="n">raise_mt5_error</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">e</span><span class="o">+</span><span class="n">msg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
@@ -724,6 +739,41 @@
 <span class="sd">            symbol (str): Symbol name</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_show_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_tick_info</span><span class="p">,</span> <span class="s2">&quot;tick&quot;</span><span class="p">,</span> <span class="n">symbol</span><span class="o">=</span><span class="n">symbol</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Account.calculate_margin">
+<a class="viewcode-back" href="../../metatrader.html#metatrader.account.Account.calculate_margin">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate_margin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+                         <span class="n">action</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;buy&#39;</span><span class="p">,</span> <span class="s1">&#39;sell&#39;</span><span class="p">],</span> 
+                         <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> 
+                         <span class="n">lot</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> 
+                         <span class="n">price</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate margin required for an order.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            action (str): The trading action, either &#39;buy&#39; or &#39;sell&#39;.</span>
+<span class="sd">            symbol (str): The symbol of the financial instrument.</span>
+<span class="sd">            lot (float): The lot size of the order.</span>
+<span class="sd">            price (float): The price of the order.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: The margin required for the order.</span>
+<span class="sd">        </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            MT5TerminalError: A specific exception based on the error code.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_action</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;buy&#39;</span><span class="p">:</span> <span class="n">mt5</span><span class="o">.</span><span class="n">ORDER_TYPE_BUY</span><span class="p">,</span>
+            <span class="s1">&#39;sell&#39;</span><span class="p">:</span> <span class="n">mt5</span><span class="o">.</span><span class="n">ORDER_TYPE_SELL</span>
+        <span class="p">}</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">margin</span> <span class="o">=</span> <span class="n">mt5</span><span class="o">.</span><span class="n">order_calc_margin</span><span class="p">(</span><span class="n">_action</span><span class="p">[</span><span class="n">action</span><span class="p">],</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">lot</span><span class="p">,</span> <span class="n">price</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">margin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+            <span class="k">return</span> <span class="n">margin</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">raise_mt5_error</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Account.check_order">
@@ -857,7 +907,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">positions</span> <span class="o">=</span> <span class="n">mt5</span><span class="o">.</span><span class="n">positions_get</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">positions</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">positions</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">positions</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">to_df</span><span class="p">:</span>
             <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">positions</span><span class="p">),</span> <span class="n">columns</span><span class="o">=</span><span class="n">positions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_asdict</span><span class="p">())</span>
@@ -963,7 +1013,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">position_deals</span> <span class="o">=</span> <span class="n">mt5</span><span class="o">.</span><span class="n">history_deals_get</span><span class="p">(</span><span class="n">date_from</span><span class="p">,</span> <span class="n">date_to</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">position_deals</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">position_deals</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">position_deals</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
 
         <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">position_deals</span><span class="p">),</span>
@@ -1042,7 +1092,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">orders</span> <span class="o">=</span> <span class="n">mt5</span><span class="o">.</span><span class="n">orders_get</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">orders</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">orders</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">orders</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
 
         <span class="k">if</span> <span class="n">to_df</span><span class="p">:</span>
@@ -1148,7 +1198,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">history_orders</span> <span class="o">=</span> <span class="n">mt5</span><span class="o">.</span><span class="n">history_orders_get</span><span class="p">(</span><span class="n">date_from</span><span class="p">,</span> <span class="n">date_to</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">history_orders</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">history_orders</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">history_orders</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
 
         <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">history_orders</span><span class="p">),</span>

@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Trading Execution &mdash; BBSTrader 0.1.1 documentation</title>
+  <title>Trading Execution &mdash; BBSTrader 0.1.07 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
@@ -15,14 +15,14 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=a58bc63e"></script>
+        <script src="_static/documentation_options.js?v=15bc9eb9"></script>
         <script src="_static/doctools.js?v=9a2dae69"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Time Series" href="tseries.html" />
-    <link rel="prev" title="Strategies" href="strategies.html" /> 
+    <link rel="prev" title="Models" href="models.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -50,31 +50,17 @@
 <li class="toctree-l2"><a class="reference internal" href="btengine.html">Backtesting Egine</a></li>
 <li class="toctree-l2"><a class="reference internal" href="metatrader.html">MetaTrader5 (MT5) Trading</a></li>
 <li class="toctree-l2"><a class="reference internal" href="models.html">Models</a></li>
-<li class="toctree-l2"><a class="reference internal" href="strategies.html">Strategies</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Trading Execution</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#module-trading.execution">execution</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#trading.execution.arch_trading"><code class="docutils literal notranslate"><span class="pre">arch_trading()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#trading.execution.ou_trading"><code class="docutils literal notranslate"><span class="pre">ou_trading()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#trading.execution.pair_trading"><code class="docutils literal notranslate"><span class="pre">pair_trading()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#trading.execution.sma_trading"><code class="docutils literal notranslate"><span class="pre">sma_trading()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#trading.execution.ExecutionEngine"><code class="docutils literal notranslate"><span class="pre">ExecutionEngine</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#module-trading.run">run</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#trading.run.run_arch_trading"><code class="docutils literal notranslate"><span class="pre">run_arch_trading()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#trading.run.run_ou_trading"><code class="docutils literal notranslate"><span class="pre">run_ou_trading()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#trading.run.run_pair_trading"><code class="docutils literal notranslate"><span class="pre">run_pair_trading()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#trading.run.run_sma_trading"><code class="docutils literal notranslate"><span class="pre">run_sma_trading()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-trading.utils">utils</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#trading.utils.add_arch_trading_arguments"><code class="docutils literal notranslate"><span class="pre">add_arch_trading_arguments()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#trading.utils.add_common_trading_arguments"><code class="docutils literal notranslate"><span class="pre">add_common_trading_arguments()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#trading.utils.add_ou_trading_arguments"><code class="docutils literal notranslate"><span class="pre">add_ou_trading_arguments()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#trading.utils.add_pair_trading_arguments"><code class="docutils literal notranslate"><span class="pre">add_pair_trading_arguments()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#trading.utils.add_sma_trading_arguments"><code class="docutils literal notranslate"><span class="pre">add_sma_trading_arguments()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#trading.utils.add_trade_arguments"><code class="docutils literal notranslate"><span class="pre">add_trade_arguments()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#trading.utils.init_trade"><code class="docutils literal notranslate"><span class="pre">init_trade()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#trading.utils.tf_mapping"><code class="docutils literal notranslate"><span class="pre">tf_mapping()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-trading.strategies">strategies</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#trading.strategies.ArimaGarchStrategy"><code class="docutils literal notranslate"><span class="pre">ArimaGarchStrategy</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#trading.strategies.KalmanFilterStrategy"><code class="docutils literal notranslate"><span class="pre">KalmanFilterStrategy</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#trading.strategies.SMAStrategy"><code class="docutils literal notranslate"><span class="pre">SMAStrategy</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#trading.strategies.StockIndexSTBOTrading"><code class="docutils literal notranslate"><span class="pre">StockIndexSTBOTrading</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#trading.strategies.test_strategy"><code class="docutils literal notranslate"><span class="pre">test_strategy()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -112,204 +98,279 @@
   <section id="module-trading">
 <span id="trading-execution"></span><h1>Trading Execution<a class="headerlink" href="#module-trading" title="Link to this heading"></a></h1>
 <p>Trading strategies execution module</p>
+<p>This module is responsible for executing trading strategies.
+It provides a framework for executing trading strategies and managing the trading process.
+The module is designed to be flexible and extensible, allowing users to define their own trading
+strategies and customize the trading process.</p>
 <section id="module-trading.execution">
 <span id="execution"></span><h2>execution<a class="headerlink" href="#module-trading.execution" title="Link to this heading"></a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="trading.execution.arch_trading">
-<span class="sig-prename descclassname"><span class="pre">trading.execution.</span></span><span class="sig-name descname"><span class="pre">arch_trading</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trade</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Trade</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'D1'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iter_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">risk_manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rm_window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">period</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'day'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'week'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'month'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'month'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trading/execution.html#arch_trading"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.execution.arch_trading" title="Link to this definition"></a></dt>
-<dd><p>Executes trading based on the ARCH (Autoregressive Conditional Heteroskedasticity) model, with
-the capability to incorporate a risk management strategy, specifically a Hidden Markov Model (HMM),
-to adjust trading decisions based on the market regime.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>trade</strong> – A <cite>Trade</cite> instance, necessary for executing trades and managing positions.</p></li>
-<li><p><strong>tf</strong> – Time frame for the trading data, default is ‘D1’ (daily).</p></li>
-<li><p><strong>k</strong> – Number of past points to consider for the ARCH model analysis, default is 500.</p></li>
-<li><p><strong>mm</strong> – Boolean flag indicating if money management strategies should be applied, default is True.</p></li>
-<li><p><strong>max_t</strong> – Maximum number of trades allowed at any given time, default is 1.</p></li>
-<li><p><strong>iter_time</strong> – Time in minutes between each iteration of the trading loop. Can be an integer or float.</p></li>
-<li><p><strong>risk_manager</strong> – Specifies the risk management model to use. Default is None.</p></li>
-<li><p><strong>rm_window</strong> – Window size for the risk model use for the prediction, defaults to None.
-Must be specified if <cite>risk_manager</cite> is not None.</p></li>
-<li><p><strong>period</strong> – Trading period to consider for closing positions, options are ‘month’, ‘week’, or ‘day’.
-This affects the frequency at which statistics are calculated and positions are closed.</p></li>
-<li><p><strong>kwargs</strong> – Additional keyword arguments for the risk management models or other strategy-specific settings.</p></li>
+<dl class="py class">
+<dt class="sig sig-object py" id="trading.execution.ExecutionEngine">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">trading.execution.</span></span><span class="sig-name descname"><span class="pre">ExecutionEngine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trades_instances</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Trade</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy_cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Strategy</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_frame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'15m'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iter_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">period</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'day'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'week'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'month'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'week'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trading_days</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">['monday',</span> <span class="pre">'tuesday',</span> <span class="pre">'wednesday',</span> <span class="pre">'thursday',</span> <span class="pre">'friday']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trading/execution.html#ExecutionEngine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.execution.ExecutionEngine" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>The <cite>ExecutionEngine</cite> class serves as the central hub for executing your trading strategies within the <cite>bbstrader</cite> framework.
+It orchestrates the entire trading process, ensuring seamless interaction between your strategies, market data, and your chosen
+trading platform (currently MetaTrader 5 (MT5) and Interactive Brokers TWS).</p>
+<section id="key-features">
+<h3>Key Features<a class="headerlink" href="#key-features" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Strategy Execution:</strong> The <cite>ExecutionEngine</cite> is responsible for running your strategy, retrieving signals, and executing trades based on those signals.</p></li>
+<li><p><strong>Time Management:</strong> You can define a specific time frame for your trades and set the frequency with which the engine checks for signals and manages trades.</p></li>
+<li><p><strong>Trade Period Control:</strong> Define whether your strategy runs for a day, a week, or a month, allowing for flexible trading durations.</p></li>
+<li><p><strong>Money Management:</strong> The engine supports optional money management features, allowing you to control risk and optimize your trading performance.</p></li>
+<li><p><strong>Trading Day Configuration:</strong> You can customize the days of the week your strategy will execute, providing granular control over your trading schedule.</p></li>
+<li><p><strong>Platform Integration:</strong> The <cite>ExecutionEngine</cite> is currently designed to work with both MT5 and TWS platforms, ensuring compatibility and flexibility in your trading environment.</p></li>
 </ul>
-</dd>
-</dl>
-<p>This function is designed to perform trading based on ARCH model predictions, managing risk using an HMM where
-applicable, and handling trade executions and position management based on the specified parameters. It includes
-considerations for trading times, money management, and periodic evaluation of trading performance.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="trading.execution.ou_trading">
-<span class="sig-prename descclassname"><span class="pre">trading.execution.</span></span><span class="sig-name descname"><span class="pre">ou_trading</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trade</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Trade</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'1h'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ou_window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iter_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">risk_manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rm_window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">period</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'day'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'week'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'month'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'month'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trading/execution.html#ou_trading"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.execution.ou_trading" title="Link to this definition"></a></dt>
-<dd><p>Executes the Ornstein-Uhlenbeck (OU) trading strategy,
-incorporating various risk management and trading frequency adjustments.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>trade</strong> – A <cite>Trade</cite> instance, containing methods and attributes for executing trades.</p></li>
-<li><p><strong>tf</strong> – Time frame for the trading strategy, default is ‘1h’.</p></li>
-<li><p><strong>mm</strong> – Boolean indicating if money management is enabled, default is True.</p></li>
-<li><p><strong>max_t</strong> – Maximum number of trades allowed at any given time, default is 1.</p></li>
-<li><p><strong>p</strong> – Period length for calculating returns, default is 20.</p></li>
-<li><p><strong>n</strong> – Window size for the Ornstein-Uhlenbeck strategy calculation, default is 20.</p></li>
-<li><p><strong>iter_time</strong> – Iteration time for the trading loop, can be an integer or float.</p></li>
-<li><p><strong>ou_window</strong> – Lookback period for the OU strategy, defaults to 2000.</p></li>
-<li><p><strong>risk_manager</strong> – Specifies the risk management model to use
-default is None , Hidden Markov Model (‘hmm) Can be use.</p></li>
-<li><p><strong>rm_window</strong> – Window size for the risk model use for the prediction, defaults to None.
-Must be specified if <cite>risk_manager</cite> is not None.</p></li>
-<li><p><strong>period</strong> – Defines the trading period as ‘month’, ‘week’, or ‘day’
-affecting how and when positions are closed.</p></li>
-<li><p><strong>kwargs</strong> – Additional keyword arguments for risk management models or other customizations.</p></li>
-</ul>
-</dd>
-</dl>
-<p>This function manages trading based on the OU strategy, adjusting for risk and time-based criteria.
-It includes handling of trading sessions, buy/sell signal generation, risk management through the HMM model, and period-based
-trading evaluation.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="trading.execution.pair_trading">
-<span class="sig-prename descclassname"><span class="pre">trading.execution.</span></span><span class="sig-name descname"><span class="pre">pair_trading</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pair</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Trade</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Trade</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iter_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">risk_manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rm_ticker</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rm_window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">period</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'day'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'week'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'month'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'month'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trading/execution.html#pair_trading"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.execution.pair_trading" title="Link to this definition"></a></dt>
-<dd><p>Implements a pair trading strategy with optional risk management
-using Hidden Markov Models (HMM). This strategy trades pairs of assets
-based on their historical price relationship, seeking to capitalize on converging prices.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>tuple</strong><strong>[</strong><strong>str</strong><strong>]</strong><strong>)</strong> (<em>pair</em><em> (</em><em>list</em><em>[</em><em>str</em><em>] </em><em>|</em>) – The trading pair represented as a list or tuple of symbols (e.g., [‘AAPL’, ‘GOOG’]).</p></li>
-<li><p><strong>(</strong><strong>Trade</strong><strong>)</strong> (<em>p1</em>) – Trade object for the first asset in the pair.</p></li>
-<li><p><strong>(</strong><strong>Trade</strong><strong>)</strong> – Trade object for the second asset in the pair.</p></li>
-<li><p><strong>(</strong><strong>str</strong><strong>)</strong> (<em>tf</em>) – Time frame for the trading strategy (e.g., ‘1h’ for 1 hour).</p></li>
-<li><p><strong>optional</strong><strong>)</strong> (<em>period</em><em> (</em><em>str</em><em>,</em>) – Maximum number of trades allowed at any time for each asset in the pair, defaults to 1.</p></li>
-<li><p><strong>optional</strong><strong>)</strong> – Money management flag to enable/disable money management, defaults to True.</p></li>
-<li><p><strong>,</strong><strong>optional</strong><strong>)</strong> (<em>iter_time</em><em> (</em><em>int</em><em> | </em><em>float</em>) – Iteration time (in minutes) for the trading loop, defaults to 30.</p></li>
-<li><p><strong>risk_manager</strong> – Specifies the risk management model to use default is None , Hidden Markov Model (‘hmm) Can be use.</p></li>
-<li><p><strong>rm_window</strong> – Window size for the risk model use for the prediction, defaults to None. Must be specified if <cite>risk_manager</cite> is not None.</p></li>
-<li><p><strong>optional</strong><strong>)</strong> – Trading period to reset statistics and close positions, can be ‘day’, ‘week’, or ‘month’.</p></li>
-<li><p><strong>kwargs</strong> – Additional keyword arguments for HMM risk manager.</p></li>
-</ul>
-</dd>
-</dl>
-<p>This function continuously evaluates the defined pair for trading opportunities
-based on the strategy logic, taking into account the specified risk management
-approach if applicable. It aims to profit from the mean reversion behavior typically
-observed in closely related financial instruments.</p>
-<p>Note:
-This function includes an infinite loop with time delays designed to run continuously during market hours.
-Proper exception handling and resource management are crucial for live trading environments.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="trading.execution.sma_trading">
-<span class="sig-prename descclassname"><span class="pre">trading.execution.</span></span><span class="sig-name descname"><span class="pre">sma_trading</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trade</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Trade</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'1h'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">35</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">80</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iter_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">risk_manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'hmm'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">period</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'day'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'week'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'month'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'week'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trading/execution.html#sma_trading"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.execution.sma_trading" title="Link to this definition"></a></dt>
-<dd><p>Executes a Simple Moving Average (SMA) trading strategy
-with optional risk management using Hidden Markov Models (HMM).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>trade</strong> (<a class="reference internal" href="metatrader.html#metatrader.trade.Trade" title="metatrader.trade.Trade"><em>Trade</em></a>) – The Trade object that encapsulates trading operations like
-opening, closing positions, etc.</p></li>
-<li><p><strong>tf</strong> (<em>str</em><em>, </em><em>optional</em>) – Time frame for the trading strategy, defaults to ‘1h’ (1 hour).</p></li>
-<li><p><strong>sma</strong> (<em>int</em><em>, </em><em>optional</em>) – Short Moving Average period, defaults to 35.</p></li>
-<li><p><strong>lma</strong> (<em>int</em><em>, </em><em>optional</em>) – Long Moving Average period, defaults to 80.</p></li>
-<li><p><strong>mm</strong> (<em>bool</em><em>, </em><em>optional</em>) – Money management flag to enable/disable money management, defaults to True.</p></li>
-<li><p><strong>max_t</strong> (<em>int</em><em>, </em><em>optional</em>) – Maximum number of trades allowed, defaults to 1.</p></li>
-<li><p><strong>iter_time</strong> (<em>Union</em><em>[</em><em>int</em><em>, </em><em>float</em><em>]</em><em>, </em><em>optional</em>) – Iteration time for the trading loop, defaults to 30 seconds.</p></li>
-<li><p><strong>risk_manager</strong> (<em>str</em>) – Specifies the risk management strategy to use,
-‘hmm’ for Hidden Markov Model.</p></li>
-<li><p><strong>period</strong> (<em>Literal</em><em>[</em><em>'day'</em><em>, </em><em>'week'</em><em>, </em><em>'month'</em><em>]</em><em>, </em><em>optional</em>) – Trading period to reset statistics and close positions,
-can be ‘day’, ‘week’, or ‘month’, defaults to ‘week’.</p></li>
-<li><p><strong>**kwargs</strong> – Additional keyword arguments for the HMM risk manager.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-<p class="rubric">Notes</p>
-<p>This function integrates a trading strategy based on simple moving averages
-with an optional risk management layer using HMM.
-It periodically checks for trading signals and executes buy or sell orders
-based on the strategy signals and risk management conditions.
-The trading period (day, week, month) determines when to reset statistics
-and close all positions.</p>
-<p>This function includes an infinite loop with time delays designed
-to run continuously during market hours. Ensure proper exception handling
-and resource management when integrating into a live trading environment.</p>
-</dd></dl>
-
-</section>
-<section id="module-trading.run">
-<span id="run"></span><h2>run<a class="headerlink" href="#module-trading.run" title="Link to this heading"></a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="trading.run.run_arch_trading">
-<span class="sig-prename descclassname"><span class="pre">trading.run.</span></span><span class="sig-name descname"><span class="pre">run_arch_trading</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/trading/run.html#run_arch_trading"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.run.run_arch_trading" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="trading.run.run_ou_trading">
-<span class="sig-prename descclassname"><span class="pre">trading.run.</span></span><span class="sig-name descname"><span class="pre">run_ou_trading</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/trading/run.html#run_ou_trading"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.run.run_ou_trading" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="trading.run.run_pair_trading">
-<span class="sig-prename descclassname"><span class="pre">trading.run.</span></span><span class="sig-name descname"><span class="pre">run_pair_trading</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pair</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pchange_sl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trading/run.html#run_pair_trading"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.run.run_pair_trading" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="trading.run.run_sma_trading">
-<span class="sig-prename descclassname"><span class="pre">trading.run.</span></span><span class="sig-name descname"><span class="pre">run_sma_trading</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/trading/run.html#run_sma_trading"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.run.run_sma_trading" title="Link to this definition"></a></dt>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">bbstrader.metatrader</span> <span class="kn">import</span> <span class="n">create_trade_instance</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">bbstrader.trading.execution</span> <span class="kn">import</span> <span class="n">ExecutionEngine</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">bbstrader.trading.strategies</span> <span class="kn">import</span> <span class="n">StockIndexCFDTrading</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">bbstrader.metatrader.utils</span> <span class="kn">import</span> <span class="n">config_logger</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">logger</span> <span class="o">=</span> <span class="n">config_logger</span><span class="p">(</span><span class="n">index_trade</span><span class="o">.</span><span class="n">log</span><span class="p">,</span> <span class="n">console_log</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="c1"># Define symbols</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">ndx</span> <span class="o">=</span> <span class="s1">&#39;[NQ100]&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">spx</span> <span class="o">=</span> <span class="s1">&#39;[SP500]&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">dji</span> <span class="o">=</span> <span class="s1">&#39;[DJI30]&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">dax</span> <span class="o">=</span> <span class="s1">&#39;GERMANY40&#39;</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">symbol_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">spx</span><span class="p">,</span> <span class="n">dax</span><span class="p">,</span> <span class="n">dji</span><span class="p">,</span>  <span class="n">ndx</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">trade_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+<span class="gp">... </span>       <span class="s1">&#39;expert_id&#39;</span><span class="p">:</span> <span class="mi">5134</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="s1">&#39;time_frame&#39;</span><span class="p">:</span> <span class="s1">&#39;15m&#39;</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="s1">&#39;var_level&#39;</span><span class="p">:</span> <span class="mf">0.99</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="s1">&#39;start_time&#39;</span><span class="p">:</span> <span class="s1">&#39;8:30&#39;</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="s1">&#39;finishing_time&#39;</span><span class="p">:</span> <span class="s1">&#39;19:30&#39;</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="s1">&#39;ending_time&#39;</span><span class="p">:</span> <span class="s1">&#39;21:30&#39;</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="s1">&#39;max_risk&#39;</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="s1">&#39;daily_risk&#39;</span><span class="p">:</span> <span class="mf">0.10</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="s1">&#39;pchange_sl&#39;</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="s1">&#39;rr&#39;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="s1">&#39;logger&#39;</span><span class="p">:</span> <span class="n">logger</span>
+<span class="gp">... </span>   <span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">strategy_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+<span class="gp">... </span>       <span class="s1">&#39;max_trades&#39;</span><span class="p">:</span> <span class="p">{</span><span class="n">ndx</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="n">spx</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="n">dji</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="n">dax</span><span class="p">:</span> <span class="mi">3</span><span class="p">},</span>
+<span class="gp">... </span>       <span class="s1">&#39;expected_returns&#39;</span><span class="p">:</span> <span class="p">{</span><span class="n">ndx</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">,</span> <span class="n">spx</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">,</span> <span class="n">dji</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">dax</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">},</span>
+<span class="gp">... </span>       <span class="s1">&#39;strategy_name&#39;</span><span class="p">:</span> <span class="s1">&#39;SISTBO&#39;</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="s1">&#39;logger&#39;</span><span class="p">:</span> <span class="n">logger</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="s1">&#39;expert_id&#39;</span><span class="p">:</span> <span class="mi">5134</span>
+<span class="gp">... </span>   <span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">trades_instances</span> <span class="o">=</span> <span class="n">create_trade_instance</span><span class="p">(</span>
+<span class="gp">... </span>       <span class="n">symbol_list</span><span class="p">,</span> <span class="n">trade_kwargs</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span>
+<span class="gp">... </span>   <span class="p">)</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">engine</span> <span class="o">=</span> <span class="n">ExecutionEngine</span><span class="p">(</span>
+<span class="gp">... </span>       <span class="n">symbol_list</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="n">trades_instances</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="n">StockIndexCFDTrading</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="n">time_frame</span><span class="o">=</span><span class="s1">&#39;15m&#39;</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="n">iter_time</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="n">mm</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="n">period</span><span class="o">=</span><span class="s1">&#39;week&#39;</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="n">comment</span><span class="o">=</span><span class="s1">&#39;bbs_SISTBO_@2.0&#39;</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="o">**</span><span class="n">strategy_kwargs</span>
+<span class="gp">... </span>   <span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">engine</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">terminal</span><span class="o">=</span><span class="s1">&#39;MT5&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="trading.execution.ExecutionEngine.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">terminal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'MT5'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'TWS'</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trading/execution.html#ExecutionEngine.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.execution.ExecutionEngine.run" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </section>
-<section id="module-trading.utils">
-<span id="utils"></span><h2>utils<a class="headerlink" href="#module-trading.utils" title="Link to this heading"></a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="trading.utils.add_arch_trading_arguments">
-<span class="sig-prename descclassname"><span class="pre">trading.utils.</span></span><span class="sig-name descname"><span class="pre">add_arch_trading_arguments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parser</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trading/utils.html#add_arch_trading_arguments"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.utils.add_arch_trading_arguments" title="Link to this definition"></a></dt>
+</dd></dl>
+
+</section>
+<section id="module-trading.strategies">
+<span id="strategies"></span><h2>strategies<a class="headerlink" href="#module-trading.strategies" title="Link to this heading"></a></h2>
+<p>Strategies module for trading strategies backtesting and execution.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="trading.strategies.ArimaGarchStrategy">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">trading.strategies.</span></span><span class="sig-name descname"><span class="pre">ArimaGarchStrategy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bars</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataHandler</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">events</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Queue</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'backtest'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'live'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'backtest'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trading/strategies.html#ArimaGarchStrategy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.strategies.ArimaGarchStrategy" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Strategy</span></code></p>
+<p>The <cite>ArimaGarchStrategy</cite> class extends the <cite>Strategy</cite>
+class to implement a backtesting framework for trading strategies based on
+ARIMA-GARCH models, incorporating a Hidden Markov Model (HMM) for risk management.</p>
+<section id="features">
+<h3>Features<a class="headerlink" href="#features" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>ARIMA-GARCH Model</strong>: Utilizes ARIMA for time series forecasting and GARCH for volatility forecasting, aimed at predicting market movements.</p></li>
+<li><p><strong>HMM Risk Management</strong>: Employs a Hidden Markov Model to manage risks, determining safe trading regimes.</p></li>
+<li><p><strong>Event-Driven Backtesting</strong>: Capable of simulating real-time trading conditions by processing market data and signals sequentially.</p></li>
+<li><p><strong>Live Trading</strong>: Supports real-time trading by generating signals based on live ARIMA-GARCH predictions and HMM risk management.</p></li>
+</ul>
+</section>
+<section id="key-methods">
+<h3>Key Methods<a class="headerlink" href="#key-methods" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><cite>get_backtest_data()</cite>: Retrieves historical data for backtesting.</p></li>
+<li><p><cite>create_backtest_signal()</cite>: Generates trading signals based on ARIMA-GARCH predictions and HMM risk management.</p></li>
+<li><p><cite>get_live_data()</cite>: Retrieves live data for real-time trading.</p></li>
+<li><p><cite>create_live_signals()</cite>: Generates trading signals based on live ARIMA-GARCH predictions and HMM risk management.</p></li>
+<li><p><cite>calculate_signals()</cite>: Determines the trading signals based on the mode of operation (backtest or live).</p></li>
+</ul>
+<dl class="py method">
+<dt class="sig sig-object py" id="trading.strategies.ArimaGarchStrategy.calculate_signals">
+<span class="sig-name descname"><span class="pre">calculate_signals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trading/strategies.html#ArimaGarchStrategy.calculate_signals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.strategies.ArimaGarchStrategy.calculate_signals" title="Link to this definition"></a></dt>
+<dd><p>Provides the mechanisms to calculate the list of signals.
+This methods should return a dictionary of symbols and their respective signals.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="trading.strategies.ArimaGarchStrategy.create_backtest_signal">
+<span class="sig-name descname"><span class="pre">create_backtest_signal</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/trading/strategies.html#ArimaGarchStrategy.create_backtest_signal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.strategies.ArimaGarchStrategy.create_backtest_signal" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="trading.utils.add_common_trading_arguments">
-<span class="sig-prename descclassname"><span class="pre">trading.utils.</span></span><span class="sig-name descname"><span class="pre">add_common_trading_arguments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parser</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trading/utils.html#add_common_trading_arguments"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.utils.add_common_trading_arguments" title="Link to this definition"></a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="trading.strategies.ArimaGarchStrategy.create_live_signals">
+<span class="sig-name descname"><span class="pre">create_live_signals</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/trading/strategies.html#ArimaGarchStrategy.create_live_signals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.strategies.ArimaGarchStrategy.create_live_signals" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="trading.utils.add_ou_trading_arguments">
-<span class="sig-prename descclassname"><span class="pre">trading.utils.</span></span><span class="sig-name descname"><span class="pre">add_ou_trading_arguments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parser</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trading/utils.html#add_ou_trading_arguments"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.utils.add_ou_trading_arguments" title="Link to this definition"></a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="trading.strategies.ArimaGarchStrategy.get_backtest_data">
+<span class="sig-name descname"><span class="pre">get_backtest_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/trading/strategies.html#ArimaGarchStrategy.get_backtest_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.strategies.ArimaGarchStrategy.get_backtest_data" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="trading.utils.add_pair_trading_arguments">
-<span class="sig-prename descclassname"><span class="pre">trading.utils.</span></span><span class="sig-name descname"><span class="pre">add_pair_trading_arguments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parser</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pair</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pchange_sl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trading/utils.html#add_pair_trading_arguments"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.utils.add_pair_trading_arguments" title="Link to this definition"></a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="trading.strategies.ArimaGarchStrategy.get_live_data">
+<span class="sig-name descname"><span class="pre">get_live_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/trading/strategies.html#ArimaGarchStrategy.get_live_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.strategies.ArimaGarchStrategy.get_live_data" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="trading.utils.add_sma_trading_arguments">
-<span class="sig-prename descclassname"><span class="pre">trading.utils.</span></span><span class="sig-name descname"><span class="pre">add_sma_trading_arguments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parser</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trading/utils.html#add_sma_trading_arguments"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.utils.add_sma_trading_arguments" title="Link to this definition"></a></dt>
+</section>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="trading.strategies.KalmanFilterStrategy">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">trading.strategies.</span></span><span class="sig-name descname"><span class="pre">KalmanFilterStrategy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bars</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataHandler</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">events</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Queue</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'backtest'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'live'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'backtest'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trading/strategies.html#KalmanFilterStrategy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.strategies.KalmanFilterStrategy" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Strategy</span></code></p>
+<p>The <cite>KalmanFilterStrategy</cite> class implements a backtesting framework for a
+[pairs trading](<a class="reference external" href="https://en.wikipedia.org/wiki/Pairs_trade">https://en.wikipedia.org/wiki/Pairs_trade</a>) strategy using
+Kalman Filter for signals and Hidden Markov Models (HMM) for risk management.
+This document outlines the structure and usage of the <cite>KalmanFilterStrategy</cite>,
+including initialization parameters, main functions, and an example of how to run a backtest.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="trading.strategies.KalmanFilterStrategy.calculate_backtest_signals">
+<span class="sig-name descname"><span class="pre">calculate_backtest_signals</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/trading/strategies.html#KalmanFilterStrategy.calculate_backtest_signals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.strategies.KalmanFilterStrategy.calculate_backtest_signals" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="trading.utils.add_trade_arguments">
-<span class="sig-prename descclassname"><span class="pre">trading.utils.</span></span><span class="sig-name descname"><span class="pre">add_trade_arguments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parser</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pair</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pchange_sl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trading/utils.html#add_trade_arguments"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.utils.add_trade_arguments" title="Link to this definition"></a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="trading.strategies.KalmanFilterStrategy.calculate_btxy">
+<span class="sig-name descname"><span class="pre">calculate_btxy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">etqt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trading/strategies.html#KalmanFilterStrategy.calculate_btxy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.strategies.KalmanFilterStrategy.calculate_btxy" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="trading.utils.init_trade">
-<span class="sig-prename descclassname"><span class="pre">trading.utils.</span></span><span class="sig-name descname"><span class="pre">init_trade</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trading/utils.html#init_trade"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.utils.init_trade" title="Link to this definition"></a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="trading.strategies.KalmanFilterStrategy.calculate_live_signals">
+<span class="sig-name descname"><span class="pre">calculate_live_signals</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/trading/strategies.html#KalmanFilterStrategy.calculate_live_signals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.strategies.KalmanFilterStrategy.calculate_live_signals" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="trading.utils.tf_mapping">
-<span class="sig-prename descclassname"><span class="pre">trading.utils.</span></span><span class="sig-name descname"><span class="pre">tf_mapping</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/trading/utils.html#tf_mapping"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.utils.tf_mapping" title="Link to this definition"></a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="trading.strategies.KalmanFilterStrategy.calculate_livexy">
+<span class="sig-name descname"><span class="pre">calculate_livexy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/trading/strategies.html#KalmanFilterStrategy.calculate_livexy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.strategies.KalmanFilterStrategy.calculate_livexy" title="Link to this definition"></a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="trading.strategies.KalmanFilterStrategy.calculate_signals">
+<span class="sig-name descname"><span class="pre">calculate_signals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trading/strategies.html#KalmanFilterStrategy.calculate_signals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.strategies.KalmanFilterStrategy.calculate_signals" title="Link to this definition"></a></dt>
+<dd><p>Calculate the Kalman Filter strategy.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="trading.strategies.SMAStrategy">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">trading.strategies.</span></span><span class="sig-name descname"><span class="pre">SMAStrategy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bars</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataHandler</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">events</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Queue</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'backtest'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'live'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'backtest'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trading/strategies.html#SMAStrategy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.strategies.SMAStrategy" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Strategy</span></code></p>
+<p>Carries out a basic Moving Average Crossover strategy bactesting with a
+short/long simple weighted moving average. Default short/long
+windows are 50/200 periods respectively and uses Hiden Markov Model
+as risk Managment system for filteering signals.</p>
+<p>The trading strategy for this class is exceedingly simple and is used to bettter
+understood. The important issue is the risk management aspect (the Hmm model)</p>
+<p>The Long-term trend following strategy is of the classic moving average crossover type.
+The rules are simple:
+-   At every bar calculate the 50-day and 200-day simple moving averages (SMA)
+-   If the 50-day SMA exceeds the 200-day SMA and the strategy is not invested, then go long
+-   If the 200-day SMA exceeds the 50-day SMA and the strategy is invested, then close the position</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="trading.strategies.SMAStrategy.calculate_signals">
+<span class="sig-name descname"><span class="pre">calculate_signals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trading/strategies.html#SMAStrategy.calculate_signals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.strategies.SMAStrategy.calculate_signals" title="Link to this definition"></a></dt>
+<dd><p>Provides the mechanisms to calculate the list of signals.
+This methods should return a dictionary of symbols and their respective signals.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="trading.strategies.SMAStrategy.create_backtest_signals">
+<span class="sig-name descname"><span class="pre">create_backtest_signals</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/trading/strategies.html#SMAStrategy.create_backtest_signals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.strategies.SMAStrategy.create_backtest_signals" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="trading.strategies.SMAStrategy.create_live_signals">
+<span class="sig-name descname"><span class="pre">create_live_signals</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/trading/strategies.html#SMAStrategy.create_live_signals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.strategies.SMAStrategy.create_live_signals" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="trading.strategies.SMAStrategy.get_backtest_data">
+<span class="sig-name descname"><span class="pre">get_backtest_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/trading/strategies.html#SMAStrategy.get_backtest_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.strategies.SMAStrategy.get_backtest_data" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="trading.strategies.SMAStrategy.get_live_data">
+<span class="sig-name descname"><span class="pre">get_live_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/trading/strategies.html#SMAStrategy.get_live_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.strategies.SMAStrategy.get_live_data" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="trading.strategies.StockIndexSTBOTrading">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">trading.strategies.</span></span><span class="sig-name descname"><span class="pre">StockIndexSTBOTrading</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bars</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataHandler</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">events</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Queue</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'backtest'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'live'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'backtest'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trading/strategies.html#StockIndexSTBOTrading"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.strategies.StockIndexSTBOTrading" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Strategy</span></code></p>
+<p>The StockIndexSTBOTrading class implements a stock index Contract for Difference (CFD)
+Buy-Only trading strategy. This strategy is based on the assumption that stock markets
+typically follow a long-term uptrend. The strategy is designed to capitalize on market
+corrections and price dips, where stocks or indices temporarily drop but are expected
+to recover. It operates in two modes: backtest and live, and it is particularly
+tailored to index trading.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="trading.strategies.StockIndexSTBOTrading.calculate_backtest_signals">
+<span class="sig-name descname"><span class="pre">calculate_backtest_signals</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/trading/strategies.html#StockIndexSTBOTrading.calculate_backtest_signals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.strategies.StockIndexSTBOTrading.calculate_backtest_signals" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="trading.strategies.StockIndexSTBOTrading.calculate_live_signals">
+<span class="sig-name descname"><span class="pre">calculate_live_signals</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/trading/strategies.html#StockIndexSTBOTrading.calculate_live_signals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.strategies.StockIndexSTBOTrading.calculate_live_signals" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="trading.strategies.StockIndexSTBOTrading.calculate_signals">
+<span class="sig-name descname"><span class="pre">calculate_signals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/trading/strategies.html#StockIndexSTBOTrading.calculate_signals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.strategies.StockIndexSTBOTrading.calculate_signals" title="Link to this definition"></a></dt>
+<dd><p>Provides the mechanisms to calculate the list of signals.
+This methods should return a dictionary of symbols and their respective signals.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="trading.strategies.test_strategy">
+<span class="sig-prename descclassname"><span class="pre">trading.strategies.</span></span><span class="sig-name descname"><span class="pre">test_strategy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">strategy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'sma'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'klf'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'arch'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'sistbo'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'sma'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trading/strategies.html#test_strategy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trading.strategies.test_strategy" title="Link to this definition"></a></dt>
+<dd><p>Executes a backtest of the specified strategy</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>strategy</strong> – The strategy to use in test mode. Default is <cite>sma</cite>.
+- <cite>sma</cite> Execute <cite>SMAStrategy</cite>, for more detail see this class documentation.
+- <cite>klf</cite> Execute <cite>KalmanFilterStrategy</cite>, for more detail see this class documentation.
+- <cite>arch</cite> Execute <cite>ArimaGarchStrategy</cite>, for more detail see this class documentation.
+- <cite>sistbo</cite> Execute <cite>StockIndexSTBOTrading</cite>, for more detail see this class documentation.</p></li>
+<li><p><strong>quantity</strong> – The quantity of assets to be used in the test backtest. Default is 1000.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 </section>
 </section>
@@ -318,7 +379,7 @@ and resource management when integrating into a live trading environment.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="strategies.html" class="btn btn-neutral float-left" title="Strategies" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="models.html" class="btn btn-neutral float-left" title="Models" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="tseries.html" class="btn btn-neutral float-right" title="Time Series" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

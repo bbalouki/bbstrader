@@ -1,7 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from typing import Dict, Union
 
-
 class Strategy(metaclass=ABCMeta):
     """
     A `Strategy()` object encapsulates all calculation on market data 

@@ -6,9 +6,11 @@ import yfinance as yf
 from scipy.stats import mstats
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
+import quantstats as qs
 
 import warnings
 warnings.filterwarnings("ignore")
+warnings.simplefilter(action='ignore', category=FutureWarning)
 sns.set_theme()
 
 __all__ = [
@@ -17,7 +19,8 @@ __all__ = [
     "create_sharpe_ratio",
     "create_sortino_ratio",
     "plot_returns_and_dd",
-    "plot_monthly_yearly_returns"
+    "plot_monthly_yearly_returns",
+    "show_qs_stats"
 ]
 
 
@@ -307,3 +310,33 @@ def plot_monthly_yearly_returns(df, title):
 
     # Show the plot
     plt.show()
+
+def show_qs_stats(equity_curve, benchmark, strategy_name):
+    """
+    Generate the full quantstats report for the strategy.
+
+    Args:
+        equity_curve (pd.DataFrame): 
+            The DataFrame containing the strategy returns and drawdowns.
+        benchmark (str): 
+            The ticker symbol of the benchmark to compare the strategy to.
+        strategy_name (str): The name of the strategy.
+    """
+    # Load the returns data
+    returns = equity_curve.copy()
+
+    # Drop duplicate index entries
+    returns = returns[~returns.index.duplicated(keep='first')]
+
+    # Extend pandas functionality with quantstats
+    qs.extend_pandas()
+
+    # Generate the full report with a benchmark
+    file = strategy_name.replace(' ', '_')
+    qs.reports.full(
+        returns['Returns'], mode='full', benchmark=benchmark)
+    qs.reports.html(
+        returns['Returns'], 
+        benchmark='SPY', 
+        output=f"{file}_report.html", 
+        title=strategy_name)

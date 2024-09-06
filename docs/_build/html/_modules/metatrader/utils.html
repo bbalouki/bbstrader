@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>metatrader.utils &mdash; BBSTrader 0.1.1 documentation</title>
+  <title>metatrader.utils &mdash; BBSTrader 0.1.07 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
@@ -14,7 +14,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=a58bc63e"></script>
+        <script src="../../_static/documentation_options.js?v=15bc9eb9"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -71,7 +71,8 @@
            <div itemprop="articleBody">
              
   <h1>Source code for metatrader.utils</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">MetaTrader5</span> <span class="k">as</span> <span class="nn">MT5</span>
+<span></span><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">import</span> <span class="nn">MetaTrader5</span> <span class="k">as</span> <span class="nn">MT5</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">NamedTuple</span><span class="p">,</span> <span class="n">Optional</span>
 <span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
@@ -205,7 +206,7 @@
     <span class="n">H3</span> <span class="o">=</span> <span class="s2">&quot;3h&quot;</span>
     <span class="n">H4</span> <span class="o">=</span> <span class="s2">&quot;4h&quot;</span>
     <span class="n">H6</span> <span class="o">=</span> <span class="s2">&quot;6h&quot;</span>
-    <span class="n">H</span> <span class="o">=</span> <span class="s2">&quot;8h&quot;</span>
+    <span class="n">H8</span> <span class="o">=</span> <span class="s2">&quot;8h&quot;</span>
     <span class="n">H12</span> <span class="o">=</span> <span class="s2">&quot;12h&quot;</span>
     <span class="n">D1</span> <span class="o">=</span> <span class="s2">&quot;D1&quot;</span>
     <span class="n">W1</span> <span class="o">=</span> <span class="s2">&quot;W1&quot;</span>
@@ -300,7 +301,7 @@
     <span class="n">volume</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">volumehigh</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">volumelow</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="n">time</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">time</span><span class="p">:</span> <span class="n">datetime</span>
     <span class="n">digits</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">spread</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">spread_float</span><span class="p">:</span> <span class="nb">bool</span>
@@ -403,7 +404,7 @@
 <span class="sd">    * flags:    Tick flags</span>
 <span class="sd">    * volume_real:  Volume for the current Last price with greater accuracy</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">time</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">time</span><span class="p">:</span> <span class="n">datetime</span>
     <span class="n">bid</span><span class="p">:</span> <span class="nb">float</span>
     <span class="n">ask</span><span class="p">:</span> <span class="nb">float</span>
     <span class="n">last</span><span class="p">:</span> <span class="nb">float</span>

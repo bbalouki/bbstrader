@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Time Series &mdash; BBSTrader 0.1.1 documentation</title>
+  <title>Time Series &mdash; BBSTrader 0.1.07 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
@@ -15,7 +15,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=a58bc63e"></script>
+        <script src="_static/documentation_options.js?v=15bc9eb9"></script>
         <script src="_static/doctools.js?v=9a2dae69"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -49,9 +49,27 @@
 <li class="toctree-l2"><a class="reference internal" href="btengine.html">Backtesting Egine</a></li>
 <li class="toctree-l2"><a class="reference internal" href="metatrader.html">MetaTrader5 (MT5) Trading</a></li>
 <li class="toctree-l2"><a class="reference internal" href="models.html">Models</a></li>
-<li class="toctree-l2"><a class="reference internal" href="strategies.html">Strategies</a></li>
 <li class="toctree-l2"><a class="reference internal" href="trading.html">Trading Execution</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Time Series</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#tseries.ArimaGarchModel"><code class="docutils literal notranslate"><span class="pre">ArimaGarchModel</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#tseries.ArimaGarchModel.backtest_strategy"><code class="docutils literal notranslate"><span class="pre">ArimaGarchModel.backtest_strategy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tseries.ArimaGarchModel.calculate_signals"><code class="docutils literal notranslate"><span class="pre">ArimaGarchModel.calculate_signals()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tseries.ArimaGarchModel.execute_trading_strategy"><code class="docutils literal notranslate"><span class="pre">ArimaGarchModel.execute_trading_strategy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tseries.ArimaGarchModel.fit_best_arima"><code class="docutils literal notranslate"><span class="pre">ArimaGarchModel.fit_best_arima()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tseries.ArimaGarchModel.fit_garch"><code class="docutils literal notranslate"><span class="pre">ArimaGarchModel.fit_garch()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tseries.ArimaGarchModel.generate_predictions"><code class="docutils literal notranslate"><span class="pre">ArimaGarchModel.generate_predictions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tseries.ArimaGarchModel.get_prediction"><code class="docutils literal notranslate"><span class="pre">ArimaGarchModel.get_prediction()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tseries.ArimaGarchModel.load_and_prepare_data"><code class="docutils literal notranslate"><span class="pre">ArimaGarchModel.load_and_prepare_data()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tseries.ArimaGarchModel.plot_cumulative_returns"><code class="docutils literal notranslate"><span class="pre">ArimaGarchModel.plot_cumulative_returns()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tseries.ArimaGarchModel.predict_next_return"><code class="docutils literal notranslate"><span class="pre">ArimaGarchModel.predict_next_return()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tseries.ArimaGarchModel.show_arima_garch_results"><code class="docutils literal notranslate"><span class="pre">ArimaGarchModel.show_arima_garch_results()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#tseries.KalmanFilterModel"><code class="docutils literal notranslate"><span class="pre">KalmanFilterModel</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#tseries.KalmanFilterModel.calc_slope_intercep"><code class="docutils literal notranslate"><span class="pre">KalmanFilterModel.calc_slope_intercep()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tseries.KalmanFilterModel.calculate_etqt"><code class="docutils literal notranslate"><span class="pre">KalmanFilterModel.calculate_etqt()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#tseries.fit_best_arima"><code class="docutils literal notranslate"><span class="pre">fit_best_arima()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#tseries.fit_garch"><code class="docutils literal notranslate"><span class="pre">fit_garch()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#tseries.get_corr"><code class="docutils literal notranslate"><span class="pre">get_corr()</span></code></a></li>
@@ -101,6 +119,267 @@ It leverages statistical models and algorithms to perform
 tasks such as cointegration testing, volatility modeling,
 and filter-based estimation to assist in trading strategy development,
 market analysis, and financial data exploration.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="tseries.ArimaGarchModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tseries.</span></span><span class="sig-name descname"><span class="pre">ArimaGarchModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">252</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#ArimaGarchModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.ArimaGarchModel" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class implements a time serie model
+that combines <cite>ARIMA (AutoRegressive Integrated Moving Average)</cite>
+and <cite>GARCH (Generalized Autoregressive Conditional Heteroskedasticity)</cite> models
+to predict future returns based on historical price data.</p>
+<p>The model is implemented in the following steps:
+1. Data Preparation: Load and prepare the historical price data.
+2. Modeling: Fit the ARIMA model to the data and then fit the GARCH model to the residuals.
+3. Prediction: Predict the next return using the ARIMA model and the next volatility using the GARCH model.
+4. Trading Strategy: Execute the trading strategy based on the predictions.
+5. Vectorized Backtesting: Backtest the trading strategy using the historical data.</p>
+<dl>
+<dt>Exemple:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">yfinance</span> <span class="k">as</span> <span class="nn">yf</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">bbstrader.strategies</span> <span class="kn">import</span> <span class="n">ArimaGarchModel</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">bbstrader.tseries</span> <span class="kn">import</span> <span class="n">load_and_prepare_data</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="c1"># ARCH SPY Vectorize Backtest</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">k</span> <span class="o">=</span> <span class="mi">252</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">data</span> <span class="o">=</span> <span class="n">yf</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="s2">&quot;SPY&quot;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s2">&quot;2004-01-02&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;2015-12-31&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">arch</span> <span class="o">=</span> <span class="n">ArimaGarchModel</span><span class="p">(</span><span class="s2">&quot;SPY&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">df</span> <span class="o">=</span> <span class="n">load_and_prepare_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">arch</span><span class="o">.</span><span class="n">show_arima_garch_results</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;diff_log_return&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="o">-</span><span class="n">k</span><span class="p">:])</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">arch</span><span class="o">.</span><span class="n">backtest_strategy</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="tseries.ArimaGarchModel.backtest_strategy">
+<span class="sig-name descname"><span class="pre">backtest_strategy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#ArimaGarchModel.backtest_strategy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.ArimaGarchModel.backtest_strategy" title="Link to this definition"></a></dt>
+<dd><p>Performs a backtest of the strategy over
+the entire dataset, plotting cumulative returns.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tseries.ArimaGarchModel.calculate_signals">
+<span class="sig-name descname"><span class="pre">calculate_signals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window_data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#ArimaGarchModel.calculate_signals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.ArimaGarchModel.calculate_signals" title="Link to this definition"></a></dt>
+<dd><p>Calculates the trading signal based on the prediction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>window_data</strong> (<em>np.array</em>) – The dataset for a specific window period.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The trading signal (‘LONG’, ‘SHORT’, or None).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tseries.ArimaGarchModel.execute_trading_strategy">
+<span class="sig-name descname"><span class="pre">execute_trading_strategy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">predictions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#ArimaGarchModel.execute_trading_strategy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.ArimaGarchModel.execute_trading_strategy" title="Link to this definition"></a></dt>
+<dd><p>Executes the trading strategy based on a list
+of predictions, determining positions to take.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>predictions</strong> (<em>list</em>) – A list of predicted returns.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of positions (1 for ‘LONG’, -1 for ‘SHORT’, 0 for ‘HOLD’).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tseries.ArimaGarchModel.fit_best_arima">
+<span class="sig-name descname"><span class="pre">fit_best_arima</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window_data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#ArimaGarchModel.fit_best_arima"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.ArimaGarchModel.fit_best_arima" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Fits the ARIMA model to the provided window of data,</dt><dd><p>selecting the best model based on AIC.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>window_data</strong> (<em>np.array</em>) – The dataset for a specific window period.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The best fitted ARIMA model based on AIC.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ARIMA model</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tseries.ArimaGarchModel.fit_garch">
+<span class="sig-name descname"><span class="pre">fit_garch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window_data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#ArimaGarchModel.fit_garch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.ArimaGarchModel.fit_garch" title="Link to this definition"></a></dt>
+<dd><p>Fits the GARCH model to the residuals of the best ARIMA model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>window_data</strong> (<em>np.array</em>) – The dataset for a specific window period.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Contains the ARIMA result and GARCH result.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tseries.ArimaGarchModel.generate_predictions">
+<span class="sig-name descname"><span class="pre">generate_predictions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#ArimaGarchModel.generate_predictions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.ArimaGarchModel.generate_predictions" title="Link to this definition"></a></dt>
+<dd><p>Generator that yields predictions one by one.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tseries.ArimaGarchModel.get_prediction">
+<span class="sig-name descname"><span class="pre">get_prediction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window_data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#ArimaGarchModel.get_prediction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.ArimaGarchModel.get_prediction" title="Link to this definition"></a></dt>
+<dd><p>Generates a prediction for the next return based on a window of data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>window_data</strong> (<em>np.array</em>) – The dataset for a specific window period.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The predicted next return.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tseries.ArimaGarchModel.load_and_prepare_data">
+<span class="sig-name descname"><span class="pre">load_and_prepare_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#ArimaGarchModel.load_and_prepare_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.ArimaGarchModel.load_and_prepare_data" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Prepares the dataset by calculating logarithmic returns</dt><dd><p>and differencing if necessary.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>df</strong> (<em>pd.DataFrame</em>) – <cite>The raw dataset containing at least the ‘Close’ prices</cite>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>The dataset with additional columns</dt><dd><p>for log returns and differenced log returns.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tseries.ArimaGarchModel.plot_cumulative_returns">
+<span class="sig-name descname"><span class="pre">plot_cumulative_returns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">strategy_returns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buy_and_hold_returns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dates</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#ArimaGarchModel.plot_cumulative_returns"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.ArimaGarchModel.plot_cumulative_returns" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Plots the cumulative returns of the ARIMA+GARCH strategy against</dt><dd><p>a buy-and-hold strategy.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>strategy_returns</strong> (<em>np.array</em>) – Cumulative returns from the strategy.</p></li>
+<li><p><strong>buy_and_hold_returns</strong> (<em>np.array</em>) – Cumulative returns from a buy-and-hold strategy.</p></li>
+<li><p><strong>dates</strong> (<em>pd.Index</em>) – The dates corresponding to the returns.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tseries.ArimaGarchModel.predict_next_return">
+<span class="sig-name descname"><span class="pre">predict_next_return</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arima_result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">garch_result</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#ArimaGarchModel.predict_next_return"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.ArimaGarchModel.predict_next_return" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Predicts the next return using the ARIMA model</dt><dd><p>and the next volatility using the GARCH model.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>arima_result</strong> (<em>ARIMA model</em>) – The ARIMA model result.</p></li>
+<li><p><strong>garch_result</strong> (<em>GARCH model</em>) – The GARCH model result.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The predicted next return.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tseries.ArimaGarchModel.show_arima_garch_results">
+<span class="sig-name descname"><span class="pre">show_arima_garch_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">acf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_resid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#ArimaGarchModel.show_arima_garch_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.ArimaGarchModel.show_arima_garch_results" title="Link to this definition"></a></dt>
+<dd><p>Displays the ARIMA and GARCH model results, including plotting
+ACF of residuals and conducting , Box-Pierce and Ljung-Box tests.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>window_data</strong> (<em>np.array</em>) – The dataset for a specific window period.</p></li>
+<li><p><strong>acf</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, plot the ACF of residuals. Defaults to True.</p></li>
+<li><p><strong>test_resid</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, conduct Box-Pierce and Ljung-Box tests on residuals. Defaults to True.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tseries.KalmanFilterModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tseries.</span></span><span class="sig-name descname"><span class="pre">KalmanFilterModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tickers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">tuple</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#KalmanFilterModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.KalmanFilterModel" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Implements a Kalman Filter model a recursive algorithm used for estimating
+the state of a linear dynamic system from a series of noisy measurements.
+It’s designed to process market data, estimate dynamic parameters such as
+the slope and intercept of price relationships,
+forecast error and standard deviation of the predictions</p>
+<p>You can learn more here <a class="reference external" href="https://en.wikipedia.org/wiki/Kalman_filter">https://en.wikipedia.org/wiki/Kalman_filter</a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="tseries.KalmanFilterModel.calc_slope_intercep">
+<span class="sig-name descname"><span class="pre">calc_slope_intercep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prices</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#KalmanFilterModel.calc_slope_intercep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.KalmanFilterModel.calc_slope_intercep" title="Link to this definition"></a></dt>
+<dd><p>Calculates and returns the slope and intercept
+of the relationship between the provided prices using the Kalman Filter.
+This method updates the filter with the latest price and returns
+the estimated slope and intercept.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>prices</strong> – A numpy array of prices for two financial instruments.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple containing the slope and intercept of the relationship</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tseries.KalmanFilterModel.calculate_etqt">
+<span class="sig-name descname"><span class="pre">calculate_etqt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prices</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#KalmanFilterModel.calculate_etqt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.KalmanFilterModel.calculate_etqt" title="Link to this definition"></a></dt>
+<dd><p>Calculates the forecast error and standard deviation of the predictions
+using the Kalman Filter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>prices</strong> – A numpy array of prices for two financial instruments.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple containing the forecast error and standard deviation of the predictions.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="tseries.fit_best_arima">
 <span class="sig-prename descclassname"><span class="pre">tseries.</span></span><span class="sig-name descname"><span class="pre">fit_best_arima</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#fit_best_arima"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.fit_best_arima" title="Link to this definition"></a></dt>
@@ -176,7 +455,7 @@ both <cite>ARIMA</cite> and <cite>GARCH</cite> models on the provided data
 and then predicting the next period’s return using these models.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>window_data</strong> (<em>pd.Series</em><em> or </em><em>np.ndarray</em>) – Time series data to fit the models and predict the next return.</p>
+<dd class="field-odd"><p><strong>window_data</strong> (<em>Union</em><em>[</em><em>pd.Series</em><em> , </em><em>np.ndarray</em><em>]</em>) – Time series data to fit the models and predict the next return.</p>
 </dd>
 </dl>
 <dl class="simple">
@@ -366,7 +645,7 @@ intercept, and visualizes the changes in these estimates over time.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>etfs</strong> (<em>List</em><em>[</em><em>str</em><em>] or </em><em>Tuple</em><em>[</em><em>str</em><em>, </em><em>...</em><em>]</em>)</p></li>
+<li><p><strong>etfs</strong> (<em>Union</em><em>[</em><em>List</em><em>[</em><em>str</em><em>] </em><em>, </em><em>Tuple</em><em>[</em><em>str</em><em>, </em><em>...</em><em>]</em><em>]</em>)</p></li>
 <li><p><strong>tickers</strong> (<em>A list</em><em> or </em><em>tuple containing two valid ETF</em>)</p></li>
 <li><p><strong>start</strong> (<em>str</em>) – The start date for the historical data in ‘YYYY-MM-DD’ format.</p></li>
 <li><p><strong>end</strong> (<em>str</em>) – The end date for the historical data in ‘YYYY-MM-DD’ format.</p></li>

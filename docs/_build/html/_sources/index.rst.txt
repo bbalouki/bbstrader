@@ -16,7 +16,7 @@ BBSTrader is a trading system suite developed for MetaTrader 5 (MT5) and IBKR pl
 ``bbstrader`` is comprised of several key modules, each focusing on specific aspects of trading strategy development and execution:
 
 - **Backtesting Module (btengine)**: Enables traders to rigorously test their trading strategies using historical data to evaluate performance before live deployment.
-- **Trading Strategies Module**: A collection of predefined trading strategies, including ARIMA+GARCH models, Kalman Filters, Ornstein-Uhlenbeck processes, and Simple Moving Averages, equipped with risk management through Hidden Markov Models.
+- **Trading Strategies Module**: A collection of predefined trading strategies, including ARIMA+GARCH models, Kalman Filters, and Simple Moving Averages, equipped with risk management through Hidden Markov Models.
 - **MetaTrader5 Module (metatrader)**: Facilitates the direct execution of trading strategies on the MetaTrader 5 platform, supporting real-time trading across multiple financial instruments.
 - **Models Module**: Serves as a framework for implementing various types of financial models (risk management models, machine learning models, etc.).
 - **Time Series Module (tseries)**: Designed for conducting advanced time series analysis in financial markets. It leverages statistical models and algorithms to perform tasks such as cointegration testing, volatility modeling, and filter-based estimation to assist in trading strategy development, market analysis, and financial data exploration.
@@ -53,16 +53,24 @@ Backtesting Module
 
 .. code-block:: python
 
-   from bbstrader.btengine.backtest import run_backtest
+   from bbstrader.trading.strategies import test_strategy
 
    if __name__ == '__main__':
-       # KLF IEI TLT Event Driven backtest using Kalman Filter pairs trading strategy integrating with Hidden Markov Model (HMM) for risk management on `IEI` and `TLT`.
-       run_backtest(test_strategy='klf')
+      # Run backtesting for Stock Index Short Term Buy Only Strategy
+      test_strategy(strategy='sistbo')
 
 Backtesting Results
 -------------------
 
-.. image:: _static/assets/btengine_results.jpg
+.. image:: _static/assets/bbs.png
+
+.. image:: _static/assets/qs_metrics_1.png
+
+.. image:: _static/assets/qs_metrics_2.png
+
+.. image:: _static/assets/qs_plots_1.png
+
+.. image:: _static/assets/qs_plots_2.png
 
 Customization and Contribution
 ==============================

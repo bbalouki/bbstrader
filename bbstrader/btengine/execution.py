@@ -1,11 +1,13 @@
-import datetime
+from datetime import datetime
 from queue import Queue
 from abc import ABCMeta, abstractmethod
 from bbstrader.btengine.event import FillEvent, OrderEvent
+from bbstrader.metatrader.account import Account
 
 __all__ = [
     "ExecutionHandler",
-    "SimulatedExecutionHandler"
+    "SimulatedExecutionHandler",
+    "MT5ExecutionHandler"
 ]
 
 
@@ -71,13 +73,71 @@ class SimulatedExecutionHandler(ExecutionHandler):
         """
         if event.type == 'ORDER':
             fill_event = FillEvent(
-                datetime.datetime.now(), event.symbol,
+                datetime.now(), event.symbol,
                 'ARCA', event.quantity, event.direction, None
             )
             self.events.put(fill_event)
 
-# TODO # Use in live execution
-
 
 class MT5ExecutionHandler(ExecutionHandler):
+    def __init__(self, events: Queue, **kwargs):
+        """
+        """
+        self.events = events
+        self.account = Account()
+
+    def _estimate_total_fees(self, symbol, lot):
+        # TODO: Implement the calculation of fees based on the broker's fees
+        # https://www.metatrader5.com/en/terminal/help/trading/market_watch
+        # Calculate fees based on the broker's fees , swap and commission
+        return 0.0
+
+    def _calculate_lot(self, symbol, quantity, price):
+        FX = self.account.get_symbol_type(symbol) == 'FX'
+        COMD = self.account.get_symbol_type(symbol) == 'COMD'
+        FUT = self.account.get_symbol_type(symbol) == 'FUT'
+        CRYPTO = self.account.get_symbol_type(symbol) == 'CRYPTO'
+        symbol_info = self.account.get_symbol_info(symbol)
+        contract_size = symbol_info.trade_contract_size
+
+        lot = (quantity*price) / (contract_size * price)
+        if contract_size == 1:
+            lot = quantity
+        if COMD or FUT or CRYPTO and contract_size > 1:
+            lot = quantity  / contract_size
+        if FX:
+            lot = (quantity*price / contract_size)
+        return self._check_lot(symbol, lot)
+
+    def _check_lot(self, symbol, lot):
+        symbol_info =  self.account.get_symbol_info(symbol)
+        if lot < symbol_info.volume_min:
+            return symbol_info.volume_min
+        elif lot > symbol_info.volume_max:
+            return symbol_info.volume_max
+        return round(lot, 2)
+    
+    def execute_order(self, event: OrderEvent):
+        """
+        Executes an Order event by converting it into a Fill event.
+
+        Args:
+            event (OrderEvent): Contains an Event object with order information.
+        """
+        if event.type == 'ORDER':
+            symbol = event.symbol
+            direction = event.direction
+            quantity = event.quantity
+            price = event.price
+            lot = self._calculate_lot(symbol, quantity, price)
+            fees = self._estimate_total_fees(symbol, lot)
+            fill_event = FillEvent(
+                timeindex=datetime.now(), symbol=symbol,
+                exchange='MT5', quantity=quantity, direction=direction,
+                fill_cost=None, commission=fees
+            )
+            self.events.put(fill_event)
+
+
+class IBExecutionHandler(ExecutionHandler):
     ...
