@@ -1,5 +1,3 @@
-from datetime import date
-import datetime
 import os.path
 import numpy as np
 import pandas as pd
@@ -362,10 +360,12 @@ class YFHistoricDataHandler(BaseCSVDataHandler):
 
 
 # TODO # Get data from EODHD
+# https://eodhd.com/
 class EODHDHistoricDataHandler(BaseCSVDataHandler):
     ...
 
-# TODO # Get data from FinancialModelingPrep ()
+# TODO # Get data from FMP using Financialtoolkit API
+# https://github.com/bbalouki/FinanceToolkit
 class FMPHistoricDataHandler(BaseCSVDataHandler):
     ...
 
