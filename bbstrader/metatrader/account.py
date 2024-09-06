@@ -782,7 +782,7 @@ class Account(object):
         else:
             positions = mt5.positions_get()
 
-        if positions is None:
+        if positions is None or len(positions) == 0:
             return None
         if to_df:
             df = pd.DataFrame(list(positions), columns=positions[0]._asdict())
@@ -885,7 +885,7 @@ class Account(object):
         else:
             position_deals = mt5.history_deals_get(date_from, date_to)
 
-        if position_deals is None:
+        if position_deals is None or len(position_deals) == 0:
             return None
 
         df = pd.DataFrame(list(position_deals),
@@ -961,7 +961,7 @@ class Account(object):
         else:
             orders = mt5.orders_get()
 
-        if orders is None:
+        if orders is None or len(orders) == 0:
             return None
 
         if to_df:
@@ -1064,7 +1064,7 @@ class Account(object):
         else:
             history_orders = mt5.history_orders_get(date_from, date_to)
 
-        if history_orders is None:
+        if history_orders is None or len(history_orders) == 0:
             return None
 
         df = pd.DataFrame(list(history_orders),
