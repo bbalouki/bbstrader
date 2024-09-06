@@ -3,6 +3,7 @@
 
 [![Documentation Status](https://readthedocs.org/projects/bbstrader/badge/?version=latest)](https://bbstrader.readthedocs.io/en/latest/?badge=latest)
 
+[Dcoumentation](https://bbstrader.readthedocs.io/en/latest/index.html)
 ## Overview
 
 BBSTrader is a trading system suite developed for MetaTrader 5 (MT5) and IBKR platforms (comming soon), designed to offer a comprehensive set of tools for developping, backtesting, executing, and managing a wide array of trading strategies. With an emphasis on algorithmic and quantitative trading to provide traders with a robust platform for exploring and deploying sophisticated trading strategies.
@@ -10,7 +11,7 @@ BBSTrader is a trading system suite developed for MetaTrader 5 (MT5) and IBKR pl
 `bbstrader` is comprised of several key modules, each focus on specific aspects of trading strategy development and execution:
 
 - **Backtesting Module (btengine)** : Enables traders to rigorously test their trading strategies using historical data to evaluate performance before live deployment.
-- **Trading Strategies Module**: A collection of predefined trading strategies, including ARIMA+GARCH models, Kalman Filters, Ornstein-Uhlenbeck processes, and Simple Moving Averages, equipped with risk management through Hidden Markov Models.
+- **Trading Strategies Module**: A collection of predefined trading strategies, including ARIMA+GARCH models, Kalman Filters, and Simple Moving Averages, equipped with risk management through Hidden Markov Models.
 - **MetaTrader5 Module (metatrader)**: Facilitates the direct execution of trading strategies on the MetaTrader 5 platform, supporting real-time trading across multiple financial instruments.
 - **Modles Module**: Serves as a framework for implementing various types of financial models (risk managment models, Machine learing models etc).
 - **Time serie Module (tseries)** designed for conducting advanced time series analysis in financial markets. 
@@ -38,18 +39,22 @@ Then, you can install `bbstrader` using pip:
 pip install bbstrader
 ```
 
-
 ## Examples
 ### Backtesting Module
 ```python
-from bbstrader.btengine.backtest  import run_backtest
+from bbstrader.trading.strategies import test_strategy
 
 if __name__ == '__main__':
-    # KLF IEI TLT Event Driven backtest using Kalman Filter pairs trading strategy integrating with # Hidden Markov Model (HMM) for risk management on `IEI` and  `TLT`.
-    run_backtest(test_strategy='klf')
+    # Run backtesting for Stock Index Short Term Buy Only Strategy
+    test_strategy(strategy='sistbo')
+    
 ```
 ### Backtesting Results
-![Backtesting Results](https://github.com/bbalouki/bbstrader/blob/main/assets/backtest_results.jpg?raw=true)
+![Backtesting Results 1](assets/bbs_.png)
+![Backtesting Results 2](assets/qs_metrics_1.png)
+![Backtesting Results 3](assets/qs_metrics_2.png)
+![Backtesting Results 4](assets/qs_plots_1_.png)
+![Backtesting Results 5](assets/qs_plots_2_.png)
 
 ## Customization and Contribution
 
