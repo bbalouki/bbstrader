@@ -22,7 +22,12 @@ class Rates(object):
     and count of bars or by providing a specific date range.
 
     Notes:
-        The `get_open, get_high, get_low, get_close, get_adj_close, get_returns,
+        1. Befor using this class, ensure that the `Max bars in chart` in you terminal
+        is set to a value that is greater than the number of bars you want to retrieve
+        or just set it to Unlimited.
+        In your MT5 terminal, go to `Tools` -> `Options` -> `Charts` -> `Max bars in chart`.
+        
+        2. The `get_open, get_high, get_low, get_close, get_adj_close, get_returns,
         get_volume` properties return data in  Broker's timezone.
 
     Example:
