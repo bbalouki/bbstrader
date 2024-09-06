@@ -7,7 +7,7 @@ if sys.version_info < (3, 10):
 with open("README.md", encoding="utf-8") as fh:
     long_description = fh.read()
 
-VERSION = '0.1.04'
+VERSION = '0.1.07'
 DESCRIPTION = 'Simplified Investment & Trading Toolkit'
 
 KEYWORDS = [
@@ -35,8 +35,8 @@ REQUIREMENTS = [
     "pandas", "numpy==1.26.4", "yfinance", "scipy",
     "hmmlearn", "pmdarima", "arch", "hurst", "seaborn",
     "statsmodels", "matplotlib", "filterpy", "pytest",
-    "CurrencyConverter", "tabulate", "ipython", "quantstats", 
-    # "Metatrader5"
+    "CurrencyConverter", "tabulate", "ipython", "quantstats",
+    "Metatrader5"
 ]
 
 # Setting up
@@ -45,6 +45,11 @@ setup(
     version=VERSION,
     author='Bertin Balouki SIMYELI',
     url='https://github.com/bbalouki/bbstrader',
+    download_url='https://pypi.org/project/bbstrader/',
+    project_urls={
+        "Documentation": "https://bbstrader.readthedocs.io/en/latest/",
+        "Source Code": "https://github.com/bbalouki/bbstrader",
+    },
     license='The MIT License (MIT)',
     author_email='<bertin@bbstrader.com>',
     maintainer='Bertin Balouki SIMYELI',
