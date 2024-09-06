@@ -6,10 +6,10 @@ from bbstrader.btengine.event import (
 )
 from bbstrader.btengine.data import DataHandler
 from bbstrader.btengine.performance import (
-    create_drawdowns, plot_performance,
-    create_sharpe_ratio, create_sortino_ratio,
+    create_drawdowns, plot_performance, show_qs_stats,
     plot_returns_and_dd, plot_monthly_yearly_returns
 )
+import quantstats as qs
 
 
 class Portfolio(object):
@@ -20,7 +20,7 @@ class Portfolio(object):
     sizing tools (such as the `Kelly Criterion`).
 
     The portfolio order management system is possibly the most complex component of 
-    an eventdriven backtester.  Its role is to keep track of all current market positions 
+    an event driven backtester. Its role is to keep track of all current market positions 
     as well as the market value of the positions (known as the "holdings"). 
     This is simply an estimate of the liquidation value of the position and is derived in part 
     from the data handling facility of the backtester.
@@ -95,7 +95,7 @@ class Portfolio(object):
         self.timeframe = kwargs.get("time_frame", "D1")
         self.trading_hours = kwargs.get("session_duration", 6.5)
         self.benchmark = kwargs.get('benchmark', 'SPY')
-        self.strategy_name = kwargs.get('strategy_name', 'Strategy')
+        self.strategy_name = kwargs.get('strategy_name', '')
         if self.timeframe not in self._tf_mapping():
             raise ValueError(
                 f"Timeframe not supported,"
@@ -227,10 +227,10 @@ class Portfolio(object):
             fill_dir = -1
 
         # Update holdings list with new quantities
-        fill_cost = self.bars.get_latest_bar_value(
+        price = self.bars.get_latest_bar_value(
             fill.symbol, "Adj Close"
         )
-        cost = fill_dir * fill_cost * fill.quantity
+        cost = fill_dir * price * fill.quantity
         self.current_holdings[fill.symbol] += cost
         self.current_holdings['Commission'] += fill.commission
         self.current_holdings['Cash'] -= (cost + fill.commission)
@@ -260,20 +260,21 @@ class Portfolio(object):
         direction = signal.signal_type
         quantity = signal.quantity
         strength = signal.strength
+        price = signal.price
         cur_quantity = self.current_positions[symbol]
 
         order_type = 'MKT'
         mkt_quantity = round(quantity * strength)
 
         if direction == 'LONG' and cur_quantity == 0:
-            order = OrderEvent(symbol, order_type, mkt_quantity, 'BUY')
+            order = OrderEvent(symbol, order_type, mkt_quantity, 'BUY', price)
         if direction == 'SHORT' and cur_quantity == 0:
-            order = OrderEvent(symbol, order_type, mkt_quantity, 'SELL')
+            order = OrderEvent(symbol, order_type, mkt_quantity, 'SELL', price)
 
         if direction == 'EXIT' and cur_quantity > 0:
-            order = OrderEvent(symbol, order_type, abs(cur_quantity), 'SELL')
+            order = OrderEvent(symbol, order_type, abs(cur_quantity), 'SELL', price)
         if direction == 'EXIT' and cur_quantity < 0:
-            order = OrderEvent(symbol, order_type, abs(cur_quantity), 'BUY')
+            order = OrderEvent(symbol, order_type, abs(cur_quantity), 'BUY', price)
 
         return order
 
@@ -305,9 +306,12 @@ class Portfolio(object):
         returns = self.equity_curve['Returns']
         pnl = self.equity_curve['Equity Curve']
 
-        sharpe_ratio = create_sharpe_ratio(returns, periods=self.tf)
-        sortino_ratio = create_sortino_ratio(returns, periods=self.tf)
-        drawdown, max_dd, dd_duration = create_drawdowns(pnl)
+        sharpe_ratio = qs.stats.sharpe(returns, periods=self.tf)
+        sortino_ratio = qs.stats.sortino(returns, periods=self.tf)
+        drawdown, _, _ = create_drawdowns(pnl)
+        max_dd = qs.stats.max_drawdown(returns)
+        dd_details = qs.stats.drawdown_details(drawdown)
+        dd_duration = dd_details['days'].max()
         self.equity_curve['Drawdown'] = drawdown
 
         stats = [
@@ -317,10 +321,16 @@ class Portfolio(object):
             ("Max Drawdown", f"{max_dd * 100.0:.2f}%"),
             ("Drawdown Duration", f"{dd_duration}")
         ]
-        self.equity_curve.to_csv('equity.csv')
+        now = datetime.now().strftime('%Y%m%d%H%M%S')
+        strategy_name = self.strategy_name.replace(' ', '_')
+        file =  f"{strategy_name}_{now}_equity.csv"
+        self.equity_curve.to_csv(file)
         plot_performance(self.equity_curve, self.strategy_name)
         plot_returns_and_dd(self.equity_curve,
                             self.benchmark, self.strategy_name)
+        qs.plots.monthly_heatmap(returns, savefig='monthly_heatmap.png')
         plot_monthly_yearly_returns(self.equity_curve, self.strategy_name)
+        show_qs_stats(self.equity_curve, self.benchmark, self.strategy_name)
 
         return stats
+
