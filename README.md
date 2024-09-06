@@ -4,6 +4,7 @@
 [![Documentation Status](https://readthedocs.org/projects/bbstrader/badge/?version=latest)](https://bbstrader.readthedocs.io/en/latest/?badge=latest)
 
 [Dcoumentation](https://bbstrader.readthedocs.io/en/latest/index.html)
+
 ## Overview
 
 BBSTrader is a trading system suite developed for MetaTrader 5 (MT5) and IBKR platforms (comming soon), designed to offer a comprehensive set of tools for developping, backtesting, executing, and managing a wide array of trading strategies. With an emphasis on algorithmic and quantitative trading to provide traders with a robust platform for exploring and deploying sophisticated trading strategies.
@@ -50,11 +51,11 @@ if __name__ == '__main__':
     
 ```
 ### Backtesting Results
-![Backtesting Results 1](assets/bbs_.png)
-![Backtesting Results 2](assets/qs_metrics_1.png)
-![Backtesting Results 3](assets/qs_metrics_2.png)
-![Backtesting Results 4](assets/qs_plots_1_.png)
-![Backtesting Results 5](assets/qs_plots_2_.png)
+![Backtesting Results 1](https://github.com/bbalouki/bbstrader/blob/main/assets/bbs_.png?raw=true)
+![Backtesting Results 2](https://github.com/bbalouki/bbstrader/blob/main/assets/qs_metrics_1.png?raw=true)
+![Backtesting Results 3](https://github.com/bbalouki/bbstrader/blob/main/assets/qs_metrics_2.png?raw=true)
+![Backtesting Results 4](https://github.com/bbalouki/bbstrader/blob/main/assets/qs_plots_1_.png?raw=true)
+![Backtesting Results 5](https://github.com/bbalouki/bbstrader/blob/main/assets/qs_plots_2_.png?raw=true)
 
 ## Customization and Contribution
 
