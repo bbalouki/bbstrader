@@ -7,6 +7,5 @@ bbstrader
    btengine
    metatrader
    models
-   strategies
    trading
    tseries

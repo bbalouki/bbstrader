@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>btengine.portfolio &mdash; BBSTrader 0.1.1 documentation</title>
+  <title>btengine.portfolio &mdash; BBSTrader 0.1.07 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
@@ -14,7 +14,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=a58bc63e"></script>
+        <script src="../../_static/documentation_options.js?v=15bc9eb9"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -79,10 +79,10 @@
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">bbstrader.btengine.data</span> <span class="kn">import</span> <span class="n">DataHandler</span>
 <span class="kn">from</span> <span class="nn">bbstrader.btengine.performance</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">create_drawdowns</span><span class="p">,</span> <span class="n">plot_performance</span><span class="p">,</span>
-    <span class="n">create_sharpe_ratio</span><span class="p">,</span> <span class="n">create_sortino_ratio</span><span class="p">,</span>
+    <span class="n">create_drawdowns</span><span class="p">,</span> <span class="n">plot_performance</span><span class="p">,</span> <span class="n">show_qs_stats</span><span class="p">,</span>
     <span class="n">plot_returns_and_dd</span><span class="p">,</span> <span class="n">plot_monthly_yearly_returns</span>
 <span class="p">)</span>
+<span class="kn">import</span> <span class="nn">quantstats</span> <span class="k">as</span> <span class="nn">qs</span>
 
 
 <div class="viewcode-block" id="Portfolio">
@@ -95,7 +95,7 @@
 <span class="sd">    sizing tools (such as the `Kelly Criterion`).</span>
 
 <span class="sd">    The portfolio order management system is possibly the most complex component of </span>
-<span class="sd">    an eventdriven backtester.  Its role is to keep track of all current market positions </span>
+<span class="sd">    an event driven backtester. Its role is to keep track of all current market positions </span>
 <span class="sd">    as well as the market value of the positions (known as the &quot;holdings&quot;). </span>
 <span class="sd">    This is simply an estimate of the liquidation value of the position and is derived in part </span>
 <span class="sd">    from the data handling facility of the backtester.</span>
@@ -170,7 +170,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">timeframe</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;time_frame&quot;</span><span class="p">,</span> <span class="s2">&quot;D1&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">trading_hours</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;session_duration&quot;</span><span class="p">,</span> <span class="mf">6.5</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">benchmark</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;benchmark&#39;</span><span class="p">,</span> <span class="s1">&#39;SPY&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">strategy_name</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;strategy_name&#39;</span><span class="p">,</span> <span class="s1">&#39;Strategy&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">strategy_name</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;strategy_name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeframe</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tf_mapping</span><span class="p">():</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;Timeframe not supported,&quot;</span>
@@ -319,10 +319,10 @@
             <span class="n">fill_dir</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
 
         <span class="c1"># Update holdings list with new quantities</span>
-        <span class="n">fill_cost</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bars</span><span class="o">.</span><span class="n">get_latest_bar_value</span><span class="p">(</span>
+        <span class="n">price</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bars</span><span class="o">.</span><span class="n">get_latest_bar_value</span><span class="p">(</span>
             <span class="n">fill</span><span class="o">.</span><span class="n">symbol</span><span class="p">,</span> <span class="s2">&quot;Adj Close&quot;</span>
         <span class="p">)</span>
-        <span class="n">cost</span> <span class="o">=</span> <span class="n">fill_dir</span> <span class="o">*</span> <span class="n">fill_cost</span> <span class="o">*</span> <span class="n">fill</span><span class="o">.</span><span class="n">quantity</span>
+        <span class="n">cost</span> <span class="o">=</span> <span class="n">fill_dir</span> <span class="o">*</span> <span class="n">price</span> <span class="o">*</span> <span class="n">fill</span><span class="o">.</span><span class="n">quantity</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_holdings</span><span class="p">[</span><span class="n">fill</span><span class="o">.</span><span class="n">symbol</span><span class="p">]</span> <span class="o">+=</span> <span class="n">cost</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_holdings</span><span class="p">[</span><span class="s1">&#39;Commission&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">fill</span><span class="o">.</span><span class="n">commission</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_holdings</span><span class="p">[</span><span class="s1">&#39;Cash&#39;</span><span class="p">]</span> <span class="o">-=</span> <span class="p">(</span><span class="n">cost</span> <span class="o">+</span> <span class="n">fill</span><span class="o">.</span><span class="n">commission</span><span class="p">)</span>
@@ -358,20 +358,21 @@
         <span class="n">direction</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">signal_type</span>
         <span class="n">quantity</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">quantity</span>
         <span class="n">strength</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">strength</span>
+        <span class="n">price</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">price</span>
         <span class="n">cur_quantity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_positions</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span>
 
         <span class="n">order_type</span> <span class="o">=</span> <span class="s1">&#39;MKT&#39;</span>
         <span class="n">mkt_quantity</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">quantity</span> <span class="o">*</span> <span class="n">strength</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;LONG&#39;</span> <span class="ow">and</span> <span class="n">cur_quantity</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">order</span> <span class="o">=</span> <span class="n">OrderEvent</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">order_type</span><span class="p">,</span> <span class="n">mkt_quantity</span><span class="p">,</span> <span class="s1">&#39;BUY&#39;</span><span class="p">)</span>
+            <span class="n">order</span> <span class="o">=</span> <span class="n">OrderEvent</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">order_type</span><span class="p">,</span> <span class="n">mkt_quantity</span><span class="p">,</span> <span class="s1">&#39;BUY&#39;</span><span class="p">,</span> <span class="n">price</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;SHORT&#39;</span> <span class="ow">and</span> <span class="n">cur_quantity</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">order</span> <span class="o">=</span> <span class="n">OrderEvent</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">order_type</span><span class="p">,</span> <span class="n">mkt_quantity</span><span class="p">,</span> <span class="s1">&#39;SELL&#39;</span><span class="p">)</span>
+            <span class="n">order</span> <span class="o">=</span> <span class="n">OrderEvent</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">order_type</span><span class="p">,</span> <span class="n">mkt_quantity</span><span class="p">,</span> <span class="s1">&#39;SELL&#39;</span><span class="p">,</span> <span class="n">price</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;EXIT&#39;</span> <span class="ow">and</span> <span class="n">cur_quantity</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">order</span> <span class="o">=</span> <span class="n">OrderEvent</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">order_type</span><span class="p">,</span> <span class="nb">abs</span><span class="p">(</span><span class="n">cur_quantity</span><span class="p">),</span> <span class="s1">&#39;SELL&#39;</span><span class="p">)</span>
+            <span class="n">order</span> <span class="o">=</span> <span class="n">OrderEvent</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">order_type</span><span class="p">,</span> <span class="nb">abs</span><span class="p">(</span><span class="n">cur_quantity</span><span class="p">),</span> <span class="s1">&#39;SELL&#39;</span><span class="p">,</span> <span class="n">price</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;EXIT&#39;</span> <span class="ow">and</span> <span class="n">cur_quantity</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">order</span> <span class="o">=</span> <span class="n">OrderEvent</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">order_type</span><span class="p">,</span> <span class="nb">abs</span><span class="p">(</span><span class="n">cur_quantity</span><span class="p">),</span> <span class="s1">&#39;BUY&#39;</span><span class="p">)</span>
+            <span class="n">order</span> <span class="o">=</span> <span class="n">OrderEvent</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">order_type</span><span class="p">,</span> <span class="nb">abs</span><span class="p">(</span><span class="n">cur_quantity</span><span class="p">),</span> <span class="s1">&#39;BUY&#39;</span><span class="p">,</span> <span class="n">price</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">order</span></div>
 
@@ -412,9 +413,12 @@
         <span class="n">returns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">equity_curve</span><span class="p">[</span><span class="s1">&#39;Returns&#39;</span><span class="p">]</span>
         <span class="n">pnl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">equity_curve</span><span class="p">[</span><span class="s1">&#39;Equity Curve&#39;</span><span class="p">]</span>
 
-        <span class="n">sharpe_ratio</span> <span class="o">=</span> <span class="n">create_sharpe_ratio</span><span class="p">(</span><span class="n">returns</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tf</span><span class="p">)</span>
-        <span class="n">sortino_ratio</span> <span class="o">=</span> <span class="n">create_sortino_ratio</span><span class="p">(</span><span class="n">returns</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tf</span><span class="p">)</span>
-        <span class="n">drawdown</span><span class="p">,</span> <span class="n">max_dd</span><span class="p">,</span> <span class="n">dd_duration</span> <span class="o">=</span> <span class="n">create_drawdowns</span><span class="p">(</span><span class="n">pnl</span><span class="p">)</span>
+        <span class="n">sharpe_ratio</span> <span class="o">=</span> <span class="n">qs</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sharpe</span><span class="p">(</span><span class="n">returns</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tf</span><span class="p">)</span>
+        <span class="n">sortino_ratio</span> <span class="o">=</span> <span class="n">qs</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sortino</span><span class="p">(</span><span class="n">returns</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tf</span><span class="p">)</span>
+        <span class="n">drawdown</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">create_drawdowns</span><span class="p">(</span><span class="n">pnl</span><span class="p">)</span>
+        <span class="n">max_dd</span> <span class="o">=</span> <span class="n">qs</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">max_drawdown</span><span class="p">(</span><span class="n">returns</span><span class="p">)</span>
+        <span class="n">dd_details</span> <span class="o">=</span> <span class="n">qs</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">drawdown_details</span><span class="p">(</span><span class="n">drawdown</span><span class="p">)</span>
+        <span class="n">dd_duration</span> <span class="o">=</span> <span class="n">dd_details</span><span class="p">[</span><span class="s1">&#39;days&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">equity_curve</span><span class="p">[</span><span class="s1">&#39;Drawdown&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">drawdown</span>
 
         <span class="n">stats</span> <span class="o">=</span> <span class="p">[</span>
@@ -424,14 +428,20 @@
             <span class="p">(</span><span class="s2">&quot;Max Drawdown&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">max_dd</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">100.0</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">),</span>
             <span class="p">(</span><span class="s2">&quot;Drawdown Duration&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dd_duration</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">equity_curve</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;equity.csv&#39;</span><span class="p">)</span>
+        <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H%M%S&#39;</span><span class="p">)</span>
+        <span class="n">strategy_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span>
+        <span class="n">file</span> <span class="o">=</span>  <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">strategy_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">now</span><span class="si">}</span><span class="s2">_equity.csv&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">equity_curve</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
         <span class="n">plot_performance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">equity_curve</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy_name</span><span class="p">)</span>
         <span class="n">plot_returns_and_dd</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">equity_curve</span><span class="p">,</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">benchmark</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy_name</span><span class="p">)</span>
+        <span class="n">qs</span><span class="o">.</span><span class="n">plots</span><span class="o">.</span><span class="n">monthly_heatmap</span><span class="p">(</span><span class="n">returns</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="s1">&#39;monthly_heatmap.png&#39;</span><span class="p">)</span>
         <span class="n">plot_monthly_yearly_returns</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">equity_curve</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy_name</span><span class="p">)</span>
+        <span class="n">show_qs_stats</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">equity_curve</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">benchmark</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy_name</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">stats</span></div>
 </div>
+
 
 </pre></div>
 

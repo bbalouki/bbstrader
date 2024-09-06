@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>btengine.performance &mdash; BBSTrader 0.1.1 documentation</title>
+  <title>btengine.performance &mdash; BBSTrader 0.1.07 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
@@ -14,7 +14,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=a58bc63e"></script>
+        <script src="../../_static/documentation_options.js?v=15bc9eb9"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -79,9 +79,11 @@
 <span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">mstats</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">from</span> <span class="nn">matplotlib.ticker</span> <span class="kn">import</span> <span class="n">MaxNLocator</span>
+<span class="kn">import</span> <span class="nn">quantstats</span> <span class="k">as</span> <span class="nn">qs</span>
 
 <span class="kn">import</span> <span class="nn">warnings</span>
 <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="n">action</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">FutureWarning</span><span class="p">)</span>
 <span class="n">sns</span><span class="o">.</span><span class="n">set_theme</span><span class="p">()</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
@@ -90,7 +92,8 @@
     <span class="s2">&quot;create_sharpe_ratio&quot;</span><span class="p">,</span>
     <span class="s2">&quot;create_sortino_ratio&quot;</span><span class="p">,</span>
     <span class="s2">&quot;plot_returns_and_dd&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;plot_monthly_yearly_returns&quot;</span>
+    <span class="s2">&quot;plot_monthly_yearly_returns&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;show_qs_stats&quot;</span>
 <span class="p">]</span>
 
 
@@ -397,6 +400,39 @@
 
     <span class="c1"># Show the plot</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="show_qs_stats">
+<a class="viewcode-back" href="../../btengine.html#btengine.performance.show_qs_stats">[docs]</a>
+<span class="k">def</span> <span class="nf">show_qs_stats</span><span class="p">(</span><span class="n">equity_curve</span><span class="p">,</span> <span class="n">benchmark</span><span class="p">,</span> <span class="n">strategy_name</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate the full quantstats report for the strategy.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        equity_curve (pd.DataFrame): </span>
+<span class="sd">            The DataFrame containing the strategy returns and drawdowns.</span>
+<span class="sd">        benchmark (str): </span>
+<span class="sd">            The ticker symbol of the benchmark to compare the strategy to.</span>
+<span class="sd">        strategy_name (str): The name of the strategy.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Load the returns data</span>
+    <span class="n">returns</span> <span class="o">=</span> <span class="n">equity_curve</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="c1"># Drop duplicate index entries</span>
+    <span class="n">returns</span> <span class="o">=</span> <span class="n">returns</span><span class="p">[</span><span class="o">~</span><span class="n">returns</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">duplicated</span><span class="p">(</span><span class="n">keep</span><span class="o">=</span><span class="s1">&#39;first&#39;</span><span class="p">)]</span>
+
+    <span class="c1"># Extend pandas functionality with quantstats</span>
+    <span class="n">qs</span><span class="o">.</span><span class="n">extend_pandas</span><span class="p">()</span>
+
+    <span class="c1"># Generate the full report with a benchmark</span>
+    <span class="n">file</span> <span class="o">=</span> <span class="n">strategy_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span>
+    <span class="n">qs</span><span class="o">.</span><span class="n">reports</span><span class="o">.</span><span class="n">full</span><span class="p">(</span>
+        <span class="n">returns</span><span class="p">[</span><span class="s1">&#39;Returns&#39;</span><span class="p">],</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;full&#39;</span><span class="p">,</span> <span class="n">benchmark</span><span class="o">=</span><span class="n">benchmark</span><span class="p">)</span>
+    <span class="n">qs</span><span class="o">.</span><span class="n">reports</span><span class="o">.</span><span class="n">html</span><span class="p">(</span>
+        <span class="n">returns</span><span class="p">[</span><span class="s1">&#39;Returns&#39;</span><span class="p">],</span> 
+        <span class="n">benchmark</span><span class="o">=</span><span class="s1">&#39;SPY&#39;</span><span class="p">,</span> 
+        <span class="n">output</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2">_report.html&quot;</span><span class="p">,</span> 
+        <span class="n">title</span><span class="o">=</span><span class="n">strategy_name</span><span class="p">)</span></div>
 
 </pre></div>
 

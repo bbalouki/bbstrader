@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>btengine.event &mdash; BBSTrader 0.1.1 documentation</title>
+  <title>btengine.event &mdash; BBSTrader 0.1.07 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
@@ -14,7 +14,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=a58bc63e"></script>
+        <script src="../../_static/documentation_options.js?v=15bc9eb9"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -72,6 +72,7 @@
              
   <h1>Source code for btengine.event</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Literal</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">&quot;Event&quot;</span><span class="p">,</span>
@@ -134,9 +135,10 @@
                  <span class="n">strategy_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                  <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                  <span class="n">datetime</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span>
-                 <span class="n">signal_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                 <span class="n">signal_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;LONG&#39;</span><span class="p">,</span> <span class="s1">&#39;SHORT&#39;</span><span class="p">,</span> <span class="s1">&#39;EXIT&#39;</span><span class="p">],</span>
                  <span class="n">quantity</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
-                 <span class="n">strength</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span>
+                 <span class="n">strength</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+                 <span class="n">price</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span>
                  <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialises the SignalEvent.</span>
@@ -147,10 +149,11 @@
 
 <span class="sd">            symbol (str): The ticker symbol, e.g. &#39;GOOG&#39;.</span>
 <span class="sd">            datetime (datetime): The timestamp at which the signal was generated.</span>
-<span class="sd">            signal_type (str): &#39;LONG&#39; or &#39;SHORT&#39;.</span>
+<span class="sd">            signal_type (str): &#39;LONG&#39; or &#39;SHORT&#39; or &#39;EXIT&#39;.</span>
 <span class="sd">            quantity (int | float): An optional integer (or float) representing the order size.</span>
 <span class="sd">            strength (int | float): An adjustment factor &quot;suggestion&quot; used to scale</span>
 <span class="sd">                quantity at the portfolio level. Useful for pairs strategies.</span>
+<span class="sd">            price (int | float): An optional price to be used when the signal is generated.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="s1">&#39;SIGNAL&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">strategy_id</span> <span class="o">=</span> <span class="n">strategy_id</span>
@@ -158,7 +161,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">datetime</span> <span class="o">=</span> <span class="n">datetime</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">signal_type</span> <span class="o">=</span> <span class="n">signal_type</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">quantity</span> <span class="o">=</span> <span class="n">quantity</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">strength</span> <span class="o">=</span> <span class="n">strength</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">strength</span> <span class="o">=</span> <span class="n">strength</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">price</span> <span class="o">=</span> <span class="n">price</span></div>
 
 
 
@@ -179,9 +183,10 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-                 <span class="n">order_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                 <span class="n">order_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;MKT&#39;</span><span class="p">,</span> <span class="s1">&#39;LMT&#39;</span><span class="p">],</span>
                  <span class="n">quantity</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span>
-                 <span class="n">direction</span><span class="p">:</span> <span class="nb">str</span>
+                 <span class="n">direction</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;BUY&#39;</span><span class="p">,</span> <span class="s1">&#39;SELL&#39;</span><span class="p">],</span>
+                 <span class="n">price</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span>
                  <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialises the order type, setting whether it is</span>
@@ -193,20 +198,22 @@
 <span class="sd">            order_type (str): &#39;MKT&#39; or &#39;LMT&#39; for Market or Limit. </span>
 <span class="sd">            quantity (int | float): Non-negative number for quantity.            </span>
 <span class="sd">            direction (str): &#39;BUY&#39; or &#39;SELL&#39; for long or short.</span>
+<span class="sd">            price (int | float): The price at which to order.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="s1">&#39;ORDER&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">symbol</span> <span class="o">=</span> <span class="n">symbol</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">order_type</span> <span class="o">=</span> <span class="n">order_type</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">quantity</span> <span class="o">=</span> <span class="n">quantity</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">=</span> <span class="n">direction</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">price</span> <span class="o">=</span> <span class="n">price</span>
 
         <span class="k">def</span> <span class="nf">print_order</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            Outputs the values within the Order.</span>
 <span class="sd">            &quot;&quot;&quot;</span>
             <span class="nb">print</span><span class="p">(</span>
-                <span class="s2">&quot;Order: Symbol=</span><span class="si">%s</span><span class="s2">, Type=</span><span class="si">%s</span><span class="s2">, Quantity=</span><span class="si">%s</span><span class="s2">, Direction=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
-                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">order_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">quantity</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">direction</span><span class="p">)</span>
+                <span class="s2">&quot;Order: Symbol=</span><span class="si">%s</span><span class="s2">, Type=</span><span class="si">%s</span><span class="s2">, Quantity=</span><span class="si">%s</span><span class="s2">, Direction=</span><span class="si">%s</span><span class="s2">, Price=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
+                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">order_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">quantity</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">direction</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">price</span><span class="p">)</span>
             <span class="p">)</span></div>
 
 
@@ -237,8 +244,8 @@
                  <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                  <span class="n">exchange</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                  <span class="n">quantity</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span>
-                 <span class="n">direction</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-                 <span class="n">fill_cost</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span>
+                 <span class="n">direction</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;BUY&#39;</span><span class="p">,</span> <span class="s1">&#39;SELL&#39;</span><span class="p">],</span>
+                 <span class="n">fill_cost</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">commission</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
                  <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -255,8 +262,8 @@
 <span class="sd">            symbol (str): The instrument which was filled.</span>
 <span class="sd">            exchange (str): The exchange where the order was filled.</span>
 <span class="sd">            quantity (int | float): The filled quantity.</span>
-<span class="sd">            direction (str): The direction of fill (&#39;BUY&#39; or &#39;SELL&#39;)</span>
-<span class="sd">            fill_cost (int | float): The holdings value in dollars.</span>
+<span class="sd">            direction (str): The direction of fill `(&#39;LONG&#39;, &#39;SHORT&#39;, &#39;EXIT&#39;)`</span>
+<span class="sd">            fill_cost (int | float): Price of the shares when filled.</span>
 <span class="sd">            commission (float | None): An optional commission sent from IB.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="s1">&#39;FILL&#39;</span>

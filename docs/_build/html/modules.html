@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>bbstrader &mdash; BBSTrader 0.1.1 documentation</title>
+  <title>bbstrader &mdash; BBSTrader 0.1.07 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
@@ -15,7 +15,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=a58bc63e"></script>
+        <script src="_static/documentation_options.js?v=15bc9eb9"></script>
         <script src="_static/doctools.js?v=9a2dae69"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -50,7 +50,6 @@
 <li class="toctree-l2"><a class="reference internal" href="btengine.html">Backtesting Egine</a></li>
 <li class="toctree-l2"><a class="reference internal" href="metatrader.html">MetaTrader5 (MT5) Trading</a></li>
 <li class="toctree-l2"><a class="reference internal" href="models.html">Models</a></li>
-<li class="toctree-l2"><a class="reference internal" href="strategies.html">Strategies</a></li>
 <li class="toctree-l2"><a class="reference internal" href="trading.html">Trading Execution</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tseries.html">Time Series</a></li>
 </ul>
@@ -90,34 +89,11 @@
 <li class="toctree-l2"><a class="reference internal" href="btengine.html#features">Features</a></li>
 <li class="toctree-l2"><a class="reference internal" href="btengine.html#components">Components</a></li>
 <li class="toctree-l2"><a class="reference internal" href="btengine.html#module-btengine.backtest">backtest</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="btengine.html#btengine.backtest.ArimaGarchStrategyBacktester"><code class="docutils literal notranslate"><span class="pre">ArimaGarchStrategyBacktester</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="btengine.html#btengine.backtest.ArimaGarchStrategyBacktester.calculate_signals"><code class="docutils literal notranslate"><span class="pre">ArimaGarchStrategyBacktester.calculate_signals()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="btengine.html#btengine.backtest.ArimaGarchStrategyBacktester.create_signal"><code class="docutils literal notranslate"><span class="pre">ArimaGarchStrategyBacktester.create_signal()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="btengine.html#btengine.backtest.ArimaGarchStrategyBacktester.get_data"><code class="docutils literal notranslate"><span class="pre">ArimaGarchStrategyBacktester.get_data()</span></code></a></li>
-</ul>
-</li>
 <li class="toctree-l3"><a class="reference internal" href="btengine.html#btengine.backtest.Backtest"><code class="docutils literal notranslate"><span class="pre">Backtest</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="btengine.html#btengine.backtest.Backtest.simulate_trading"><code class="docutils literal notranslate"><span class="pre">Backtest.simulate_trading()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="btengine.html#btengine.backtest.KLFStrategyBacktester"><code class="docutils literal notranslate"><span class="pre">KLFStrategyBacktester</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="btengine.html#btengine.backtest.KLFStrategyBacktester.calc_slope_intercep"><code class="docutils literal notranslate"><span class="pre">KLFStrategyBacktester.calc_slope_intercep()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="btengine.html#btengine.backtest.KLFStrategyBacktester.calculate_signals"><code class="docutils literal notranslate"><span class="pre">KLFStrategyBacktester.calculate_signals()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="btengine.html#btengine.backtest.KLFStrategyBacktester.calculate_signals_for_pairs"><code class="docutils literal notranslate"><span class="pre">KLFStrategyBacktester.calculate_signals_for_pairs()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="btengine.html#btengine.backtest.KLFStrategyBacktester.calculate_xy_signals"><code class="docutils literal notranslate"><span class="pre">KLFStrategyBacktester.calculate_xy_signals()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="btengine.html#btengine.backtest.OUStrategyBacktester"><code class="docutils literal notranslate"><span class="pre">OUStrategyBacktester</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="btengine.html#btengine.backtest.OUStrategyBacktester.calculate_signals"><code class="docutils literal notranslate"><span class="pre">OUStrategyBacktester.calculate_signals()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="btengine.html#btengine.backtest.OUStrategyBacktester.create_signal"><code class="docutils literal notranslate"><span class="pre">OUStrategyBacktester.create_signal()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="btengine.html#btengine.backtest.SMAStrategyBacktester"><code class="docutils literal notranslate"><span class="pre">SMAStrategyBacktester</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="btengine.html#btengine.backtest.SMAStrategyBacktester.calculate_signals"><code class="docutils literal notranslate"><span class="pre">SMAStrategyBacktester.calculate_signals()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="btengine.html#btengine.backtest.SMAStrategyBacktester.create_signal"><code class="docutils literal notranslate"><span class="pre">SMAStrategyBacktester.create_signal()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="btengine.html#btengine.backtest.SMAStrategyBacktester.get_data"><code class="docutils literal notranslate"><span class="pre">SMAStrategyBacktester.get_data()</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="btengine.html#btengine.backtest.BacktestEngine"><code class="docutils literal notranslate"><span class="pre">BacktestEngine</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="btengine.html#btengine.backtest.run_backtest"><code class="docutils literal notranslate"><span class="pre">run_backtest()</span></code></a></li>
 </ul>
 </li>
@@ -161,6 +137,10 @@
 <li class="toctree-l4"><a class="reference internal" href="btengine.html#btengine.execution.ExecutionHandler.execute_order"><code class="docutils literal notranslate"><span class="pre">ExecutionHandler.execute_order()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="btengine.html#btengine.execution.MT5ExecutionHandler"><code class="docutils literal notranslate"><span class="pre">MT5ExecutionHandler</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="btengine.html#btengine.execution.MT5ExecutionHandler.execute_order"><code class="docutils literal notranslate"><span class="pre">MT5ExecutionHandler.execute_order()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="btengine.html#btengine.execution.SimulatedExecutionHandler"><code class="docutils literal notranslate"><span class="pre">SimulatedExecutionHandler</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="btengine.html#btengine.execution.SimulatedExecutionHandler.execute_order"><code class="docutils literal notranslate"><span class="pre">SimulatedExecutionHandler.execute_order()</span></code></a></li>
 </ul>
@@ -174,6 +154,7 @@
 <li class="toctree-l3"><a class="reference internal" href="btengine.html#btengine.performance.plot_monthly_yearly_returns"><code class="docutils literal notranslate"><span class="pre">plot_monthly_yearly_returns()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="btengine.html#btengine.performance.plot_performance"><code class="docutils literal notranslate"><span class="pre">plot_performance()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="btengine.html#btengine.performance.plot_returns_and_dd"><code class="docutils literal notranslate"><span class="pre">plot_returns_and_dd()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="btengine.html#btengine.performance.show_qs_stats"><code class="docutils literal notranslate"><span class="pre">show_qs_stats()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="btengine.html#module-btengine.portfolio">portfolio</a><ul>
@@ -210,6 +191,7 @@
 <li class="toctree-l2"><a class="reference internal" href="metatrader.html#customization">Customization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="metatrader.html#module-metatrader.account">account</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="metatrader.html#metatrader.account.Account"><code class="docutils literal notranslate"><span class="pre">Account</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metatrader.html#metatrader.account.Account.calculate_margin"><code class="docutils literal notranslate"><span class="pre">Account.calculate_margin()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="metatrader.html#metatrader.account.Account.check_order"><code class="docutils literal notranslate"><span class="pre">Account.check_order()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="metatrader.html#metatrader.account.Account.convert_currencies"><code class="docutils literal notranslate"><span class="pre">Account.convert_currencies()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="metatrader.html#metatrader.account.Account.get_account_info"><code class="docutils literal notranslate"><span class="pre">Account.get_account_info()</span></code></a></li>
@@ -281,6 +263,8 @@
 <li class="toctree-l4"><a class="reference internal" href="metatrader.html#metatrader.trade.Trade.check"><code class="docutils literal notranslate"><span class="pre">Trade.check()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="metatrader.html#metatrader.trade.Trade.close_position"><code class="docutils literal notranslate"><span class="pre">Trade.close_position()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="metatrader.html#metatrader.trade.Trade.close_positions"><code class="docutils literal notranslate"><span class="pre">Trade.close_positions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metatrader.html#metatrader.trade.Trade.current_datetime"><code class="docutils literal notranslate"><span class="pre">Trade.current_datetime()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metatrader.html#metatrader.trade.Trade.current_time"><code class="docutils literal notranslate"><span class="pre">Trade.current_time()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="metatrader.html#metatrader.trade.Trade.days_end"><code class="docutils literal notranslate"><span class="pre">Trade.days_end()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="metatrader.html#metatrader.trade.Trade.get_be_positions"><code class="docutils literal notranslate"><span class="pre">Trade.get_be_positions</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="metatrader.html#metatrader.trade.Trade.get_buy_positions"><code class="docutils literal notranslate"><span class="pre">Trade.get_buy_positions</span></code></a></li>
@@ -288,7 +272,6 @@
 <li class="toctree-l4"><a class="reference internal" href="metatrader.html#metatrader.trade.Trade.get_current_open_orders"><code class="docutils literal notranslate"><span class="pre">Trade.get_current_open_orders()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="metatrader.html#metatrader.trade.Trade.get_current_open_positions"><code class="docutils literal notranslate"><span class="pre">Trade.get_current_open_positions()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="metatrader.html#metatrader.trade.Trade.get_current_sells"><code class="docutils literal notranslate"><span class="pre">Trade.get_current_sells()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="metatrader.html#metatrader.trade.Trade.get_current_time"><code class="docutils literal notranslate"><span class="pre">Trade.get_current_time()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="metatrader.html#metatrader.trade.Trade.get_current_win_trades"><code class="docutils literal notranslate"><span class="pre">Trade.get_current_win_trades()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="metatrader.html#metatrader.trade.Trade.get_filtered_tickets"><code class="docutils literal notranslate"><span class="pre">Trade.get_filtered_tickets()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="metatrader.html#metatrader.trade.Trade.get_opened_orders"><code class="docutils literal notranslate"><span class="pre">Trade.get_opened_orders</span></code></a></li>
@@ -523,13 +506,13 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="metatrader.html#metatrader.utils.TimeFrame"><code class="docutils literal notranslate"><span class="pre">TimeFrame</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="metatrader.html#metatrader.utils.TimeFrame.D1"><code class="docutils literal notranslate"><span class="pre">TimeFrame.D1</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="metatrader.html#metatrader.utils.TimeFrame.H"><code class="docutils literal notranslate"><span class="pre">TimeFrame.H</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="metatrader.html#metatrader.utils.TimeFrame.H1"><code class="docutils literal notranslate"><span class="pre">TimeFrame.H1</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="metatrader.html#metatrader.utils.TimeFrame.H12"><code class="docutils literal notranslate"><span class="pre">TimeFrame.H12</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="metatrader.html#metatrader.utils.TimeFrame.H2"><code class="docutils literal notranslate"><span class="pre">TimeFrame.H2</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="metatrader.html#metatrader.utils.TimeFrame.H3"><code class="docutils literal notranslate"><span class="pre">TimeFrame.H3</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="metatrader.html#metatrader.utils.TimeFrame.H4"><code class="docutils literal notranslate"><span class="pre">TimeFrame.H4</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="metatrader.html#metatrader.utils.TimeFrame.H6"><code class="docutils literal notranslate"><span class="pre">TimeFrame.H6</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metatrader.html#metatrader.utils.TimeFrame.H8"><code class="docutils literal notranslate"><span class="pre">TimeFrame.H8</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="metatrader.html#metatrader.utils.TimeFrame.M1"><code class="docutils literal notranslate"><span class="pre">TimeFrame.M1</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="metatrader.html#metatrader.utils.TimeFrame.M10"><code class="docutils literal notranslate"><span class="pre">TimeFrame.M10</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="metatrader.html#metatrader.utils.TimeFrame.M12"><code class="docutils literal notranslate"><span class="pre">TimeFrame.M12</span></code></a></li>
@@ -662,75 +645,75 @@
 <li class="toctree-l4"><a class="reference internal" href="models.html#models.risk.RiskModel.which_trade_allowed"><code class="docutils literal notranslate"><span class="pre">RiskModel.which_trade_allowed()</span></code></a></li>
 </ul>
 </li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="strategies.html">Strategies</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="strategies.html#strategies.ArimaGarchStrategy"><code class="docutils literal notranslate"><span class="pre">ArimaGarchStrategy</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="strategies.html#strategies.ArimaGarchStrategy.backtest_strategy"><code class="docutils literal notranslate"><span class="pre">ArimaGarchStrategy.backtest_strategy()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="strategies.html#strategies.ArimaGarchStrategy.calculate_signals"><code class="docutils literal notranslate"><span class="pre">ArimaGarchStrategy.calculate_signals()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="strategies.html#strategies.ArimaGarchStrategy.execute_trading_strategy"><code class="docutils literal notranslate"><span class="pre">ArimaGarchStrategy.execute_trading_strategy()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="strategies.html#strategies.ArimaGarchStrategy.fit_best_arima"><code class="docutils literal notranslate"><span class="pre">ArimaGarchStrategy.fit_best_arima()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="strategies.html#strategies.ArimaGarchStrategy.fit_garch"><code class="docutils literal notranslate"><span class="pre">ArimaGarchStrategy.fit_garch()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="strategies.html#strategies.ArimaGarchStrategy.generate_predictions"><code class="docutils literal notranslate"><span class="pre">ArimaGarchStrategy.generate_predictions()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="strategies.html#strategies.ArimaGarchStrategy.get_prediction"><code class="docutils literal notranslate"><span class="pre">ArimaGarchStrategy.get_prediction()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="strategies.html#strategies.ArimaGarchStrategy.load_and_prepare_data"><code class="docutils literal notranslate"><span class="pre">ArimaGarchStrategy.load_and_prepare_data()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="strategies.html#strategies.ArimaGarchStrategy.plot_cumulative_returns"><code class="docutils literal notranslate"><span class="pre">ArimaGarchStrategy.plot_cumulative_returns()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="strategies.html#strategies.ArimaGarchStrategy.predict_next_return"><code class="docutils literal notranslate"><span class="pre">ArimaGarchStrategy.predict_next_return()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="strategies.html#strategies.ArimaGarchStrategy.show_arima_garch_results"><code class="docutils literal notranslate"><span class="pre">ArimaGarchStrategy.show_arima_garch_results()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="strategies.html#strategies.KLFStrategy"><code class="docutils literal notranslate"><span class="pre">KLFStrategy</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="strategies.html#strategies.KLFStrategy.calc_slope_intercep"><code class="docutils literal notranslate"><span class="pre">KLFStrategy.calc_slope_intercep()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="strategies.html#strategies.KLFStrategy.calculate_signals"><code class="docutils literal notranslate"><span class="pre">KLFStrategy.calculate_signals()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="strategies.html#strategies.KLFStrategy.calculate_xy_signals"><code class="docutils literal notranslate"><span class="pre">KLFStrategy.calculate_xy_signals()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="strategies.html#strategies.OrnsteinUhlenbeck"><code class="docutils literal notranslate"><span class="pre">OrnsteinUhlenbeck</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="strategies.html#strategies.OrnsteinUhlenbeck.calculate_signals"><code class="docutils literal notranslate"><span class="pre">OrnsteinUhlenbeck.calculate_signals()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="strategies.html#strategies.OrnsteinUhlenbeck.estimate_parameters"><code class="docutils literal notranslate"><span class="pre">OrnsteinUhlenbeck.estimate_parameters()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="strategies.html#strategies.OrnsteinUhlenbeck.ornstein_uhlenbeck"><code class="docutils literal notranslate"><span class="pre">OrnsteinUhlenbeck.ornstein_uhlenbeck()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="strategies.html#strategies.OrnsteinUhlenbeck.simulate_process"><code class="docutils literal notranslate"><span class="pre">OrnsteinUhlenbeck.simulate_process()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="strategies.html#strategies.SMAStrategy"><code class="docutils literal notranslate"><span class="pre">SMAStrategy</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="strategies.html#strategies.SMAStrategy.calculate_signals"><code class="docutils literal notranslate"><span class="pre">SMAStrategy.calculate_signals()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="strategies.html#strategies.SMAStrategy.create_signal"><code class="docutils literal notranslate"><span class="pre">SMAStrategy.create_signal()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="strategies.html#strategies.SMAStrategy.get_data"><code class="docutils literal notranslate"><span class="pre">SMAStrategy.get_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="models.html#models.risk.build_hmm_models"><code class="docutils literal notranslate"><span class="pre">build_hmm_models()</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="trading.html">Trading Execution</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="trading.html#module-trading.execution">execution</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="trading.html#trading.execution.arch_trading"><code class="docutils literal notranslate"><span class="pre">arch_trading()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="trading.html#trading.execution.ou_trading"><code class="docutils literal notranslate"><span class="pre">ou_trading()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="trading.html#trading.execution.pair_trading"><code class="docutils literal notranslate"><span class="pre">pair_trading()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="trading.html#trading.execution.sma_trading"><code class="docutils literal notranslate"><span class="pre">sma_trading()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trading.html#trading.execution.ExecutionEngine"><code class="docutils literal notranslate"><span class="pre">ExecutionEngine</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="trading.html#trading.execution.ExecutionEngine.run"><code class="docutils literal notranslate"><span class="pre">ExecutionEngine.run()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="trading.html#module-trading.run">run</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="trading.html#trading.run.run_arch_trading"><code class="docutils literal notranslate"><span class="pre">run_arch_trading()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="trading.html#trading.run.run_ou_trading"><code class="docutils literal notranslate"><span class="pre">run_ou_trading()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="trading.html#trading.run.run_pair_trading"><code class="docutils literal notranslate"><span class="pre">run_pair_trading()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="trading.html#trading.run.run_sma_trading"><code class="docutils literal notranslate"><span class="pre">run_sma_trading()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="trading.html#module-trading.utils">utils</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="trading.html#trading.utils.add_arch_trading_arguments"><code class="docutils literal notranslate"><span class="pre">add_arch_trading_arguments()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="trading.html#trading.utils.add_common_trading_arguments"><code class="docutils literal notranslate"><span class="pre">add_common_trading_arguments()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="trading.html#trading.utils.add_ou_trading_arguments"><code class="docutils literal notranslate"><span class="pre">add_ou_trading_arguments()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="trading.html#trading.utils.add_pair_trading_arguments"><code class="docutils literal notranslate"><span class="pre">add_pair_trading_arguments()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="trading.html#trading.utils.add_sma_trading_arguments"><code class="docutils literal notranslate"><span class="pre">add_sma_trading_arguments()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="trading.html#trading.utils.add_trade_arguments"><code class="docutils literal notranslate"><span class="pre">add_trade_arguments()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="trading.html#trading.utils.init_trade"><code class="docutils literal notranslate"><span class="pre">init_trade()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="trading.html#trading.utils.tf_mapping"><code class="docutils literal notranslate"><span class="pre">tf_mapping()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="trading.html#module-trading.strategies">strategies</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="trading.html#trading.strategies.ArimaGarchStrategy"><code class="docutils literal notranslate"><span class="pre">ArimaGarchStrategy</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="trading.html#trading.strategies.ArimaGarchStrategy.calculate_signals"><code class="docutils literal notranslate"><span class="pre">ArimaGarchStrategy.calculate_signals()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trading.html#trading.strategies.ArimaGarchStrategy.create_backtest_signal"><code class="docutils literal notranslate"><span class="pre">ArimaGarchStrategy.create_backtest_signal()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trading.html#trading.strategies.ArimaGarchStrategy.create_live_signals"><code class="docutils literal notranslate"><span class="pre">ArimaGarchStrategy.create_live_signals()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trading.html#trading.strategies.ArimaGarchStrategy.get_backtest_data"><code class="docutils literal notranslate"><span class="pre">ArimaGarchStrategy.get_backtest_data()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trading.html#trading.strategies.ArimaGarchStrategy.get_live_data"><code class="docutils literal notranslate"><span class="pre">ArimaGarchStrategy.get_live_data()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="trading.html#trading.strategies.KalmanFilterStrategy"><code class="docutils literal notranslate"><span class="pre">KalmanFilterStrategy</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="trading.html#trading.strategies.KalmanFilterStrategy.calculate_backtest_signals"><code class="docutils literal notranslate"><span class="pre">KalmanFilterStrategy.calculate_backtest_signals()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trading.html#trading.strategies.KalmanFilterStrategy.calculate_btxy"><code class="docutils literal notranslate"><span class="pre">KalmanFilterStrategy.calculate_btxy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trading.html#trading.strategies.KalmanFilterStrategy.calculate_live_signals"><code class="docutils literal notranslate"><span class="pre">KalmanFilterStrategy.calculate_live_signals()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trading.html#trading.strategies.KalmanFilterStrategy.calculate_livexy"><code class="docutils literal notranslate"><span class="pre">KalmanFilterStrategy.calculate_livexy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trading.html#trading.strategies.KalmanFilterStrategy.calculate_signals"><code class="docutils literal notranslate"><span class="pre">KalmanFilterStrategy.calculate_signals()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="trading.html#trading.strategies.SMAStrategy"><code class="docutils literal notranslate"><span class="pre">SMAStrategy</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="trading.html#trading.strategies.SMAStrategy.calculate_signals"><code class="docutils literal notranslate"><span class="pre">SMAStrategy.calculate_signals()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trading.html#trading.strategies.SMAStrategy.create_backtest_signals"><code class="docutils literal notranslate"><span class="pre">SMAStrategy.create_backtest_signals()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trading.html#trading.strategies.SMAStrategy.create_live_signals"><code class="docutils literal notranslate"><span class="pre">SMAStrategy.create_live_signals()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trading.html#trading.strategies.SMAStrategy.get_backtest_data"><code class="docutils literal notranslate"><span class="pre">SMAStrategy.get_backtest_data()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trading.html#trading.strategies.SMAStrategy.get_live_data"><code class="docutils literal notranslate"><span class="pre">SMAStrategy.get_live_data()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="trading.html#trading.strategies.StockIndexSTBOTrading"><code class="docutils literal notranslate"><span class="pre">StockIndexSTBOTrading</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="trading.html#trading.strategies.StockIndexSTBOTrading.calculate_backtest_signals"><code class="docutils literal notranslate"><span class="pre">StockIndexSTBOTrading.calculate_backtest_signals()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trading.html#trading.strategies.StockIndexSTBOTrading.calculate_live_signals"><code class="docutils literal notranslate"><span class="pre">StockIndexSTBOTrading.calculate_live_signals()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trading.html#trading.strategies.StockIndexSTBOTrading.calculate_signals"><code class="docutils literal notranslate"><span class="pre">StockIndexSTBOTrading.calculate_signals()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="trading.html#trading.strategies.test_strategy"><code class="docutils literal notranslate"><span class="pre">test_strategy()</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="tseries.html">Time Series</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tseries.html#tseries.ArimaGarchModel"><code class="docutils literal notranslate"><span class="pre">ArimaGarchModel</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tseries.html#tseries.ArimaGarchModel.backtest_strategy"><code class="docutils literal notranslate"><span class="pre">ArimaGarchModel.backtest_strategy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tseries.html#tseries.ArimaGarchModel.calculate_signals"><code class="docutils literal notranslate"><span class="pre">ArimaGarchModel.calculate_signals()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tseries.html#tseries.ArimaGarchModel.execute_trading_strategy"><code class="docutils literal notranslate"><span class="pre">ArimaGarchModel.execute_trading_strategy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tseries.html#tseries.ArimaGarchModel.fit_best_arima"><code class="docutils literal notranslate"><span class="pre">ArimaGarchModel.fit_best_arima()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tseries.html#tseries.ArimaGarchModel.fit_garch"><code class="docutils literal notranslate"><span class="pre">ArimaGarchModel.fit_garch()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tseries.html#tseries.ArimaGarchModel.generate_predictions"><code class="docutils literal notranslate"><span class="pre">ArimaGarchModel.generate_predictions()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tseries.html#tseries.ArimaGarchModel.get_prediction"><code class="docutils literal notranslate"><span class="pre">ArimaGarchModel.get_prediction()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tseries.html#tseries.ArimaGarchModel.load_and_prepare_data"><code class="docutils literal notranslate"><span class="pre">ArimaGarchModel.load_and_prepare_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tseries.html#tseries.ArimaGarchModel.plot_cumulative_returns"><code class="docutils literal notranslate"><span class="pre">ArimaGarchModel.plot_cumulative_returns()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tseries.html#tseries.ArimaGarchModel.predict_next_return"><code class="docutils literal notranslate"><span class="pre">ArimaGarchModel.predict_next_return()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tseries.html#tseries.ArimaGarchModel.show_arima_garch_results"><code class="docutils literal notranslate"><span class="pre">ArimaGarchModel.show_arima_garch_results()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tseries.html#tseries.KalmanFilterModel"><code class="docutils literal notranslate"><span class="pre">KalmanFilterModel</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tseries.html#tseries.KalmanFilterModel.calc_slope_intercep"><code class="docutils literal notranslate"><span class="pre">KalmanFilterModel.calc_slope_intercep()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tseries.html#tseries.KalmanFilterModel.calculate_etqt"><code class="docutils literal notranslate"><span class="pre">KalmanFilterModel.calculate_etqt()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="tseries.html#tseries.fit_best_arima"><code class="docutils literal notranslate"><span class="pre">fit_best_arima()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="tseries.html#tseries.fit_garch"><code class="docutils literal notranslate"><span class="pre">fit_garch()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="tseries.html#tseries.get_corr"><code class="docutils literal notranslate"><span class="pre">get_corr()</span></code></a></li>

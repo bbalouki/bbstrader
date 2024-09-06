@@ -7,25 +7,17 @@ Trading Execution
    :show-inheritance:
 
 execution
----------
+----------
 
 .. automodule:: trading.execution
    :members:
    :undoc-members:
    :show-inheritance:
 
-run 
----
+strategies
+----------
 
-.. automodule:: trading.run
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-utils
-------
-
-.. automodule:: trading.utils
+.. automodule:: trading.strategies
    :members:
    :undoc-members:
    :show-inheritance:
