@@ -35,7 +35,8 @@ REQUIREMENTS = [
     "pandas", "numpy==1.26.4", "yfinance", "scipy",
     "hmmlearn", "pmdarima", "arch", "hurst", "seaborn",
     "statsmodels", "matplotlib", "filterpy", "pytest",
-    "CurrencyConverter", "Metatrader5"
+    "CurrencyConverter", "tabulate", "ipython", "quantstats", 
+    # "Metatrader5"
 ]
 
 # Setting up
