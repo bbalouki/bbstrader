@@ -50,4 +50,5 @@ from bbstrader.btengine.event import *
 from bbstrader.btengine.execution import *
 from bbstrader.btengine.performance import *
 from bbstrader.btengine.backtest import *
+from bbstrader.btengine.strategy import Strategy
 from bbstrader.btengine.portfolio import Portfolio
