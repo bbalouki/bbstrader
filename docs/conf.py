@@ -26,7 +26,7 @@ sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 project = 'BBSTrader'
 copyright = '2024, Bertin Balouki SIMYELI'
 author = 'Bertin Balouki SIMYELI'
-release = '0.1.07'
+release = '0.1.08'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
