@@ -24,7 +24,7 @@ __all__ = [
 ]
 
 
-def create_sharpe_ratio(returns, periods=252):
+def create_sharpe_ratio(returns, periods=252) -> float:
     """
     Create the Sharpe ratio for the strategy, based on a
     benchmark of zero (i.e. no risk-free rate information).
@@ -36,15 +36,10 @@ def create_sharpe_ratio(returns, periods=252):
     Returns:
         S (float): Sharpe ratio
     """
-    if np.std(returns) != 0:
-        return np.sqrt(periods) * (np.mean(returns)) / np.std(returns)
-    else:
-        return 0.0
+    return qs.stats.sharpe(returns, periods=periods)
 
 # Define a function to calculate the Sortino Ratio
-
-
-def create_sortino_ratio(returns, periods=252):
+def create_sortino_ratio(returns, periods=252) -> float:
     """
     Create the Sortino ratio for the strategy, based on a
     benchmark of zero (i.e. no risk-free rate information).
@@ -56,17 +51,7 @@ def create_sortino_ratio(returns, periods=252):
     Returns:
         S (float): Sortino ratio
     """
-    # Calculate the annualized return
-    annualized_return = np.power(1 + np.mean(returns), periods) - 1
-    # Calculate the downside deviation
-    downside_returns = returns.copy()
-    downside_returns[returns > 0] = 0
-    annualized_downside_std = np.std(downside_returns) * np.sqrt(periods)
-    if annualized_downside_std != 0:
-        return annualized_return / annualized_downside_std
-    else:
-        return 0.0
-
+    return qs.stats.sortino(returns, periods=periods)
 
 def create_drawdowns(pnl):
     """
@@ -311,19 +296,19 @@ def plot_monthly_yearly_returns(df, title):
     # Show the plot
     plt.show()
 
-def show_qs_stats(equity_curve, benchmark, strategy_name):
+def show_qs_stats(returns, benchmark, strategy_name, save_dir=None):
     """
     Generate the full quantstats report for the strategy.
 
     Args:
-        equity_curve (pd.DataFrame): 
+        returns (pd.Serie): 
             The DataFrame containing the strategy returns and drawdowns.
         benchmark (str): 
             The ticker symbol of the benchmark to compare the strategy to.
         strategy_name (str): The name of the strategy.
     """
     # Load the returns data
-    returns = equity_curve.copy()
+    returns = returns.copy()
 
     # Drop duplicate index entries
     returns = returns[~returns.index.duplicated(keep='first')]
@@ -332,11 +317,5 @@ def show_qs_stats(equity_curve, benchmark, strategy_name):
     qs.extend_pandas()
 
     # Generate the full report with a benchmark
-    file = strategy_name.replace(' ', '_')
-    qs.reports.full(
-        returns['Returns'], mode='full', benchmark=benchmark)
-    qs.reports.html(
-        returns['Returns'], 
-        benchmark='SPY', 
-        output=f"{file}_report.html", 
-        title=strategy_name)
+    qs.reports.full(returns, mode='full', benchmark=benchmark)
+    qs.reports.html(returns, benchmark=benchmark, output=save_dir, title=strategy_name)
