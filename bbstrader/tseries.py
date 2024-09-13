@@ -8,6 +8,8 @@ market analysis, and financial data exploration.
 """
 import numpy as np
 import pandas as pd
+import pprint
+import warnings
 import yfinance as yf
 from arch import arch_model
 from statsmodels.tsa.arima.model import ARIMA
@@ -25,13 +27,12 @@ from statsmodels.graphics.tsaplots import plot_acf
 from itertools import combinations
 from typing import Union, List, Tuple
 from statsmodels.stats.diagnostic import acorr_ljungbox
-import pprint
-import warnings
+from arch.utility.exceptions import ConvergenceWarning as ArchWarning
+from statsmodels.tools.sm_exceptions import ConvergenceWarning as StatsWarning
 warnings.filterwarnings("ignore")
+warnings.filterwarnings("ignore", category=StatsWarning, module='statsmodels')
+warnings.filterwarnings("ignore", category=ArchWarning, module='arch')
 
-# *******************************************
-#          ARIMA AND GARCH MODELS          *
-# *******************************************
 
 __all__ = [
     "load_and_prepare_data",
@@ -48,6 +49,10 @@ __all__ = [
     "KalmanFilterModel",
     "OrnsteinUhlenbeckModel"
 ]
+
+# *******************************************
+#          ARIMA AND GARCH MODELS          *
+# *******************************************
 
 
 def load_and_prepare_data(df: pd.DataFrame):
@@ -99,7 +104,7 @@ def fit_best_arima(window_data: Union[pd.Series, np.ndarray]):
     """
     if isinstance(window_data, pd.Series):
         window_data = window_data.values
-    
+
     window_data = window_data[~(np.isnan(window_data) | np.isinf(window_data))]
     # Fit ARIMA model with best parameters
     model = pm.auto_arima(
@@ -112,10 +117,6 @@ def fit_best_arima(window_data: Union[pd.Series, np.ndarray]):
         stepwise=True
     )
     final_order = model.order
-    from arch.utility.exceptions import ConvergenceWarning as ArchConvergenceWarning
-    from statsmodels.tools.sm_exceptions import ConvergenceWarning as StatsConvergenceWarning
-    warnings.filterwarnings("ignore", category=StatsConvergenceWarning)
-    warnings.filterwarnings("ignore", category=ArchConvergenceWarning)
     try:
         best_arima_model = ARIMA(
             window_data + 1e-5, order=final_order, missing='drop').fit()
@@ -183,8 +184,9 @@ def predict_next_return(arima_result, garch_result):
     if not isinstance(arima_pred, np.ndarray):
         pred = arima_pred.values[0]
     else:
-        pred =  arima_pred[0]
+        pred = arima_pred[0]
     return pred + next_volatility
+
 
 def get_prediction(window_data:  Union[pd.Series, np.ndarray]):
     """
@@ -204,6 +206,270 @@ def get_prediction(window_data:  Union[pd.Series, np.ndarray]):
     arima_result, garch_result = fit_garch(window_data)
     prediction = predict_next_return(arima_result, garch_result)
     return prediction
+
+
+class ArimaGarchModel():
+    """
+    This class implements a time serie model
+    that combines `ARIMA (AutoRegressive Integrated Moving Average)` 
+    and `GARCH (Generalized Autoregressive Conditional Heteroskedasticity)` models
+    to predict future returns based on historical price data. 
+
+    The model is implemented in the following steps:
+    1. Data Preparation: Load and prepare the historical price data.
+    2. Modeling: Fit the ARIMA model to the data and then fit the GARCH model to the residuals.
+    3. Prediction: Predict the next return using the ARIMA model and the next volatility using the GARCH model.
+    4. Trading Strategy: Execute the trading strategy based on the predictions.
+    5. Vectorized Backtesting: Backtest the trading strategy using the historical data.
+
+    Exemple:
+        >>> import yfinance as yf
+        >>> from bbstrader.strategies import ArimaGarchModel
+        >>> from bbstrader.tseries import load_and_prepare_data
+
+        >>> if __name__ == '__main__':
+        >>>     # ARCH SPY Vectorize Backtest
+        >>>     k = 252
+        >>>     data = yf.download("SPY", start="2004-01-02", end="2015-12-31")
+        >>>     arch = ArimaGarchModel("SPY", data, k=k)
+        >>>     df = load_and_prepare_data(data)
+        >>>     arch.show_arima_garch_results(df['diff_log_return'].values[-k:])
+        >>>     arch.backtest_strategy()
+    """
+
+    def __init__(self, symbol, data, k: int = 252):
+        """
+        Initializes the ArimaGarchStrategy class.
+
+        Args:
+            symbol (str): The ticker symbol for the financial instrument.
+            data (pd.DataFrame): `The raw dataset containing at least the 'Close' prices`.
+            k (int): The window size for rolling prediction in backtesting.
+        """
+        self.symbol = symbol
+        self.data = self.load_and_prepare_data(data)
+        self.k = k
+
+    # Step 1: Data Preparation
+    def load_and_prepare_data(self, df):
+        """
+        Prepares the dataset by calculating logarithmic returns 
+            and differencing if necessary.
+
+        Args:
+            df (pd.DataFrame): `The raw dataset containing at least the 'Close' prices`.
+
+        Returns:
+            pd.DataFrame: The dataset with additional columns 
+                for log returns and differenced log returns.
+        """
+        return load_and_prepare_data(df)
+
+    # Step 2: Modeling (ARIMA + GARCH)
+    def fit_best_arima(self, window_data):
+        """
+        Fits the ARIMA model to the provided window of data, 
+            selecting the best model based on AIC.
+
+        Args:
+            window_data (np.array): The dataset for a specific window period.
+
+        Returns:
+            ARIMA model: The best fitted ARIMA model based on AIC.
+        """
+        return fit_best_arima(window_data)
+
+    def fit_garch(self, window_data):
+        """
+        Fits the GARCH model to the residuals of the best ARIMA model.
+
+        Args:
+            window_data (np.array): The dataset for a specific window period.
+
+        Returns:
+            tuple: Contains the ARIMA result and GARCH result.
+        """
+        return fit_garch(window_data)
+
+    def show_arima_garch_results(self, window_data, acf=True, test_resid=True):
+        """
+        Displays the ARIMA and GARCH model results, including plotting 
+        ACF of residuals and conducting , Box-Pierce and Ljung-Box tests.
+
+        Args:
+            window_data (np.array): The dataset for a specific window period.
+            acf (bool, optional): If True, plot the ACF of residuals. Defaults to True.
+
+            test_resid (bool, optional): 
+                If True, conduct Box-Pierce and Ljung-Box tests on residuals. Defaults to True.
+        """
+        arima_result = self.fit_best_arima(window_data)
+        resid = np.asarray(arima_result.resid)
+        resid = resid[~(np.isnan(resid) | np.isinf(resid))]
+        garch_model = arch_model(resid, p=1, q=1, rescale=False)
+        garch_result = garch_model.fit(disp='off')
+        residuals = garch_result.resid
+
+        # TODO : Plot the ACF of the residuals
+        if acf:
+            fig = plt.figure(figsize=(12, 8))
+            # Plot the ACF of ARIMA residuals
+            ax1 = fig.add_subplot(211, ylabel='ACF')
+            plot_acf(resid, alpha=0.05, ax=ax1, title='ACF of ARIMA Residuals')
+            ax1.set_xlabel('Lags')
+            ax1.grid(True)
+
+            # Plot the ACF of GARCH residuals on the same axes
+            ax2 = fig.add_subplot(212, ylabel='ACF')
+            plot_acf(residuals, alpha=0.05, ax=ax2,
+                     title='ACF of GARCH  Residuals')
+            ax2.set_xlabel('Lags')
+            ax2.grid(True)
+
+            # Plot the figure
+            plt.tight_layout()
+            plt.show()
+
+        # TODO : Conduct Box-Pierce and Ljung-Box Tests of the residuals
+        if test_resid:
+            print(arima_result.summary())
+            print(garch_result.summary())
+            bp_test = acorr_ljungbox(resid, return_df=True)
+            print("Box-Pierce and Ljung-Box Tests Results  for ARIMA:\n", bp_test)
+
+    # Step 3: Prediction
+    def predict_next_return(self, arima_result, garch_result):
+        """
+        Predicts the next return using the ARIMA model 
+            and the next volatility using the GARCH model.
+
+        Args:
+            arima_result (ARIMA model): The ARIMA model result.
+            garch_result (GARCH model): The GARCH model result.
+
+        Returns:
+            float: The predicted next return.
+        """
+        return predict_next_return(arima_result, garch_result)
+
+    def get_prediction(self, window_data):
+        """
+        Generates a prediction for the next return based on a window of data.
+
+        Args:
+            window_data (np.array): The dataset for a specific window period.
+
+        Returns:
+            float: The predicted next return.
+        """
+        return get_prediction(window_data)
+
+    def calculate_signals(self, window_data):
+        """
+        Calculates the trading signal based on the prediction.
+
+        Args:
+            window_data (np.array): The dataset for a specific window period.
+
+        Returns:
+            str: The trading signal ('LONG', 'SHORT', or None).
+        """
+        prediction = self.get_prediction(window_data)
+        if prediction > 0:
+            signal = "LONG"
+        elif prediction < 0:
+            signal = "SHORT"
+        else:
+            signal = None
+        return signal
+
+    # Step 4: Trading Strategy
+
+    def execute_trading_strategy(self, predictions):
+        """
+        Executes the trading strategy based on a list 
+        of predictions, determining positions to take.
+
+        Args:
+            predictions (list): A list of predicted returns.
+
+        Returns:
+            list: A list of positions (1 for 'LONG', -1 for 'SHORT', 0 for 'HOLD').
+        """
+        positions = []  # Long if 1, Short if -1
+        previous_position = 0  # Initial position
+        for prediction in predictions:
+            if prediction > 0:
+                current_position = 1  # Long
+            elif prediction < 0:
+                current_position = -1  # Short
+            else:
+                current_position = previous_position  # Hold previous position
+            positions.append(current_position)
+            previous_position = current_position
+
+        return positions
+
+    # Step 5: Vectorized Backtesting
+    def generate_predictions(self):
+        """
+        Generator that yields predictions one by one.
+        """
+        data = self.data
+        window_size = self.k
+        for i in range(window_size, len(data)):
+            print(
+                f"Processing window {i - window_size + 1}/{len(data) - window_size}...")
+            window_data = data['diff_log_return'].iloc[i-window_size:i]
+            next_return = self.get_prediction(window_data)
+            yield next_return
+
+    def backtest_strategy(self):
+        """
+        Performs a backtest of the strategy over 
+        the entire dataset, plotting cumulative returns.
+        """
+        data = self.data
+        window_size = self.k
+        print(
+            f"Starting backtesting for {self.symbol}\n"
+            f"Window size {window_size}.\n"
+            f"Total iterations: {len(data) - window_size}.\n")
+        predictions_generator = self.generate_predictions()
+
+        positions = self.execute_trading_strategy(predictions_generator)
+
+        strategy_returns = np.array(
+            positions[:-1]) * data['log_return'].iloc[window_size+1:].values
+        buy_and_hold = data['log_return'].iloc[window_size+1:].values
+        buy_and_hold_returns = np.cumsum(buy_and_hold)
+        cumulative_returns = np.cumsum(strategy_returns)
+        dates = data.index[window_size+1:]
+        self.plot_cumulative_returns(
+            cumulative_returns, buy_and_hold_returns, dates)
+
+        print("\nBacktesting completed !!")
+
+    # Function to plot the cumulative returns
+    def plot_cumulative_returns(self, strategy_returns, buy_and_hold_returns, dates):
+        """
+        Plots the cumulative returns of the ARIMA+GARCH strategy against 
+            a buy-and-hold strategy.
+
+        Args:
+            strategy_returns (np.array): Cumulative returns from the strategy.
+            buy_and_hold_returns (np.array): Cumulative returns from a buy-and-hold strategy.
+            dates (pd.Index): The dates corresponding to the returns.
+        """
+        plt.figure(figsize=(14, 7))
+        plt.plot(dates, strategy_returns, label='ARIMA+GARCH ', color='blue')
+        plt.plot(dates, buy_and_hold_returns, label='Buy & Hold', color='red')
+        plt.xlabel('Time')
+        plt.ylabel('Cumulative Returns')
+        plt.title(f'ARIMA+GARCH Strategy vs. Buy & Hold on ({self.symbol})')
+        plt.legend()
+        plt.grid(True)
+        plt.show()
 
 
 # *********************************************
@@ -621,268 +887,138 @@ def run_kalman_filter(
     draw_slope_intercept_changes(prices, state_means)
 
 
-class ArimaGarchModel():
+class KalmanFilterModel():
     """
-    This class implements a time serie model
-    that combines `ARIMA (AutoRegressive Integrated Moving Average)` 
-    and `GARCH (Generalized Autoregressive Conditional Heteroskedasticity)` models
-    to predict future returns based on historical price data. 
+    Implements a Kalman Filter model a recursive algorithm used for estimating 
+    the state of a linear dynamic system from a series of noisy measurements. 
+    It's designed to process market data, estimate dynamic parameters such as 
+    the slope and intercept of price relationships, 
+    forecast error and standard deviation of the predictions
 
-    The model is implemented in the following steps:
-    1. Data Preparation: Load and prepare the historical price data.
-    2. Modeling: Fit the ARIMA model to the data and then fit the GARCH model to the residuals.
-    3. Prediction: Predict the next return using the ARIMA model and the next volatility using the GARCH model.
-    4. Trading Strategy: Execute the trading strategy based on the predictions.
-    5. Vectorized Backtesting: Backtest the trading strategy using the historical data.
-
-    Exemple:
-        >>> import yfinance as yf
-        >>> from bbstrader.strategies import ArimaGarchModel
-        >>> from bbstrader.tseries import load_and_prepare_data
-
-        >>> if __name__ == '__main__':
-        >>>     # ARCH SPY Vectorize Backtest
-        >>>     k = 252
-        >>>     data = yf.download("SPY", start="2004-01-02", end="2015-12-31")
-        >>>     arch = ArimaGarchModel("SPY", data, k=k)
-        >>>     df = load_and_prepare_data(data)
-        >>>     arch.show_arima_garch_results(df['diff_log_return'].values[-k:])
-        >>>     arch.backtest_strategy()
+    You can learn more here https://en.wikipedia.org/wiki/Kalman_filter
     """
 
-    def __init__(self, symbol, data, k: int = 252):
+    def __init__(self, tickers: list | tuple, **kwargs):
         """
-        Initializes the ArimaGarchStrategy class.
+        Initializes the Kalman Filter strategy.
 
         Args:
-            symbol (str): The ticker symbol for the financial instrument.
-            data (pd.DataFrame): `The raw dataset containing at least the 'Close' prices`.
-            k (int): The window size for rolling prediction in backtesting.
-        """
-        self.symbol = symbol
-        self.data = self.load_and_prepare_data(data)
-        self.k = k
+            tickers : 
+            A list or tuple of ticker symbols representing financial instruments.
 
-    # Step 1: Data Preparation
-    def load_and_prepare_data(self, df):
+            kwargs : Keyword arguments for additional parameters,
+             specifically `delta` and `vt`
         """
-        Prepares the dataset by calculating logarithmic returns 
-            and differencing if necessary.
+        self.tickers = tickers
+        assert self.tickers is not None
+        self.latest_prices = np.array([-1.0, -1.0])
+        self.delta = kwargs.get("delta", 1e-4)
+        self.wt = self.delta/(1-self.delta) * np.eye(2)
+        self.vt = kwargs.get("vt", 1e-3)
+        self.theta = np.zeros(2)
+        self.P = np.zeros((2, 2))
+        self.R = None
+        self.kf = self._init_kalman()
+
+    def _init_kalman(self):
+        """
+        Initializes and returns a Kalman Filter configured 
+        for the trading strategy. The filter is set up with initial 
+        state and covariance, state transition matrix, process noise
+        and measurement noise covariances.
+        """
+        kf = KalmanFilter(dim_x=2, dim_z=1)
+        kf.x = np.zeros((2, 1))  # Initial state
+        kf.P = self.P  # Initial covariance
+        kf.F = np.eye(2)  # State transition matrix
+        kf.Q = self.wt  # Process noise covariance
+        kf.R = 1.  # Scalar measurement noise covariance
+
+        return kf
+
+    def calc_slope_intercep(self, prices: np.ndarray):
+        """
+        Calculates and returns the slope and intercept 
+        of the relationship between the provided prices using the Kalman Filter. 
+        This method updates the filter with the latest price and returns 
+        the estimated slope and intercept.
 
         Args:
-            df (pd.DataFrame): `The raw dataset containing at least the 'Close' prices`.
+            prices : A numpy array of prices for two financial instruments.
 
         Returns:
-            pd.DataFrame: The dataset with additional columns 
-                for log returns and differenced log returns.
+            A tuple containing the slope and intercept of the relationship
         """
-        return load_and_prepare_data(df)
+        kf = self.kf
+        kf.H = np.array([[prices[1], 1.0]])
+        kf.predict()
+        kf.update(prices[0])
+        slope = kf.x.copy().flatten()[0]
+        intercept = kf.x.copy().flatten()[1]
 
-    # Step 2: Modeling (ARIMA + GARCH)
-    def fit_best_arima(self, window_data):
+        return slope, intercept
+
+    def calculate_etqt(self, prices: np.ndarray):
         """
-        Fits the ARIMA model to the provided window of data, 
-            selecting the best model based on AIC.
+        Calculates the forecast error and standard deviation of the predictions
+        using the Kalman Filter.
 
         Args:
-            window_data (np.array): The dataset for a specific window period.
+            prices : A numpy array of prices for two financial instruments.
 
         Returns:
-            ARIMA model: The best fitted ARIMA model based on AIC.
+            A tuple containing the forecast error and standard deviation of the predictions.
         """
-        return fit_best_arima(window_data)
 
-    def fit_garch(self, window_data):
-        """
-        Fits the GARCH model to the residuals of the best ARIMA model.
+        self.latest_prices[0] = prices[0]
+        self.latest_prices[1] = prices[1]
 
-        Args:
-            window_data (np.array): The dataset for a specific window period.
+        if all(self.latest_prices > -1.0):
+            slope, intercept = self.calc_slope_intercep(self.latest_prices)
 
-        Returns:
-            tuple: Contains the ARIMA result and GARCH result.
-        """
-        return fit_garch(window_data)
+            self.theta[0] = slope
+            self.theta[1] = intercept
 
-    def show_arima_garch_results(self, window_data, acf=True, test_resid=True):
-        """
-        Displays the ARIMA and GARCH model results, including plotting 
-        ACF of residuals and conducting , Box-Pierce and Ljung-Box tests.
+            # Create the observation matrix of the latest prices
+            # of Y and the intercept value (1.0) as well as the
+            # scalar value of the latest price from X
+            F = np.asarray([self.latest_prices[0], 1.0]).reshape((1, 2))
+            y = self.latest_prices[1]
 
-        Args:
-            window_data (np.array): The dataset for a specific window period.
-            acf (bool, optional): If True, plot the ACF of residuals. Defaults to True.
-
-            test_resid (bool, optional): 
-                If True, conduct Box-Pierce and Ljung-Box tests on residuals. Defaults to True.
-        """
-        arima_result = self.fit_best_arima(window_data)
-        resid = np.asarray(arima_result.resid)
-        resid = resid[~(np.isnan(resid) | np.isinf(resid))]
-        garch_model = arch_model(resid, p=1, q=1, rescale=False)
-        garch_result = garch_model.fit(disp='off')
-        residuals = garch_result.resid
-
-        # TODO : Plot the ACF of the residuals
-        if acf:
-            fig = plt.figure(figsize=(12, 8))
-            # Plot the ACF of ARIMA residuals
-            ax1 = fig.add_subplot(211, ylabel='ACF')
-            plot_acf(resid, alpha=0.05, ax=ax1, title='ACF of ARIMA Residuals')
-            ax1.set_xlabel('Lags')
-            ax1.grid(True)
-
-            # Plot the ACF of GARCH residuals on the same axes
-            ax2 = fig.add_subplot(212, ylabel='ACF')
-            plot_acf(residuals, alpha=0.05, ax=ax2,
-                     title='ACF of GARCH  Residuals')
-            ax2.set_xlabel('Lags')
-            ax2.grid(True)
-
-            # Plot the figure
-            plt.tight_layout()
-            plt.show()
-
-        # TODO : Conduct Box-Pierce and Ljung-Box Tests of the residuals
-        if test_resid:
-            print(arima_result.summary())
-            print(garch_result.summary())
-            bp_test = acorr_ljungbox(resid, return_df=True)
-            print("Box-Pierce and Ljung-Box Tests Results  for ARIMA:\n", bp_test)
-
-    # Step 3: Prediction
-    def predict_next_return(self, arima_result, garch_result):
-        """
-        Predicts the next return using the ARIMA model 
-            and the next volatility using the GARCH model.
-
-        Args:
-            arima_result (ARIMA model): The ARIMA model result.
-            garch_result (GARCH model): The GARCH model result.
-
-        Returns:
-            float: The predicted next return.
-        """
-        return predict_next_return(arima_result, garch_result)
-
-    def get_prediction(self, window_data):
-        """
-        Generates a prediction for the next return based on a window of data.
-
-        Args:
-            window_data (np.array): The dataset for a specific window period.
-
-        Returns:
-            float: The predicted next return.
-        """
-        return get_prediction(window_data)
-
-    def calculate_signals(self, window_data):
-        """
-        Calculates the trading signal based on the prediction.
-
-        Args:
-            window_data (np.array): The dataset for a specific window period.
-
-        Returns:
-            str: The trading signal ('LONG', 'SHORT', or None).
-        """
-        prediction = self.get_prediction(window_data)
-        if prediction > 0:
-            signal = "LONG"
-        elif prediction < 0:
-            signal = "SHORT"
-        else:
-            signal = None
-        return signal
-
-    # Step 4: Trading Strategy
-
-    def execute_trading_strategy(self, predictions):
-        """
-        Executes the trading strategy based on a list 
-        of predictions, determining positions to take.
-
-        Args:
-            predictions (list): A list of predicted returns.
-
-        Returns:
-            list: A list of positions (1 for 'LONG', -1 for 'SHORT', 0 for 'HOLD').
-        """
-        positions = []  # Long if 1, Short if -1
-        previous_position = 0  # Initial position
-        for prediction in predictions:
-            if prediction > 0:
-                current_position = 1  # Long
-            elif prediction < 0:
-                current_position = -1  # Short
+            # The prior value of the states {\theta_t} is
+            # distributed as a multivariate Gaussian with
+            # mean a_t and variance-covariance {R_t}
+            if self.R is not None:
+                self.R = self.C + self.wt
             else:
-                current_position = previous_position  # Hold previous position
-            positions.append(current_position)
-            previous_position = current_position
+                self.R = np.zeros((2, 2))
 
-        return positions
+            # Calculate the Kalman Filter update
+            # ---------------------------------
+            # Calculate prediction of new observation
+            # as well as forecast error of that prediction
+            yhat = F.dot(self.theta)
+            et = y - yhat
 
-    # Step 5: Vectorized Backtesting
-    def generate_predictions(self):
-        """
-        Generator that yields predictions one by one.
-        """
-        data = self.data
-        window_size = self.k
-        for i in range(window_size, len(data)):
-            print(
-                f"Processing window {i - window_size + 1}/{len(data) - window_size}...")
-            window_data = data['diff_log_return'].iloc[i-window_size:i]
-            next_return = self.get_prediction(window_data)
-            yield next_return
+            # {Q_t} is the variance of the prediction of
+            # observations and hence sqrt_Qt is the
+            # standard deviation of the predictions
+            Qt = F.dot(self.R).dot(F.T) + self.vt
+            sqrt_Qt = np.sqrt(Qt)
 
-    def backtest_strategy(self):
-        """
-        Performs a backtest of the strategy over 
-        the entire dataset, plotting cumulative returns.
-        """
-        data = self.data
-        window_size = self.k
-        print(
-            f"Starting backtesting for {self.symbol}\n"
-            f"Window size {window_size}.\n"
-            f"Total iterations: {len(data) - window_size}.\n")
-        predictions_generator = self.generate_predictions()
+            # The posterior value of the states {\theta_t} is
+            # distributed as a multivariate Gaussian with mean
+            # {m_t} and variance-covariance {C_t}
+            At = self.R.dot(F.T) / Qt
+            self.theta = self.theta + At.flatten() * et
+            self.C = self.R - At * F.dot(self.R)
+            return (et, sqrt_Qt)
+        else:
+            return None
 
-        positions = self.execute_trading_strategy(predictions_generator)
-
-        strategy_returns = np.array(
-            positions[:-1]) * data['log_return'].iloc[window_size+1:].values
-        buy_and_hold = data['log_return'].iloc[window_size+1:].values
-        buy_and_hold_returns = np.cumsum(buy_and_hold)
-        cumulative_returns = np.cumsum(strategy_returns)
-        dates = data.index[window_size+1:]
-        self.plot_cumulative_returns(
-            cumulative_returns, buy_and_hold_returns, dates)
-
-        print("\nBacktesting completed !!")
-
-    # Function to plot the cumulative returns
-    def plot_cumulative_returns(self, strategy_returns, buy_and_hold_returns, dates):
-        """
-        Plots the cumulative returns of the ARIMA+GARCH strategy against 
-            a buy-and-hold strategy.
-
-        Args:
-            strategy_returns (np.array): Cumulative returns from the strategy.
-            buy_and_hold_returns (np.array): Cumulative returns from a buy-and-hold strategy.
-            dates (pd.Index): The dates corresponding to the returns.
-        """
-        plt.figure(figsize=(14, 7))
-        plt.plot(dates, strategy_returns, label='ARIMA+GARCH ', color='blue')
-        plt.plot(dates, buy_and_hold_returns, label='Buy & Hold', color='red')
-        plt.xlabel('Time')
-        plt.ylabel('Cumulative Returns')
-        plt.title(f'ARIMA+GARCH Strategy vs. Buy & Hold on ({self.symbol})')
-        plt.legend()
-        plt.grid(True)
-        plt.show()
+# ******************************************
+#         ORNSTEIN UHLENBECK PROCESS       *
+# ******************************************
 
 
 class OrnsteinUhlenbeck():
@@ -1044,133 +1180,3 @@ class OrnsteinUhlenbeck():
                 self.sigma_hat * dW_matrix[:, t]
             )
         return simulations_matrix
-
-
-class KalmanFilterModel():
-    """
-    Implements a Kalman Filter model a recursive algorithm used for estimating 
-    the state of a linear dynamic system from a series of noisy measurements. 
-    It's designed to process market data, estimate dynamic parameters such as 
-    the slope and intercept of price relationships, 
-    forecast error and standard deviation of the predictions
-
-    You can learn more here https://en.wikipedia.org/wiki/Kalman_filter
-    """
-
-    def __init__(self, tickers: list | tuple, **kwargs):
-        """
-        Initializes the Kalman Filter strategy.
-
-        Args:
-            tickers : 
-            A list or tuple of ticker symbols representing financial instruments.
-
-            kwargs : Keyword arguments for additional parameters,
-             specifically `delta` and `vt`
-        """
-        self.tickers = tickers
-        assert self.tickers is not None
-        self.latest_prices = np.array([-1.0, -1.0])
-        self.delta = kwargs.get("delta", 1e-4)
-        self.wt = self.delta/(1-self.delta) * np.eye(2)
-        self.vt = kwargs.get("vt", 1e-3)
-        self.theta = np.zeros(2)
-        self.P = np.zeros((2, 2))
-        self.R = None
-        self.kf = self._init_kalman()
-
-    def _init_kalman(self):
-        """
-        Initializes and returns a Kalman Filter configured 
-        for the trading strategy. The filter is set up with initial 
-        state and covariance, state transition matrix, process noise
-        and measurement noise covariances.
-        """
-        kf = KalmanFilter(dim_x=2, dim_z=1)
-        kf.x = np.zeros((2, 1))  # Initial state
-        kf.P = self.P  # Initial covariance
-        kf.F = np.eye(2)  # State transition matrix
-        kf.Q = self.wt  # Process noise covariance
-        kf.R = 1.  # Scalar measurement noise covariance
-
-        return kf
-
-    def calc_slope_intercep(self, prices: np.ndarray):
-        """
-        Calculates and returns the slope and intercept 
-        of the relationship between the provided prices using the Kalman Filter. 
-        This method updates the filter with the latest price and returns 
-        the estimated slope and intercept.
-
-        Args:
-            prices : A numpy array of prices for two financial instruments.
-
-        Returns:
-            A tuple containing the slope and intercept of the relationship
-        """
-        kf = self.kf
-        kf.H = np.array([[prices[1], 1.0]])
-        kf.predict()
-        kf.update(prices[0])
-        slope = kf.x.copy().flatten()[0]
-        intercept = kf.x.copy().flatten()[1]
-
-        return slope, intercept
-
-    def calculate_etqt(self, prices: np.ndarray):
-        """
-        Calculates the forecast error and standard deviation of the predictions
-        using the Kalman Filter.
-
-        Args:
-            prices : A numpy array of prices for two financial instruments.
-
-        Returns:
-            A tuple containing the forecast error and standard deviation of the predictions.
-        """
-
-        self.latest_prices[0] = prices[0]
-        self.latest_prices[1] = prices[1]
-
-        if all(self.latest_prices > -1.0):
-            slope, intercept = self.calc_slope_intercep(self.latest_prices)
-
-            self.theta[0] = slope
-            self.theta[1] = intercept
-
-            # Create the observation matrix of the latest prices
-            # of Y and the intercept value (1.0) as well as the
-            # scalar value of the latest price from X
-            F = np.asarray([self.latest_prices[0], 1.0]).reshape((1, 2))
-            y = self.latest_prices[1]
-
-            # The prior value of the states {\theta_t} is
-            # distributed as a multivariate Gaussian with
-            # mean a_t and variance-covariance {R_t}
-            if self.R is not None:
-                self.R = self.C + self.wt
-            else:
-                self.R = np.zeros((2, 2))
-
-            # Calculate the Kalman Filter update
-            # ---------------------------------
-            # Calculate prediction of new observation
-            # as well as forecast error of that prediction
-            yhat = F.dot(self.theta)
-            et = y - yhat
-
-            # {Q_t} is the variance of the prediction of
-            # observations and hence sqrt_Qt is the
-            # standard deviation of the predictions
-            Qt = F.dot(self.R).dot(F.T) + self.vt
-            sqrt_Qt = np.sqrt(Qt)
-
-            # The posterior value of the states {\theta_t} is
-            # distributed as a multivariate Gaussian with mean
-            # {m_t} and variance-covariance {C_t}
-            At = self.R.dot(F.T) / Qt
-            self.theta = self.theta + At.flatten() * et
-            self.C = self.R - At * F.dot(self.R)
-            return (et, sqrt_Qt)
-        else:
-            return None
