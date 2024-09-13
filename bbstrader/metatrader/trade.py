@@ -820,7 +820,6 @@ class Trade(RiskManagement):
             trail (bool): Whether to trail the stop loss or not.
             stop_trail (int): Number of points to trail the stop loss by.
                 It represent the distance from the current price to the stop loss.
-            The stop loss will be moved by this number of points at each iteration.
             trail_after_points (int): Number of points in profit from where the strategy will start to trail the stop loss.
             be_plus_points (int): Number of points to add to the break-even level. Represents the minimum profit to secure.
         """

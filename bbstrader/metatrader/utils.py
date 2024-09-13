@@ -4,6 +4,38 @@ import logging
 from typing import List, NamedTuple, Optional
 from enum import Enum
 
+
+__all__ = [
+    "TIMEFRAMES",
+    "TimeFrame",
+    "TerminalInfo",
+    "AccountInfo",
+    "SymbolInfo",
+    "TickInfo",
+    "TradeRequest",
+    "OrderCheckResult",
+    "OrderSentResult",
+    "TradeOrder",
+    "TradePosition",
+    "TradeDeal",
+    "InvalidBroker",
+    "GenericFail",
+    "InvalidParams",
+    "HistoryNotFound",
+    "InvalidVersion",
+    "AuthFailed",
+    "UnsupportedMethod",
+    "AutoTradingDisabled",
+    "InternalFailSend",
+    "InternalFailReceive",
+    "InternalFailInit",
+    "InternalFailConnect",
+    "InternalFailTimeout",
+    "trade_retcode_message",
+    "raise_mt5_error",
+    "config_logger",
+]
+
 def config_logger(log_file: str, console_log=True):
     # Configure the logger
     logger = logging.getLogger(__name__)
@@ -55,34 +87,6 @@ class LogLevelFilter(logging.Filter):
         return record.levelno in self.levels
 
 
-__all__ = [
-    "TIMEFRAMES",
-    "TimeFrame",
-    "TerminalInfo",
-    "AccountInfo",
-    "SymbolInfo",
-    "TickInfo",
-    "TradeRequest",
-    "OrderCheckResult",
-    "OrderSentResult",
-    "TradeOrder",
-    "TradePosition",
-    "TradeDeal",
-    "GenericFail",
-    "InvalidParams",
-    "HistoryNotFound",
-    "InvalidVersion",
-    "AuthFailed",
-    "UnsupportedMethod",
-    "AutoTradingDisabled",
-    "InternalFailSend",
-    "InternalFailReceive",
-    "InternalFailInit",
-    "InternalFailConnect",
-    "InternalFailTimeout",
-    "trade_retcode_message",
-    "raise_mt5_error",
-]
 
 # TIMEFRAME is an enumeration with possible chart period values
 # See https://www.mql5.com/en/docs/python_metatrader5/mt5copyratesfrom_py#timeframe
@@ -136,7 +140,6 @@ class TimeFrame(Enum):
     D1 = "D1"
     W1 = "W1"
     MN1 = "MN1"
-
 
 class TerminalInfo(NamedTuple):
     """
@@ -466,6 +469,11 @@ class TradeDeal(NamedTuple):
     symbol: str
     comment: str
     external_id: str
+
+class InvalidBroker(Exception):
+    """Exception raised for invalid broker errors."""
+    def __init__(self, message="Invalid broker."):
+        super().__init__(message)
 
 
 class MT5TerminalError(Exception):
