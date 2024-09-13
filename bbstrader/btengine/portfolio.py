@@ -1,13 +1,15 @@
 import pandas as pd
 from queue import Queue
+from pathlib import Path
 from datetime import datetime
 from bbstrader.btengine.event import (
     OrderEvent, FillEvent, MarketEvent, SignalEvent
 )
 from bbstrader.btengine.data import DataHandler
 from bbstrader.btengine.performance import (
-    create_drawdowns, plot_performance, show_qs_stats,
-    plot_returns_and_dd, plot_monthly_yearly_returns
+    create_drawdowns, create_sharpe_ratio, create_sortino_ratio, 
+    plot_performance, show_qs_stats,plot_returns_and_dd, 
+    plot_monthly_yearly_returns
 )
 import quantstats as qs
 
@@ -306,8 +308,8 @@ class Portfolio(object):
         returns = self.equity_curve['Returns']
         pnl = self.equity_curve['Equity Curve']
 
-        sharpe_ratio = qs.stats.sharpe(returns, periods=self.tf)
-        sortino_ratio = qs.stats.sortino(returns, periods=self.tf)
+        sharpe_ratio = create_sharpe_ratio(returns, periods=self.tf)
+        sortino_ratio = create_sortino_ratio(returns, periods=self.tf)
         drawdown, _, _ = create_drawdowns(pnl)
         max_dd = qs.stats.max_drawdown(returns)
         dd_details = qs.stats.drawdown_details(drawdown)
@@ -323,14 +325,20 @@ class Portfolio(object):
         ]
         now = datetime.now().strftime('%Y%m%d%H%M%S')
         strategy_name = self.strategy_name.replace(' ', '_')
-        file =  f"{strategy_name}_{now}_equity.csv"
-        self.equity_curve.to_csv(file)
+        results_dir = Path('Backtest_Results') / strategy_name
+        results_dir.mkdir(parents=True, exist_ok=True)
+        
+        csv_file =  f"{strategy_name}_{now}_equity.csv"
+        png_file = f'{strategy_name}_{now}_returns_heatmap.png'
+        html_file = f"{strategy_name}_{now}_report.html"
+        self.equity_curve.to_csv(results_dir / csv_file)
+        
         plot_performance(self.equity_curve, self.strategy_name)
-        plot_returns_and_dd(self.equity_curve,
-                            self.benchmark, self.strategy_name)
-        qs.plots.monthly_heatmap(returns, savefig='monthly_heatmap.png')
+        plot_returns_and_dd(self.equity_curve, self.benchmark, self.strategy_name)
+        qs.plots.monthly_heatmap(returns, savefig=f"{results_dir}/{png_file}")
         plot_monthly_yearly_returns(self.equity_curve, self.strategy_name)
-        show_qs_stats(self.equity_curve, self.benchmark, self.strategy_name)
+        show_qs_stats(returns, self.benchmark, self.strategy_name, 
+                      save_dir=f"{results_dir}/{html_file}")
 
         return stats
 

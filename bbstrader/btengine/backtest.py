@@ -99,6 +99,7 @@ class Backtest(object):
         self.fills = 0
 
         self._generate_trading_instances()
+        self.show_equity = kwargs.get("show_equity", False)
 
     def _generate_trading_instances(self):
         """
@@ -186,15 +187,16 @@ class Backtest(object):
                 "\n"
             )
 
-        print("\nCreating equity curve...")
-        print("\n[======= EQUITY CURVE =======]")
-        print(
-            tabulate(
-                self.portfolio.equity_curve.tail(10), 
-                headers="keys", 
-                tablefmt="outline"), 
-                "\n"
-            )
+        if self.show_equity:
+            print("\nCreating equity curve...")
+            print("\n[======= EQUITY CURVE =======]")
+            print(
+                tabulate(
+                    self.portfolio.equity_curve.tail(10), 
+                    headers="keys", 
+                    tablefmt="outline"), 
+                    "\n"
+                )
     
     def simulate_trading(self):
         """

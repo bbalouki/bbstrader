@@ -6,10 +6,9 @@ from datetime import datetime
 import MetaTrader5 as mt5
 from currency_converter import SINGLE_DAY_ECB_URL, CurrencyConverter
 from bbstrader.metatrader.utils import (
-    raise_mt5_error, AccountInfo, TerminalInfo,
+    raise_mt5_error, AccountInfo, TerminalInfo, InvalidBroker,
     SymbolInfo, TickInfo, TradeRequest, OrderCheckResult,
-    OrderSentResult, TradePosition, TradeOrder, TradeDeal,
-)
+    OrderSentResult, TradePosition, TradeOrder, TradeDeal,)
 from typing import Tuple, Union, List, Dict, Any, Optional, Literal
 
 
@@ -18,6 +17,13 @@ __BROKERS__ = {
     'JGM': "Just Global Markets Ltd.",
     'FTMO': "FTMO S.R.O."
 }
+
+BROKERS_TIMEZONES = {
+    'AMG': 'Europe/Helsinki',
+    'JGM': 'Europe/Helsinki',
+    'FTMO': 'Europe/Helsinki'
+}
+
 _ADMIRAL_MARKETS_URL_ = "https://cabinet.a-partnership.com/visit/?bta=35537&brand=admiralmarkets"
 _ADMIRAL_MARKETS_PRODUCTS_ = ["Stocks", "ETFs",
                             "Indices", "Commodities", "Futures", "Forex"]
@@ -93,13 +99,14 @@ class Account(object):
         supported = __BROKERS__.copy()
         broker = self.get_terminal_info().company
         if broker not in supported.values():
-            raise ValueError(
+            msg = (
                 f"{broker} is not currently supported broker for the Account() class\n"
                 f"Currently Supported brokers are: {', '.join(supported.values())}\n"
                 f"For {supported['AMG']}, See [{amg_url}]\n"
                 f"For {supported['JGM']}, See [{jgm_url}]\n"
                 f"For {supported['FTMO']}, See [{ftmo_url}]\n"
             )
+            raise InvalidBroker(message=msg)
 
     def get_account_info(
         self,

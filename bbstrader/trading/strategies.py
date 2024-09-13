@@ -19,8 +19,8 @@ from bbstrader.btengine.strategy import Strategy
 from bbstrader.btengine.execution import *
 from bbstrader.btengine.data import *
 from bbstrader.tseries import (
-    KalmanFilterModel, ArimaGarchModel
-)
+    KalmanFilterModel, ArimaGarchModel)
+
 __all__ = [
     'SMAStrategy', 
     'ArimaGarchStrategy', 
@@ -653,13 +653,15 @@ class StockIndexSTBOTrading(Strategy):
                         position.price_open for position in positions
                         if position.type == 0 and position.magic == self.ID
                     ]
+                    if len(buy_prices) == 0:
+                        continue
                     avg_price = sum(buy_prices) / len(buy_prices)
                     if self._calculate_pct_change(
                             current_price, avg_price) >= (self.expeted_return[index]):
                         signals[index] = 'EXIT'
                 self.logger.info(
                     f"SYMBOL={index} - Hp={self.heightest_price[index]} - " 
-                    f"Lp={self.lowerst_price[index]} - Cp={current_price} - %change={down_change}"
+                    f"Lp={self.lowerst_price[index]} - Cp={current_price} - %chg={round(down_change, 2)}"
                 )
         return signals
 

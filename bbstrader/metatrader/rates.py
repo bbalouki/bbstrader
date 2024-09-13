@@ -3,8 +3,7 @@ import MetaTrader5 as Mt5
 from datetime import datetime
 from typing import Union, Optional
 from bbstrader.metatrader.utils import (
-    raise_mt5_error, TimeFrame, TIMEFRAMES
-)
+    raise_mt5_error, TimeFrame, TIMEFRAMES)
 from bbstrader.metatrader.account import INIT_MSG
 from pandas.tseries.offsets import CustomBusinessDay
 from pandas.tseries.holiday import USFederalHolidayCalendar
@@ -28,7 +27,7 @@ class Rates(object):
         In your MT5 terminal, go to `Tools` -> `Options` -> `Charts` -> `Max bars in chart`.
         
         2. The `get_open, get_high, get_low, get_close, get_adj_close, get_returns,
-        get_volume` properties return data in  Broker's timezone.
+        get_volume` properties returns data in  Broker's timezone.
 
     Example:
         >>> rates = Rates("EURUSD", "1h")
@@ -226,7 +225,7 @@ class Rates(object):
     
     @property
     def get_volume(self):
-        return self.data['Volume']
+        return self.__data['Volume']
 
     def get_historical_data(
         self,
@@ -252,7 +251,7 @@ class Rates(object):
             ValueError: If the starting date is greater than the ending date.
         
         Notes:
-            The Datetime for this method is in UTC timezone.
+            The Datetime for this method is in Local timezone.
         """
         df = self._fetch_data(date_from, date_to)
         if save_csv and df is not None:

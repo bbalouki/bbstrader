@@ -1,4 +1,3 @@
-from math import log
 import time
 from datetime import datetime
 from bbstrader.metatrader.trade import Trade
@@ -22,7 +21,7 @@ _TF_MAPPING = {
     'D1':  1440
 }
 
-TRADING_DAYS = [
+TradingDays = [
     'monday', 
     'tuesday', 
     'wednesday', 
@@ -31,14 +30,18 @@ TRADING_DAYS = [
 ]
 
 def _check_mt5_connection():
-    if not mt5.initialize():
+    try:
+        init = mt5.initialize()
+        if not init:
+            raise_mt5_error(INIT_MSG)
+    except Exception:
         raise_mt5_error(INIT_MSG)
 
 def _mt5_execution(
-    symbol_list, trades_instances, strategy_cls, /,
-        mm, time_frame, iter_time, period, trading_days,
-        comment, **kwargs
-):
+        symbol_list, trades_instances, strategy_cls, /,
+        mm, trail, stop_trail, trail_after_points, be_plus_points, 
+        time_frame, iter_time, period, period_end_action, trading_days,
+        comment, **kwargs):
     symbols = symbol_list.copy()
     STRATEGY = kwargs.get('strategy_name')
     _max_trades = kwargs.get('max_trades')
@@ -54,11 +57,15 @@ def _mt5_execution(
         if buys is not None:
             logger.info(
                 f"Checking for Break even, SYMBOL={symbol}...STRATEGY={STRATEGY}")
-            trades_instances[symbol].break_even(mm=mm)
+            trades_instances[symbol].break_even(
+                mm=mm, trail=trail, stop_trail=stop_trail, 
+                trail_after_points=trail_after_points, be_plus_points=be_plus_points)
         if sells is not None:
             logger.info(
                 f"Checking for Break even, SYMBOL={symbol}...STRATEGY={STRATEGY}")
-            trades_instances[symbol].break_even(mm=mm)
+            trades_instances[symbol].break_even(
+                mm=mm, trail=trail, stop_trail=stop_trail, 
+                trail_after_points=trail_after_points, be_plus_points=be_plus_points)
     num_days = 0
     time_intervals = 0
     trade_time = _TF_MAPPING[time_frame]
@@ -169,7 +176,13 @@ def _mt5_execution(
                         f"End of the Day !!! SYMBOL={trade.symbol}, STRATEGY={STRATEGY}")
                     trade.statistics(save=True)
             if trades_instances[symbols[-1]].days_end():
-                break
+                if period_end_action == 'break':
+                    break
+                elif period_end_action == 'sleep':
+                    sleep_time = trades_instances[symbols[-1]].sleep_time()
+                    logger.info(f"Sleeping for {sleep_time} minutes ...")
+                    time.sleep(60 * sleep_time)
+                    logger.info("STARTING NEW TRADING SESSION ...\n")
 
         elif period.lower() == 'week':
             for symbol in symbols:
@@ -187,9 +200,15 @@ def _mt5_execution(
                 sleep_time = trades_instances[symbols[-1]].sleep_time()
                 logger.info(f"Sleeping for {sleep_time} minutes ...")
                 time.sleep(60 * sleep_time)
-                logger.info("\nSTARTING NEW TRADING SESSION ...")
+                logger.info("STARTING NEW TRADING SESSION ...\n")
             elif trades_instances[symbols[-1]].days_end() and today == 'friday':
-                break
+                if period_end_action == 'break':
+                    break
+                elif period_end_action == 'sleep':
+                    sleep_time = trades_instances[symbols[-1]].sleep_time(weekend=True)
+                    logger.info(f"Sleeping for {sleep_time} minutes ...")
+                    time.sleep(60 * sleep_time)
+                    logger.info("STARTING NEW TRADING SESSION ...\n")
 
         elif period.lower() == 'month':
             for symbol in symbols:
@@ -214,14 +233,14 @@ def _mt5_execution(
                 sleep_time = trades_instances[symbols[-1]].sleep_time()
                 logger.info(f"Sleeping for {sleep_time} minutes ...")
                 time.sleep(60 * sleep_time)
-                logger.info("\nSTARTING NEW TRADING SESSION ...")
+                logger.info("STARTING NEW TRADING SESSION ...\n")
                 num_days += 1
             elif trades_instances[symbols[-1]].days_end() and today == 'friday':
                 sleep_time = trades_instances[symbols[-1]
                                               ].sleep_time(weekend=True)
                 logger.info(f"Sleeping for {sleep_time} minutes ...")
                 time.sleep(60 * sleep_time)
-                logger.info("\nSTARTING NEW TRADING SESSION ...")
+                logger.info("STARTING NEW TRADING SESSION ...\n")
                 num_days += 1
             elif (trades_instances[symbols[-1]].days_end()
                   and today == 'friday'
@@ -317,10 +336,15 @@ class ExecutionEngine():
                  strategy_cls:       Strategy,
                  /,
                  mm:                 Optional[bool] = True,
+                 trail:              Optional[bool] = True,
+                 stop_trail:         Optional[int] = None,
+                 trail_after_points: Optional[int] = None,
+                 be_plus_points:     Optional[int] = None,
                  time_frame:         Optional[str] = '15m',
                  iter_time:          Optional[int | float] = 5,
                  period:             Literal['day', 'week', 'month'] = 'week',
-                 trading_days:       Optional[List[str]] = TRADING_DAYS,
+                 period_end_action:  Literal['break', 'sleep'] = 'break',
+                 trading_days:       Optional[List[str]] = TradingDays,
                  comment:            Optional[str] = None,
                  **kwargs
                  ):
@@ -333,6 +357,8 @@ class ExecutionEngine():
             time_frame : Time frame to trade. Defaults to '15m'.
             iter_time : Interval to check for signals and `mm`. Defaults to 5.
             period : Period to trade. Defaults to 'week'.
+            period_end_action : Action to take at the end of the period. Defaults to 'break', 
+                this only applies when period is 'day', 'week'.
             trading_days : Trading days in a week. Defaults to monday to friday.
             comment: Comment for trades. Defaults to None.
             **kwargs: Additional keyword arguments
@@ -341,10 +367,11 @@ class ExecutionEngine():
                 - logger (Optional[logging.Logger]): Logger instance. Defaults to None.
 
         Note:
-            1. All Strategies must inherit from `bbstrader.btengine.strategy.Strategy` class
+            1. For `trail` , `stop_trail` , `trail_after_points` , `be_plus_points` see `bbstrader.metatrader.trade.Trade.break_even()` .
+            2. All Strategies must inherit from `bbstrader.btengine.strategy.Strategy` class
             and have a `calculate_signals` method that returns a dictionary of signals for each symbol in symbol_list.
             
-            2. All strategies must have the following arguments in their `__init__` method:
+            3. All strategies must have the following arguments in their `__init__` method:
                 - bars (DataHandler): DataHandler instance default to None
                 - events (Queue): Queue instance default to None
                 - symbol_list (List[str]): List of symbols to trade can be none for backtesting
@@ -354,16 +381,21 @@ class ExecutionEngine():
                     the `Strategy` class, the `DataHandler` class, the `Portfolio` class and the `ExecutionHandler` class.
                 - The `bars` and `events` arguments are used for backtesting only.
             
-            3. All strategies must generate signals for backtesting and live trading.
+            4. All strategies must generate signals for backtesting and live trading.
             See the `bbstrader.trading.strategies` module for more information on how to create custom strategies.
         """
         self.symbol_list = symbol_list
         self.trades_instances = trades_instances
         self.strategy_cls = strategy_cls
         self.mm = mm
+        self.trail = trail
+        self.stop_trail = stop_trail
+        self.trail_after_points = trail_after_points
+        self.be_plus_points = be_plus_points
         self.time_frame = time_frame
         self.iter_time = iter_time
         self.period = period
+        self.period_end_action = period_end_action
         self.trading_days = trading_days
         self.comment = comment
         self.kwargs = kwargs
@@ -377,9 +409,14 @@ class ExecutionEngine():
                 self.trades_instances,
                 self.strategy_cls,
                 mm=self.mm,
+                trail=self.trail,
+                stop_trail=self.stop_trail,
+                trail_after_points=self.trail_after_points,
+                be_plus_points=self.be_plus_points,
                 time_frame=self.time_frame,
                 iter_time=self.iter_time,
                 period=self.period,
+                period_end_action=self.period_end_action,
                 trading_days=self.trading_days,
                 comment=self.comment,
                 **self.kwargs

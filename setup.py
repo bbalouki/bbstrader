@@ -7,7 +7,7 @@ if sys.version_info < (3, 10):
 with open("README.md", encoding="utf-8") as fh:
     long_description = fh.read()
 
-VERSION = '0.1.07'
+VERSION = '0.1.08'
 DESCRIPTION = 'Simplified Investment & Trading Toolkit'
 
 KEYWORDS = [
@@ -36,7 +36,7 @@ REQUIREMENTS = [
     "hmmlearn", "pmdarima", "arch", "hurst", "seaborn",
     "statsmodels", "matplotlib", "filterpy", "pytest",
     "CurrencyConverter", "tabulate", "ipython", "quantstats",
-    "Metatrader5"
+    #"Metatrader5"
 ]
 
 # Setting up
@@ -54,8 +54,8 @@ setup(
     author_email='<bertin@bbstrader.com>',
     maintainer='Bertin Balouki SIMYELI',
     description=DESCRIPTION,
-    long_description_content_type="text/markdown",
     long_description=long_description,
+    long_description_content_type="text/markdown",
     packages=[
         "bbstrader",
         "bbstrader.btengine",
