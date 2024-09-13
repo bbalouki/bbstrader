@@ -7,8 +7,7 @@ import MetaTrader5 as Mt5
 from bbstrader.metatrader.account import Account
 from bbstrader.metatrader.rates import Rates
 from bbstrader.metatrader.utils import (
-    TIMEFRAMES, raise_mt5_error, TimeFrame
-)
+    TIMEFRAMES, raise_mt5_error, TimeFrame)
 from typing import List, Dict, Optional, Literal, Union, Any
 
 
