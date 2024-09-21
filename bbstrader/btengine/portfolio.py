@@ -325,7 +325,7 @@ class Portfolio(object):
         ]
         now = datetime.now().strftime('%Y%m%d%H%M%S')
         strategy_name = self.strategy_name.replace(' ', '_')
-        results_dir = Path('Backtest_Results') / strategy_name
+        results_dir = Path('.backtests') / strategy_name
         results_dir.mkdir(parents=True, exist_ok=True)
         
         csv_file =  f"{strategy_name}_{now}_equity.csv"
