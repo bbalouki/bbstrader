@@ -54,6 +54,14 @@ _SYMBOLS_TYPE_ = {
     "CRYPTO": r'\b(Cryptos?)\b'
 }
 
+def check_mt5_connection():
+    try:
+        init = mt5.initialize()
+        if not init:
+            raise_mt5_error(INIT_MSG)
+    except Exception:
+        raise_mt5_error(INIT_MSG)
+
 class Account(object):
     """
     The `Account` class is utilized to retrieve information about 
@@ -91,8 +99,7 @@ class Account(object):
     """
 
     def __init__(self):
-        if not mt5.initialize():
-            raise_mt5_error(message=INIT_MSG)
+        check_mt5_connection()
         self._check_brokers()
 
     def _check_brokers(self):
