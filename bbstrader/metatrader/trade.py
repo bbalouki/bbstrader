@@ -9,7 +9,7 @@ from tabulate import tabulate
 from typing import List, Tuple, Dict, Any, Optional, Literal
 from bbstrader.btengine.performance import create_sharpe_ratio
 from bbstrader.metatrader.risk import RiskManagement
-from bbstrader.metatrader.account import INIT_MSG
+from bbstrader.metatrader.account import check_mt5_connection, INIT_MSG
 from bbstrader.metatrader.utils import (
     TimeFrame, TradePosition, TickInfo,
     raise_mt5_error, trade_retcode_message, config_logger)
@@ -75,7 +75,6 @@ class Trade(RiskManagement):
         expert_id: int = 9818,
         version: str = '1.0',
         target: float = 5.0,
-        be_on_trade_open: bool = True,
         start_time: str = "1:00",
         finishing_time: str = "23:00",
         ending_time: str = "23:30",
@@ -93,8 +92,7 @@ class Trade(RiskManagement):
             expert_id (int): The `unique ID` used to identify the expert advisor 
                 or the strategy used on the symbol.
             version (str): The `version` of the expert advisor.
-            target (float): `Trading period (day, week, month) profit target` in percentage
-            be_on_trade_open (bool): Whether to check for break-even when opening a trade.
+            target (float): `Trading period (day, week, month) profit target` in percentage.
             start_time (str): The` hour and minutes` that the expert advisor is able to start to run.
             finishing_time (str): The time after which no new position can be opened.
             ending_time (str): The time after which any open position will be closed.
@@ -131,7 +129,6 @@ class Trade(RiskManagement):
         self.expert_id = expert_id
         self.version = version
         self.target = target
-        self.be_on_trade_open = be_on_trade_open
         self.verbose = verbose
         self.start = start_time
         self.end = ending_time
@@ -151,7 +148,7 @@ class Trade(RiskManagement):
         self.opened_orders = []
         self.break_even_status = []
         self.break_even_points = {}
-        self.trail_after_points = {}
+        self.trail_after_points = []
 
         self.initialize()
         self.select_symbol()
@@ -168,7 +165,7 @@ class Trade(RiskManagement):
     def  _get_logger(self, logger: str | Logger, consol_log: bool) -> Logger:
         """Get the logger object"""
         if isinstance(logger, str):
-            return config_logger(logger, consol_log=consol_log)
+            return config_logger(logger, consol_log)
         return logger
     
     def initialize(self):
@@ -184,8 +181,7 @@ class Trade(RiskManagement):
         try:
             if self.verbose:
                 print("\nInitializing the basics.")
-            if not Mt5.initialize():
-                raise_mt5_error(message=INIT_MSG)
+            check_mt5_connection()
             if self.verbose:
                 print(
                     f"You are running the @{self.expert_name} Expert advisor,"
@@ -363,7 +359,7 @@ class Trade(RiskManagement):
             }
             # Create the directory if it doesn't exist
             if dir is None:
-                dir = f"{self.expert_name}_session_stats"
+                dir = f".{self.expert_name}_session_stats"
             os.makedirs(dir, exist_ok=True)
             if '.' in self.symbol:
                 symbol = self.symbol.split('.')[0]
@@ -435,8 +431,7 @@ class Trade(RiskManagement):
         if action != 'BMKT':
             request["action"] = Mt5.TRADE_ACTION_PENDING
             request["type"] = self._order_type()[action][0]
-        if self.be_on_trade_open:
-            self.break_even(mm=mm, id=Id)
+        self.break_even(mm=mm, id=Id)
         if self.check(comment):
             self.request_result(_price, request, action),
 
@@ -505,8 +500,7 @@ class Trade(RiskManagement):
         if action != 'SMKT':
             request["action"] = Mt5.TRADE_ACTION_PENDING
             request["type"] = self._order_type()[action][0]
-        if self.be_on_trade_open:
-            self.break_even(mm=mm, id=Id)
+        self.break_even(mm=mm, id=Id)
         if self.check(comment):
             self.request_result(_price, request, action)
 
@@ -862,7 +856,7 @@ class Trade(RiskManagement):
                                     # This ensures that the position rich the minimum points required
                                     # before the trail can be set
                                     new_be = trail_after_points - be
-                                    self.trail_after_points[position.ticket] = True
+                                    self.trail_after_points.append(position.ticket)
                             new_be_points = self.break_even_points[position.ticket] + new_be
                             favorable_move = float(points/point) >= new_be_points
                             if favorable_move:
@@ -1342,30 +1336,68 @@ class Trade(RiskManagement):
 def create_trade_instance(
         symbols: List[str],
         params: Dict[str, Any],
-        logger: Logger = ...) -> Dict[str, Trade]:
+        daily_risk: Optional[Dict[str, float]] = None,
+        max_risk: Optional[Dict[str, float]] = None,
+        pchange_sl: Optional[Dict[str, float] | float] = None,
+        logger: Logger = None) -> Dict[str, Trade]:
     """
     Creates Trade instances for each symbol provided.
 
     Args:
         symbols: A list of trading symbols (e.g., ['AAPL', 'MSFT']).
         params: A dictionary containing parameters for the Trade instance.
+        daily_risk: A dictionary containing daily risk weight for each symbol.
+        max_risk: A dictionary containing maximum risk weight for each symbol.
+        logger: A logger instance.
 
     Returns:
         A dictionary where keys are symbols and values are corresponding Trade instances.
 
     Raises:
         ValueError: If the 'symbols' list is empty or the 'params' dictionary is missing required keys.
+    
+    Note:
+        `daily_risk` and `max_risk`  can be used to manage the risk of each symbol 
+        based on the importance of the symbol in the portfolio or strategy.
     """
     instances = {}
     if not symbols:
         raise ValueError("The 'symbols' list cannot be empty.")
+    if not params:
+        raise ValueError("The 'params' dictionary cannot be empty.")
+    
+    if daily_risk is not None:
+        for symbol in symbols:
+            if symbol not in daily_risk:
+                raise ValueError(f"Missing daily risk weight for symbol '{symbol}'.")
+    if max_risk is not None:
+        for symbol in symbols:
+            if symbol not in max_risk:
+                raise ValueError(f"Missing maximum risk percentage for symbol '{symbol}'.")
+    if pchange_sl is not None:
+        if isinstance(pchange_sl, dict):
+            for symbol in symbols:
+                if symbol not in pchange_sl:
+                    raise ValueError(f"Missing percentage change for symbol '{symbol}'.")
+    
     for symbol in symbols:
         try:
-            instances[symbol] = Trade(symbol=symbol, **params)
+            params['symbol'] = symbol
+            params['pchange_sl'] = (
+                pchange_sl[symbol] if pchange_sl is not None
+                and isinstance(pchange_sl, dict) else pchange_sl
+            )
+            params['daily_risk'] = daily_risk[symbol] if daily_risk is not None else params['daily_risk']
+            params['max_risk'] = max_risk[symbol] if max_risk is not None else params['max_risk']
+            instances[symbol] = Trade(**params)
         except Exception as e:
             logger.error(f"Creating Trade instance, SYMBOL={symbol} {e}")
+    
     if len(instances) != len(symbols):
         for symbol in symbols:
             if symbol not in instances:
-                logger.error(f"Failed to create Trade instance for SYMBOL={symbol}")
+                if logger is not None:
+                    logger.error(f"Failed to create Trade instance for SYMBOL={symbol}")
+                else:
+                    raise ValueError(f"Failed to create Trade instance for SYMBOL={symbol}")
     return instances
