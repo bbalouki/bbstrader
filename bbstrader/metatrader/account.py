@@ -4,6 +4,7 @@ import pandas as pd
 import urllib.request
 from datetime import datetime
 import MetaTrader5 as mt5
+from dotenv import load_dotenv
 from currency_converter import SINGLE_DAY_ECB_URL, CurrencyConverter
 from bbstrader.metatrader.utils import (
     raise_mt5_error, AccountInfo, TerminalInfo, InvalidBroker,
@@ -11,7 +12,7 @@ from bbstrader.metatrader.utils import (
     OrderSentResult, TradePosition, TradeOrder, TradeDeal,)
 from typing import Tuple, Union, List, Dict, Any, Optional, Literal
 
-
+load_dotenv()
 __BROKERS__ = {
     'AMG': "Admirals Group AS",
     'JGM': "Just Global Markets Ltd.",
@@ -24,12 +25,12 @@ BROKERS_TIMEZONES = {
     'FTMO': 'Europe/Helsinki'
 }
 
-_ADMIRAL_MARKETS_URL_ = "https://cabinet.a-partnership.com/visit/?bta=35537&brand=admiralmarkets"
+_ADMIRAL_MARKETS_URL_ = os.getenv("ADMIRAL_MARKETS_URL")
 _ADMIRAL_MARKETS_PRODUCTS_ = ["Stocks", "ETFs",
                             "Indices", "Commodities", "Futures", "Forex"]
-_JUST_MARKETS_URL_ = "https://one.justmarkets.link/a/tufvj0xugm/registration/trader"
+_JUST_MARKETS_URL_ = os.getenv("JUST_MARKETS_URL")
 _JUST_MARKETS_PRODUCTS_ = ["Stocks", "Crypto", "indices", "Commodities", "Forex"]
-_FTMO_URL_ = "https://trader.ftmo.com/?affiliates=JGmeuQqepAZLMcdOEQRp"
+_FTMO_URL_ = os.getenv("FTMO_URL")
 
 INIT_MSG = (
     f"\n* Ensure you have a good and stable internet connexion\n"

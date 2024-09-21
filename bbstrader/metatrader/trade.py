@@ -1339,7 +1339,7 @@ def create_trade_instance(
         daily_risk: Optional[Dict[str, float]] = None,
         max_risk: Optional[Dict[str, float]] = None,
         pchange_sl: Optional[Dict[str, float] | float] = None,
-        logger: Logger = None) -> Dict[str, Trade]:
+    ) -> Dict[str, Trade]:
     """
     Creates Trade instances for each symbol provided.
 
@@ -1348,7 +1348,6 @@ def create_trade_instance(
         params: A dictionary containing parameters for the Trade instance.
         daily_risk: A dictionary containing daily risk weight for each symbol.
         max_risk: A dictionary containing maximum risk weight for each symbol.
-        logger: A logger instance.
 
     Returns:
         A dictionary where keys are symbols and values are corresponding Trade instances.
@@ -1360,6 +1359,7 @@ def create_trade_instance(
         `daily_risk` and `max_risk`  can be used to manage the risk of each symbol 
         based on the importance of the symbol in the portfolio or strategy.
     """
+    logger = params.get('logger')
     instances = {}
     if not symbols:
         raise ValueError("The 'symbols' list cannot be empty.")
@@ -1396,7 +1396,7 @@ def create_trade_instance(
     if len(instances) != len(symbols):
         for symbol in symbols:
             if symbol not in instances:
-                if logger is not None:
+                if logger is not None and isinstance(logger, Logger):
                     logger.error(f"Failed to create Trade instance for SYMBOL={symbol}")
                 else:
                     raise ValueError(f"Failed to create Trade instance for SYMBOL={symbol}")
