@@ -341,7 +341,7 @@ class RiskManagement(Account):
         """
         P = self.get_account_info().margin_free
         trade_risk = self.get_trade_risk()
-        loss_allowed = P * trade_risk
+        loss_allowed = P * trade_risk / 100
         var = self.calculate_var(c=self.var_level, tf=self.var_tf)
         return min(var, loss_allowed)
 

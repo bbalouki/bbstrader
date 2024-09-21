@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Union, Optional
 from bbstrader.metatrader.utils import (
     raise_mt5_error, TimeFrame, TIMEFRAMES)
-from bbstrader.metatrader.account import INIT_MSG
+from bbstrader.metatrader.account import check_mt5_connection
 from pandas.tseries.offsets import CustomBusinessDay
 from pandas.tseries.holiday import USFederalHolidayCalendar
 
@@ -74,9 +74,7 @@ class Rates(object):
 
 
     def _mt5_initialized(self):
-        """Ensures the MetaTrader 5 Terminal is initialized."""
-        if not Mt5.initialize():
-            raise_mt5_error(message=INIT_MSG)
+        check_mt5_connection()
     
     def _get_start_pos(self, index, time_frame):
         if isinstance(index, int):

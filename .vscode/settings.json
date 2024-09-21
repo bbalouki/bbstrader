@@ -4,5 +4,5 @@
     "editor.formatOnSave": true
   },
   "python.terminal.activateEnvInCurrentTerminal": true,
-  "python.analysis.autoImportCompletions": true
+  "python.analysis.autoImportCompletions": false
 }

@@ -7,7 +7,6 @@ import pandas as pd
 from queue import Queue
 import yfinance as yf
 from datetime import datetime
-from typing import List, Literal, Dict, Union, Optional
 from bbstrader.metatrader.rates import Rates
 from bbstrader.metatrader.account import Account
 from bbstrader.btengine.event import SignalEvent
@@ -20,17 +19,19 @@ from bbstrader.btengine.execution import *
 from bbstrader.btengine.data import *
 from bbstrader.tseries import (
     KalmanFilterModel, ArimaGarchModel)
+from typing import Union, Optional, Literal, Dict, List
 
 __all__ = [
     'SMAStrategy', 
     'ArimaGarchStrategy', 
     'KalmanFilterStrategy',
     'StockIndexSTBOTrading',
-    'test_strategy'
+    'test_strategy',
+    'get_quantities'
 ]
 
 
-def _get_quantities(quantities, symbol_list):
+def get_quantities(quantities, symbol_list):
     if isinstance(quantities, dict):
         return quantities
     elif isinstance(quantities, int):
@@ -84,7 +85,7 @@ class SMAStrategy(Strategy):
         self.short_window = kwargs.get("short_window", 50)
         self.long_window = kwargs.get("long_window", 200)
         self.tf = kwargs.get("time_frame", 'D1')
-        self.qty = _get_quantities(
+        self.qty = get_quantities(
             kwargs.get('quantities', 100), self.symbol_list)
         self.sd = kwargs.get("session_duration", 23.0)
         self.risk_models = build_hmm_models(self.symbol_list, **kwargs)
@@ -246,7 +247,7 @@ class ArimaGarchStrategy(Strategy):
             self.symbol_list = self.bars.symbol_list
         self.mode = mode
         
-        self.qty =  _get_quantities(
+        self.qty =  get_quantities(
             kwargs.get('quantities', 100), self.symbol_list)
         self.arima_window = kwargs.get('arima_window', 252)
         self.tf = kwargs.get('time_frame', 'D1')
@@ -557,6 +558,7 @@ class KalmanFilterStrategy(Strategy):
                 self.calculate_backtest_signals()
         elif self.mode == 'live':
             return self.calculate_live_signals()
+        
 
 class StockIndexSTBOTrading(Strategy):
     """
@@ -617,7 +619,7 @@ class StockIndexSTBOTrading(Strategy):
         self.lowerst_price = {index: None for index in symbols}
         
         if self.mode == 'backtest':
-            self.qty = _get_quantities(quantities, symbols)
+            self.qty = get_quantities(quantities, symbols)
             self.num_buys = {index: 0 for index in symbols}
             self.buy_prices = {index: [] for index in symbols}
 

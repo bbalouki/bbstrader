@@ -1,11 +1,10 @@
 import time
+import MetaTrader5 as mt5
 from datetime import datetime
 from bbstrader.metatrader.trade import Trade
 from bbstrader.trading.strategies import Strategy
-from typing import Optional, Literal, List, Tuple, Dict
-import MetaTrader5 as mt5
-from bbstrader.metatrader.account import INIT_MSG
-from bbstrader.metatrader.utils import raise_mt5_error
+from bbstrader.metatrader.account import check_mt5_connection
+from typing import Optional, Literal, Tuple, List,  Dict
 
 
 _TF_MAPPING = {
@@ -29,13 +28,6 @@ TradingDays = [
     'friday'
 ]
 
-def _check_mt5_connection():
-    try:
-        init = mt5.initialize()
-        if not init:
-            raise_mt5_error(INIT_MSG)
-    except Exception:
-        raise_mt5_error(INIT_MSG)
 
 def _mt5_execution(
         symbol_list, trades_instances, strategy_cls, /,
@@ -45,7 +37,7 @@ def _mt5_execution(
     symbols = symbol_list.copy()
     STRATEGY = kwargs.get('strategy_name')
     _max_trades = kwargs.get('max_trades')
-    logger = kwargs.get('logger')
+    logger = trades_instances[symbols[0]].logger
     max_trades = {symbol: _max_trades[symbol] for symbol in symbols}
     if comment is None:
         trade = trades_instances[symbols[0]]
@@ -72,15 +64,18 @@ def _mt5_execution(
 
     long_market = {symbol: False for symbol in symbols}
     short_market = {symbol: False for symbol in symbols}
-
+    try:
+        check_mt5_connection()
+        strategy: Strategy = strategy_cls(symbol_list=symbols, mode='live', **kwargs)
+    except Exception as e:
+        logger.error(f"Error initializing strategy, {e}, STRATEGY={STRATEGY}")
+        return
     logger.info(
         f'Running {STRATEGY} Strategy on {symbols} in {time_frame} Interval ...')
-    strategy: Strategy = strategy_cls(
-        symbol_list=symbols, mode='live', **kwargs)
-
+    
     while True:
         try:
-            _check_mt5_connection()
+            check_mt5_connection()
             current_date = datetime.now()
             today = current_date.strftime("%A").lower()
             time.sleep(0.5)
@@ -105,13 +100,21 @@ def _mt5_execution(
                 sells[symbol]) >= max_trades[symbol] for symbol in symbols}
         except Exception as e:
             logger.error(f"{e}, STRATEGY={STRATEGY}")
+            continue
         time.sleep(0.5)
+        try:
+            check_mt5_connection()
+            signals = strategy.calculate_signals()
+        except Exception as e:
+            logger.error(f"Calculating signal, {e}, STRATEGY={STRATEGY}")
+            continue
         for symbol in symbols:
             try:
+                check_mt5_connection()
                 trade = trades_instances[symbol]
                 logger.info(
                     f"Calculating signal... SYMBOL={trade.symbol}, STRATEGY={STRATEGY}")
-                signal = strategy.calculate_signals()[symbol]
+                signal = signals[symbol]
                 if trade.trading_time() and today in trading_days:
                     if signal is not None:
                         logger.info(
@@ -155,7 +158,7 @@ def _mt5_execution(
 
             except Exception as e:
                 logger.error(f"{e}, SYMBOL={symbol}, STRATEGY={STRATEGY}")
-
+                continue
         time.sleep((60 * iter_time) - 1.0)
         if iter_time == 1:
             time_intervals += 1
@@ -167,86 +170,92 @@ def _mt5_execution(
                 f"(e.g; if time_frame is 15m, iter_time must be 1.5, 3, 3, 15 etc)"
             )
         print()
-        if period.lower() == 'day':
-            for symbol in symbols:
-                trade = trades_instances[symbol]
-                if trade.days_end():
-                    trade.close_positions(position_type='all', comment=comment)
-                    logger.info(
-                        f"End of the Day !!! SYMBOL={trade.symbol}, STRATEGY={STRATEGY}")
-                    trade.statistics(save=True)
-            if trades_instances[symbols[-1]].days_end():
-                if period_end_action == 'break':
-                    break
-                elif period_end_action == 'sleep':
+        try:
+            check_mt5_connection()
+            day_end = all(trade.days_end() for trade in trades_instances.values())
+            if period.lower() == 'day':
+                for symbol in symbols:
+                    trade = trades_instances[symbol]
+                    if trade.days_end():
+                        trade.close_positions(position_type='all', comment=comment)
+                        logger.info(
+                            f"End of the Day !!! SYMBOL={trade.symbol}, STRATEGY={STRATEGY}")
+                        trade.statistics(save=True)
+                if day_end:
+                    if period_end_action == 'break':
+                        break
+                    elif period_end_action == 'sleep':
+                        sleep_time = trades_instances[symbols[-1]].sleep_time()
+                        logger.info(f"Sleeping for {sleep_time} minutes ...\n")
+                        time.sleep(60 * sleep_time)
+                        logger.info("STARTING NEW TRADING SESSION ...\n")
+
+            elif period.lower() == 'week':
+                for symbol in symbols:
+                    trade = trades_instances[symbol]
+                    if trade.days_end() and today != 'friday':
+                        logger.info(
+                            f"End of the Day !!! SYMBOL={trade.symbol}, STRATEGY={STRATEGY}")
+
+                    elif trade.days_end() and today == 'friday':
+                        trade.close_positions(position_type='all', comment=comment)
+                        logger.info(
+                            f"End of the Week !!! SYMBOL={trade.symbol}, STRATEGY={STRATEGY}")
+                        trade.statistics(save=True)
+                if day_end and today != 'friday':
                     sleep_time = trades_instances[symbols[-1]].sleep_time()
-                    logger.info(f"Sleeping for {sleep_time} minutes ...")
+                    logger.info(f"Sleeping for {sleep_time} minutes ...\n")
                     time.sleep(60 * sleep_time)
                     logger.info("STARTING NEW TRADING SESSION ...\n")
+                elif day_end and today == 'friday':
+                    if period_end_action == 'break':
+                        break
+                    elif period_end_action == 'sleep':
+                        sleep_time = trades_instances[symbols[-1]].sleep_time(weekend=True)
+                        logger.info(f"Sleeping for {sleep_time} minutes ...\n")
+                        time.sleep(60 * sleep_time)
+                        logger.info("STARTING NEW TRADING SESSION ...\n")
 
-        elif period.lower() == 'week':
-            for symbol in symbols:
-                trade = trades_instances[symbol]
-                if trade.days_end() and today != 'friday':
-                    logger.info(
-                        f"End of the Day !!! SYMBOL={trade.symbol}, STRATEGY={STRATEGY}")
+            elif period.lower() == 'month':
+                for symbol in symbols:
+                    trade = trades_instances[symbol]
+                    if trade.days_end() and today != 'friday':
+                        logger.info(
+                            f"End of the Day !!! SYMBOL={trade.symbol}, STRATEGY={STRATEGY}")
 
-                elif trade.days_end() and today == 'friday':
-                    trade.close_positions(position_type='all', comment=comment)
-                    logger.info(
-                        f"End of the Week !!! SYMBOL={trade.symbol}, STRATEGY={STRATEGY}")
-                    trade.statistics(save=True)
-            if trades_instances[symbols[-1]].days_end() and today != 'friday':
-                sleep_time = trades_instances[symbols[-1]].sleep_time()
-                logger.info(f"Sleeping for {sleep_time} minutes ...")
-                time.sleep(60 * sleep_time)
-                logger.info("STARTING NEW TRADING SESSION ...\n")
-            elif trades_instances[symbols[-1]].days_end() and today == 'friday':
-                if period_end_action == 'break':
+                    elif trade.days_end() and today == 'friday':
+                        logger.info(
+                            f"End of the Week !!! SYMBOL={trade.symbol}, STRATEGY={STRATEGY}")
+                    elif (
+                        trade.days_end()
+                        and today == 'friday'
+                        and num_days/len(symbols) >= 20
+                    ):
+                        trade.close_positions(position_type='all', comment=comment)
+                        logger.info(
+                            f"End of the Month !!! SYMBOL={trade.symbol}, STRATEGY={STRATEGY}")
+                        trade.statistics(save=True)
+                if day_end and today != 'friday':
+                    sleep_time = trades_instances[symbols[-1]].sleep_time()
+                    logger.info(f"Sleeping for {sleep_time} minutes ...\n")
+                    time.sleep(60 * sleep_time)
+                    logger.info("STARTING NEW TRADING SESSION ...\n")
+                    num_days += 1
+                elif day_end and today == 'friday':
+                    sleep_time = trades_instances[symbols[-1]
+                                                ].sleep_time(weekend=True)
+                    logger.info(f"Sleeping for {sleep_time} minutes ...\n")
+                    time.sleep(60 * sleep_time)
+                    logger.info("STARTING NEW TRADING SESSION ...\n")
+                    num_days += 1
+                elif (day_end
+                        and today == 'friday'
+                        and num_days/len(symbols) >= 20
+                    ):
                     break
-                elif period_end_action == 'sleep':
-                    sleep_time = trades_instances[symbols[-1]].sleep_time(weekend=True)
-                    logger.info(f"Sleeping for {sleep_time} minutes ...")
-                    time.sleep(60 * sleep_time)
-                    logger.info("STARTING NEW TRADING SESSION ...\n")
-
-        elif period.lower() == 'month':
-            for symbol in symbols:
-                trade = trades_instances[symbol]
-                if trade.days_end() and today != 'friday':
-                    logger.info(
-                        f"End of the Day !!! SYMBOL={trade.symbol}, STRATEGY={STRATEGY}")
-
-                elif trade.days_end() and today == 'friday':
-                    logger.info(
-                        f"End of the Week !!! SYMBOL={trade.symbol}, STRATEGY={STRATEGY}")
-                elif (
-                    trade.days_end()
-                    and today == 'friday'
-                    and num_days/len(symbols) >= 20
-                ):
-                    trade.close_positions(position_type='all', comment=comment)
-                    logger.info(
-                        f"End of the Month !!! SYMBOL={trade.symbol}, STRATEGY={STRATEGY}")
-                    trade.statistics(save=True)
-            if trades_instances[symbols[-1]].days_end() and today != 'friday':
-                sleep_time = trades_instances[symbols[-1]].sleep_time()
-                logger.info(f"Sleeping for {sleep_time} minutes ...")
-                time.sleep(60 * sleep_time)
-                logger.info("STARTING NEW TRADING SESSION ...\n")
-                num_days += 1
-            elif trades_instances[symbols[-1]].days_end() and today == 'friday':
-                sleep_time = trades_instances[symbols[-1]
-                                              ].sleep_time(weekend=True)
-                logger.info(f"Sleeping for {sleep_time} minutes ...")
-                time.sleep(60 * sleep_time)
-                logger.info("STARTING NEW TRADING SESSION ...\n")
-                num_days += 1
-            elif (trades_instances[symbols[-1]].days_end()
-                  and today == 'friday'
-                  and num_days/len(symbols) >= 20
-                  ):
-                break
+        except Exception as e:
+            logger.error(f"Handling period end actions, {e}, STRATEGY={STRATEGY}")
+            continue
 
 
 def _tws_execution(*args, **kwargs):
@@ -364,7 +373,6 @@ class ExecutionEngine():
             **kwargs: Additional keyword arguments
                 - strategy_name (Optional[str]): Strategy name. Defaults to None.
                 - max_trades (Dict[str, int]): Maximum trades per symbol. Defaults to None.
-                - logger (Optional[logging.Logger]): Logger instance. Defaults to None.
 
         Note:
             1. For `trail` , `stop_trail` , `trail_after_points` , `be_plus_points` see `bbstrader.metatrader.trade.Trade.break_even()` .
@@ -404,6 +412,8 @@ class ExecutionEngine():
         if terminal not in _TERMINALS:
             raise ValueError(
                 f"Invalid terminal: {terminal}. Must be either 'MT5' or 'TWS'")
+        elif terminal == 'MT5':
+            check_mt5_connection()
         _TERMINALS[terminal](
                 self.symbol_list,
                 self.trades_instances,
