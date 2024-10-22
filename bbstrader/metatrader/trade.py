@@ -2,17 +2,41 @@ import os
 import csv
 import time
 import numpy as np
+import pandas as pd
 from datetime import datetime
 import MetaTrader5 as Mt5
 from logging import Logger
 from tabulate import tabulate
-from typing import List, Tuple, Dict, Any, Optional, Literal
+from typing import (
+    List, 
+    Tuple, 
+    Dict, 
+    Any, 
+    Optional,
+    Literal, 
+    Callable
+)
 from bbstrader.btengine.performance import create_sharpe_ratio
 from bbstrader.metatrader.risk import RiskManagement
-from bbstrader.metatrader.account import check_mt5_connection, INIT_MSG
+from bbstrader.metatrader.account import(
+    check_mt5_connection, 
+    INIT_MSG
+)
 from bbstrader.metatrader.utils import (
-    TimeFrame, TradePosition, TickInfo,
-    raise_mt5_error, trade_retcode_message, config_logger)
+    TimeFrame, 
+    TradePosition, 
+    TickInfo,
+    raise_mt5_error, 
+    trade_retcode_message
+)
+from bbstrader.config import config_logger, BBSTRADER_DIR
+
+
+__all__ = [
+    'Trade',
+    'create_trade_instance',
+]
+
 
 class Trade(RiskManagement):
     """
@@ -142,12 +166,12 @@ class Trade(RiskManagement):
             ":")
         self.ending_time_hour, self.ending_time_minutes = self.end.split(":")
 
-        self.buy_positions = []
-        self.sell_positions = []
-        self.opened_positions = []
-        self.opened_orders = []
-        self.break_even_status = []
-        self.break_even_points = {}
+        self.buy_positions      = []
+        self.sell_positions     = []
+        self.opened_positions   = []
+        self.opened_orders      = []
+        self.break_even_status  = []
+        self.break_even_points  = {}
         self.trail_after_points = []
 
         self.initialize()
@@ -165,7 +189,9 @@ class Trade(RiskManagement):
     def  _get_logger(self, logger: str | Logger, consol_log: bool) -> Logger:
         """Get the logger object"""
         if isinstance(logger, str):
-            return config_logger(logger, consol_log)
+            log_path = BBSTRADER_DIR / 'logs'
+            log_path.mkdir(exist_ok=True)
+            return config_logger(f'{log_path}/{logger}', consol_log)
         return logger
     
     def initialize(self):
@@ -302,14 +328,10 @@ class Trade(RiskManagement):
         """
         stats, additional_stats = self.get_stats()
 
-        deals = stats["deals"]
-        wins = stats["win_trades"]
-        losses = stats["loss_trades"]
         profit = round(stats["profit"], 2)
         win_rate = stats["win_rate"]
         total_fees = round(stats["total_fees"], 3)
         average_fee = round(stats["average_fee"], 3)
-        profitability = additional_stats["profitability"]
         currency = self.get_account_info().currency
         net_profit = round((profit + total_fees), 2)
         trade_risk = round(self.get_currency_risk() * -1, 2)
@@ -317,9 +339,9 @@ class Trade(RiskManagement):
 
         # Formatting the statistics output
         session_data = [
-            ["Total Trades", deals],
-            ["Winning Trades", wins],
-            ["Losing Trades", losses],
+            ["Total Trades", stats["deals"]],
+            ["Winning Trades", stats["win_trades"]],
+            ["Losing Trades", stats["loss_trades"]],
             ["Session Profit", f"{profit} {currency}"],
             ["Total Fees", f"{total_fees} {currency}"],
             ["Average Fees", f"{average_fee} {currency}"],
@@ -329,9 +351,10 @@ class Trade(RiskManagement):
             ["Risk Reward Ratio", self.rr],
             ["Win Rate", f"{win_rate}%"],
             ["Sharpe Ratio", self.sharpe()],
-            ["Trade Profitability", profitability],
+            ["Trade Profitability", additional_stats["profitability"]],
         ]
-        session_table = tabulate(session_data, headers=["Statistics", "Values"], tablefmt="outline")
+        session_table = tabulate(
+            session_data, headers=["Statistics", "Values"], tablefmt="outline")
 
         # Print the formatted statistics
         if self.verbose:
@@ -342,24 +365,10 @@ class Trade(RiskManagement):
         if save:
             today_date = datetime.now().strftime('%Y%m%d%H%M%S')
             # Create a dictionary with the statistics
-            statistics_dict = {
-                "Total Trades": deals,
-                "Winning Trades": wins,
-                "Losing Trades": losses,
-                "Session Profit": f"{profit} {currency}",
-                "Total Fees": f"{total_fees} {currency}",
-                "Average Fees": f"{average_fee} {currency}",
-                "Net Profit": f"{net_profit} {currency}",
-                "Risk per Trade": f"{trade_risk} {currency}",
-                "Expected Profit per Trade": f"{expected_profit} {currency}",
-                "Risk Reward Ratio": self.rr,
-                "Win Rate": f"{win_rate}%",
-                "Sharpe Ratio": self.sharpe(),
-                "Trade Profitability": profitability,
-            }
+            statistics_dict = {item[0]: item[1] for item in session_data}
+            stats_df = pd.DataFrame(statistics_dict, index=[0])
             # Create the directory if it doesn't exist
-            if dir is None:
-                dir = f".{self.expert_name}_session_stats"
+            dir = dir or BBSTRADER_DIR / 'sessions_stats'
             os.makedirs(dir, exist_ok=True)
             if '.' in self.symbol:
                 symbol = self.symbol.split('.')[0]
@@ -368,15 +377,7 @@ class Trade(RiskManagement):
 
             filename = f"{symbol}_{today_date}@{self.expert_id}.csv"
             filepath = os.path.join(dir, filename)
-
-            # Updated code to write to CSV
-            with open(filepath, mode="w", newline='', encoding='utf-8') as csv_file:
-                writer = csv.writer(
-                    csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL
-                )
-                writer.writerow(["Statistic", "Value"])
-                for stat, value in statistics_dict.items():
-                    writer.writerow([stat, value])
+            stats_df.to_csv(filepath, index=False)
             self.logger.info(f"Session statistics saved to {filepath}")
 
     Buys = Literal['BMKT', 'BLMT', 'BSTP', 'BSTPLMT']
@@ -384,6 +385,7 @@ class Trade(RiskManagement):
         self,
         action: Buys = 'BMKT',
         price: Optional[float] = None,
+        stoplimit: Optional[float] = None,
         mm: bool = True,
         id: Optional[int] = None,
         comment: Optional[str] = None
@@ -395,6 +397,8 @@ class Trade(RiskManagement):
             action (str): `'BMKT'` for Market orders or `'BLMT', 
                 'BSTP','BSTPLMT'` for pending orders
             price (float): The price at which to open an order
+            stoplimit (float): A price a pending Limit order is set at when the price reaches the 'price' value (this condition is mandatory). 
+                The pending order is not passed to the trading system until that moment
             id (int): The strategy id or expert Id
             mm (bool): Weither to put stop loss and tp or not
             comment (str): The comment for the opening position
@@ -402,9 +406,11 @@ class Trade(RiskManagement):
         Id = id if id is not None else self.expert_id
         point = self.get_symbol_info(self.symbol).point
         if action != 'BMKT':
-            assert price is not None, \
-                "You need to set a price for pending orders"
-            _price = price
+            if price is not None:
+                _price = price
+            else:
+                raise ValueError(
+                    "You need to set a price for pending orders")
         else:
             _price = self.get_tick_info(self.symbol).ask
         digits = self.get_symbol_info(self.symbol).digits
@@ -425,12 +431,22 @@ class Trade(RiskManagement):
             "type_time": Mt5.ORDER_TIME_GTC,
             "type_filling": Mt5.ORDER_FILLING_FOK,
         }
-        if mm:
-            request['sl'] = (_price - stop_loss * point)
-            request['tp'] = (_price + take_profit * point)
+        mm_price = _price
         if action != 'BMKT':
             request["action"] = Mt5.TRADE_ACTION_PENDING
             request["type"] = self._order_type()[action][0]
+        if action == 'BSTPLMT':
+            if stoplimit is None:
+                raise ValueError(
+                    "You need to set a stoplimit price for BSTPLMT orders")
+            if stoplimit > _price:
+                raise ValueError(
+                    "Stoplimit price must be less than the price and greater than the current price")
+            request["stoplimit"] = stoplimit
+            mm_price = stoplimit
+        if mm:
+            request["sl"] = (mm_price - stop_loss * point)
+            request["tp"] = (mm_price + take_profit * point)
         self.break_even(mm=mm, id=Id)
         if self.check(comment):
             self.request_result(_price, request, action),
@@ -453,6 +469,7 @@ class Trade(RiskManagement):
         self,
         action: Sells = 'SMKT',
         price: Optional[float] = None,
+        stoplimit: Optional[float] = None,
         mm: bool = True,
         id: Optional[int] = None,
         comment: Optional[str] = None
@@ -464,6 +481,8 @@ class Trade(RiskManagement):
             action (str): `'SMKT'` for Market orders
                 or `'SLMT', 'SSTP','SSTPLMT'` for pending orders
             price (float): The price at which to open an order
+            stoplimit (float): A price a pending Limit order is set at when the price reaches the 'price' value (this condition is mandatory).
+                The pending order is not passed to the trading system until that moment
             id (int): The strategy id or expert Id
             mm (bool): Weither to put stop loss and tp or not
             comment (str): The comment for the closing position
@@ -471,9 +490,11 @@ class Trade(RiskManagement):
         Id = id if id is not None else self.expert_id
         point = self.get_symbol_info(self.symbol).point
         if action != 'SMKT':
-            assert price is not None, \
-                "You need to set a price for pending orders"
-            _price = price
+            if price is not None:
+                _price = price
+            else:
+                raise ValueError(
+                    "You need to set a price for pending orders")
         else:
             _price = self.get_tick_info(self.symbol).bid
         digits = self.get_symbol_info(self.symbol).digits
@@ -494,22 +515,25 @@ class Trade(RiskManagement):
             "type_time": Mt5.ORDER_TIME_GTC,
             "type_filling": Mt5.ORDER_FILLING_FOK,
         }
-        if mm:
-            request["sl"] = (_price + stop_loss * point)
-            request["tp"] = (_price - take_profit * point)
+        mm_price = _price
         if action != 'SMKT':
             request["action"] = Mt5.TRADE_ACTION_PENDING
             request["type"] = self._order_type()[action][0]
+        if action == 'SSTPLMT':
+            if stoplimit is None:
+                raise ValueError(
+                    "You need to set a stoplimit price for SSTPLMT orders")
+            if stoplimit < _price:
+                raise ValueError(
+                    "Stoplimit price must be greater than the price and less than the current price")
+            request["stoplimit"] = stoplimit
+            mm_price = stoplimit
+        if mm:
+            request["sl"] = (mm_price + stop_loss * point)
+            request["tp"] = (mm_price - take_profit * point)
         self.break_even(mm=mm, id=Id)
         if self.check(comment):
             self.request_result(_price, request, action)
-
-    def _risk_free(self):
-        max_trade = self.max_trade()
-        loss_trades = self.get_stats()[0]['loss_trades']
-        if loss_trades >= max_trade:
-            return False
-        return True
 
     def check(self, comment):
         """
@@ -529,16 +553,14 @@ class Trade(RiskManagement):
             self.logger.error(f"Risk not allowed, SYMBOL={self.symbol}")
             self._check(comment)
             return False
-        elif not self._risk_free():
-            self.logger.error(f"Maximum trades Reached, SYMBOL={self.symbol}")
-            self._check(comment)
-            return False
         elif self.profit_target():
             self._check(f'Profit target Reached !!! SYMBOL={self.symbol}')
         return True
 
     def _check(self, txt: str = ""):
-        if self.positive_profit() or self.get_current_open_positions() is None:
+        if (self.positive_profit(id=self.expert_id) 
+            or self.get_current_open_positions() is None
+            ):
             self.close_positions(position_type='all')
             self.logger.info(txt)
             time.sleep(5)
@@ -565,7 +587,7 @@ class Trade(RiskManagement):
         pos = self._order_type()[type][1]
         addtionnal = f", SYMBOL={self.symbol}"
         try:
-            check_result = self.check_order(request)
+            check = self.check_order(request)
             result = self.send_order(request)
         except Exception as e:
             print(f"{self.current_datetime()} -", end=' ')
@@ -581,7 +603,7 @@ class Trade(RiskManagement):
                 while result.retcode != Mt5.TRADE_RETCODE_DONE and tries < 5:
                     time.sleep(1)
                     try:
-                        check_result = self.check_order(request)
+                        check = self.check_order(request)
                         result = self.send_order(request)
                     except Exception as e:
                         print(f"{self.current_datetime()} -", end=' ')
@@ -630,6 +652,7 @@ class Trade(RiskManagement):
         self,
         action: Buys | Sells,
         price: Optional[float] = None,
+        stoplimit: Optional[float] = None,
         id: Optional[int] = None,
         mm: bool = True,
         comment: Optional[str] = None
@@ -640,6 +663,9 @@ class Trade(RiskManagement):
         Args:
             action (str): (`'BMKT'`, `'SMKT'`) for Market orders
                 or (`'BLMT', 'SLMT', 'BSTP', 'SSTP', 'BSTPLMT', 'SSTPLMT'`) for pending orders
+            price (float): The price at which to open an order
+            stoplimit (float): A price a pending Limit order is set at when the price reaches the 'price' value (this condition is mandatory).
+                The pending order is not passed to the trading system until that moment
             id (int): The strategy id or expert Id
             mm (bool): Weither to put stop loss and tp or not
             comment (str): The comment for the closing position
@@ -648,43 +674,43 @@ class Trade(RiskManagement):
         SELLS = ['SMKT', 'SLMT', 'SSTP', 'SSTPLMT']
         if action in BUYS:
             self.open_buy_position(
-                action=action, price=price, id=id, mm=mm, comment=comment)
+                action=action, price=price, stoplimit=stoplimit, id=id, mm=mm, comment=comment)
         elif action in SELLS:
             self.open_sell_position(
-                action=action, price=price, id=id, mm=mm, comment=comment)
+                action=action, price=price, stoplimit=stoplimit, id=id, mm=mm, comment=comment)
         else:
             raise ValueError(f"Invalid action type '{action}', must be {', '.join(BUYS + SELLS)}")
 
     @property
-    def get_opened_orders(self):
+    def orders(self):
         """ Return all opened order's tickets"""
         if len(self.opened_orders) != 0:
             return self.opened_orders
         return None
 
     @property
-    def get_opened_positions(self):
+    def positions(self):
         """Return all opened position's tickets"""
         if len(self.opened_positions) != 0:
             return self.opened_positions
         return None
 
     @property
-    def get_buy_positions(self):
+    def buypos(self):
         """Return all buy  opened position's tickets"""
         if len(self.buy_positions) != 0:
             return self.buy_positions
         return None
 
     @property
-    def get_sell_positions(self):
+    def sellpos(self):
         """Return all sell  opened position's tickets"""
         if len(self.sell_positions) != 0:
             return self.sell_positions
         return None
 
     @property
-    def get_be_positions(self):
+    def bepos(self):
         """Return All positon's tickets 
             for which a break even has been set"""
         if len(self.break_even_status) != 0:
@@ -701,8 +727,14 @@ class Trade(RiskManagement):
 
         Args:
             id (int): The strategy id or expert Id
-            filter_type (str): Filter type ('orders', 'positions', 'buys', 'sells', 'profitables')
+            filter_type (str): Filter type to apply on the tickets,
                 - `orders` are current open orders
+                - `buy_stops` are current buy stop orders
+                - `sell_stops` are current sell stop orders
+                - `buy_limits` are current buy limit orders
+                - `sell_limits` are current sell limit orders
+                - `buy_stop_limits` are current buy stop limit orders
+                - `sell_stop_limits` are current sell stop limit orders
                 - `positions` are all current open positions
                 - `buys` and `sells` are current buy or sell open positions 
                 - `profitables` are current open position that have a profit greater than a threshold
@@ -715,8 +747,9 @@ class Trade(RiskManagement):
                 or None if no tickets match the criteria.
         """
         Id = id if id is not None else self.expert_id
+        POSITIONS = ['positions', 'buys', 'sells', 'profitables', 'losings']
 
-        if filter_type == 'orders':
+        if filter_type not in POSITIONS:
             items = self.get_orders(symbol=self.symbol)
         else:
             items = self.get_positions(symbol=self.symbol)
@@ -730,18 +763,48 @@ class Trade(RiskManagement):
                         continue
                     if filter_type == 'sells' and item.type != 1:
                         continue
+                    if filter_type == 'losings' and  item.profit > 0:
+                        continue
                     if filter_type == 'profitables' and not self.win_trade(item, th=th):
                         continue
-                    if filter_type == 'losings' and  item.profit > 0:
+                    if filter_type == 'buy_stops' and item.type != self._order_type()['BSTP'][0]:
+                        continue
+                    if filter_type == 'sell_stops' and item.type != self._order_type()['SSTP'][0]:
+                        continue
+                    if filter_type == 'buy_limits' and item.type != self._order_type()['BLMT'][0]:
+                        continue
+                    if filter_type == 'sell_limits' and item.type != self._order_type()['SLMT'][0]:
+                        continue
+                    if filter_type == 'buy_stop_limits' and item.type != self._order_type()['BSTPLMT'][0]:
+                        continue
+                    if filter_type == 'sell_stop_limits' and item.type != self._order_type()['SSTPLMT'][0]:
                         continue
                     filtered_tickets.append(item.ticket)
             return filtered_tickets if filtered_tickets else None
         return None
 
-    def get_current_open_orders(self, id: Optional[int] = None) -> List[int] | None:
+    def get_current_orders(self, id: Optional[int] = None) -> List[int] | None:
         return self.get_filtered_tickets(id=id, filter_type='orders')
 
-    def get_current_open_positions(self, id: Optional[int] = None) -> List[int] | None:
+    def get_current_buy_stops(self, id: Optional[int] = None) -> List[int] | None:
+        return self.get_filtered_tickets(id=id, filter_type='buy_stops')
+    
+    def get_current_sell_stops(self, id: Optional[int] = None) -> List[int] | None:
+        return self.get_filtered_tickets(id=id, filter_type='sell_stops')
+    
+    def get_current_buy_limits(self, id: Optional[int] = None) -> List[int] | None:
+        return self.get_filtered_tickets(id=id, filter_type='buy_limits')
+    
+    def get_current_sell_limits(self, id: Optional[int] = None) -> List[int] | None:
+        return self.get_filtered_tickets(id=id, filter_type='sell_limits')
+    
+    def get_current_buy_stop_limits(self, id: Optional[int] = None) -> List[int] | None:
+        return self.get_filtered_tickets(id=id, filter_type='buy_stop_limits')
+    
+    def get_current_sell_stop_limits(self, id: Optional[int] = None) -> List[int] | None:
+        return self.get_filtered_tickets(id=id, filter_type='sell_stop_limits')
+
+    def get_current_positions(self, id: Optional[int] = None) -> List[int] | None:
         return self.get_filtered_tickets(id=id, filter_type='positions')
 
     def get_current_profitables(self, id: Optional[int] = None, th=None) -> List[int] | None:
@@ -868,10 +931,14 @@ class Trade(RiskManagement):
                                     # This level validate the favorable move of the price
                                     new_level = round(position.price_open + (new_be_points * point), digits) 
                                     # This price is set away from the current price by the trail_points                                      
-                                    new_price = round(position.price_current - (trail_points * point), digits)                                       
+                                    new_price = round(position.price_current - (trail_points * point), digits)
+                                    if new_price < position.sl:
+                                        new_price = position.sl                                      
                                 elif position.type == 1:
                                     new_level = round(position.price_open - (new_be_points * point), digits)                                       
-                                    new_price = round(position.price_current + (trail_points * point), digits)                                       
+                                    new_price = round(position.price_current + (trail_points * point), digits)  
+                                    if new_price > position.sl:
+                                        new_price = position.sl                                     
                                 self.set_break_even(
                                     position, be, price=new_price, level=new_level
                                 )
@@ -916,7 +983,7 @@ class Trade(RiskManagement):
                     "sl": round(_price, digits),
                     "tp": position.tp
                 }
-                self._break_even_request(
+                self.break_even_request(
                     position.ticket, round(_price, digits), request)
         # If Sell
         elif position.type == 1 and position.price_current < position.price_open:
@@ -936,10 +1003,10 @@ class Trade(RiskManagement):
                     "sl": round(_price, digits),
                     "tp": position.tp
                 }
-                self._break_even_request(
+                self.break_even_request(
                     position.ticket, round(_price, digits), request)
 
-    def _break_even_request(self, tiket, price, request):
+    def break_even_request(self, tiket, price, request):
         """
         Send a request to set the stop loss to break even for a given trading position.
 
@@ -1044,6 +1111,64 @@ class Trade(RiskManagement):
                 return True
         return False
 
+    def close_request(self, request: dict, type: str):
+        """
+        Close a trading order or position
+
+        Args:
+            request (dict): The request to close a trading order or position
+            type (str): Type of the request ('order', 'position')
+        """
+        ticket = request[type]
+        addtionnal = f", SYMBOL={self.symbol}"
+        try:
+            check_result = self.check_order(request)
+            result = self.send_order(request)
+        except Exception as e:
+            print(f"{self.current_datetime()} -", end=' ')
+            trade_retcode_message(
+                result.retcode, display=True, add_msg=f"{e}{addtionnal}")
+        if result.retcode != Mt5.TRADE_RETCODE_DONE:
+            msg = trade_retcode_message(result.retcode)
+            self.logger.error(
+                f"Closing Order Request, {type.capitalize()}: #{ticket}, RETCODE={result.retcode}: {msg}{addtionnal}")
+            tries = 0
+            while result.retcode != Mt5.TRADE_RETCODE_DONE and tries < 5:
+                time.sleep(1)
+                try:
+                    check_result = self.check_order(request)
+                    result = self.send_order(request)
+                except Exception as e:
+                    print(f"{self.current_datetime()} -", end=' ')
+                    trade_retcode_message(
+                        result.retcode, display=True, add_msg=f"{e}{addtionnal}")
+                if result.retcode == Mt5.TRADE_RETCODE_DONE:
+                    break
+                tries += 1
+        if result.retcode == Mt5.TRADE_RETCODE_DONE:
+            msg = trade_retcode_message(result.retcode)
+            self.logger.info(
+                f"Closing Order {msg}{addtionnal}")
+            info = (
+                f"{type.capitalize()} #{ticket} closed, Symbol: {self.symbol}, Price: @{request.get('price', 0.0)}")
+            self.logger.info(info)
+            return True
+        else:
+            return False
+    
+    def close_order(self, 
+                    ticket, 
+                    id: Optional[int] = None, 
+                    comment: Optional[str] = None):
+        request = {
+                "action": Mt5.TRADE_ACTION_REMOVE,
+                "symbol": self.symbol,
+                "order": ticket,
+                "magic": id if id is not None else self.expert_id,
+                "comment": f"@{self.expert_name}" if comment is None else comment,
+            }
+        return self.close_request(request, type="order")
+  
     def close_position(self,
                        ticket: int,
                        id: Optional[int] = None,
@@ -1090,41 +1215,77 @@ class Trade(RiskManagement):
                     "type_time": Mt5.ORDER_TIME_GTC,
                     "type_filling": Mt5.ORDER_FILLING_FOK,
                 }
-                addtionnal = f", SYMBOL={self.symbol}"
-                try:
-                    check_result = self.check_order(request)
-                    result = self.send_order(request)
-                except Exception as e:
-                    print(f"{self.current_datetime()} -", end=' ')
-                    trade_retcode_message(
-                        result.retcode, display=True, add_msg=f"{e}{addtionnal}")
-                if result.retcode != Mt5.TRADE_RETCODE_DONE:
-                    msg = trade_retcode_message(result.retcode)
-                    self.logger.error(
-                        f"Closing Order Request, Position: #{ticket}, RETCODE={result.retcode}: {msg}{addtionnal}")
-                    tries = 0
-                    while result.retcode != Mt5.TRADE_RETCODE_DONE and tries < 5:
-                        time.sleep(1)
-                        try:
-                            check_result = self.check_order(request)
-                            result = self.send_order(request)
-                        except Exception as e:
-                            print(f"{self.current_datetime()} -", end=' ')
-                            trade_retcode_message(
-                                result.retcode, display=True, add_msg=f"{e}{addtionnal}")
-                        if result.retcode == Mt5.TRADE_RETCODE_DONE:
-                            break
-                        tries += 1
-                if result.retcode == Mt5.TRADE_RETCODE_DONE:
-                    msg = trade_retcode_message(result.retcode)
-                    self.logger.info(
-                        f"Closing Order {msg}{addtionnal}")
-                    info = (
-                        f"Position #{ticket} closed, Symbol: {self.symbol}, Price: @{request['price']}")
-                    self.logger.info(info)
-                    return True
-                else:
-                    return False
+                return self.close_request(request, type="position")
+  
+    def bulk_close(self, 
+                   tickets: List, 
+                   tikets_type: Literal["positions", "orders"],
+                   close_func: Callable, 
+                   order_type: str, 
+                   id: Optional[int] = None,
+                   comment: Optional[str] = None):
+        
+        """
+        Close multiple orders or positions at once.
+
+        Args:
+            tickets (List): List of tickets to close
+            tikets_type (str): Type of tickets to close ('positions', 'orders')
+            close_func (Callable): The function to close the tickets
+            order_type (str): Type of orders or positions to close 
+            id (int): The unique ID of the Expert or Strategy
+            comment (str): Comment for the closing position
+        """
+        if order_type == 'all':
+            order_type = 'open'
+        if len(tickets) > 0:
+            for ticket in tickets.copy():
+                if close_func(ticket, id=id, comment=comment):
+                    tickets.remove(ticket)
+                time.sleep(1)
+
+            if len(tickets) == 0:
+                self.logger.info(
+                    f"ALL {order_type.upper()} {tikets_type.upper()} closed, SYMBOL={self.symbol}.")
+            else:
+                self.logger.info(
+                    f"{len(tickets)} {order_type.upper()} {tikets_type.upper()} not closed, SYMBOL={self.symbol}")
+        else:
+            self.logger.info(
+                f"No {order_type.upper()} {tikets_type.upper()} to close, SYMBOL={self.symbol}.")
+
+    Orders = Literal["all", "buy_stops", "sell_stops", "buy_limits", 
+                     "sell_limits", "buy_stop_limits", "sell_stop_limits"]
+    def close_orders(self, 
+                     order_type: Orders, 
+                     id: Optional[int] = None, 
+                     comment: Optional[str] = None):
+        """
+        Args:
+            order_type (str): Type of orders to close ('all', 'buy_stops', 'sell_stops', 'buy_limits', 'sell_limits', 'buy_stop_limits', 'sell_stop_limits')
+            id (int): The unique ID of the Expert or Strategy
+            comment (str): Comment for the closing position
+        """
+        id = id if id is not None else self.expert_id
+        if order_type == "all":
+            orders = self.get_current_orders(id=id)
+        elif order_type == "buy_stops":
+            orders = self.get_current_buy_stops(id=id)
+        elif order_type == "sell_stops":
+            orders = self.get_current_sell_stops(id=id)
+        elif order_type == "buy_limits":
+            orders = self.get_current_buy_limits(id=id)
+        elif order_type == "sell_limits":
+            orders = self.get_current_sell_limits(id=id)
+        elif order_type == "buy_stop_limits":
+            orders = self.get_current_buy_stop_limits(id=id)
+        elif order_type == "sell_stop_limits":
+            orders = self.get_current_sell_stop_limits(id=id)
+        else:
+            self.logger.error(f"Invalid order type: {order_type}")
+            return
+        self.bulk_close(
+            orders, "orders", self.close_order, order_type, id=id, comment=comment)
 
     Positions = Literal["all", "buy", "sell", "profitable", "losing"]
     def close_positions(
@@ -1138,8 +1299,9 @@ class Trade(RiskManagement):
             id (int): The unique ID of the Expert or Strategy
             comment (str): Comment for the closing position
         """
+        id = id if id is not None else self.expert_id
         if position_type == "all":
-            positions = self.get_positions(symbol=self.symbol)
+            positions = self.get_current_positions(id=id)
         elif position_type == "buy":
             positions = self.get_current_buys(id=id)
         elif position_type == "sell":
@@ -1151,35 +1313,8 @@ class Trade(RiskManagement):
         else:
             self.logger.error(f"Invalid position type: {position_type}")
             return
-
-        if positions is not None:
-            if position_type == 'all':
-                tickets = [position.ticket for position in positions if position.magic == id]
-            else:
-                tickets = positions
-        else:
-            tickets = []
-        
-        if position_type == 'all':
-            pos_type = 'open'
-        else:
-            pos_type = position_type
-            
-        if len(tickets) != 0:
-            for ticket in tickets.copy():
-                if self.close_position(ticket, id=id, comment=comment):
-                    tickets.remove(ticket)
-                time.sleep(1)
-
-            if len(tickets) == 0:
-                self.logger.info(
-                    f"ALL {pos_type.upper()} Positions closed, SYMBOL={self.symbol}.")
-            else:
-                self.logger.info(
-                    f"{len(tickets)} {pos_type.upper()} Positions not closed, SYMBOL={self.symbol}")
-        else:
-            self.logger.info(
-                f"No {pos_type.upper()} Positions to close, SYMBOL={self.symbol}.")
+        self.bulk_close(
+            positions, "positions", self.close_position, position_type, id=id, comment=comment)
 
     def get_stats(self) -> Tuple[Dict[str, Any]]:
         """
@@ -1359,8 +1494,8 @@ def create_trade_instance(
         `daily_risk` and `max_risk`  can be used to manage the risk of each symbol 
         based on the importance of the symbol in the portfolio or strategy.
     """
-    logger = params.get('logger')
-    instances = {}
+    logger = params.get('logger', None)
+    trade_instances = {}
     if not symbols:
         raise ValueError("The 'symbols' list cannot be empty.")
     if not params:
@@ -1385,19 +1520,28 @@ def create_trade_instance(
             params['symbol'] = symbol
             params['pchange_sl'] = (
                 pchange_sl[symbol] if pchange_sl is not None
-                and isinstance(pchange_sl, dict) else pchange_sl
+                and isinstance(pchange_sl, dict) else 
+                pchange_sl if pchange_sl is not None 
+                and isinstance(pchange_sl, (int, float)) else 
+                params['pchange_sl'] if 'pchange_sl' in params else None
             )
-            params['daily_risk'] = daily_risk[symbol] if daily_risk is not None else params['daily_risk']
-            params['max_risk'] = max_risk[symbol] if max_risk is not None else params['max_risk']
-            instances[symbol] = Trade(**params)
+            params['daily_risk'] = (
+                daily_risk[symbol] if daily_risk is not None else 
+                params['daily_risk'] if 'daily_risk' in params else None
+            )
+            params['max_risk'] = (
+                max_risk[symbol] if max_risk is not None else 
+                params['max_risk'] if 'max_risk' in params else 10.0
+            )
+            trade_instances[symbol] = Trade(**params)
         except Exception as e:
             logger.error(f"Creating Trade instance, SYMBOL={symbol} {e}")
     
-    if len(instances) != len(symbols):
+    if len(trade_instances) != len(symbols):
         for symbol in symbols:
-            if symbol not in instances:
+            if symbol not in trade_instances:
                 if logger is not None and isinstance(logger, Logger):
                     logger.error(f"Failed to create Trade instance for SYMBOL={symbol}")
                 else:
                     raise ValueError(f"Failed to create Trade instance for SYMBOL={symbol}")
-    return instances
+    return trade_instances

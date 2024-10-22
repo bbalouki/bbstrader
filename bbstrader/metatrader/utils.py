@@ -33,60 +33,7 @@ __all__ = [
     "InternalFailTimeout",
     "trade_retcode_message",
     "raise_mt5_error",
-    "config_logger",
 ]
-
-def config_logger(log_file: str, console_log=True):
-    # Configure the logger
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
-
-    # File handler
-    file_handler = logging.FileHandler(log_file)
-    file_handler.setLevel(logging.INFO)
-
-    # Formatter
-    formatter = logging.Formatter(
-        '%(asctime)s - %(levelname)s: %(message)s', datefmt="%Y-%m-%d %H:%M:%S")
-    file_handler.setFormatter(formatter)
-
-    # Add the handler to the logger
-    logger.addHandler(file_handler)
-
-    if console_log:
-        # handler for the console with a different level
-        console_handler = logging.StreamHandler()
-        console_handler.setLevel(logging.DEBUG)
-        console_handler.setFormatter(formatter)
-        logger.addHandler(console_handler)
-
-    return logger
-
-
-class LogLevelFilter(logging.Filter):
-    def __init__(self, levels: List[int]):
-        """
-        Initializes the filter with specific logging levels.
-
-        Args:
-            levels: A list of logging level values (integers) to include.
-        """
-        super().__init__()
-        self.levels = levels
-
-    def filter(self, record: logging.LogRecord) -> bool:
-        """
-        Filters log records based on their level.
-
-        Args:
-            record: The log record to check.
-
-        Returns:
-            True if the record's level is in the allowed levels, False otherwise.
-        """
-        return record.levelno in self.levels
-
-
 
 # TIMEFRAME is an enumeration with possible chart period values
 # See https://www.mql5.com/en/docs/python_metatrader5/mt5copyratesfrom_py#timeframe
@@ -140,6 +87,7 @@ class TimeFrame(Enum):
     D1 = "D1"
     W1 = "W1"
     MN1 = "MN1"
+
 
 class TerminalInfo(NamedTuple):
     """
@@ -469,6 +417,7 @@ class TradeDeal(NamedTuple):
     symbol: str
     comment: str
     external_id: str
+
 
 class InvalidBroker(Exception):
     """Exception raised for invalid broker errors."""
