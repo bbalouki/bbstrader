@@ -17,8 +17,6 @@ import pmdarima as pm
 import matplotlib.pyplot as plt
 import statsmodels.api as sm
 import statsmodels.tsa.stattools as ts
-from numpy import cumsum, log, polyfit, sqrt, std, subtract
-from numpy.random import randn
 from hurst import compute_Hc
 from scipy.optimize import minimize
 from filterpy.kalman import KalmanFilter
@@ -684,10 +682,10 @@ def _hurst(ts):
     lags = range(2, 100)
 
     # Calculate the array of the variances of the lagged differences
-    tau = [sqrt(std(subtract(ts[lag:], ts[:-lag]))) for lag in lags]
+    tau = [np.sqrt(np.std(np.subtract(ts[lag:], ts[:-lag]))) for lag in lags]
 
     # Use a linear fit to estimate the Hurst Exponent
-    poly = polyfit(log(lags), log(tau), 1)
+    poly = np.polyfit(np.log(lags), np.log(tau), 1)
 
     # Return the Hurst exponent from the polyfit output
     return poly[0] * 2.0
@@ -721,9 +719,9 @@ def run_hurst_test(symbol: str, start: str, end: str):
     data = yf.download(symbol, start=start, end=end)
 
     # Create a Geometric Brownian Motion, Mean-Reverting, and Trending Series
-    gbm = log(cumsum(randn(100000))+1000)
-    mr = log(randn(100000)+1000)
-    tr = log(cumsum(randn(100000)+1)+1000)
+    gbm = np.log(np.cumsum(np.random.randn(100000))+1000)
+    mr = np.log(np.random.randn(100000)+1000)
+    tr = np.log(np.cumsum(np.random.randn(100000)+1)+1000)
 
     # Output the Hurst Exponent for each of the series
     print(f"\nHurst(GBM):  {_hurst(gbm)}")
@@ -898,7 +896,7 @@ class KalmanFilterModel():
     You can learn more here https://en.wikipedia.org/wiki/Kalman_filter
     """
 
-    def __init__(self, tickers: list | tuple, **kwargs):
+    def __init__(self, tickers: List | Tuple, **kwargs):
         """
         Initializes the Kalman Filter strategy.
 
@@ -907,7 +905,7 @@ class KalmanFilterModel():
             A list or tuple of ticker symbols representing financial instruments.
 
             kwargs : Keyword arguments for additional parameters,
-             specifically `delta` and `vt`
+            specifically `delta` and `vt`
         """
         self.tickers = tickers
         assert self.tickers is not None
@@ -936,7 +934,8 @@ class KalmanFilterModel():
 
         return kf
 
-    def calc_slope_intercep(self, prices: np.ndarray):
+    Array = np.ndarray
+    def calc_slope_intercep(self, prices: Array) -> Tuple:
         """
         Calculates and returns the slope and intercept 
         of the relationship between the provided prices using the Kalman Filter. 
@@ -957,8 +956,8 @@ class KalmanFilterModel():
         intercept = kf.x.copy().flatten()[1]
 
         return slope, intercept
-
-    def calculate_etqt(self, prices: np.ndarray):
+    
+    def calculate_etqt(self, prices: Array) -> Tuple:
         """
         Calculates the forecast error and standard deviation of the predictions
         using the Kalman Filter.
@@ -1144,21 +1143,19 @@ class OrnsteinUhlenbeck():
         ) / sigma**2 + 0.5 * n * np.log(2 * np.pi * sigma**2)
         return neg_ll
 
-    def simulate_process(self, rts=None, n=100, p=None):
+    def simulate_process(self, returns=None, n=100, p=None):
         """
         Simulates the OU process multiple times .
 
         Args:
-            rts (np.ndarray): Historical returns.
+            returns (np.ndarray): Historical returns.
             n (int): Number of simulations to perform.
             p (int): Number of time steps.
 
         Returns:
             np.ndarray: 2D array representing simulated processes.
         """
-        if rts is not None:
-            returns = rts
-        else:
+        if returns is  None:
             returns = self.returns
         if p is not None:
             T = p
