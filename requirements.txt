@@ -12,8 +12,7 @@ matplotlib
 filterpy
 pytest
 CurrencyConverter
-# Conditionally install Windows package
-Metatrader5; sys_platform == 'win32'
 tabulate
 ipython
 quantstats
+exchange-calendars
