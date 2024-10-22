@@ -58,6 +58,16 @@ class MT5Strategy(Strategy):
 
     def __init__(self, events: Queue=None, symbol_list: List[str]=None,
                  bars: DataHandler=None, mode: str=None, **kwargs):
+        """
+        Initialize the `MT5Strategy` object.
+
+        Args:
+            events : The event queue.
+            symbol_list : The list of symbols for the strategy.
+            bars : The data handler object.
+            mode : The mode of operation for the strategy (backtest or live).
+            **kwargs : Additional keyword arguments for other classes (e.g, Portfolio, ExecutionHandler).
+        """
         self.events = events
         self.data = bars
         self.symbols = symbol_list
@@ -104,6 +114,12 @@ class MT5Strategy(Strategy):
         pass
 
     def get_quantities(self, quantities: Union[None, dict, int]) -> dict:
+        """
+        Get the quantities to buy or sell for the symbols in the strategy.
+
+        Args:
+            quantities : The quantities for the symbols in the strategy.
+        """
         if quantities is None:
             return {symbol: None for symbol in self.symbols}
         if isinstance(quantities, dict):
@@ -123,28 +139,36 @@ class MT5Strategy(Strategy):
     def buy(self, id: int, symbol: str, price: float, quantity: int, 
             strength: float=1.0, dtime: datetime | pd.Timestamp=None):
         """
+        Open a long position
 
+        See `bbstrader.btengine.event.SignalEvent` for more details on arguments.
         """
         self._send_order(id, symbol, 'LONG', strength, price, quantity, dtime)
         self.positions[symbol]['LONG'] += quantity
 
     def sell(self, id, symbol, price, quantity, strength=1.0, dtime=None):
         """
+        Open a short position
 
+        See `bbstrader.btengine.event.SignalEvent` for more details on arguments.
         """
         self._send_order(id, symbol, 'SHORT', strength,  price, quantity, dtime)
         self.positions[symbol]['SHORT'] += quantity
 
     def close(self, id, symbol, price, quantity, strength=1.0, dtime=None):
         """
+        Close a position
 
+        See `bbstrader.btengine.event.SignalEvent` for more details on arguments.
         """
         self._send_order(id, symbol, 'EXIT', strength, price, quantity, dtime)
         self.positions[symbol]['LONG'] -= quantity
 
-    def buy_stop(self, iid, symbol, price, quantity, strength=1.0, dtime=None):
+    def buy_stop(self, id, symbol, price, quantity, strength=1.0, dtime=None):
         """
+        Open a pending order to buy at a stop price
 
+        See `bbstrader.btengine.event.SignalEvent` for more details on arguments.
         """
         current_price = self.data.get_latest_bar_value(symbol, 'close')
         if price <= current_price:
@@ -156,7 +180,9 @@ class MT5Strategy(Strategy):
 
     def sell_stop(self, id, symbol, price, quantity, strength=1.0, dtime=None):
         """
+        Open a pending order to sell at a stop price
 
+        See `bbstrader.btengine.event.SignalEvent` for more details on arguments.
         """
         current_price = self.data.get_latest_bar_value(symbol, 'close')
         if price >= current_price:
@@ -168,7 +194,9 @@ class MT5Strategy(Strategy):
 
     def buy_limit(self, id, symbol, price, quantity, strength=1.0, dtime=None):
         """
+        Open a pending order to buy at a limit price
 
+        See `bbstrader.btengine.event.SignalEvent` for more details on arguments.
         """
         current_price = self.data.get_latest_bar_value(symbol, 'close')
         if price >= current_price:
@@ -180,7 +208,9 @@ class MT5Strategy(Strategy):
 
     def sell_limit(self, id, symbol, price, quantity, strength=1.0, dtime=None):
         """
+        Open a pending order to sell at a limit price
 
+        See `bbstrader.btengine.event.SignalEvent` for more details on arguments.
         """
         current_price = self.data.get_latest_bar_value(symbol, 'close')
         if price <= current_price:
@@ -193,7 +223,9 @@ class MT5Strategy(Strategy):
     def buy_stop_limit(self, id: int, symbol: str, price: float, stoplimit: float, 
                        quantity: int, strength: float=1.0, dtime: datetime | pd.Timestamp = None):
         """
+        Open a pending order to buy at a stop-limit price
 
+        See `bbstrader.btengine.event.SignalEvent` for more details on arguments.
         """
         current_price = self.data.get_latest_bar_value(symbol, 'close')
         if price <= current_price:
@@ -208,7 +240,9 @@ class MT5Strategy(Strategy):
 
     def sell_stop_limit(self, id, symbol, price, stoplimit, quantity, strength=1.0, dtime=None):
         """
+        Open a pending order to sell at a stop-limit price
 
+        See `bbstrader.btengine.event.SignalEvent` for more details on arguments.
         """
         current_price = self.data.get_latest_bar_value(symbol, 'close')
         if price >= current_price:
@@ -222,6 +256,9 @@ class MT5Strategy(Strategy):
         self.orders[symbol]['SSTPLMT'].append(order)
 
     def check_pending_orders(self):
+        """
+        Check for pending orders and handle them accordingly.
+        """
         for symbol in self.symbols:
             dtime = self.data.get_latest_bar_datetime(symbol)
             for order in self.orders[symbol]['BLMT'].copy():
@@ -388,6 +425,17 @@ class MT5Strategy(Strategy):
                           from_tz: str = 'UTC',
                           to_tz: str = 'US/Eastern'
                           ) -> pd.Timestamp:
+        """
+        Convert datetime from one timezone to another.
+
+        Args:
+            dt : The datetime to convert.
+            from_tz : The timezone to convert from.
+            to_tz : The timezone to convert to.
+
+        Returns:
+            dt_to : The converted datetime.
+        """
         from_tz = pytz.timezone(from_tz)
         if isinstance(dt, datetime):
             dt = pd.to_datetime(dt, unit='s')
