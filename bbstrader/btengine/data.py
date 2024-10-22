@@ -184,7 +184,8 @@ class BaseCSVDataHandler(DataHandler):
             self.symbol_data[s]['returns'] = self.symbol_data[s][
                 'adj_close' if 'adj_close' in new_names else 'close'
             ].pct_change().dropna()
-            self.symbol_data[s] = self.symbol_data[s].iterrows()
+            if self.events is not None:
+                self.symbol_data[s] = self.symbol_data[s].iterrows()
 
     def _get_new_bar(self, symbol: str):
         """
@@ -346,7 +347,7 @@ class MT5DataHandler(BaseCSVDataHandler):
             See `bbstrader.btengine.data.BaseCSVDataHandler` for other arguments.
         """
         self.tf = kwargs.get('time_frame', 'D1')
-        self.start = kwargs.get('mt5_start')
+        self.start = kwargs.get('mt5_start', datetime(2000, 1, 1))
         self.end = kwargs.get('mt5_end', datetime.now())
         self.use_utc = kwargs.get('use_utc', False)
         self.filer = kwargs.get('filter', False)
@@ -405,8 +406,8 @@ class YFDataHandler(BaseCSVDataHandler):
             See `bbstrader.btengine.data.BaseCSVDataHandler` for other arguments.
         """
         self.symbol_list = symbol_list
-        self.start_date = kwargs.get('yf_start')
-        self.end_date = kwargs.get('yf_end')
+        self.start_date = kwargs.get('yf_start', '2000-01-01')
+        self.end_date = kwargs.get('yf_end', datetime.now().strftime('%Y-%m-%d'))
         self.cache_dir = kwargs.get('data_dir')
         csv_dir = self._download_and_cache_data(self.cache_dir)
         super().__init__(events, symbol_list, csv_dir)
