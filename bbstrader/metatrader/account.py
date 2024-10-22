@@ -5,18 +5,49 @@ import urllib.request
 from datetime import datetime
 import MetaTrader5 as mt5
 from dotenv import load_dotenv
-from currency_converter import SINGLE_DAY_ECB_URL, CurrencyConverter
+from currency_converter import (
+    SINGLE_DAY_ECB_URL, 
+    CurrencyConverter
+)
 from bbstrader.metatrader.utils import (
-    raise_mt5_error, AccountInfo, TerminalInfo, InvalidBroker,
-    SymbolInfo, TickInfo, TradeRequest, OrderCheckResult,
-    OrderSentResult, TradePosition, TradeOrder, TradeDeal,)
-from typing import Tuple, Union, List, Dict, Any, Optional, Literal
+    raise_mt5_error, 
+    AccountInfo, 
+    TerminalInfo, 
+    InvalidBroker,
+    SymbolInfo, 
+    TickInfo, 
+    TradeRequest, 
+    OrderCheckResult,
+    OrderSentResult, 
+    TradePosition, 
+    TradeOrder, 
+    TradeDeal,
+)
+from typing import (
+    Tuple, 
+    Union, 
+    List, 
+    Dict, 
+    Any, 
+    Optional, 
+    Literal,
+    overload
+)
 
 load_dotenv()
+
+__all__ = [
+    "Account", 
+    "Broker", 
+    "AdmiralMarktsGroup", 
+    "JustGlobalMarkets", 
+    "FTMO", 
+]
+
 __BROKERS__ = {
-    'AMG': "Admirals Group AS",
-    'JGM': "Just Global Markets Ltd.",
-    'FTMO': "FTMO S.R.O."
+    'AMG': 'Admirals Group AS',
+    'JGM': 'Just Global Markets Ltd.',
+    'FTMO': 'FTMO S.R.O.'
 }
 
 BROKERS_TIMEZONES = {
@@ -55,6 +86,45 @@ _SYMBOLS_TYPE_ = {
     "CRYPTO": r'\b(Cryptos?)\b'
 }
 
+_COUNTRY_MAP_ = {
+    "USA": r"\b(US)\b",
+    "AUS": r"\b(Australia)\b",
+    "BEL": r"\b(Belgium)\b",
+    "DNK": r"\b(Denmark)\b",
+    "FIN": r"\b(Finland)\b",
+    "FRA": r"\b(France)\b",
+    "DEU": r"\b(Germany)\b",
+    "NLD": r"\b(Netherlands)\b",
+    "NOR": r"\b(Norway)\b",
+    "PRT": r"\b(Portugal)\b",
+    "ESP": r"\b(Spain)\b",
+    "SWE": r"\b(Sweden)\b",
+    "GBR": r"\b(UK)\b",
+    "CHE": r"\b(Switzerland)\b",
+}
+
+AMG_EXCHANGES = {
+    'XASX': r"Australia.*\(ASX\)",
+    'XBRU': r"Belgium.*\(Euronext\)",
+    'XCSE': r"Denmark.*\(CSE\)",
+    'XHEL': r"Finland.*\(NASDAQ\)",
+    'XPAR': r"France.*\(Euronext\)",
+    'XETR': r"Germany.*\(Xetra\)",
+    'XAMS': r"Netherlands.*\(Euronext\)",
+    'XOSL': r"Norway.*\(NASDAQ\)",
+    'XLIS': r"Portugal.*\(Euronext\)",
+    'XMAD': r"Spain.*\(BME\)",
+    'XSTO': r"Sweden.*\(NASDAQ\)",
+    'XLON': r"UK.*\(LSE\)",
+    'XNYS': r"US.*\((NYSE|ARCA|AMEX)\)",
+    'NYSE': r"US.*\(NYSE\)",
+    'ARCA': r"US.*\(ARCA\)",
+    'AMEX': r"US.*\(AMEX\)",
+    'NASDAQ': r"US.*\(NASDAQ\)",
+    'BATS': r"US.*\(BATS\)",
+    'XSWX': r"Switzerland.*\(SWX\)"
+}
+
 def check_mt5_connection():
     try:
         init = mt5.initialize()
@@ -62,6 +132,67 @@ def check_mt5_connection():
             raise_mt5_error(INIT_MSG)
     except Exception:
         raise_mt5_error(INIT_MSG)
+
+
+class Broker(object):
+    def __init__(self, name: str=None):
+        if name is None:
+            check_mt5_connection()
+            self._name = mt5.account_info().company
+        else:
+            self._name = name
+    
+    @property
+    def name(self):
+        return self._name
+    
+    def __str__(self):
+        return self.name
+    
+    def __eq__(self, orther) -> bool:
+        return self.name == orther.name
+    
+    def __ne__(self, orther) -> bool:
+        return self.name != orther.name
+
+
+class AdmiralMarktsGroup(Broker):
+    def __init__(self):
+        super().__init__("Admirals Group AS")
+    
+    @property
+    def timezone(self) -> str:
+        return BROKERS_TIMEZONES['AMG']
+
+
+class JustGlobalMarkets(Broker):
+    def __init__(self):
+        super().__init__("Just Global Markets Ltd.")
+
+    @property
+    def timezone(self) -> str:
+        return BROKERS_TIMEZONES['JGM']
+
+
+class FTMO(Broker):
+    def __init__(self):
+        super().__init__("FTMO S.R.O.")
+    
+    @property
+    def timezone(self) -> str:
+        return BROKERS_TIMEZONES['FTMO']
+    
+
+class AMP(Broker):
+    ...
+
+
+BROKERS: Dict[str, Broker] = {
+    'AMG': AdmiralMarktsGroup(),
+    'JGM': JustGlobalMarkets(),
+    'FTMO': FTMO()
+}
+
 
 class Account(object):
     """
@@ -104,18 +235,68 @@ class Account(object):
         self._check_brokers()
 
     def _check_brokers(self):
-        supported = __BROKERS__.copy()
-        broker = self.get_terminal_info().company
-        if broker not in supported.values():
+        supported = BROKERS.copy()
+        if self.broker not in supported.values():
             msg = (
-                f"{broker} is not currently supported broker for the Account() class\n"
-                f"Currently Supported brokers are: {', '.join(supported.values())}\n"
-                f"For {supported['AMG']}, See [{amg_url}]\n"
-                f"For {supported['JGM']}, See [{jgm_url}]\n"
-                f"For {supported['FTMO']}, See [{ftmo_url}]\n"
+                f"{self.broker.name} is not currently supported broker for the Account() class\n"
+                f"Currently Supported brokers are: {', '.join([b.name for b in supported.values()])}\n"
+                f"For {supported['AMG'].name}, See [{amg_url}]\n"
+                f"For {supported['JGM'].name}, See [{jgm_url}]\n"
+                f"For {supported['FTMO'].name}, See [{ftmo_url}]\n"
             )
             raise InvalidBroker(message=msg)
-
+        
+    @property
+    def broker(self) -> Broker:
+        return Broker(self.get_terminal_info().company)
+    
+    @property
+    def timezone(self) -> str:
+        for broker in BROKERS.values():
+            if broker == self.broker:
+                return broker.timezone
+    
+    @property
+    def name(self)-> str:
+        return self.get_account_info().name
+    
+    @property
+    def number(self)-> int:
+        return self.get_account_info().login
+    
+    @property
+    def server(self)-> str:
+        """The name of the trade server to which the client terminal is connected.
+        (e.g., 'AdmiralsGroup-Demo')
+        """
+        return self.get_account_info().server
+    
+    @property
+    def balance(self) -> float:
+        return self.get_account_info().balance
+    
+    @property
+    def leverage(self) -> int:
+        return self.get_account_info().leverage
+    
+    @property
+    def equity(self) -> float:
+        return self.get_account_info().equity
+    
+    @property
+    def currency(self) -> str:
+        return self.get_account_info().currency
+    
+    @property
+    def language(self) -> str:
+        """The language of the terminal interface."""
+        return self.get_terminal_info().language
+    
+    @property
+    def maxbars(self) -> int:
+        """The maximal bars count on the chart."""
+        return self.get_terminal_info().maxbars
+  
     def get_account_info(
         self,
         account:  Optional[int] = None,
@@ -280,8 +461,8 @@ class Account(object):
             c = CurrencyConverter(filename)
         os.remove(filename)
         supported = c.currencies
-        if (from_c not in supported or
-                to_c not in supported
+        if (from_c not in supported
+            or to_c not in supported
             ):
             rate = qty
         else:
@@ -301,7 +482,7 @@ class Account(object):
 
         Exemple:
             >>> account =  Account()
-            >>> account.get_rates('EURUSD')
+            >>> account.get_currency_rates('EURUSD')
             {'bc': 'EUR', 'mc': 'EUR', 'pc': 'USD', 'ac': 'USD'}
         """
         info = self.get_symbol_info(symbol)
@@ -497,16 +678,19 @@ class Account(object):
 
         Notes:
             This mthods works primarly with Admirals Group AS products,
-            For other brokers use `get_symbols()`
+            For other brokers use `get_symbols()` or this method will use it by default.
         """
-        fx_categories = {
-            "majors": r"\b(Majors?)\b",
-            "minors": r"\b(Minors?)\b",
-            "exotics": r"\b(Exotics?)\b",
-        }
-        return self._get_symbols_by_category('forex', category, fx_categories)
+        if self.broker != AdmiralMarktsGroup():
+            return self.get_symbols(symbol_type='FX')
+        else:
+            fx_categories = {
+                "majors": r"\b(Majors?)\b",
+                "minors": r"\b(Minors?)\b",
+                "exotics": r"\b(Exotics?)\b",
+            }
+            return self._get_symbols_by_category('forex', category, fx_categories)
 
-    def get_stocks_from(self, country_code: str = 'USA') -> List[str]:
+    def get_stocks_from_country(self, country_code: str = 'USA', etf=True) -> List[str]:
         """
         Retrieves a list of stock symbols from a specific country.
 
@@ -538,25 +722,133 @@ class Account(object):
 
         Notes:
             This mthods works primarly with Admirals Group AS products,
-            For other brokers use `get_symbols()`
+            For other brokers use `get_symbols()` or this method will use it by default.
         """
-        country_map = {
-            "USA": r"\b(US)\b",
-            "AUS": r"\b(Australia)\b",
-            "BEL": r"\b(Belgium)\b",
-            "DNK": r"\b(Denmark)\b",
-            "FIN": r"\b(Finland)\b",
-            "FRA": r"\b(France)\b",
-            "DEU": r"\b(Germany)\b",
-            "NLD": r"\b(Netherlands)\b",
-            "NOR": r"\b(Norway)\b",
-            "PRT": r"\b(Portugal)\b",
-            "ESP": r"\b(Spain)\b",
-            "SWE": r"\b(Sweden)\b",
-            "GBR": r"\b(UK)\b",
-            "CHE": r"\b(Switzerland)\b",
-        }
-        return self._get_symbols_by_category('stocks', country_code, country_map)
+        
+        if self.broker != AdmiralMarktsGroup():
+            stocks = self.get_symbols(symbol_type='STK')
+            return stocks
+        else:
+            country_map = _COUNTRY_MAP_
+            stocks =  self._get_symbols_by_category('STK', country_code, country_map)
+            if etf:
+                etfs = self._get_symbols_by_category('ETF', country_code, country_map)
+                return stocks + etfs  
+            return stocks   
+
+    def get_stocks_from_exchange(self, exchange_code: str = 'XNYS', etf=True) -> List[str]:
+        """
+        Get stock symbols from a specific exchange using the ISO Code for the exchange.
+
+        Supported exchanges are from Admirals Group AS products:
+        * **XASX:**        **Australian Securities Exchange**        
+        * **XBRU:**        **Euronext Brussels Exchange** 
+        * **XCSE:**        **Copenhagen Stock Exchange**  
+        * **XHEL:**        **NASDAQ OMX Helsinki**
+        * **XPAR:**        **Euronext Paris**
+        * **XETR:**        **Xetra Frankfurt**
+        * **XOSL:**        **Oslo Stock Exchange**
+        * **XLIS:**        **Euronext Lisbon**
+        * **XMAD:**        **Bolsa de Madrid**
+        * **XSTO:**        **NASDAQ OMX Stockholm**
+        * **XLON:**        **London Stock Exchange**
+        * **NYSE:**        **New York Stock Exchange**
+        * **ARCA:**        **NYSE ARCA**
+        * **AMEX:**        **NYSE AMEX**
+        * **XNYS:**        **New York Stock Exchange (AMEX, ARCA, NYSE)**
+        * **NASDAQ:**      **NASDAQ**
+        * **BATS:**        **BATS Exchange**
+        * **XSWX:**        **SWX Swiss Exchange**
+        * **XAMS:**        **Euronext Amsterdam**   
+
+        Args:
+            exchange_code (str, optional): The ISO code of the exchange.
+            etf (bool, optional): If True, include ETFs from the exchange. Defaults to True.
+
+        Returns:
+            list: A list of stock symbol names from the specified exchange.
+
+        Raises:
+            ValueError: If an unsupported exchange is provided.
+
+        Notes:
+            This mthods works primarly with Admirals Group AS products,
+            For other brokers use `get_symbols()` or this method will use it by default. 
+        """
+        if self.broker != AdmiralMarktsGroup():
+            stocks = self.get_symbols(symbol_type='STK')
+            return stocks
+        else:
+            exchange_map = AMG_EXCHANGES
+            stocks = self._get_symbols_by_category('STK', exchange_code, exchange_map)
+            if etf:
+                etfs = self._get_symbols_by_category('ETF', exchange_code, exchange_map)
+                return stocks + etfs
+            return stocks
+
+    def get_future_symbols(self, category: str = 'ALL') -> List[str]:
+        """
+        Retrieves a list of future symbols belonging to a specific category.
+
+        Args:
+            category : The category of future symbols to retrieve. 
+                                        Possible values are 'ALL', 'agricultures', 'energies', 'metals'. 
+                                        Defaults to 'ALL'.
+
+        Returns:
+            list: A list of future symbol names matching the specified category.
+
+        Raises:
+            ValueError: If an unsupported category is provided.
+
+        Notes:
+            This mthods works primarly with Admirals Group AS products,
+            For other brokers use `get_symbols()` or this method will use it by default.
+        """
+        category = category.lower()
+        if self.broker != AdmiralMarktsGroup():
+             return self.get_symbols(symbol_type='FUT')
+        elif category in ['all', 'index']:
+            categories = {
+                "all": r"\b(Futures?)\b",
+                "index": r"\b(Index)\b", 
+            }
+            return self._get_symbols_by_category('FUT', category, categories)
+        else:
+            metals =  []
+            energies = []
+            agricultures = []
+            bonds = []
+            commodities = self.get_symbols(symbol_type='COMD')
+            futures = self.get_symbols(symbol_type='FUT')
+            for symbol in futures:
+                info = self.get_symbol_info(symbol)
+                if info.name.startswith('_'):
+                    if 'XAU' in info.name:
+                        metals.append(info.name)
+                    if 'oil' in info.name.lower():
+                        energies.append(info.name)
+                    name = info.name.split('_')[1]
+                    if name in commodities:
+                        _info = self.get_symbol_info(name)
+                        if 'Metals' in _info.path:
+                            metals.append(info.name)
+                        elif 'Energies' in _info.path:
+                            energies.append(info.name)
+                        elif 'Agricultures' in _info.path:
+                            agricultures.append(info.name)
+
+                elif info.name.startswith('#'):
+                    if 'Index' not in info.path:
+                        bonds.append(info.name)
+            if category == 'metals':
+                return metals
+            elif category == 'energies':
+                return energies
+            elif category == 'agricultures':
+                return agricultures
+            elif category == 'bonds':
+                return bonds
 
     def get_symbol_info(self, symbol: str) -> Union[SymbolInfo, None]:
         """Get symbol properties
@@ -662,12 +954,12 @@ class Account(object):
         Raises:
             MT5TerminalError: A specific exception based on the error code.
         """
-        _action = {
+        actions = {
             'buy': mt5.ORDER_TYPE_BUY,
             'sell': mt5.ORDER_TYPE_SELL
         }
         try:
-            margin = mt5.order_calc_margin(_action[action], symbol, lot, price)
+            margin = mt5.order_calc_margin(actions[action], symbol, lot, price)
             if margin is None:
                 return None
             return margin
@@ -699,7 +991,7 @@ class Account(object):
         try:
             result = mt5.order_check(request)
             result_dict = result._asdict()
-            trade_request =  TradeRequest(**result.request._asdict())
+            trade_request = TradeRequest(**result.request._asdict())
             result_dict['request'] = trade_request
             return OrderCheckResult(**result_dict)
         except Exception as e:
@@ -725,7 +1017,7 @@ class Account(object):
         try:
             result = mt5.order_send(request)
             result_dict = result._asdict()
-            trade_request =  TradeRequest(**result.request._asdict())
+            trade_request = TradeRequest(**result.request._asdict())
             result_dict['request'] = trade_request
             return OrderSentResult(**result_dict)
         except Exception as e:
@@ -906,6 +1198,8 @@ class Account(object):
         df = pd.DataFrame(list(position_deals),
                           columns=position_deals[0]._asdict())
         df['time'] = pd.to_datetime(df['time'], unit='s')
+        df.drop(['time_msc', 'external_id'], axis=1, inplace=True)
+        df.set_index('time', inplace=True)
         if save:
             file = "trade_history.csv"
             df.to_csv(file)
