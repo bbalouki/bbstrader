@@ -57,7 +57,8 @@ class SignalEvent(Event):
                  signal_type: Literal['LONG', 'SHORT', 'EXIT'],
                  quantity: int | float = 100,
                  strength: int | float = 1.0,
-                 price: int | float = None
+                 price: int | float = None,
+                 stoplimit: int | float = None
                  ):
         """
         Initialises the SignalEvent.
@@ -73,6 +74,7 @@ class SignalEvent(Event):
             strength (int | float): An adjustment factor "suggestion" used to scale
                 quantity at the portfolio level. Useful for pairs strategies.
             price (int | float): An optional price to be used when the signal is generated.
+            stoplimit (int | float): An optional stop-limit price for the signal
         """
         self.type = 'SIGNAL'
         self.strategy_id = strategy_id
@@ -82,6 +84,7 @@ class SignalEvent(Event):
         self.quantity = quantity
         self.strength = strength
         self.price = price
+        self.stoplimit = stoplimit
 
 
 class OrderEvent(Event):
