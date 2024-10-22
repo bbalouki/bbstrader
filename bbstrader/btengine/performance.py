@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import yfinance as yf
-
 from scipy.stats import mstats
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
@@ -138,7 +137,7 @@ def plot_performance(df, title):
     plt.show()
 
 
-def plot_returns_and_dd(df, benchmark: str, title):
+def plot_returns_and_dd(df: pd.DataFrame, benchmark: str, title):
     """
     Plot the returns and drawdowns of the strategy
     compared to a benchmark.
@@ -216,7 +215,7 @@ def plot_returns_and_dd(df, benchmark: str, title):
     plt.show()
 
 
-def plot_monthly_yearly_returns(df, title):
+def plot_monthly_yearly_returns(df:pd.DataFrame, title):
     """
     Plot the monthly and yearly returns of the strategy.
 
