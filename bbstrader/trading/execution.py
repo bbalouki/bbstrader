@@ -1,23 +1,38 @@
 import time
-import MetaTrader5 as mt5
 from datetime import datetime
 from bbstrader.metatrader.trade import Trade
-from bbstrader.trading.strategies import Strategy
+from bbstrader.btengine.strategy import(
+    Strategy,
+    MT5Strategy
+)
 from bbstrader.metatrader.account import check_mt5_connection
-from typing import Optional, Literal, Tuple, List,  Dict
+from typing import (
+    Optional, 
+    Literal, 
+    Tuple, 
+    List,  
+    Dict
+)
 
+__all__ = [
+    'MT5ExecutionEngine',
+    'TWSExecutionEngine'
+]
 
 _TF_MAPPING = {
-    '1m':  1,
-    '3m':  3,
-    '5m':  5,
-    '10m': 10,
-    '15m': 15,
-    '30m': 30,
-    '1h':  60,
-    '2h':  120,
-    '4h':  240,
-    'D1':  1440
+    '1m':   1,
+    '3m':   3,
+    '5m':   5,
+    '10m':  10,
+    '15m':  15,
+    '30m':  30,
+    '1h':   60,
+    '2h':   120,
+    '4h':   240,
+    '6h':   360,
+    '8h':   480,
+    '12h':  720,
+    'D1':   1440
 }
 
 TradingDays = [
@@ -28,45 +43,70 @@ TradingDays = [
     'friday'
 ]
 
+BUYS    = ['BMKT', 'BLMT', 'BSTP', 'BSTPLMT']
+SELLS   = ['SMKT', 'SLMT', 'SSTP', 'SSTPLMT']
+
+ORDERS_TYPES    = ["orders","buy_stops", "sell_stops", "buy_limits", 
+                    "sell_limits", "buy_stop_limits", "sell_stop_limits"]
+POSITIONS_TYPES = ["positions", "buys", "sells", "profitables", "losings"]
+
+ACTIONS     = ["buys", "sells"]
+STOPS       = ["buy_stops", "sell_stops"]
+LIMITS      = ["buy_limits", "sell_limits"]
+STOP_LIMITS = ["buy_stop_limits", "sell_stop_limits"]
+
+EXIT_SIGNAL_ACTIONS = {
+    "EXIT":                 {a: a[:-1] for a in ACTIONS},
+    "EXIT_LONG":            {"buys": "buy"},
+    "EXIT_SHORT":           {"sells": "sell"},
+    "EXIT_STOP":            {stop: stop for stop in STOPS},
+    "EXIT_LONG_STOP":       {"buy_stops": "buy_stops"},
+    "EXIT_SHORT_STOP":      {"sell_stops": "sell_stops"},
+    "EXIT_LIMIT":           {limit: limit for limit in LIMITS},
+    "EXIT_LONG_LIMIT":      {"buy_limits": "buy_limits"},
+    "EXIT_SHORT_LIMIT":     {"sell_limits": "sell_limits"},
+    "EXIT_STOP_LIMIT":      {sl: sl for sl in STOP_LIMITS},
+    "EXIT_LONG_STOP_LIMIT": {STOP_LIMITS[0]: STOP_LIMITS[0]},
+    "EXIT_SHORT_STOP_LIMIT":{STOP_LIMITS[1]: STOP_LIMITS[1]},
+    "EXIT_PROFITABLES":     {"profitables": "profitables"},
+    "EXIT_LOSINGS":         {"losings": "losings"},
+    "EXIT_ALL_POSITIONS":   {"positions": "all"},
+    "EXIT_ALL_ORDERS":      {"orders": "all"}
+}
+
 
 def _mt5_execution(
         symbol_list, trades_instances, strategy_cls, /,
         mm, trail, stop_trail, trail_after_points, be_plus_points, 
-        time_frame, iter_time, period, period_end_action, trading_days,
+        time_frame, iter_time, use_trade_time, period, period_end_action, trading_days,
         comment, **kwargs):
-    symbols = symbol_list.copy()
+    symbols  = symbol_list.copy()
     STRATEGY = kwargs.get('strategy_name')
-    _max_trades = kwargs.get('max_trades')
-    logger = trades_instances[symbols[0]].logger
-    max_trades = {symbol: _max_trades[symbol] for symbol in symbols}
+    mtrades  = kwargs.get('max_trades')
+    logger   = trades_instances[symbols[0]].logger
+    max_trades = {symbol: mtrades[symbol] for symbol in symbols}
     if comment is None:
         trade = trades_instances[symbols[0]]
         comment = f"{trade.expert_name}@{trade.version}"
 
-    def check(buys: List, sells: List, symbol: str):
+    def check(buys, sells, symbol):
         if not mm:
             return
-        if buys is not None:
+        if buys is not None or sells is not None:
             logger.info(
                 f"Checking for Break even, SYMBOL={symbol}...STRATEGY={STRATEGY}")
             trades_instances[symbol].break_even(
                 mm=mm, trail=trail, stop_trail=stop_trail, 
                 trail_after_points=trail_after_points, be_plus_points=be_plus_points)
-        if sells is not None:
-            logger.info(
-                f"Checking for Break even, SYMBOL={symbol}...STRATEGY={STRATEGY}")
-            trades_instances[symbol].break_even(
-                mm=mm, trail=trail, stop_trail=stop_trail, 
-                trail_after_points=trail_after_points, be_plus_points=be_plus_points)
-    num_days = 0
-    time_intervals = 0
-    trade_time = _TF_MAPPING[time_frame]
+    num_days        = 0
+    time_intervals  = 0
+    trade_time      = _TF_MAPPING[time_frame]
 
-    long_market = {symbol: False for symbol in symbols}
-    short_market = {symbol: False for symbol in symbols}
+    long_market   = {symbol: False for symbol in symbols}
+    short_market  = {symbol: False for symbol in symbols}
     try:
         check_mt5_connection()
-        strategy: Strategy = strategy_cls(symbol_list=symbols, mode='live', **kwargs)
+        strategy: MT5Strategy = strategy_cls(symbol_list=symbols, mode='live', **kwargs)
     except Exception as e:
         logger.error(f"Error initializing strategy, {e}, STRATEGY={STRATEGY}")
         return
@@ -79,25 +119,28 @@ def _mt5_execution(
             current_date = datetime.now()
             today = current_date.strftime("%A").lower()
             time.sleep(0.5)
-            buys = {
-                symbol: trades_instances[symbol].get_current_buys()
-                for symbol in symbols
-            }
-            sells = {
-                symbol: trades_instances[symbol].get_current_sells()
-                for symbol in symbols
-            }
+            positions_orders = {}
+            for type in POSITIONS_TYPES + ORDERS_TYPES:
+                for symbol in symbols:
+                    func = getattr(trades_instances[symbol], f"get_current_{type}")
+                    positions_orders[type][symbol] = func()
+            buys = positions_orders['buys']
+            sells = positions_orders['sells']
             for symbol in symbols:
-                if buys[symbol] is not None:
-                    logger.info(
-                        f"Current buy positions SYMBOL={symbol}: {buys[symbol]}, STRATEGY={STRATEGY}")
-                if sells[symbol] is not None:
-                    logger.info(
-                        f"Current sell positions SYMBOL={symbol}: {sells[symbol]}, STRATEGY={STRATEGY}")
-            long_market = {symbol: buys[symbol] is not None and len(
-                buys[symbol]) >= max_trades[symbol] for symbol in symbols}
-            short_market = {symbol: sells[symbol] is not None and len(
-                sells[symbol]) >= max_trades[symbol] for symbol in symbols}
+                for type in POSITIONS_TYPES + ORDERS_TYPES:
+                    if positions_orders[type][symbol] is not None:
+                        logger.info(
+                            f"Current {type.upper()} SYMBOL={symbol}: \
+                                {positions_orders[type][symbol]}, STRATEGY={STRATEGY}")
+            long_market = {
+                symbol: buys[symbol] is not None 
+                and len(buys[symbol]) >= max_trades[symbol] for symbol in symbols
+            }
+            short_market = {
+                symbol: sells[symbol] is not None 
+                and len(sells[symbol]) >= max_trades[symbol] for symbol in symbols
+            }
+
         except Exception as e:
             logger.error(f"{e}, STRATEGY={STRATEGY}")
             continue
@@ -111,39 +154,69 @@ def _mt5_execution(
         for symbol in symbols:
             try:
                 check_mt5_connection()
-                trade = trades_instances[symbol]
+                trade: Trade = trades_instances[symbol]
                 logger.info(
                     f"Calculating signal... SYMBOL={trade.symbol}, STRATEGY={STRATEGY}")
                 signal = signals[symbol]
+                if isinstance(signal, dict):
+                    signal = signal['action']
+                    price = signal['price']
+                    stoplimit = signal.get('stoplimit')
+                elif isinstance(signal, str):
+                    price = None
+                    stoplimit = None
                 if trade.trading_time() and today in trading_days:
                     if signal is not None:
+                        signal = 'BMKT' if signal == 'LONG' else signal
+                        signal = 'SMKT' if signal == 'SHORT' else signal
                         logger.info(
                             f"SIGNAL = {signal}, SYMBOL={trade.symbol}, STRATEGY={STRATEGY}")
-                        if signal in ("EXIT", "EXIT_LONG") and long_market[symbol]:
-                            trade.close_positions(position_type='buy')
-                        elif signal in ("EXIT", "EXIT_SHORT") and short_market[symbol]:
-                            trade.close_positions(position_type='sell')
-                        elif signal == "LONG" and not long_market[symbol]:
-                            if time_intervals % trade_time == 0 or buys[symbol] is None:
-                                logger.info(
-                                    f"Sending buy Order ... SYMBOL={trade.symbol}, STRATEGY={STRATEGY}")
-                                trade.open_buy_position(mm=mm, comment=comment)
+                        if signal in EXIT_SIGNAL_ACTIONS:
+                            for exit_signal, actions in EXIT_SIGNAL_ACTIONS.items():
+                                for position_type, order_type in actions.items():
+                                    if positions_orders[position_type][symbol] is not None:
+                                        if position_type in POSITIONS_TYPES:
+                                            trade.close_positions(position_type=order_type)
+                                        else:
+                                            trade.close_orders(order_type=order_type)
+                        elif signal in BUYS and not long_market[symbol]:
+                            if use_trade_time:
+                                if time_intervals % trade_time == 0 or buys[symbol] is None:
+                                    logger.info(
+                                        f"Sending {signal} Order ... SYMBOL={trade.symbol}, STRATEGY={STRATEGY}")
+                                    trade.open_buy_position(
+                                        action=signal, price=price, stoplimit=stoplimit, mm=mm, comment=comment)
+                                else:
+                                    logger.info(
+                                        f"Sorry Time Frame Not completed !!! SYMBOL={trade.symbol}, STRATEGY={STRATEGY}")
+                                    check(buys[symbol], sells[symbol], symbol)
                             else:
-                                check(buys[symbol], sells[symbol], symbol)
-                        elif signal == "LONG" and long_market[symbol]:
+                                logger.info(
+                                    f"Sending {signal} Order ... SYMBOL={trade.symbol}, STRATEGY={STRATEGY}")
+                                trade.open_buy_position(
+                                    action=signal, price=price, stoplimit=stoplimit, mm=mm, comment=comment)
+                        elif signal in BUYS and long_market[symbol]:
                             logger.info(
                                 f"Sorry Risk not allowed !!! SYMBOL={trade.symbol}, STRATEGY={STRATEGY}")
                             check(buys[symbol], sells[symbol], symbol)
 
-                        elif signal == "SHORT" and not short_market[symbol]:
-                            if time_intervals % trade_time == 0 or sells[symbol] is None:
-                                logger.info(
-                                    f"Sending sell Order ... SYMBOL={trade.symbol}, STRATEGY={STRATEGY}")
-                                trade.open_sell_position(
-                                    mm=mm, comment=comment)
+                        elif signal in SELLS and not short_market[symbol]:
+                            if use_trade_time:
+                                if time_intervals % trade_time == 0 or sells[symbol] is None:
+                                    logger.info(
+                                        f"Sending {signal} Order ... SYMBOL={trade.symbol}, STRATEGY={STRATEGY}")
+                                    trade.open_sell_position(
+                                        action=signal, price=price, stoplimit=stoplimit, mm=mm, comment=comment)
+                                else:
+                                    logger.info(
+                                        f"Sorry Time Frame Not completed !!! SYMBOL={trade.symbol}, STRATEGY={STRATEGY}")
+                                    check(buys[symbol], sells[symbol], symbol)
                             else:
-                                check(buys[symbol], sells[symbol], symbol)
-                        elif signal == "SHORT" and short_market[symbol]:
+                                logger.info(
+                                    f"Sending {signal} Order ... SYMBOL={trade.symbol}, STRATEGY={STRATEGY}")
+                                trade.open_sell_position(
+                                    action=signal, price=price, stoplimit=stoplimit, mm=mm, comment=comment)
+                        elif signal in SELLS and short_market[symbol]:
                             logger.info(
                                 f"Sorry Risk not allowed !!! SYMBOL={trade.symbol}, STRATEGY={STRATEGY}")
                             check(buys[symbol], sells[symbol], symbol)
@@ -184,8 +257,13 @@ def _mt5_execution(
                 if day_end:
                     if period_end_action == 'break':
                         break
-                    elif period_end_action == 'sleep':
+                    elif period_end_action == 'sleep' and today != 'friday':
                         sleep_time = trades_instances[symbols[-1]].sleep_time()
+                        logger.info(f"Sleeping for {sleep_time} minutes ...\n")
+                        time.sleep(60 * sleep_time)
+                        logger.info("STARTING NEW TRADING SESSION ...\n")
+                    elif period_end_action == 'sleep' and today == 'friday':
+                        sleep_time = trades_instances[symbols[-1]].sleep_time(weekend=True)
                         logger.info(f"Sleeping for {sleep_time} minutes ...\n")
                         time.sleep(60 * sleep_time)
                         logger.info("STARTING NEW TRADING SESSION ...\n")
@@ -261,31 +339,28 @@ def _mt5_execution(
 def _tws_execution(*args, **kwargs):
     raise NotImplementedError("TWS Execution is not yet implemented !!!")
 
-_TERMINALS = {
-    'MT5': _mt5_execution,
-    'TWS': _tws_execution
-}
-class ExecutionEngine():
+
+class MT5ExecutionEngine():
     """
-    The `ExecutionEngine` class serves as the central hub for executing your trading strategies within the `bbstrader` framework. 
+    The `MT5ExecutionEngine` class serves as the central hub for executing your trading strategies within the `bbstrader` framework. 
     It orchestrates the entire trading process, ensuring seamless interaction between your strategies, market data, and your chosen 
     trading platform (currently MetaTrader 5 (MT5) and Interactive Brokers TWS).
 
     Key Features
     ------------
 
-    - **Strategy Execution:** The `ExecutionEngine` is responsible for running your strategy, retrieving signals, and executing trades based on those signals.
+    - **Strategy Execution:** The `MT5ExecutionEngine` is responsible for running your strategy, retrieving signals, and executing trades based on those signals.
     - **Time Management:** You can define a specific time frame for your trades and set the frequency with which the engine checks for signals and manages trades.
     - **Trade Period Control:** Define whether your strategy runs for a day, a week, or a month, allowing for flexible trading durations.
     - **Money Management:** The engine supports optional money management features, allowing you to control risk and optimize your trading performance.
     - **Trading Day Configuration:** You can customize the days of the week your strategy will execute, providing granular control over your trading schedule.
-    - **Platform Integration:** The `ExecutionEngine` is currently designed to work with both MT5 and TWS platforms, ensuring compatibility and flexibility in your trading environment.
+    - **Platform Integration:** The `MT5ExecutionEngine` is currently designed to work with MT5.
 
     Examples
     --------
     
     >>> from bbstrader.metatrader import create_trade_instance
-    >>> from bbstrader.trading.execution import ExecutionEngine
+    >>> from bbstrader.trading.execution import MT5ExecutionEngine
     >>> from bbstrader.trading.strategies import StockIndexCFDTrading
     >>> from bbstrader.metatrader.utils import config_logger
     >>> 
@@ -325,7 +400,7 @@ class ExecutionEngine():
     ...        logger=logger,
     ...    )
     >>> 
-    >>>     engine = ExecutionEngine(
+    >>>     engine = MT5ExecutionEngine(
     ...        symbol_list,
     ...        trades_instances,
     ...        StockIndexCFDTrading,
@@ -336,7 +411,7 @@ class ExecutionEngine():
     ...        comment='bbs_SISTBO_@2.0',
     ...        **strategy_kwargs
     ...    )
-    >>>     engine.run(terminal='MT5')
+    >>>     engine.run()
     """
 
     def __init__(self,
@@ -351,6 +426,7 @@ class ExecutionEngine():
                  be_plus_points:     Optional[int] = None,
                  time_frame:         Optional[str] = '15m',
                  iter_time:          Optional[int | float] = 5,
+                 use_trade_time:     Optional[bool] = True,
                  period:             Literal['day', 'week', 'month'] = 'week',
                  period_end_action:  Literal['break', 'sleep'] = 'break',
                  trading_days:       Optional[List[str]] = TradingDays,
@@ -365,6 +441,7 @@ class ExecutionEngine():
             mm : Enable Money Management. Defaults to False.
             time_frame : Time frame to trade. Defaults to '15m'.
             iter_time : Interval to check for signals and `mm`. Defaults to 5.
+            use_trade_time : Open trades after the time is completed. Defaults to True.
             period : Period to trade. Defaults to 'week'.
             period_end_action : Action to take at the end of the period. Defaults to 'break', 
                 this only applies when period is 'day', 'week'.
@@ -402,32 +479,33 @@ class ExecutionEngine():
         self.be_plus_points = be_plus_points
         self.time_frame = time_frame
         self.iter_time = iter_time
+        self.use_trade_time = use_trade_time
         self.period = period
         self.period_end_action = period_end_action
         self.trading_days = trading_days
         self.comment = comment
         self.kwargs = kwargs
 
-    def run(self, terminal: Literal['MT5', 'TWS']):
-        if terminal not in _TERMINALS:
-            raise ValueError(
-                f"Invalid terminal: {terminal}. Must be either 'MT5' or 'TWS'")
-        elif terminal == 'MT5':
-            check_mt5_connection()
-        _TERMINALS[terminal](
-                self.symbol_list,
-                self.trades_instances,
-                self.strategy_cls,
-                mm=self.mm,
-                trail=self.trail,
-                stop_trail=self.stop_trail,
-                trail_after_points=self.trail_after_points,
-                be_plus_points=self.be_plus_points,
-                time_frame=self.time_frame,
-                iter_time=self.iter_time,
-                period=self.period,
-                period_end_action=self.period_end_action,
-                trading_days=self.trading_days,
-                comment=self.comment,
-                **self.kwargs
-            )
+    def run(self):
+        check_mt5_connection()
+        _mt5_execution(
+            self.symbol_list,
+            self.trades_instances,
+            self.strategy_cls,
+            mm=self.mm,
+            trail=self.trail,
+            stop_trail=self.stop_trail,
+            trail_after_points=self.trail_after_points,
+            be_plus_points=self.be_plus_points,
+            time_frame=self.time_frame,
+            iter_time=self.iter_time,
+            use_trade_time=self.use_trade_time,
+            period=self.period,
+            period_end_action=self.period_end_action,
+            trading_days=self.trading_days,
+            comment=self.comment,
+            **self.kwargs
+        )
+
+
+class TWSExecutionEngine():...
