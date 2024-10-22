@@ -7,15 +7,24 @@ import MetaTrader5 as Mt5
 from bbstrader.metatrader.account import Account
 from bbstrader.metatrader.rates import Rates
 from bbstrader.metatrader.utils import (
-    TIMEFRAMES, raise_mt5_error, TimeFrame)
-from typing import List, Dict, Optional, Literal, Union, Any
+    TIMEFRAMES, 
+    raise_mt5_error, 
+    TimeFrame
+)
+from typing import (
+    List, 
+    Dict, 
+    Optional, 
+    Literal, 
+    Union, 
+    Any
+)
 
 
 _COMMD_SUPPORTED_ = [
     "GOLD", "XAUEUR", "SILVER", "BRENT", "CRUDOIL", "WTI",  "UKOIL",
     'XAGEUR', 'XAGUSD', 'XAUAUD', 'XAUEUR', 'XAUUSD', 'XAUGBP',  'USOIL'
 ]
-
 
 _ADMIRAL_MARKETS_FUTURES_ = [
     '#USTNote_', '#Bund_', '#USDX_', '_AUS200_', '_Canada60_', '_SouthAfrica40_',
@@ -25,6 +34,7 @@ _ADMIRAL_MARKETS_FUTURES_ = [
     '_XAU_', '_HK50_', '_HSCEI50_'
 ]
 
+__all__ = ['RiskManagement']
 
 class RiskManagement(Account):
     """
@@ -135,7 +145,7 @@ class RiskManagement(Account):
         self.pchange = pchange_sl
         self.var_level = var_level
         self.var_tf = var_time_frame
-        self.daily_dd = daily_risk
+        self.daily_dd = round(daily_risk, 5)
         self.max_risk = max_risk
         self.rr = rr
         self.sl = sl
@@ -193,7 +203,7 @@ class RiskManagement(Account):
         volume_step = s_info.volume_step
         lot = self.currency_risk()['lot']
         steps = self._volume_step(volume_step)
-        if steps >= 2:
+        if float(steps) >= float(1):
             return round(lot, steps)
         else:
             return round(lot)
@@ -203,13 +213,13 @@ class RiskManagement(Account):
 
         value_str = str(value)
 
-        if '.' in value_str:
+        if '.' in value_str and value_str != '1.0':
             decimal_index = value_str.index('.')
             num_digits = len(value_str) - decimal_index - 1
-
             return num_digits
-        elif value_str == '1':
-            return 1
+        
+        elif value_str == '1.0':
+            return 0
         else:
             return 0
 
@@ -254,7 +264,7 @@ class RiskManagement(Account):
         interval = round((minutes / tf_int)  * 252)
 
         rate = Rates(self.symbol, self._tf, 0, interval)
-        returns = rate.get_returns*100
+        returns = rate.returns*100
         std = returns.std()
         point = self.get_symbol_info(self.symbol).point
         av_price = (self.symbol_info.bid + self.symbol_info.ask)/2
@@ -308,7 +318,7 @@ class RiskManagement(Account):
         interval = round((minutes / tf_int)  * 252)
 
         rate = Rates(self.symbol, tf, 0, interval)
-        returns = rate.get_returns*100
+        returns = rate.returns*100
         p = self.get_account_info().margin_free
         mu = returns.mean()
         sigma = returns.std()
@@ -405,10 +415,11 @@ class RiskManagement(Account):
 
         av_price = (s_info.bid + s_info.ask)/2
         trade_risk = self.get_trade_risk()
-        FX = self.get_symbol_type(self.symbol) == 'FX'
-        COMD = self.get_symbol_type(self.symbol) == 'COMD'
-        FUT = self.get_symbol_type(self.symbol) == 'FUT'
-        CRYPTO = self.get_symbol_type(self.symbol) == 'CRYPTO'
+        symbol_type = self.get_symbol_type(self.symbol)
+        FX    = symbol_type == 'FX'
+        COMD  = symbol_type == 'COMD'
+        FUT   = symbol_type == 'FUT'
+        CRYPTO = symbol_type == 'CRYPTO'
         if COMD:
             supported = _COMMD_SUPPORTED_
             if self.symbol.split('.')[0] not in supported:
@@ -503,14 +514,14 @@ class RiskManagement(Account):
                     trade_loss = (lot * contract_size) * tick_value_loss
                     trade_profit = (lot * contract_size) * tick_value_profit
 
-            if self.get_symbol_type(self.symbol) == 'IDX':
-                rates = self.get_currency_rates(self.symbol)
-                if rates['mc'] == rates['pc'] == 'JPY':
-                    lot = lot * contract_size
-                    lot = self._check_lot(lot)
-                    volume = round(lot * av_price * contract_size)
-            if contract_size == 1:
-                volume = round(lot * av_price)
+            # if self.get_symbol_type(self.symbol) == 'IDX':
+            #     rates = self.get_currency_rates(self.symbol)
+            #     if rates['mc'] == rates['pc'] == 'JPY':
+            #         lot = lot * contract_size
+            #         lot = self._check_lot(lot)
+            #         volume = round(lot * av_price * contract_size)
+            # if contract_size == 1:
+            #     volume = round(lot * av_price)
 
             return {
                 'currency_risk': currency_risk,
