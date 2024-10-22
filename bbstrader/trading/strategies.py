@@ -15,10 +15,10 @@ from bbstrader.models.risk import HMMRiskManager
 from bbstrader.models.risk import build_hmm_models
 from bbstrader.btengine.backtest import BacktestEngine
 from bbstrader.btengine.strategy import Strategy
+from bbstrader.btengine.strategy import MT5Strategy
 from bbstrader.btengine.execution import *
 from bbstrader.btengine.data import *
-from bbstrader.tseries import (
-    KalmanFilterModel, ArimaGarchModel)
+from bbstrader.tseries import KalmanFilterModel, ArimaGarchModel
 from typing import Union, Optional, Literal, Dict, List
 
 __all__ = [
@@ -37,6 +37,7 @@ def get_quantities(quantities, symbol_list):
     elif isinstance(quantities, int):
         return {symbol: quantities for symbol in symbol_list}
     
+
 class SMAStrategy(Strategy):
     """
     Carries out a basic Moving Average Crossover strategy bactesting with a
@@ -76,10 +77,7 @@ class SMAStrategy(Strategy):
         """
         self.bars = bars
         self.events = events
-        if symbol_list is not None:
-            self.symbol_list = symbol_list
-        else:
-            self.symbol_list = self.bars.symbol_list
+        self.symbol_list = symbol_list or self.bars.symbol_list
         self.mode = mode
 
         self.short_window = kwargs.get("short_window", 50)
@@ -104,10 +102,10 @@ class SMAStrategy(Strategy):
         for s in self.symbol_list:
             bar_date = self.bars.get_latest_bar_datetime(s)
             bars = self.bars.get_latest_bars_values(
-                s, "Adj Close", N=self.long_window
+                s, "adj_close", N=self.long_window
             )
             returns_val = self.bars.get_latest_bars_values(
-                s, "Returns", N=self.risk_window
+                s, "returns", N=self.risk_window
             )
             if len(bars) >= self.long_window and len(returns_val) >= self.risk_window:
                 regime = self.risk_models[s].which_trade_allowed(returns_val)
@@ -124,7 +122,7 @@ class SMAStrategy(Strategy):
         for s, data in symbol_data.items():
             signal = None
             if data is not None:
-                price = self.bars.get_latest_bar_value(s, "Adj Close")
+                price = self.bars.get_latest_bar_value(s, "adj_close")
                 short_sma, long_sma, regime, bar_date = data
                 dt = bar_date
                 if regime == "LONG":
@@ -159,8 +157,8 @@ class SMAStrategy(Strategy):
         symbol_data = {symbol: None for symbol in self.symbol_list}
         for symbol in self.symbol_list:
             sig_rate = Rates(symbol, self.tf, 0, self.risk_window)
-            hmm_data = sig_rate.get_returns.values
-            prices = sig_rate.get_close.values
+            hmm_data = sig_rate.returns.values
+            prices = sig_rate.close.values
             current_regime = self.risk_models[symbol].which_trade_allowed(hmm_data)
             assert len(prices) >= self.long_window and len(hmm_data) >= self.risk_window
             short_sma = np.mean(prices[-self.short_window:])
@@ -241,10 +239,7 @@ class ArimaGarchStrategy(Strategy):
         """
         self.bars = bars
         self.events = events
-        if symbol_list is not None:
-            self.symbol_list = symbol_list
-        else:
-            self.symbol_list = self.bars.symbol_list
+        self.symbol_list = symbol_list or self.bars.symbol_list
         self.mode = mode
         
         self.qty =  get_quantities(
@@ -280,10 +275,10 @@ class ArimaGarchStrategy(Strategy):
             N = self.risk_window
             dt = self.bars.get_latest_bar_datetime(symbol)
             bars = self.bars.get_latest_bars_values(
-                symbol, "Close", N=self.arima_window
+                symbol, "close", N=self.arima_window
             )
             returns = self.bars.get_latest_bars_values(
-                symbol, 'Returns', N=self.risk_window
+                symbol, 'returns', N=self.risk_window
             )
             df = pd.DataFrame()
             df['Close'] = bars[-M:]
@@ -303,7 +298,7 @@ class ArimaGarchStrategy(Strategy):
                 signal = None
                 prediction = self.arima_models[symbol].get_prediction(data)
                 regime = self.risk_models[symbol].which_trade_allowed(returns)
-                price = self.bars.get_latest_bar_value(symbol, "Adj Close")
+                price = self.bars.get_latest_bar_value(symbol, "adj_close")
 
                 # If we are short the market, check for an exit
                 if prediction > 0 and self.short_market[symbol]:
@@ -342,7 +337,7 @@ class ArimaGarchStrategy(Strategy):
             rates = arch_data.get_rates_from_pos()
             arch_returns = self.arima_models[symbol].load_and_prepare_data(rates)
             window_data = arch_returns['diff_log_return'].iloc[-self.arima_window:]
-            hmm_returns = arch_data.get_returns.values[-self.risk_window:]
+            hmm_returns = arch_data.returns.values[-self.risk_window:]
             symbol_data[symbol] = (window_data, hmm_returns)
         return symbol_data
     
@@ -403,14 +398,12 @@ class KalmanFilterStrategy(Strategy):
         """
         self.bars = bars
         self.events_queue = events
-        if symbol_list is not None:
-            self.symbol_list = symbol_list
-        else:
-            self.symbol_list = self.bars.symbol_list
+        self.symbol_list = symbol_list or self.bars.symbol_list
         self.mode = mode
 
         self.hmm_tiker = kwargs.get("hmm_tiker")
         self._assert_tikers()
+        self.account = Account()
         self.hmm_window = kwargs.get("hmm_window", 50)
         self.qty = kwargs.get("quantity", 100)
         self.tf = kwargs.get("time_frame", "D1")
@@ -437,8 +430,8 @@ class KalmanFilterStrategy(Strategy):
             return
         et, sqrt_Qt = etqt
         theta = self.kl_model.theta
-        p1 = self.bars.get_latest_bar_value(self.tickers[1], "Adj Close")
-        p0 = self.bars.get_latest_bar_value(self.tickers[0], "Adj Close")
+        p1 = self.bars.get_latest_bar_value(self.tickers[1], "adj_close")
+        p0 = self.bars.get_latest_bar_value(self.tickers[0], "adj_close")
         if et >= -sqrt_Qt and self.long_market:
             print("CLOSING LONG: %s" % dt)
             y_signal = SignalEvent(1, self.tickers[1], dt, "EXIT", price=p1)
@@ -481,14 +474,9 @@ class KalmanFilterStrategy(Strategy):
 
     def calculate_livexy(self):
         signals = {symbol: None for symbol in self.symbol_list}
-        p0_ = Rates(self.tickers[0], self.tf, 0, 10)
-        p1_ = Rates(self.tickers[1], self.tf, 0, 10)
-
-        p0_data = p0_.get_close
-        p1_data = p1_.get_close
-        prices = np.array(
-            [p0_data.values[-1], p1_data.values[-1]]
-        )
+        p0_price = self.account.get_tick_info(self.tickers[0]).ask
+        p1_price = self.account.get_tick_info(self.tickers[1]).ask
+        prices = np.array([p0_price, p1_price])
         et_std = self.kl_model.calculate_etqt(prices)
         if et_std is not None:
             et, std = et_std
@@ -514,19 +502,15 @@ class KalmanFilterStrategy(Strategy):
     def calculate_backtest_signals(self):
         p0, p1 = self.tickers[0], self.tickers[1]
         dt = self.bars.get_latest_bar_datetime(p0)
-        _x = self.bars.get_latest_bars_values(
-            p0, "Close", N=1
-        )
-        _y = self.bars.get_latest_bars_values(
-            p1, "Close", N=1
-        )
+        x = self.bars.get_latest_bar_value(p0, "close")
+        y = self.bars.get_latest_bar_value(p1, "close")
         returns = self.bars.get_latest_bars_values(
-            self.hmm_tiker, "Returns", N=self.hmm_window
+            self.hmm_tiker, "returns", N=self.hmm_window
         )
         latest_prices = np.array([-1.0, -1.0])
         if len(returns) >= self.hmm_window:
-            latest_prices[0] = _x[-1]
-            latest_prices[1] = _y[-1]
+            latest_prices[0] = x
+            latest_prices[1] = y
             et_qt = self.kl_model.calculate_etqt(latest_prices)
             regime = self.risk_model[
                 self.hmm_tiker].which_trade_allowed(returns)
@@ -537,7 +521,7 @@ class KalmanFilterStrategy(Strategy):
         signals = {symbol: None for symbol in self.symbol_list}
         initial_signals = self.calculate_livexy()
         hmm_data = Rates(self.hmm_ticker, self.tf, 0, self.hmm_window)
-        returns = hmm_data.get_returns.values
+        returns = hmm_data.returns.values
         current_regime = self.risk_model[
             self.hmm_tiker].which_trade_allowed(returns)
         for symbol in self.symbol_list:
@@ -592,10 +576,7 @@ class StockIndexSTBOTrading(Strategy):
         """
         self.bars = bars
         self.events = events
-        if symbol_list is not None:
-            self.symbol_list = symbol_list
-        else:
-            self.symbol_list = self.bars.symbol_list
+        self.symbol_list = symbol_list or self.bars.symbol_list
         self.mode = mode
 
         self.account = Account()
@@ -670,7 +651,7 @@ class StockIndexSTBOTrading(Strategy):
     def calculate_backtest_signals(self):
         for index in self.symbol_list.copy():
             dt = self.bars.get_latest_bar_datetime(index)
-            last_price = self.bars.get_latest_bars_values(index, 'Close', N=1)
+            last_price = self.bars.get_latest_bars_values(index, 'close', N=1)
 
             current_price = last_price[-1]
             if self.last_price[index] is None:
@@ -710,7 +691,6 @@ class StockIndexSTBOTrading(Strategy):
                     self.num_buys[index] = 0
                     self.buy_prices[index] = []
 
-
     def calculate_signals(self, event=None) -> Dict[str, Union[str, None]]:
         if self.mode == 'backtest' and event is not None:
             if event.type == 'MARKET':
@@ -730,12 +710,11 @@ def _run_backtest(
     engine = BacktestEngine(
         symbol_list, capital, 0.0, datetime.strptime(
             kwargs['yf_start'], "%Y-%m-%d"),
-        kwargs.get("data_handler", YFHistoricDataHandler), 
-        kwargs.get("exc_handler", SimulatedExecutionHandler), 
+        kwargs.get("data_handler", YFDataHandler), 
+        kwargs.get("exc_handler", SimExecutionHandler), 
         kwargs.pop('backtester_class'), **kwargs
     )
     engine.simulate_trading()
-
 
 def _run_arch_backtest(
         capital: float = 100000.0,
@@ -748,10 +727,9 @@ def _run_arch_backtest(
         "yf_start": "2010-01-04",
         "hmm_data": hmm_data,
         'backtester_class': ArimaGarchStrategy,
-        "data_handler": YFHistoricDataHandler,
+        "data_handler": YFDataHandler,
     }
     _run_backtest("ARIMA+GARCH & HMM", capital, ["^GSPC"], kwargs)
-
 
 def _run_kf_backtest(
     capital: float = 100000.0,
@@ -767,10 +745,9 @@ def _run_kf_backtest(
         "hmm_tiker": "TLT",
         "session_duration": 6.5,
         'backtester_class': KalmanFilterStrategy,
-        "data_handler": YFHistoricDataHandler
+        "data_handler": YFDataHandler
     }
     _run_backtest("Kalman Filter & HMM", capital, symbol_list, kwargs)
-
 
 def _run_sma_backtest(
     capital: float = 100000.0,
@@ -785,7 +762,7 @@ def _run_sma_backtest(
         "mt5_start": datetime(2010, 1, 4),
         "mt5_end": datetime(2023, 1, 1),
         "backtester_class": SMAStrategy,
-        "data_handler": MT5HistoricDataHandler,
+        "data_handler": MT5DataHandler,
         "exc_handler": MT5ExecutionHandler
     }
     _run_backtest("SMA & HMM", capital, ["[SP500]"], kwargs)
@@ -810,7 +787,7 @@ def _run_sistbo_backtest(
         'yf_start': start.strftime('%Y-%m-%d'),
         'time_frame': '15m',
         "backtester_class": StockIndexSTBOTrading,
-        "data_handler": MT5HistoricDataHandler,
+        "data_handler": MT5DataHandler,
         "exc_handler": MT5ExecutionHandler
     }
     _run_backtest("Stock Index Short Term Buy Only ", capital, symbol_list, kwargs)
