@@ -7,5 +7,5 @@ The module is designed to be flexible and extensible, allowing users to define t
 strategies and customize the trading process.
 
 """
-from bbstrader.trading.execution import ExecutionEngine
+from bbstrader.trading.execution import *
 from bbstrader.trading.strategies import *
