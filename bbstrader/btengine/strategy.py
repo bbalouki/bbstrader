@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod
 import pytz
+import math
 import pandas as pd
 import numpy as np
 from queue import Queue
@@ -72,6 +73,7 @@ class MT5Strategy(Strategy):
         self.data = bars
         self.symbols = symbol_list
         self.mode = mode
+        self.volume = kwargs.get("volume")
         self.logger = kwargs.get("logger", config_logger("mt5_strategy.log"))
         self._construct_positions_and_orders()
 
@@ -113,9 +115,28 @@ class MT5Strategy(Strategy):
         """
         pass
 
+    def get_quantity(self, symbol) -> int:
+        """
+        Calculate the quantity to buy or sell for a given symbol based on the dollar value provided.
+        The quantity calculated can be used to evalute a strategy's performance for each symbol
+        given the fact that the dollar value is the same for all symbols.
+
+        Args:
+            symbol : The symbol for the trade.
+
+        Returns:
+            qty : The quantity to buy or sell for the symbol.
+        """
+        if self.volume is None:
+            raise ValueError("Volume must be provided for the method.")
+        current_price = self.data.get_latest_bar_value(symbol, 'close')
+        qty = math.ceil(self.volume / current_price)
+        return max(qty, 1)
+    
     def get_quantities(self, quantities: Union[None, dict, int]) -> dict:
         """
         Get the quantities to buy or sell for the symbols in the strategy.
+        This method is used when whe need to assign different quantities to the symbols.
 
         Args:
             quantities : The quantities for the symbols in the strategy.
@@ -310,43 +331,60 @@ class MT5Strategy(Strategy):
                         f"PRICE @ {order.price}", custom_time=dtime)
                     self.orders[symbol]['SSTPLMT'].remove(order)
 
-    def get_asset_returns(self,
+    def get_asset_values(self,
                           symbol_list: List[str],
                           window: int,
+                          value_type: str = 'returns',
+                          array: bool = True,
                           bars: DataHandler = None,
                           mode: Literal['backtest', 'live'] = 'backtest',
                           tf: str = 'D1'
-                          ) -> Dict[str, np.ndarray] | None:
+                          ) -> Dict[str, np.ndarray | pd.Series] | None:
         """
-        Get the historical returns of the assets in the symbol list.
+        Get the historical OHLCV value or returns or custum value 
+        based on the DataHandker of the assets in the symbol list.
 
         Args:
             bars : DataHandler for market data handling, required for backtest mode.
             symbol_list : List of ticker symbols for the pairs trading strategy.
+            value_type : The type of value to get (e.g., returns, open, high, low, close, adjclose, volume).
+            array : If True, return the values as numpy arrays, otherwise as pandas Series.
             mode : Mode of operation for the strategy.
-            window : The lookback period for calculating the returns.
+            window : The lookback period for resquesting the data.
             tf : The time frame for the strategy.
 
         Returns:
-            asset_returns : Historical returns of the assets in the symbol list.
+            asset_values : Historical values of the assets in the symbol list.
+        
+        Note:
+            In Live mode, the `bbstrader.metatrader.rates.Rates` class is used to get the historical data
+            so the value_type must be 'returns', 'open', 'high', 'low', 'close', 'adjclose', 'volume'.
         """
         if mode not in ['backtest', 'live']:
             raise ValueError('Mode must be either backtest or live.')
-        asset_returns = {}
+        asset_values = {}
         if mode == 'backtest':
             if bars is None:
                 raise ValueError('DataHandler is required for backtest mode.')
             for asset in symbol_list:
-                returns = bars.get_latest_bars_values(
-                    asset, 'returns', N=window)
-                asset_returns[asset] = returns[~np.isnan(returns)]
+                if array:
+                    values = bars.get_latest_bars_values(
+                        asset, value_type, N=window)
+                    asset_values[asset] = values[~np.isnan(values)]
+                else:
+                    values = bars.get_latest_bars(asset, N=window)
+                    asset_values[asset] = getattr(values, value_type)    
         elif mode == 'live':
             for asset in symbol_list:
                 rates = Rates(symbol=asset, time_frame=tf, count=window + 1)
-                returns = rates.returns.values
-                asset_returns[asset] = returns[~np.isnan(returns)]
-        if len(asset_returns[symbol_list[0]]) == window:
-            return asset_returns
+                if array:
+                    values = getattr(rates, value_type).values
+                    asset_values[asset] = values[~np.isnan(values)]
+                else:
+                    values = getattr(rates, value_type)
+                    asset_values[asset] = values
+        if all(len(values) >= window for values in asset_values.values()):
+            return {a: v[-window:] for a, v in asset_values.items()}
         else:
             return None
 

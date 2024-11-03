@@ -110,6 +110,7 @@ class Portfolio(object):
         self.timeframe = kwargs.get("time_frame", "D1")
         self.trading_hours = kwargs.get("session_duration", 6.5)
         self.benchmark = kwargs.get('benchmark', 'SPY')
+        self.output_dir = kwargs.get('output_dir', None)
         self.strategy_name = kwargs.get('strategy_name', '')
         self.print_stats = kwargs.get('print_stats', True)
         if self.timeframe not in self._tf_mapping():
@@ -126,6 +127,7 @@ class Portfolio(object):
                                       [(s, 0) for s in self.symbol_list])
         self.all_holdings = self.construct_all_holdings()
         self.current_holdings = self.construct_current_holdings()
+        self.equity_curve = None
 
     def _tf_mapping(self):
         """
@@ -309,6 +311,7 @@ class Portfolio(object):
         list of dictionaries.
         """
         curve = pd.DataFrame(self.all_holdings)
+        curve['Datetime'] = pd.to_datetime(curve['Datetime'], utc=True)
         curve.set_index('Datetime', inplace=True)
         curve['Returns'] = curve['Total'].pct_change(fill_method=None)
         curve['Equity Curve'] = (1.0+curve['Returns']).cumprod()
@@ -339,7 +342,10 @@ class Portfolio(object):
         ]
         now = datetime.now().strftime('%Y%m%d%H%M%S')
         strategy_name = self.strategy_name.replace(' ', '_')
-        results_dir = BBSTRADER_DIR / 'backtests' / strategy_name
+        if self.output_dir:
+            results_dir = Path(self.output_dir) / strategy_name
+        else:
+            results_dir = Path('.backtests') / strategy_name
         results_dir.mkdir(parents=True, exist_ok=True)
         
         csv_file =  f"{strategy_name}_{now}_equities.csv"

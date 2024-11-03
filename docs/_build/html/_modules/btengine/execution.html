@@ -1,22 +1,20 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>btengine.execution &mdash; BBSTrader 0.1.07 documentation</title>
+  <title>btengine.execution &mdash; BBSTrader 0.1.08 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
-  <!--[if lt IE 9]>
-    <script src="../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="../../_static/jquery.js?v=5d32c60e"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=15bc9eb9"></script>
-        <script src="../../_static/doctools.js?v=9a2dae69"></script>
-        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=fda63d7b"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
@@ -75,14 +73,15 @@
 <span class="kn">from</span> <span class="nn">queue</span> <span class="kn">import</span> <span class="n">Queue</span>
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span> <span class="nn">bbstrader.btengine.event</span> <span class="kn">import</span> <span class="n">FillEvent</span><span class="p">,</span> <span class="n">OrderEvent</span>
+<span class="kn">from</span> <span class="nn">bbstrader.btengine.data</span> <span class="kn">import</span> <span class="n">DataHandler</span>
 <span class="kn">from</span> <span class="nn">bbstrader.metatrader.account</span> <span class="kn">import</span> <span class="n">Account</span>
+<span class="kn">from</span> <span class="nn">bbstrader.config</span> <span class="kn">import</span> <span class="n">config_logger</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">&quot;ExecutionHandler&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;SimulatedExecutionHandler&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SimExecutionHandler&quot;</span><span class="p">,</span>
     <span class="s2">&quot;MT5ExecutionHandler&quot;</span>
 <span class="p">]</span>
-
 
 <div class="viewcode-block" id="ExecutionHandler">
 <a class="viewcode-back" href="../../btengine.html#btengine.execution.ExecutionHandler">[docs]</a>
@@ -121,9 +120,9 @@
 
 
 
-<div class="viewcode-block" id="SimulatedExecutionHandler">
-<a class="viewcode-back" href="../../btengine.html#btengine.execution.SimulatedExecutionHandler">[docs]</a>
-<span class="k">class</span> <span class="nc">SimulatedExecutionHandler</span><span class="p">(</span><span class="n">ExecutionHandler</span><span class="p">):</span>
+<div class="viewcode-block" id="SimExecutionHandler">
+<a class="viewcode-back" href="../../btengine.html#btengine.execution.SimExecutionHandler">[docs]</a>
+<span class="k">class</span> <span class="nc">SimExecutionHandler</span><span class="p">(</span><span class="n">ExecutionHandler</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The simulated execution handler simply converts all order</span>
 <span class="sd">    objects into their equivalent fill objects automatically</span>
@@ -134,7 +133,7 @@
 <span class="sd">    handler.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">events</span><span class="p">:</span> <span class="n">Queue</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">events</span><span class="p">:</span> <span class="n">Queue</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">DataHandler</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialises the handler, setting the event queues</span>
 <span class="sd">        up internally.</span>
@@ -143,9 +142,11 @@
 <span class="sd">            events (Queue): The Queue of Event objects.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">events</span> <span class="o">=</span> <span class="n">events</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bardata</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;logger&quot;</span><span class="p">,</span> <span class="n">config_logger</span><span class="p">(</span><span class="s2">&quot;execution.log&quot;</span><span class="p">))</span>
 
-<div class="viewcode-block" id="SimulatedExecutionHandler.execute_order">
-<a class="viewcode-back" href="../../btengine.html#btengine.execution.SimulatedExecutionHandler.execute_order">[docs]</a>
+<div class="viewcode-block" id="SimExecutionHandler.execute_order">
+<a class="viewcode-back" href="../../btengine.html#btengine.execution.SimExecutionHandler.execute_order">[docs]</a>
     <span class="k">def</span> <span class="nf">execute_order</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">OrderEvent</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Simply converts Order objects into Fill objects naively,</span>
@@ -155,11 +156,17 @@
 <span class="sd">            event (OrderEvent): Contains an Event object with order information.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;ORDER&#39;</span><span class="p">:</span>
+            <span class="n">dtime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bardata</span><span class="o">.</span><span class="n">get_latest_bar_datetime</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">symbol</span><span class="p">)</span>
             <span class="n">fill_event</span> <span class="o">=</span> <span class="n">FillEvent</span><span class="p">(</span>
-                <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span> <span class="n">event</span><span class="o">.</span><span class="n">symbol</span><span class="p">,</span>
+                <span class="n">dtime</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">symbol</span><span class="p">,</span>
                 <span class="s1">&#39;ARCA&#39;</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">quantity</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">direction</span><span class="p">,</span> <span class="kc">None</span>
             <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">fill_event</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">fill_event</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">event</span><span class="o">.</span><span class="n">direction</span><span class="si">}</span><span class="s2"> ORDER FILLED: SYMBOL=</span><span class="si">{</span><span class="n">event</span><span class="o">.</span><span class="n">symbol</span><span class="si">}</span><span class="s2">, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;QUANTITY=</span><span class="si">{</span><span class="n">event</span><span class="o">.</span><span class="n">quantity</span><span class="si">}</span><span class="s2">, PRICE @</span><span class="si">{</span><span class="n">event</span><span class="o">.</span><span class="n">price</span><span class="si">}</span><span class="s2"> EXCHANGE=</span><span class="si">{</span><span class="n">fill_event</span><span class="o">.</span><span class="n">exchange</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> 
+                <span class="n">custom_time</span><span class="o">=</span><span class="n">fill_event</span><span class="o">.</span><span class="n">timeindex</span>
+            <span class="p">)</span></div>
 </div>
 
 
@@ -167,42 +174,130 @@
 <div class="viewcode-block" id="MT5ExecutionHandler">
 <a class="viewcode-back" href="../../btengine.html#btengine.execution.MT5ExecutionHandler">[docs]</a>
 <span class="k">class</span> <span class="nc">MT5ExecutionHandler</span><span class="p">(</span><span class="n">ExecutionHandler</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">events</span><span class="p">:</span> <span class="n">Queue</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The main role of `MT5ExecutionHandler` class is to estimate the execution fees </span>
+<span class="sd">    for different asset classes on the MT5 terminal. </span>
+<span class="sd">    </span>
+<span class="sd">    Generally we have four types of fees when we execute trades using the MT5 terminal </span>
+<span class="sd">    (commissions, swap, spread and other fees). But most of these fees depend on the specifications </span>
+<span class="sd">    of each instrument and the duration of the transaction for the swap for example. </span>
+<span class="sd">    </span>
+<span class="sd">    Calculating the exact fees for each instrument would be a bit complex because our Backtest engine </span>
+<span class="sd">    and the Portfolio class do not take into account the duration of each trade to apply the appropriate </span>
+<span class="sd">    rate for the swap for example. So we have to use only the model of calculating the commissions </span>
+<span class="sd">    for each asset class and each instrument.</span>
+<span class="sd">    </span>
+<span class="sd">    The second thing that must be taken into account on MT5 is the type of account offered by the broker. </span>
+<span class="sd">    Brokers have different account categories each with its specifications for each asset class and each instrument. </span>
+<span class="sd">    Again considering all these conditions would make our class very complex. So we took the `Raw Spread` </span>
+<span class="sd">    account fee calculation model from [Just Market](https://one.justmarkets.link/a/tufvj0xugm/registration/trader) </span>
+<span class="sd">    for indicies, forex, commodities and crypto. We used the [Admiral Market](https://cabinet.a-partnership.com/visit/?bta=35537&amp;brand=admiralmarkets) </span>
+<span class="sd">    account fee calculation model from `Trade.MT5` account type for stocks and ETFs.</span>
+
+<span class="sd">    NOTE:</span>
+<span class="sd">        This class only works with `bbstrader.metatrader.data.MT5DataHandler` class.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">events</span><span class="p">:</span> <span class="n">Queue</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">DataHandler</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialises the handler, setting the event queues up internally.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            events (Queue): The Queue of Event objects.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">events</span> <span class="o">=</span> <span class="n">events</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">account</span> <span class="o">=</span> <span class="n">Account</span><span class="p">()</span>
-
-    <span class="k">def</span> <span class="nf">_estimate_total_fees</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">lot</span><span class="p">):</span>
-        <span class="c1"># TODO: Implement the calculation of fees based on the broker&#39;s fees</span>
-        <span class="c1"># https://www.metatrader5.com/en/terminal/help/trading/market_watch</span>
-        <span class="c1"># Calculate fees based on the broker&#39;s fees , swap and commission</span>
-        <span class="k">return</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bardata</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;logger&quot;</span><span class="p">,</span> <span class="n">config_logger</span><span class="p">(</span><span class="s2">&quot;execution.log&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__account</span> <span class="o">=</span> <span class="n">Account</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_calculate_lot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">quantity</span><span class="p">,</span> <span class="n">price</span><span class="p">):</span>
-        <span class="n">FX</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">account</span><span class="o">.</span><span class="n">get_symbol_type</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;FX&#39;</span>
-        <span class="n">COMD</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">account</span><span class="o">.</span><span class="n">get_symbol_type</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;COMD&#39;</span>
-        <span class="n">FUT</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">account</span><span class="o">.</span><span class="n">get_symbol_type</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;FUT&#39;</span>
-        <span class="n">CRYPTO</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">account</span><span class="o">.</span><span class="n">get_symbol_type</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;CRYPTO&#39;</span>
-        <span class="n">symbol_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">account</span><span class="o">.</span><span class="n">get_symbol_info</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
+        <span class="n">symbol_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__account</span><span class="o">.</span><span class="n">get_symbol_type</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
+        <span class="n">symbol_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__account</span><span class="o">.</span><span class="n">get_symbol_info</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
         <span class="n">contract_size</span> <span class="o">=</span> <span class="n">symbol_info</span><span class="o">.</span><span class="n">trade_contract_size</span>
 
         <span class="n">lot</span> <span class="o">=</span> <span class="p">(</span><span class="n">quantity</span><span class="o">*</span><span class="n">price</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">contract_size</span> <span class="o">*</span> <span class="n">price</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">contract_size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">lot</span> <span class="o">=</span> <span class="n">quantity</span>
-        <span class="k">if</span> <span class="n">COMD</span> <span class="ow">or</span> <span class="n">FUT</span> <span class="ow">or</span> <span class="n">CRYPTO</span> <span class="ow">and</span> <span class="n">contract_size</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">symbol_type</span> <span class="ow">in</span> <span class="p">[</span>
+            <span class="s1">&#39;COMD&#39;</span><span class="p">,</span> <span class="s1">&#39;FUT&#39;</span><span class="p">,</span> <span class="s1">&#39;CRYPTO&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">contract_size</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">lot</span> <span class="o">=</span> <span class="n">quantity</span>  <span class="o">/</span> <span class="n">contract_size</span>
-        <span class="k">if</span> <span class="n">FX</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">symbol_type</span> <span class="o">==</span> <span class="s1">&#39;FX&#39;</span><span class="p">:</span>
             <span class="n">lot</span> <span class="o">=</span> <span class="p">(</span><span class="n">quantity</span><span class="o">*</span><span class="n">price</span> <span class="o">/</span> <span class="n">contract_size</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_lot</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">lot</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_check_lot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">lot</span><span class="p">):</span>
-        <span class="n">symbol_info</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">account</span><span class="o">.</span><span class="n">get_symbol_info</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
+        <span class="n">symbol_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__account</span><span class="o">.</span><span class="n">get_symbol_info</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">lot</span> <span class="o">&lt;</span> <span class="n">symbol_info</span><span class="o">.</span><span class="n">volume_min</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">symbol_info</span><span class="o">.</span><span class="n">volume_min</span>
         <span class="k">elif</span> <span class="n">lot</span> <span class="o">&gt;</span> <span class="n">symbol_info</span><span class="o">.</span><span class="n">volume_max</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">symbol_info</span><span class="o">.</span><span class="n">volume_max</span>
         <span class="k">return</span> <span class="nb">round</span><span class="p">(</span><span class="n">lot</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">_estimate_total_fees</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">lot</span><span class="p">,</span> <span class="n">qty</span><span class="p">,</span> <span class="n">price</span><span class="p">):</span>
+        <span class="n">symbol_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__account</span><span class="o">.</span><span class="n">get_symbol_type</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">symbol_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;STK&#39;</span><span class="p">,</span> <span class="s1">&#39;ETF&#39;</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_estimate_stock_commission</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">qty</span><span class="p">,</span> <span class="n">price</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">symbol_type</span> <span class="o">==</span> <span class="s1">&#39;FX&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_estimate_forex_commission</span><span class="p">(</span><span class="n">lot</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">symbol_type</span> <span class="o">==</span> <span class="s1">&#39;COMD&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_estimate_commodity_commission</span><span class="p">(</span><span class="n">lot</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">symbol_type</span> <span class="o">==</span> <span class="s1">&#39;IDX&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_estimate_index_commission</span><span class="p">(</span><span class="n">lot</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">symbol_type</span> <span class="o">==</span> <span class="s1">&#39;FUT&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_estimate_futures_commission</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">symbol_type</span> <span class="o">==</span> <span class="s1">&#39;CRYPTO&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_estimate_crypto_commission</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">0.0</span>
+            
+    <span class="k">def</span> <span class="nf">_estimate_stock_commission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">qty</span><span class="p">,</span> <span class="n">price</span><span class="p">):</span>
+        <span class="c1"># https://admiralmarkets.com/start-trading/contract-specifications?regulator=jsc</span>
+        <span class="n">min_com</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="n">min_aud</span> <span class="o">=</span> <span class="mf">8.0</span>
+        <span class="n">min_dkk</span> <span class="o">=</span> <span class="mf">30.0</span>
+        <span class="n">min_nok</span> <span class="o">=</span> <span class="n">min_sek</span> <span class="o">=</span> <span class="mf">10.0</span>
+        <span class="n">us_com</span> <span class="o">=</span> <span class="mf">0.02</span> <span class="c1"># per chare</span>
+        <span class="n">ger_fr_uk_cm</span> <span class="o">=</span> <span class="mf">0.001</span> <span class="c1"># percent</span>
+        <span class="n">eu_asia_cm</span> <span class="o">=</span> <span class="mf">0.0015</span> <span class="c1"># percent</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">symbol</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__account</span><span class="o">.</span><span class="n">get_stocks_from_country</span><span class="p">(</span><span class="s1">&#39;USA&#39;</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">__account</span><span class="o">.</span><span class="n">get_symbol_type</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;ETF&#39;</span>
+            <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">__account</span><span class="o">.</span><span class="n">get_currency_rates</span><span class="p">(</span><span class="n">symbol</span><span class="p">)[</span><span class="s1">&#39;mc&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;USD&#39;</span>
+        <span class="p">):</span>
+            <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">min_com</span><span class="p">,</span> <span class="n">qty</span> <span class="o">*</span> <span class="n">us_com</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="p">(</span>
+            <span class="n">symbol</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__account</span><span class="o">.</span><span class="n">get_stocks_from_country</span><span class="p">(</span><span class="s1">&#39;GBR&#39;</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__account</span><span class="o">.</span><span class="n">get_stocks_from_country</span><span class="p">(</span><span class="s1">&#39;FRA&#39;</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__account</span><span class="o">.</span><span class="n">get_stocks_from_country</span><span class="p">(</span><span class="s1">&#39;DEU&#39;</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">__account</span><span class="o">.</span><span class="n">get_symbol_type</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;ETF&#39;</span>
+            <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">__account</span><span class="o">.</span><span class="n">get_currency_rates</span><span class="p">(</span><span class="n">symbol</span><span class="p">)[</span><span class="s1">&#39;mc&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;GBP&#39;</span><span class="p">,</span> <span class="s1">&#39;EUR&#39;</span><span class="p">]</span>
+        <span class="p">):</span>
+            <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">min_com</span><span class="p">,</span> <span class="n">qty</span><span class="o">*</span><span class="n">price</span><span class="o">*</span><span class="n">ger_fr_uk_cm</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__account</span><span class="o">.</span><span class="n">get_currency_rates</span><span class="p">(</span><span class="n">symbol</span><span class="p">)[</span><span class="s1">&#39;mc&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;AUD&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">min_aud</span><span class="p">,</span> <span class="n">qty</span><span class="o">*</span><span class="n">price</span><span class="o">*</span><span class="n">eu_asia_cm</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">__account</span><span class="o">.</span><span class="n">get_currency_rates</span><span class="p">(</span><span class="n">symbol</span><span class="p">)[</span><span class="s1">&#39;mc&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;DKK&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">min_dkk</span><span class="p">,</span> <span class="n">qty</span><span class="o">*</span><span class="n">price</span><span class="o">*</span><span class="n">eu_asia_cm</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">__account</span><span class="o">.</span><span class="n">get_currency_rates</span><span class="p">(</span><span class="n">symbol</span><span class="p">)[</span><span class="s1">&#39;mc&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;NOK&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">min_nok</span><span class="p">,</span> <span class="n">qty</span><span class="o">*</span><span class="n">price</span><span class="o">*</span><span class="n">eu_asia_cm</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">__account</span><span class="o">.</span><span class="n">get_currency_rates</span><span class="p">(</span><span class="n">symbol</span><span class="p">)[</span><span class="s1">&#39;mc&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;SEK&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">min_sek</span><span class="p">,</span> <span class="n">qty</span><span class="o">*</span><span class="n">price</span><span class="o">*</span><span class="n">eu_asia_cm</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">min_com</span><span class="p">,</span> <span class="n">qty</span><span class="o">*</span><span class="n">price</span><span class="o">*</span><span class="n">eu_asia_cm</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_estimate_forex_commission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lot</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mf">3.0</span> <span class="o">*</span> <span class="n">lot</span>
+
+    <span class="k">def</span> <span class="nf">_estimate_commodity_commission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lot</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mf">3.0</span> <span class="o">*</span> <span class="n">lot</span>
+
+    <span class="k">def</span> <span class="nf">_estimate_index_commission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lot</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mf">0.25</span> <span class="o">*</span> <span class="n">lot</span>
+
+    <span class="k">def</span> <span class="nf">_estimate_futures_commission</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mf">0.0</span>
+
+    <span class="k">def</span> <span class="nf">_estimate_crypto_commission</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mf">0.0</span>
     
 <div class="viewcode-block" id="MT5ExecutionHandler.execute_order">
 <a class="viewcode-back" href="../../btengine.html#btengine.execution.MT5ExecutionHandler.execute_order">[docs]</a>
@@ -219,13 +314,18 @@
             <span class="n">quantity</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">quantity</span>
             <span class="n">price</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">price</span>
             <span class="n">lot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_lot</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">quantity</span><span class="p">,</span> <span class="n">price</span><span class="p">)</span>
-            <span class="n">fees</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_estimate_total_fees</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">lot</span><span class="p">)</span>
+            <span class="n">fees</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_estimate_total_fees</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">lot</span><span class="p">,</span> <span class="n">quantity</span><span class="p">,</span> <span class="n">price</span><span class="p">)</span>
+            <span class="n">dtime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bardata</span><span class="o">.</span><span class="n">get_latest_bar_datetime</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
             <span class="n">fill_event</span> <span class="o">=</span> <span class="n">FillEvent</span><span class="p">(</span>
-                <span class="n">timeindex</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span> <span class="n">symbol</span><span class="o">=</span><span class="n">symbol</span><span class="p">,</span>
+                <span class="n">timeindex</span><span class="o">=</span><span class="n">dtime</span><span class="p">,</span> <span class="n">symbol</span><span class="o">=</span><span class="n">symbol</span><span class="p">,</span>
                 <span class="n">exchange</span><span class="o">=</span><span class="s1">&#39;MT5&#39;</span><span class="p">,</span> <span class="n">quantity</span><span class="o">=</span><span class="n">quantity</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="n">direction</span><span class="p">,</span>
                 <span class="n">fill_cost</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">commission</span><span class="o">=</span><span class="n">fees</span>
             <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">fill_event</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">fill_event</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">direction</span><span class="si">}</span><span class="s2"> ORDER FILLED: SYMBOL=</span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2">, QUANTITY=</span><span class="si">{</span><span class="n">quantity</span><span class="si">}</span><span class="s2">, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;PRICE @</span><span class="si">{</span><span class="n">price</span><span class="si">}</span><span class="s2"> EXCHANGE=</span><span class="si">{</span><span class="n">fill_event</span><span class="o">.</span><span class="n">exchange</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">custom_time</span><span class="o">=</span><span class="n">fill_event</span><span class="o">.</span><span class="n">timeindex</span>
+            <span class="p">)</span></div>
 </div>
 
 

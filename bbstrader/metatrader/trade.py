@@ -368,7 +368,7 @@ class Trade(RiskManagement):
             statistics_dict = {item[0]: item[1] for item in session_data}
             stats_df = pd.DataFrame(statistics_dict, index=[0])
             # Create the directory if it doesn't exist
-            dir = dir or BBSTRADER_DIR / 'sessions_stats'
+            dir = dir or '.sessions'
             os.makedirs(dir, exist_ok=True)
             if '.' in self.symbol:
                 symbol = self.symbol.split('.')[0]
@@ -559,7 +559,7 @@ class Trade(RiskManagement):
 
     def _check(self, txt: str = ""):
         if (self.positive_profit(id=self.expert_id) 
-            or self.get_current_open_positions() is None
+            or self.get_current_positions() is None
             ):
             self.close_positions(position_type='all')
             self.logger.info(txt)
@@ -1061,6 +1061,7 @@ class Trade(RiskManagement):
         wen it is closed before be level , tp or sl.
 
         Args:
+            position (TradePosition): The trading position to check.
             th (int): The minimum profit for a position in point
         """
         size = self.get_symbol_info(self.symbol).trade_tick_size
@@ -1157,9 +1158,20 @@ class Trade(RiskManagement):
             return False
     
     def close_order(self, 
-                    ticket, 
+                    ticket: int, 
                     id: Optional[int] = None, 
                     comment: Optional[str] = None):
+        """
+        Close an open order by it ticket
+
+        Args:
+            ticket (int): Order ticket to close (e.g TradeOrder.ticket)
+            id (int): The unique ID of the Expert or Strategy
+            comment (str): Comment for the closing position
+
+        Returns:
+        -   True if order closed, False otherwise
+        """
         request = {
                 "action": Mt5.TRADE_ACTION_REMOVE,
                 "symbol": self.symbol,

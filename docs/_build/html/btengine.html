@@ -1,27 +1,25 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="./">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Backtesting Egine &mdash; BBSTrader 0.1.07 documentation</title>
+  <title>Backtesting Egine &mdash; BBSTrader 0.1.08 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="_static/jquery.js?v=5d32c60e"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=15bc9eb9"></script>
-        <script src="_static/doctools.js?v=9a2dae69"></script>
-        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=fda63d7b"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="MetaTrader5 (MT5) Trading" href="metatrader.html" />
+    <link rel="next" title="config module" href="config.html" />
     <link rel="prev" title="bbstrader" href="modules.html" /> 
 </head>
 
@@ -58,11 +56,10 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#module-btengine.data">data</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#btengine.data.BaseCSVDataHandler"><code class="docutils literal notranslate"><span class="pre">BaseCSVDataHandler</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#btengine.data.CSVDataHandler"><code class="docutils literal notranslate"><span class="pre">CSVDataHandler</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#btengine.data.DataHandler"><code class="docutils literal notranslate"><span class="pre">DataHandler</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#btengine.data.HistoricCSVDataHandler"><code class="docutils literal notranslate"><span class="pre">HistoricCSVDataHandler</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#btengine.data.MT5HistoricDataHandler"><code class="docutils literal notranslate"><span class="pre">MT5HistoricDataHandler</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#btengine.data.YFHistoricDataHandler"><code class="docutils literal notranslate"><span class="pre">YFHistoricDataHandler</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#btengine.data.MT5DataHandler"><code class="docutils literal notranslate"><span class="pre">MT5DataHandler</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#btengine.data.YFDataHandler"><code class="docutils literal notranslate"><span class="pre">YFDataHandler</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#module-btengine.event">event</a><ul>
@@ -76,7 +73,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#module-btengine.execution">execution</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#btengine.execution.ExecutionHandler"><code class="docutils literal notranslate"><span class="pre">ExecutionHandler</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#btengine.execution.MT5ExecutionHandler"><code class="docutils literal notranslate"><span class="pre">MT5ExecutionHandler</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#btengine.execution.SimulatedExecutionHandler"><code class="docutils literal notranslate"><span class="pre">SimulatedExecutionHandler</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#btengine.execution.SimExecutionHandler"><code class="docutils literal notranslate"><span class="pre">SimExecutionHandler</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#module-btengine.performance">performance</a><ul>
@@ -94,11 +91,15 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#module-btengine.strategy">strategy</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#btengine.strategy.MT5Strategy"><code class="docutils literal notranslate"><span class="pre">MT5Strategy</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#btengine.strategy.Strategy"><code class="docutils literal notranslate"><span class="pre">Strategy</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="config.html">config module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core.html">core package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ibkr.html">ibkr package</a></li>
 <li class="toctree-l2"><a class="reference internal" href="metatrader.html">MetaTrader5 (MT5) Trading</a></li>
 <li class="toctree-l2"><a class="reference internal" href="models.html">Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="trading.html">Trading Execution</a></li>
@@ -153,11 +154,11 @@ both novices and experts in algorithmic trading.</p>
 <section id="components">
 <h2>Components<a class="headerlink" href="#components" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p><strong>Backtest</strong>: Orchestrates the backtesting process, managing events and invoking components.</p></li>
+<li><p><strong>BacktestEgine</strong>: Orchestrates the backtesting process, managing events and invoking components.</p></li>
 <li><p><strong>Event</strong>: Abstract class for events, with implementations for market data, signals, fill and order events.</p></li>
-<li><p><strong>DataHandler</strong>: Abstract class for market data handling, with an implementation for <cite>HistoricalCSVHandler</cite>, <cite>MT5HistoricDataHandler</cite>, <cite>YFHistoricDataHandler</cite>. We will add another data handling in the future such as MacroEconomic Data, Fundamental Data, TICK Data and Real-time Data.</p></li>
+<li><p><strong>DataHandler</strong>: Abstract class for market data handling, with an implementation for <cite>CSVDataHandler</cite>, <cite>MT5DataHandler</cite>, <cite>YFDataHandler</cite>. We will add another data handling in the future such as MacroEconomic Data, Fundamental Data, TICK Data and Real-time Data.</p></li>
 <li><p><strong>Portfolio</strong>: Manages positions and calculates performance metrics, responding to market data and signals.</p></li>
-<li><p><strong>ExecutionHandler</strong>: Abstract class for order execution, with a simulated execution handler provided with an implementation for <cite>SimulatedExecutionHandler</cite>.</p></li>
+<li><p><strong>ExecutionHandler</strong>: Abstract class for order execution, with a simulated execution handler provided with an implementation for <cite>SimExecutionHandler</cite>.</p></li>
 <li><p><strong>Performance</strong>: Utility functions for calculating performance metrics and visualizing strategy performance.</p></li>
 </ul>
 <p class="rubric">Examples</p>
@@ -181,7 +182,7 @@ both novices and experts in algorithmic trading.</p>
 <span id="backtest"></span><h2>backtest<a class="headerlink" href="#module-btengine.backtest" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="btengine.backtest.Backtest">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">btengine.backtest.</span></span><span class="sig-name descname"><span class="pre">Backtest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_capital</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">heartbeat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_date</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datetime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_handler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataHandler</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">execution_handler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ExecutionHandler</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Strategy</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/backtest.html#Backtest"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.backtest.Backtest" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">btengine.backtest.</span></span><span class="sig-name descname"><span class="pre">Backtest</span></span><a class="reference internal" href="_modules/btengine/backtest.html#Backtest"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.backtest.Backtest" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>The <cite>Backtest()</cite> object encapsulates the event-handling logic and essentially
 ties together all of the other classes.</p>
@@ -211,18 +212,54 @@ set of <cite>OrderEvents</cite>, if appropriate. If an <cite>OrderEvent</cite> i
 is sent the order to be transmitted to the broker (if in a real trading setting).
 Finally, if a <cite>FillEvent</cite> is received, the Portfolio will update itself to be aware of
 the new positions.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="btengine.backtest.Backtest.simulate_trading">
-<span class="sig-name descname"><span class="pre">simulate_trading</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/backtest.html#Backtest.simulate_trading"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.backtest.Backtest.simulate_trading" title="Link to this definition"></a></dt>
-<dd><p>Simulates the backtest and outputs portfolio performance.</p>
 </dd></dl>
 
-</dd></dl>
-
-<dl class="py attribute">
+<dl class="py class">
 <dt class="sig sig-object py" id="btengine.backtest.BacktestEngine">
-<span class="sig-prename descclassname"><span class="pre">btengine.backtest.</span></span><span class="sig-name descname"><span class="pre">BacktestEngine</span></span><a class="headerlink" href="#btengine.backtest.BacktestEngine" title="Link to this definition"></a></dt>
-<dd><p>alias of <a class="reference internal" href="#btengine.backtest.Backtest" title="btengine.backtest.Backtest"><code class="xref py py-class docutils literal notranslate"><span class="pre">Backtest</span></code></a></p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">btengine.backtest.</span></span><span class="sig-name descname"><span class="pre">BacktestEngine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_capital</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">heartbeat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_date</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datetime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_handler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataHandler</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">execution_handler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ExecutionHandler</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Strategy</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/backtest.html#BacktestEngine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.backtest.BacktestEngine" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#btengine.backtest.Backtest" title="btengine.backtest.Backtest"><code class="xref py py-class docutils literal notranslate"><span class="pre">Backtest</span></code></a></p>
+<p>The <cite>Backtest()</cite> object encapsulates the event-handling logic and essentially
+ties together all of the other classes.</p>
+<p>The Backtest object is designed to carry out a nested while-loop event-driven system
+in order to handle the events placed on the <cite>Event</cite> Queue object.
+The outer while-loop is known as the “heartbeat loop” and decides the temporal resolution of
+the backtesting system. In a live environment this value will be a positive number,
+such as 600 seconds (every ten minutes). Thus the market data and positions
+will only be updated on this timeframe.</p>
+<p>For the backtester described here the “heartbeat” can be set to zero,
+irrespective of the strategy frequency, since the data is already available by virtue of
+the fact it is historical! We can run the backtest at whatever speed we like,
+since the event-driven system is agnostic to when the data became available,
+so long as it has an associated timestamp.</p>
+<p>The inner while-loop actually processes the signals and sends them to the correct
+component depending upon the event type. Thus the Event Queue is continually being
+populated and depopulated with events. This is what it means for a system to be event-driven.</p>
+<p>The initialisation of the Backtest object requires the full <cite>symbol list</cite> of traded symbols,
+the <cite>initial capital</cite>, the <cite>heartbeat</cite> time in milliseconds, the <cite>start datetime</cite> stamp
+of the backtest as well as the <cite>DataHandler</cite>, <cite>ExecutionHandler</cite>, <cite>Strategy</cite> objects
+and additionnal <cite>kwargs</cite> based on the <cite>ExecutionHandler</cite>, the <cite>DataHandler</cite>, and the <cite>Strategy</cite> used.</p>
+<p>A Queue is used to hold the events. The signals, orders and fills are counted.
+For a <cite>MarketEvent</cite>, the <cite>Strategy</cite> object is told to recalculate new signals,
+while the <cite>Portfolio</cite> object is told to reindex the time. If a <cite>SignalEvent</cite>
+object is received the <cite>Portfolio</cite> is told to handle the new signal and convert it into a
+set of <cite>OrderEvents</cite>, if appropriate. If an <cite>OrderEvent</cite> is received the <cite>ExecutionHandler</cite>
+is sent the order to be transmitted to the broker (if in a real trading setting).
+Finally, if a <cite>FillEvent</cite> is received, the Portfolio will update itself to be aware of
+the new positions.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="btengine.backtest.BacktestEngine.simulate_trading">
+<span class="sig-name descname"><span class="pre">simulate_trading</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/backtest.html#BacktestEngine.simulate_trading"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.backtest.BacktestEngine.simulate_trading" title="Link to this definition"></a></dt>
+<dd><p>Simulates the backtest and outputs portfolio performance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The portfilio values over time (capital, equity, returns etc.)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py function">
@@ -235,8 +272,8 @@ the new positions.</p>
 <li><p><strong>symbol_list</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – List of symbol strings for the assets to be backtested.</p></li>
 <li><p><strong>start_date</strong> (<em>datetime</em>) – Start date of the backtest.</p></li>
 <li><p><strong>data_handler</strong> (<a class="reference internal" href="#btengine.data.DataHandler" title="btengine.data.DataHandler"><em>DataHandler</em></a>) – An instance of the <cite>DataHandler</cite> class, responsible for managing
-and processing market data. Available options include <cite>HistoricCSVDataHandler</cite>,
-<cite>MT5HistoricDataHandler</cite>, and <cite>YFHistoricDataHandler</cite>. Ensure that the <cite>DataHandler</cite>
+and processing market data. Available options include <cite>CSVDataHandler</cite>,
+<cite>MT5DataHandler</cite>, and <cite>YFDataHandler</cite>. Ensure that the <cite>DataHandler</cite>
 instance is initialized before passing it to the function.</p></li>
 <li><p><strong>strategy</strong> (<a class="reference internal" href="#btengine.strategy.Strategy" title="btengine.strategy.Strategy"><em>Strategy</em></a>) – <p>The trading strategy to be employed during the backtest.
 The strategy must be an instance of <cite>Strategy</cite> and should include the following attributes:
@@ -259,6 +296,12 @@ also be used as a time frame in live trading (e.g., 1m, 5m, 15m) with a live <ci
 data handler, portfolio, or execution handler options.</p></li>
 </ul>
 </dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The portfolio values over time (capital, equities, returns etc.).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
 </dl>
 <p class="rubric">Notes</p>
 <dl class="simple">
@@ -272,7 +315,7 @@ data handler, portfolio, or execution handler options.</p></li>
 <p class="rubric">Example</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">bbstrader.trading.strategies</span> <span class="kn">import</span> <span class="n">StockIndexSTBOTrading</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">bbstrader.metatrader.utils</span> <span class="kn">import</span> <span class="n">config_logger</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">bbstrader.datahandlers</span> <span class="kn">import</span> <span class="n">MT5HistoricDataHandler</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">bbstrader.datahandlers</span> <span class="kn">import</span> <span class="n">MT5DataHandler</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">bbstrader.execution</span> <span class="kn">import</span> <span class="n">MT5ExecutionHandler</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
 <span class="gp">&gt;&gt;&gt;</span>
@@ -290,7 +333,7 @@ data handler, portfolio, or execution handler options.</p></li>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">run_backtest</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">symbol_list</span><span class="o">=</span><span class="n">symbol_list</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">start_date</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">data_handler</span><span class="o">=</span><span class="n">MT5HistoricDataHandler</span><span class="p">(),</span>
+<span class="gp">... </span>    <span class="n">data_handler</span><span class="o">=</span><span class="n">MT5DataHandler</span><span class="p">(),</span>
 <span class="gp">... </span>    <span class="n">strategy</span><span class="o">=</span><span class="n">StockIndexSTBOTrading</span><span class="p">(),</span>
 <span class="gp">... </span>    <span class="n">exc_handler</span><span class="o">=</span><span class="n">MT5ExecutionHandler</span><span class="p">(),</span>
 <span class="gp">... </span>    <span class="n">initial_capital</span><span class="o">=</span><span class="mf">100000.0</span><span class="p">,</span>
@@ -305,50 +348,15 @@ data handler, portfolio, or execution handler options.</p></li>
 <section id="module-btengine.data">
 <span id="data"></span><h2>data<a class="headerlink" href="#module-btengine.data" title="Link to this heading"></a></h2>
 <dl class="py class">
-<dt class="sig sig-object py" id="btengine.data.BaseCSVDataHandler">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">btengine.data.</span></span><span class="sig-name descname"><span class="pre">BaseCSVDataHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">events</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Queue</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">csv_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/data.html#BaseCSVDataHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.data.BaseCSVDataHandler" title="Link to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#btengine.data.DataHandler" title="btengine.data.DataHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataHandler</span></code></a></p>
-<p>Base class for handling data loaded from CSV files.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="btengine.data.BaseCSVDataHandler.get_latest_bar">
-<span class="sig-name descname"><span class="pre">get_latest_bar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/data.html#BaseCSVDataHandler.get_latest_bar"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.data.BaseCSVDataHandler.get_latest_bar" title="Link to this definition"></a></dt>
-<dd><p>Returns the last bar from the latest_symbol list.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="btengine.data.BaseCSVDataHandler.get_latest_bar_datetime">
-<span class="sig-name descname"><span class="pre">get_latest_bar_datetime</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/data.html#BaseCSVDataHandler.get_latest_bar_datetime"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.data.BaseCSVDataHandler.get_latest_bar_datetime" title="Link to this definition"></a></dt>
-<dd><p>Returns a Python datetime object for the last bar.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="btengine.data.BaseCSVDataHandler.get_latest_bar_value">
-<span class="sig-name descname"><span class="pre">get_latest_bar_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/data.html#BaseCSVDataHandler.get_latest_bar_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.data.BaseCSVDataHandler.get_latest_bar_value" title="Link to this definition"></a></dt>
-<dd><p>Returns one of the Open, High, Low, Close, Volume or OI
-values from the pandas Bar series object.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="btengine.data.BaseCSVDataHandler.get_latest_bars">
-<span class="sig-name descname"><span class="pre">get_latest_bars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/data.html#BaseCSVDataHandler.get_latest_bars"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.data.BaseCSVDataHandler.get_latest_bars" title="Link to this definition"></a></dt>
-<dd><p>Returns the last N bars from the latest_symbol list,
-or N-k if less available.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="btengine.data.BaseCSVDataHandler.get_latest_bars_values">
-<span class="sig-name descname"><span class="pre">get_latest_bars_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/data.html#BaseCSVDataHandler.get_latest_bars_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.data.BaseCSVDataHandler.get_latest_bars_values" title="Link to this definition"></a></dt>
-<dd><p>Returns the last N bar values from the
-latest_symbol list, or N-k if less available.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="btengine.data.BaseCSVDataHandler.update_bars">
-<span class="sig-name descname"><span class="pre">update_bars</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/data.html#BaseCSVDataHandler.update_bars"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.data.BaseCSVDataHandler.update_bars" title="Link to this definition"></a></dt>
-<dd><p>Pushes the latest bar to the latest_symbol_data structure
-for all symbols in the symbol list.</p>
-</dd></dl>
-
+<dt class="sig sig-object py" id="btengine.data.CSVDataHandler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">btengine.data.</span></span><span class="sig-name descname"><span class="pre">CSVDataHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">events</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Queue</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/data.html#CSVDataHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.data.CSVDataHandler" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseCSVDataHandler</span></code></p>
+<p><cite>CSVDataHandler</cite> is designed to read CSV files for
+each requested symbol from disk and provide an interface
+to obtain the “latest” bar in a manner identical to a live
+trading interface.</p>
+<p>This class is useful when you have your own data or you want
+to cutomize specific data in some form based on your <cite>Strategy()</cite> .</p>
 </dd></dl>
 
 <dl class="py class">
@@ -369,37 +377,57 @@ components within thesystem. In this way any subclass data handler can be “swa
 without affecting strategy or portfolio calculation.</p>
 <p>Specific example subclasses could include <cite>HistoricCSVDataHandler</cite>,
 <cite>YFinanceDataHandler</cite>, <cite>FMPDataHandler</cite>, <cite>IBMarketFeedDataHandler</cite> etc.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="btengine.data.DataHandler.data">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">DataFrame</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#btengine.data.DataHandler.data" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="btengine.data.DataHandler.get_latest_bar">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_latest_bar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/data.html#DataHandler.get_latest_bar"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.data.DataHandler.get_latest_bar" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_latest_bar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Series</span></span></span><a class="reference internal" href="_modules/btengine/data.html#DataHandler.get_latest_bar"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.data.DataHandler.get_latest_bar" title="Link to this definition"></a></dt>
 <dd><p>Returns the last bar updated.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="btengine.data.DataHandler.get_latest_bar_datetime">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_latest_bar_datetime</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/data.html#DataHandler.get_latest_bar_datetime"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.data.DataHandler.get_latest_bar_datetime" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_latest_bar_datetime</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">datetime</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Timestamp</span></span></span><a class="reference internal" href="_modules/btengine/data.html#DataHandler.get_latest_bar_datetime"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.data.DataHandler.get_latest_bar_datetime" title="Link to this definition"></a></dt>
 <dd><p>Returns a Python datetime object for the last bar.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="btengine.data.DataHandler.get_latest_bar_value">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_latest_bar_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/data.html#DataHandler.get_latest_bar_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.data.DataHandler.get_latest_bar_value" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_latest_bar_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_type</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/btengine/data.html#DataHandler.get_latest_bar_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.data.DataHandler.get_latest_bar_value" title="Link to this definition"></a></dt>
 <dd><p>Returns one of the Open, High, Low, Close, Adj Close, Volume or Returns
 from the last bar.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="btengine.data.DataHandler.get_latest_bars">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_latest_bars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/data.html#DataHandler.get_latest_bars"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.data.DataHandler.get_latest_bars" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_latest_bars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Series</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/btengine/data.html#DataHandler.get_latest_bars"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.data.DataHandler.get_latest_bars" title="Link to this definition"></a></dt>
 <dd><p>Returns the last N bars updated.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="btengine.data.DataHandler.get_latest_bars_values">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_latest_bars_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/data.html#DataHandler.get_latest_bars_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.data.DataHandler.get_latest_bars_values" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_latest_bars_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/btengine/data.html#DataHandler.get_latest_bars_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.data.DataHandler.get_latest_bars_values" title="Link to this definition"></a></dt>
 <dd><p>Returns the last N bar values from the
 latest_symbol list, or N-k if less available.</p>
 </dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="btengine.data.DataHandler.index">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">index</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#btengine.data.DataHandler.index" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="btengine.data.DataHandler.labels">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">labels</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#btengine.data.DataHandler.labels" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="btengine.data.DataHandler.symbols">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">symbols</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#btengine.data.DataHandler.symbols" title="Link to this definition"></a></dt>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="btengine.data.DataHandler.update_bars">
@@ -412,21 +440,9 @@ Close, Adj Close, Volume, Retruns).</p>
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="btengine.data.HistoricCSVDataHandler">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">btengine.data.</span></span><span class="sig-name descname"><span class="pre">HistoricCSVDataHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">events</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Queue</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/data.html#HistoricCSVDataHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.data.HistoricCSVDataHandler" title="Link to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#btengine.data.BaseCSVDataHandler" title="btengine.data.BaseCSVDataHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseCSVDataHandler</span></code></a></p>
-<p><cite>HistoricCSVDataHandler</cite> is designed to read CSV files for
-each requested symbol from disk and provide an interface
-to obtain the “latest” bar in a manner identical to a live
-trading interface.</p>
-<p>This class is useful when you have your own data or you want
-to cutomize specific data in some form based on your <cite>Strategy()</cite> .</p>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="btengine.data.MT5HistoricDataHandler">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">btengine.data.</span></span><span class="sig-name descname"><span class="pre">MT5HistoricDataHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">events</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Queue</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/data.html#MT5HistoricDataHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.data.MT5HistoricDataHandler" title="Link to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#btengine.data.BaseCSVDataHandler" title="btengine.data.BaseCSVDataHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseCSVDataHandler</span></code></a></p>
+<dt class="sig sig-object py" id="btengine.data.MT5DataHandler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">btengine.data.</span></span><span class="sig-name descname"><span class="pre">MT5DataHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">events</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Queue</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/data.html#MT5DataHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.data.MT5DataHandler" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseCSVDataHandler</span></code></p>
 <p>Downloads historical data from MetaTrader 5 (MT5) and provides
 an interface for accessing this data bar-by-bar, simulating
 a live market feed for backtesting.</p>
@@ -437,9 +453,9 @@ for different time frames.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="btengine.data.YFHistoricDataHandler">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">btengine.data.</span></span><span class="sig-name descname"><span class="pre">YFHistoricDataHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">events</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Queue</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/data.html#YFHistoricDataHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.data.YFHistoricDataHandler" title="Link to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#btengine.data.BaseCSVDataHandler" title="btengine.data.BaseCSVDataHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseCSVDataHandler</span></code></a></p>
+<dt class="sig sig-object py" id="btengine.data.YFDataHandler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">btengine.data.</span></span><span class="sig-name descname"><span class="pre">YFDataHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">events</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Queue</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/data.html#YFDataHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.data.YFDataHandler" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseCSVDataHandler</span></code></p>
 <p>Downloads historical data from Yahoo Finance and provides
 an interface for accessing this data bar-by-bar, simulating
 a live market feed for backtesting.</p>
@@ -507,7 +523,7 @@ that it is a market event, with no other structure.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="btengine.event.OrderEvent">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">btengine.event.</span></span><span class="sig-name descname"><span class="pre">OrderEvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'MKT'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'LMT'</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">direction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'BUY'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'SELL'</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">price</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/event.html#OrderEvent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.event.OrderEvent" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">btengine.event.</span></span><span class="sig-name descname"><span class="pre">OrderEvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'MKT'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'LMT'</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">direction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'BUY'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'SELL'</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">price</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/event.html#OrderEvent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.event.OrderEvent" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#btengine.event.Event" title="btengine.event.Event"><code class="xref py py-class docutils literal notranslate"><span class="pre">Event</span></code></a></p>
 <p>When a Portfolio object receives <cite>SignalEvents</cite> it assesses them
 in the wider context of the portfolio, in terms of risk and position sizing.
@@ -521,7 +537,7 @@ information to the console if necessary.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="btengine.event.SignalEvent">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">btengine.event.</span></span><span class="sig-name descname"><span class="pre">SignalEvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">strategy_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datetime</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datetime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'LONG'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'SHORT'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'EXIT'</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strength</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">price</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/event.html#SignalEvent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.event.SignalEvent" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">btengine.event.</span></span><span class="sig-name descname"><span class="pre">SignalEvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">strategy_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datetime</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datetime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'LONG'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'SHORT'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'EXIT'</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strength</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">price</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stoplimit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/event.html#SignalEvent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.event.SignalEvent" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#btengine.event.Event" title="btengine.event.Event"><code class="xref py py-class docutils literal notranslate"><span class="pre">Event</span></code></a></p>
 <p>The <cite>Strategy object</cite> utilises market data to create new <cite>SignalEvents</cite>.
 The SignalEvent contains a <cite>strategy ID</cite>, a <cite>ticker symbol</cite>, a <cite>timestamp</cite>
@@ -565,8 +581,27 @@ a Fill event that gets placed onto the Events queue.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="btengine.execution.MT5ExecutionHandler">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">btengine.execution.</span></span><span class="sig-name descname"><span class="pre">MT5ExecutionHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">events</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Queue</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/execution.html#MT5ExecutionHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.execution.MT5ExecutionHandler" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">btengine.execution.</span></span><span class="sig-name descname"><span class="pre">MT5ExecutionHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">events</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Queue</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataHandler</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/execution.html#MT5ExecutionHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.execution.MT5ExecutionHandler" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#btengine.execution.ExecutionHandler" title="btengine.execution.ExecutionHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExecutionHandler</span></code></a></p>
+<p>The main role of <cite>MT5ExecutionHandler</cite> class is to estimate the execution fees
+for different asset classes on the MT5 terminal.</p>
+<p>Generally we have four types of fees when we execute trades using the MT5 terminal
+(commissions, swap, spread and other fees). But most of these fees depend on the specifications
+of each instrument and the duration of the transaction for the swap for example.</p>
+<p>Calculating the exact fees for each instrument would be a bit complex because our Backtest engine
+and the Portfolio class do not take into account the duration of each trade to apply the appropriate
+rate for the swap for example. So we have to use only the model of calculating the commissions
+for each asset class and each instrument.</p>
+<p>The second thing that must be taken into account on MT5 is the type of account offered by the broker.
+Brokers have different account categories each with its specifications for each asset class and each instrument.
+Again considering all these conditions would make our class very complex. So we took the <cite>Raw Spread</cite>
+account fee calculation model from [Just Market](<a class="reference external" href="https://one.justmarkets.link/a/tufvj0xugm/registration/trader">https://one.justmarkets.link/a/tufvj0xugm/registration/trader</a>)
+for indicies, forex, commodities and crypto. We used the [Admiral Market](<a class="reference external" href="https://cabinet.a-partnership.com/visit/?bta=35537&amp;brand=admiralmarkets">https://cabinet.a-partnership.com/visit/?bta=35537&amp;brand=admiralmarkets</a>)
+account fee calculation model from <cite>Trade.MT5</cite> account type for stocks and ETFs.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This class only works with <cite>bbstrader.metatrader.data.MT5DataHandler</cite> class.</p>
+</div>
 <dl class="py method">
 <dt class="sig sig-object py" id="btengine.execution.MT5ExecutionHandler.execute_order">
 <span class="sig-name descname"><span class="pre">execute_order</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">OrderEvent</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/execution.html#MT5ExecutionHandler.execute_order"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.execution.MT5ExecutionHandler.execute_order" title="Link to this definition"></a></dt>
@@ -581,8 +616,8 @@ a Fill event that gets placed onto the Events queue.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="btengine.execution.SimulatedExecutionHandler">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">btengine.execution.</span></span><span class="sig-name descname"><span class="pre">SimulatedExecutionHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">events</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Queue</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/execution.html#SimulatedExecutionHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.execution.SimulatedExecutionHandler" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="btengine.execution.SimExecutionHandler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">btengine.execution.</span></span><span class="sig-name descname"><span class="pre">SimExecutionHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">events</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Queue</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataHandler</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/execution.html#SimExecutionHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.execution.SimExecutionHandler" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#btengine.execution.ExecutionHandler" title="btengine.execution.ExecutionHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExecutionHandler</span></code></a></p>
 <p>The simulated execution handler simply converts all order
 objects into their equivalent fill objects automatically
@@ -591,8 +626,8 @@ without latency, slippage or fill-ratio issues.</p>
 before implementation with a more sophisticated execution
 handler.</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="btengine.execution.SimulatedExecutionHandler.execute_order">
-<span class="sig-name descname"><span class="pre">execute_order</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">OrderEvent</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/execution.html#SimulatedExecutionHandler.execute_order"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.execution.SimulatedExecutionHandler.execute_order" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="btengine.execution.SimExecutionHandler.execute_order">
+<span class="sig-name descname"><span class="pre">execute_order</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">OrderEvent</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/execution.html#SimExecutionHandler.execute_order"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.execution.SimExecutionHandler.execute_order" title="Link to this definition"></a></dt>
 <dd><p>Simply converts Order objects into Fill objects naively,
 i.e. without any latency, slippage or fill ratio problems.</p>
 <dl class="field-list simple">
@@ -628,7 +663,7 @@ pnl_returns is a pandas Series.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="btengine.performance.create_sharpe_ratio">
-<span class="sig-prename descclassname"><span class="pre">btengine.performance.</span></span><span class="sig-name descname"><span class="pre">create_sharpe_ratio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">returns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">periods</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">252</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/performance.html#create_sharpe_ratio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.performance.create_sharpe_ratio" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">btengine.performance.</span></span><span class="sig-name descname"><span class="pre">create_sharpe_ratio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">returns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">periods</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">252</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/btengine/performance.html#create_sharpe_ratio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.performance.create_sharpe_ratio" title="Link to this definition"></a></dt>
 <dd><p>Create the Sharpe ratio for the strategy, based on a
 benchmark of zero (i.e. no risk-free rate information).</p>
 <dl class="field-list simple">
@@ -649,7 +684,7 @@ benchmark of zero (i.e. no risk-free rate information).</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="btengine.performance.create_sortino_ratio">
-<span class="sig-prename descclassname"><span class="pre">btengine.performance.</span></span><span class="sig-name descname"><span class="pre">create_sortino_ratio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">returns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">periods</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">252</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/performance.html#create_sortino_ratio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.performance.create_sortino_ratio" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">btengine.performance.</span></span><span class="sig-name descname"><span class="pre">create_sortino_ratio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">returns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">periods</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">252</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/btengine/performance.html#create_sortino_ratio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.performance.create_sortino_ratio" title="Link to this definition"></a></dt>
 <dd><p>Create the Sortino ratio for the strategy, based on a
 benchmark of zero (i.e. no risk-free rate information).</p>
 <dl class="field-list simple">
@@ -670,7 +705,7 @@ benchmark of zero (i.e. no risk-free rate information).</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="btengine.performance.plot_monthly_yearly_returns">
-<span class="sig-prename descclassname"><span class="pre">btengine.performance.</span></span><span class="sig-name descname"><span class="pre">plot_monthly_yearly_returns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/performance.html#plot_monthly_yearly_returns"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.performance.plot_monthly_yearly_returns" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">btengine.performance.</span></span><span class="sig-name descname"><span class="pre">plot_monthly_yearly_returns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/performance.html#plot_monthly_yearly_returns"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.performance.plot_monthly_yearly_returns" title="Link to this definition"></a></dt>
 <dd><p>Plot the monthly and yearly returns of the strategy.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -721,7 +756,7 @@ The DataFrame should contain the following columns
 
 <dl class="py function">
 <dt class="sig sig-object py" id="btengine.performance.plot_returns_and_dd">
-<span class="sig-prename descclassname"><span class="pre">btengine.performance.</span></span><span class="sig-name descname"><span class="pre">plot_returns_and_dd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">benchmark</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/performance.html#plot_returns_and_dd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.performance.plot_returns_and_dd" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">btengine.performance.</span></span><span class="sig-name descname"><span class="pre">plot_returns_and_dd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">benchmark</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/performance.html#plot_returns_and_dd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.performance.plot_returns_and_dd" title="Link to this definition"></a></dt>
 <dd><p>Plot the returns and drawdowns of the strategy
 compared to a benchmark.</p>
 <dl class="field-list simple">
@@ -744,12 +779,12 @@ The DataFrame should contain the following columns:
 
 <dl class="py function">
 <dt class="sig sig-object py" id="btengine.performance.show_qs_stats">
-<span class="sig-prename descclassname"><span class="pre">btengine.performance.</span></span><span class="sig-name descname"><span class="pre">show_qs_stats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">equity_curve</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">benchmark</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/performance.html#show_qs_stats"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.performance.show_qs_stats" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">btengine.performance.</span></span><span class="sig-name descname"><span class="pre">show_qs_stats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">returns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">benchmark</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/performance.html#show_qs_stats"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.performance.show_qs_stats" title="Link to this definition"></a></dt>
 <dd><p>Generate the full quantstats report for the strategy.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>equity_curve</strong> (<em>pd.DataFrame</em>) – The DataFrame containing the strategy returns and drawdowns.</p></li>
+<li><p><strong>returns</strong> (<em>pd.Serie</em>) – The DataFrame containing the strategy returns and drawdowns.</p></li>
 <li><p><strong>benchmark</strong> (<em>str</em>) – The ticker symbol of the benchmark to compare the strategy to.</p></li>
 <li><p><strong>strategy_name</strong> (<em>str</em>) – The name of the strategy.</p></li>
 </ul>
@@ -901,6 +936,266 @@ Makes use of a MarketEvent from the events queue.</p>
 <section id="module-btengine.strategy">
 <span id="strategy"></span><h2>strategy<a class="headerlink" href="#module-btengine.strategy" title="Link to this heading"></a></h2>
 <dl class="py class">
+<dt class="sig sig-object py" id="btengine.strategy.MT5Strategy">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">btengine.strategy.</span></span><span class="sig-name descname"><span class="pre">MT5Strategy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">events</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Queue</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bars</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataHandler</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/strategy.html#MT5Strategy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.strategy.MT5Strategy" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#btengine.strategy.Strategy" title="btengine.strategy.Strategy"><code class="xref py py-class docutils literal notranslate"><span class="pre">Strategy</span></code></a></p>
+<p>A <cite>MT5Strategy()</cite> object is a subclass of <cite>Strategy</cite> that is used to
+calculate signals for the MetaTrader 5 trading platform. The signals
+are generated by the <cite>MT5Strategy</cite> object and sent to the the <cite>MT5ExecutionEngine</cite>
+for live trading and <cite>MT5BacktestEngine</cite> objects for backtesting.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="btengine.strategy.MT5Strategy.buy">
+<span class="sig-name descname"><span class="pre">buy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">price</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strength</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtime</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datetime</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Timestamp</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/strategy.html#MT5Strategy.buy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.strategy.MT5Strategy.buy" title="Link to this definition"></a></dt>
+<dd><p>Open a long position</p>
+<p>See <cite>bbstrader.btengine.event.SignalEvent</cite> for more details on arguments.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="btengine.strategy.MT5Strategy.buy_limit">
+<span class="sig-name descname"><span class="pre">buy_limit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">price</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strength</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/strategy.html#MT5Strategy.buy_limit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.strategy.MT5Strategy.buy_limit" title="Link to this definition"></a></dt>
+<dd><p>Open a pending order to buy at a limit price</p>
+<p>See <cite>bbstrader.btengine.event.SignalEvent</cite> for more details on arguments.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="btengine.strategy.MT5Strategy.buy_stop">
+<span class="sig-name descname"><span class="pre">buy_stop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">price</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strength</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/strategy.html#MT5Strategy.buy_stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.strategy.MT5Strategy.buy_stop" title="Link to this definition"></a></dt>
+<dd><p>Open a pending order to buy at a stop price</p>
+<p>See <cite>bbstrader.btengine.event.SignalEvent</cite> for more details on arguments.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="btengine.strategy.MT5Strategy.buy_stop_limit">
+<span class="sig-name descname"><span class="pre">buy_stop_limit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">price</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stoplimit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strength</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtime</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datetime</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Timestamp</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/strategy.html#MT5Strategy.buy_stop_limit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.strategy.MT5Strategy.buy_stop_limit" title="Link to this definition"></a></dt>
+<dd><p>Open a pending order to buy at a stop-limit price</p>
+<p>See <cite>bbstrader.btengine.event.SignalEvent</cite> for more details on arguments.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="btengine.strategy.MT5Strategy.calculate_signals">
+<span class="sig-name descname"><span class="pre">calculate_signals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="_modules/btengine/strategy.html#MT5Strategy.calculate_signals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.strategy.MT5Strategy.calculate_signals" title="Link to this definition"></a></dt>
+<dd><p>Provides the mechanisms to calculate signals for the strategy.
+This methods should return a dictionary of symbols and their respective signals.
+The returned signals should be either string or dictionary objects.</p>
+<p>If a string is used, it should be:
+- <code class="docutils literal notranslate"><span class="pre">LONG</span></code> , <code class="docutils literal notranslate"><span class="pre">BMKT</span></code>, <code class="docutils literal notranslate"><span class="pre">BLMT</span></code>, <code class="docutils literal notranslate"><span class="pre">BSTP</span></code>, <code class="docutils literal notranslate"><span class="pre">BSTPLMT</span></code> for a long signal (market, limit, stop, stop-limit).
+- <code class="docutils literal notranslate"><span class="pre">SHORT</span></code>, <code class="docutils literal notranslate"><span class="pre">SMKT</span></code>, <code class="docutils literal notranslate"><span class="pre">SLMT</span></code>, <code class="docutils literal notranslate"><span class="pre">SSTP</span></code>, <code class="docutils literal notranslate"><span class="pre">SSTPLMT</span></code> for a short signal (market, limit, stop, stop-limit).
+- <code class="docutils literal notranslate"><span class="pre">EXIT</span></code>, <code class="docutils literal notranslate"><span class="pre">EXIT_LONG</span></code>, <code class="docutils literal notranslate"><span class="pre">EXIT_LONG_STOP</span></code>, <code class="docutils literal notranslate"><span class="pre">EXIT_LONG_LIMIT</span></code>, <code class="docutils literal notranslate"><span class="pre">EXIT_LONG_STOP_LIMIT</span></code> for an exit signal (long).
+- <code class="docutils literal notranslate"><span class="pre">EXIT_SHORT</span></code>, <code class="docutils literal notranslate"><span class="pre">EXIT_SHORT_STOP</span></code>, <code class="docutils literal notranslate"><span class="pre">EXIT_SHORT_LIMIT</span></code>, <code class="docutils literal notranslate"><span class="pre">EXIT_SHORT_STOP_LIMIT</span></code> for an exit signal (short).
+- <code class="docutils literal notranslate"><span class="pre">EXIT_ALL_ORDERS</span></code> for cancelling all orders.
+- <code class="docutils literal notranslate"><span class="pre">EXIT_ALL_POSITIONS</span></code> for exiting all positions.
+- <code class="docutils literal notranslate"><span class="pre">EXIT_PROFITABLES</span></code> for exiting all profitable positions.
+- <code class="docutils literal notranslate"><span class="pre">EXIT_LOSINGS</span></code> for exiting all losing positions.</p>
+<p>The signals could also be <code class="docutils literal notranslate"><span class="pre">EXIT_STOP</span></code>, <code class="docutils literal notranslate"><span class="pre">EXIT_LIMIT</span></code>, <code class="docutils literal notranslate"><span class="pre">EXIT_STOP_LIMIT</span></code> for exiting a position.</p>
+<p>If a dictionary is used, it should be:
+for each symbol, a dictionary with the following keys
+- <code class="docutils literal notranslate"><span class="pre">action</span></code>: The action to take for the symbol (LONG, SHORT, EXIT, etc.)
+- <code class="docutils literal notranslate"><span class="pre">price</span></code>: The price at which to execute the action.
+- <code class="docutils literal notranslate"><span class="pre">stoplimit</span></code>: The stop-limit price for STOP-LIMIT orders.</p>
+<p>The dictionary can be use for pending orders (limit, stop, stop-limit) where the price is required.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="btengine.strategy.MT5Strategy.check_pending_orders">
+<span class="sig-name descname"><span class="pre">check_pending_orders</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/strategy.html#MT5Strategy.check_pending_orders"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.strategy.MT5Strategy.check_pending_orders" title="Link to this definition"></a></dt>
+<dd><p>Check for pending orders and handle them accordingly.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="btengine.strategy.MT5Strategy.close">
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">price</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strength</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/strategy.html#MT5Strategy.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.strategy.MT5Strategy.close" title="Link to this definition"></a></dt>
+<dd><p>Close a position</p>
+<p>See <cite>bbstrader.btengine.event.SignalEvent</cite> for more details on arguments.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="btengine.strategy.MT5Strategy.convert_time_zone">
+<span class="sig-name descname"><span class="pre">convert_time_zone</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datetime</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Timestamp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">from_tz</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'UTC'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_tz</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'US/Eastern'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Timestamp</span></span></span><a class="reference internal" href="_modules/btengine/strategy.html#MT5Strategy.convert_time_zone"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.strategy.MT5Strategy.convert_time_zone" title="Link to this definition"></a></dt>
+<dd><p>Convert datetime from one timezone to another.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dt</strong> – The datetime to convert.</p></li>
+<li><p><strong>from_tz</strong> – The timezone to convert from.</p></li>
+<li><p><strong>to_tz</strong> – The timezone to convert to.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The converted datetime.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dt_to</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="btengine.strategy.MT5Strategy.get_asset_values">
+<span class="sig-name descname"><span class="pre">get_asset_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'returns'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">array</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bars</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataHandler</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'backtest'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'live'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'backtest'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'D1'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Series</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="_modules/btengine/strategy.html#MT5Strategy.get_asset_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.strategy.MT5Strategy.get_asset_values" title="Link to this definition"></a></dt>
+<dd><p>Get the historical OHLCV value or returns or custum value
+based on the DataHandker of the assets in the symbol list.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bars</strong> – DataHandler for market data handling, required for backtest mode.</p></li>
+<li><p><strong>symbol_list</strong> – List of ticker symbols for the pairs trading strategy.</p></li>
+<li><p><strong>value_type</strong> – The type of value to get (e.g., returns, open, high, low, close, adjclose, volume).</p></li>
+<li><p><strong>array</strong> – If True, return the values as numpy arrays, otherwise as pandas Series.</p></li>
+<li><p><strong>mode</strong> – Mode of operation for the strategy.</p></li>
+<li><p><strong>window</strong> – The lookback period for resquesting the data.</p></li>
+<li><p><strong>tf</strong> – The time frame for the strategy.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Historical values of the assets in the symbol list.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>asset_values</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In Live mode, the <cite>bbstrader.metatrader.rates.Rates</cite> class is used to get the historical data
+so the value_type must be ‘returns’, ‘open’, ‘high’, ‘low’, ‘close’, ‘adjclose’, ‘volume’.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="btengine.strategy.MT5Strategy.get_current_dt">
+<span class="sig-name descname"><span class="pre">get_current_dt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_zone</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'US/Eastern'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">datetime</span></span></span><a class="reference internal" href="_modules/btengine/strategy.html#MT5Strategy.get_current_dt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.strategy.MT5Strategy.get_current_dt" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="btengine.strategy.MT5Strategy.get_positions_prices">
+<span class="sig-name descname"><span class="pre">get_positions_prices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">account</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/strategy.html#MT5Strategy.get_positions_prices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.strategy.MT5Strategy.get_positions_prices" title="Link to this definition"></a></dt>
+<dd><p>Get the buy or sell prices for open positions of a given symbol and strategy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>symbol</strong> – The symbol for the trade.</p></li>
+<li><p><strong>strategy_id</strong> – The unique identifier for the strategy.</p></li>
+<li><p><strong>position</strong> – The position type (1: short, 0: long).</p></li>
+<li><p><strong>account</strong> – The <cite>bbstrader.metatrader.Account</cite> object for the strategy.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>numpy array of buy or sell prices for open positions if any or an empty array.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>prices</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="btengine.strategy.MT5Strategy.get_quantities">
+<span class="sig-name descname"><span class="pre">get_quantities</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">quantities</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">None</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/btengine/strategy.html#MT5Strategy.get_quantities"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.strategy.MT5Strategy.get_quantities" title="Link to this definition"></a></dt>
+<dd><p>Get the quantities to buy or sell for the symbols in the strategy.
+This method is used when whe need to assign different quantities to the symbols.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>quantities</strong> – The quantities for the symbols in the strategy.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="btengine.strategy.MT5Strategy.get_quantity">
+<span class="sig-name descname"><span class="pre">get_quantity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="_modules/btengine/strategy.html#MT5Strategy.get_quantity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.strategy.MT5Strategy.get_quantity" title="Link to this definition"></a></dt>
+<dd><p>Calculate the quantity to buy or sell for a given symbol based on the dollar value provided.
+The quantity calculated can be used to evalute a strategy’s performance for each symbol
+given the fact that the dollar value is the same for all symbols.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>symbol</strong> – The symbol for the trade.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The quantity to buy or sell for the symbol.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>qty</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="btengine.strategy.MT5Strategy.is_signal_time">
+<span class="sig-name descname"><span class="pre">is_signal_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">period_count</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal_inverval</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/btengine/strategy.html#MT5Strategy.is_signal_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.strategy.MT5Strategy.is_signal_time" title="Link to this definition"></a></dt>
+<dd><p>Check if we can generate a signal based on the current period count.
+We use the signal interval as a form of periodicity or rebalancing period.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>period_count</strong> – The current period count (e.g., number of bars).</p></li>
+<li><p><strong>signal_inverval</strong> – The signal interval for generating signals (e.g., every 5 bars).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if we can generate a signal, False otherwise</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="btengine.strategy.MT5Strategy.ispositions">
+<span class="sig-name descname"><span class="pre">ispositions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_trades</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">one_true</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">account</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/btengine/strategy.html#MT5Strategy.ispositions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.strategy.MT5Strategy.ispositions" title="Link to this definition"></a></dt>
+<dd><p>This function is use for live trading to check if there are open positions
+for a given symbol and strategy. It is used to prevent opening more trades
+than the maximum allowed trades per symbol.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>symbol</strong> – The symbol for the trade.</p></li>
+<li><p><strong>strategy_id</strong> – The unique identifier for the strategy.</p></li>
+<li><p><strong>position</strong> – The position type (1: short, 0: long).</p></li>
+<li><p><strong>max_trades</strong> – The maximum number of trades allowed per symbol.</p></li>
+<li><p><strong>one_true</strong> – If True, return True if there is at least one open position.</p></li>
+<li><p><strong>account</strong> – The <cite>bbstrader.metatrader.Account</cite> object for the strategy.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if there are open positions, False otherwise</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="btengine.strategy.MT5Strategy.sell">
+<span class="sig-name descname"><span class="pre">sell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">price</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strength</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/strategy.html#MT5Strategy.sell"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.strategy.MT5Strategy.sell" title="Link to this definition"></a></dt>
+<dd><p>Open a short position</p>
+<p>See <cite>bbstrader.btengine.event.SignalEvent</cite> for more details on arguments.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="btengine.strategy.MT5Strategy.sell_limit">
+<span class="sig-name descname"><span class="pre">sell_limit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">price</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strength</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/strategy.html#MT5Strategy.sell_limit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.strategy.MT5Strategy.sell_limit" title="Link to this definition"></a></dt>
+<dd><p>Open a pending order to sell at a limit price</p>
+<p>See <cite>bbstrader.btengine.event.SignalEvent</cite> for more details on arguments.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="btengine.strategy.MT5Strategy.sell_stop">
+<span class="sig-name descname"><span class="pre">sell_stop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">price</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strength</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/strategy.html#MT5Strategy.sell_stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.strategy.MT5Strategy.sell_stop" title="Link to this definition"></a></dt>
+<dd><p>Open a pending order to sell at a stop price</p>
+<p>See <cite>bbstrader.btengine.event.SignalEvent</cite> for more details on arguments.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="btengine.strategy.MT5Strategy.sell_stop_limit">
+<span class="sig-name descname"><span class="pre">sell_stop_limit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">price</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stoplimit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strength</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/strategy.html#MT5Strategy.sell_stop_limit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.strategy.MT5Strategy.sell_stop_limit" title="Link to this definition"></a></dt>
+<dd><p>Open a pending order to sell at a stop-limit price</p>
+<p>See <cite>bbstrader.btengine.event.SignalEvent</cite> for more details on arguments.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="btengine.strategy.Strategy">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">btengine.strategy.</span></span><span class="sig-name descname"><span class="pre">Strategy</span></span><a class="reference internal" href="_modules/btengine/strategy.html#Strategy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.strategy.Strategy" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
@@ -920,10 +1215,13 @@ good candidates for creating a class hierarchy.</p>
 base class with a single pure virtual method for generating <cite>SignalEvent</cite> objects.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="btengine.strategy.Strategy.calculate_signals">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">calculate_signals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/btengine/strategy.html#Strategy.calculate_signals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.strategy.Strategy.calculate_signals" title="Link to this definition"></a></dt>
-<dd><p>Provides the mechanisms to calculate the list of signals.
-This methods should return a dictionary of symbols and their respective signals.</p>
-</dd></dl>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">calculate_signals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="_modules/btengine/strategy.html#Strategy.calculate_signals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.strategy.Strategy.calculate_signals" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="btengine.strategy.Strategy.check_pending_orders">
+<span class="sig-name descname"><span class="pre">check_pending_orders</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/btengine/strategy.html#Strategy.check_pending_orders"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#btengine.strategy.Strategy.check_pending_orders" title="Link to this definition"></a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
@@ -935,7 +1233,7 @@ This methods should return a dictionary of symbols and their respective signals.
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="modules.html" class="btn btn-neutral float-left" title="bbstrader" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="metatrader.html" class="btn btn-neutral float-right" title="MetaTrader5 (MT5) Trading" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="config.html" class="btn btn-neutral float-right" title="config module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

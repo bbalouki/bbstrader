@@ -1,22 +1,20 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>btengine.portfolio &mdash; BBSTrader 0.1.07 documentation</title>
+  <title>btengine.portfolio &mdash; BBSTrader 0.1.08 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
-  <!--[if lt IE 9]>
-    <script src="../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="../../_static/jquery.js?v=5d32c60e"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=15bc9eb9"></script>
-        <script src="../../_static/doctools.js?v=9a2dae69"></script>
-        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=fda63d7b"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
@@ -73,16 +71,31 @@
   <h1>Source code for btengine.portfolio</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">from</span> <span class="nn">queue</span> <span class="kn">import</span> <span class="n">Queue</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
 <span class="kn">from</span> <span class="nn">bbstrader.btengine.event</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">OrderEvent</span><span class="p">,</span> <span class="n">FillEvent</span><span class="p">,</span> <span class="n">MarketEvent</span><span class="p">,</span> <span class="n">SignalEvent</span>
+    <span class="n">OrderEvent</span><span class="p">,</span> 
+    <span class="n">FillEvent</span><span class="p">,</span> 
+    <span class="n">MarketEvent</span><span class="p">,</span> 
+    <span class="n">SignalEvent</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">bbstrader.btengine.data</span> <span class="kn">import</span> <span class="n">DataHandler</span>
 <span class="kn">from</span> <span class="nn">bbstrader.btengine.performance</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">create_drawdowns</span><span class="p">,</span> <span class="n">plot_performance</span><span class="p">,</span> <span class="n">show_qs_stats</span><span class="p">,</span>
-    <span class="n">plot_returns_and_dd</span><span class="p">,</span> <span class="n">plot_monthly_yearly_returns</span>
+    <span class="n">create_drawdowns</span><span class="p">,</span> 
+    <span class="n">create_sharpe_ratio</span><span class="p">,</span> 
+    <span class="n">create_sortino_ratio</span><span class="p">,</span> 
+    <span class="n">plot_performance</span><span class="p">,</span> 
+    <span class="n">show_qs_stats</span><span class="p">,</span> 
+    <span class="n">plot_returns_and_dd</span><span class="p">,</span> 
+    <span class="n">plot_monthly_yearly_returns</span>
 <span class="p">)</span>
+<span class="kn">from</span> <span class="nn">bbstrader.config</span> <span class="kn">import</span> <span class="n">BBSTRADER_DIR</span>
 <span class="kn">import</span> <span class="nn">quantstats</span> <span class="k">as</span> <span class="nn">qs</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;Portfolio&#39;</span><span class="p">,</span>
+<span class="p">]</span>
 
 
 <div class="viewcode-block" id="Portfolio">
@@ -170,7 +183,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">timeframe</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;time_frame&quot;</span><span class="p">,</span> <span class="s2">&quot;D1&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">trading_hours</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;session_duration&quot;</span><span class="p">,</span> <span class="mf">6.5</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">benchmark</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;benchmark&#39;</span><span class="p">,</span> <span class="s1">&#39;SPY&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;output_dir&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">strategy_name</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;strategy_name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">print_stats</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;print_stats&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeframe</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tf_mapping</span><span class="p">():</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;Timeframe not supported,&quot;</span>
@@ -185,6 +200,7 @@
                                       <span class="p">[(</span><span class="n">s</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol_list</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">all_holdings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">construct_all_holdings</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_holdings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">construct_current_holdings</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">equity_curve</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="nf">_tf_mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -272,7 +288,7 @@
         <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol_list</span><span class="p">:</span>
             <span class="c1"># Approximation to the real value</span>
             <span class="n">market_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_positions</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">*</span> \
-                <span class="bp">self</span><span class="o">.</span><span class="n">bars</span><span class="o">.</span><span class="n">get_latest_bar_value</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="s2">&quot;Adj Close&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">bars</span><span class="o">.</span><span class="n">get_latest_bar_value</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="s2">&quot;adj_close&quot;</span><span class="p">)</span>
             <span class="n">dh</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">market_value</span>
             <span class="n">dh</span><span class="p">[</span><span class="s1">&#39;Total&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">market_value</span>
 
@@ -320,7 +336,7 @@
 
         <span class="c1"># Update holdings list with new quantities</span>
         <span class="n">price</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bars</span><span class="o">.</span><span class="n">get_latest_bar_value</span><span class="p">(</span>
-            <span class="n">fill</span><span class="o">.</span><span class="n">symbol</span><span class="p">,</span> <span class="s2">&quot;Adj Close&quot;</span>
+            <span class="n">fill</span><span class="o">.</span><span class="n">symbol</span><span class="p">,</span> <span class="s2">&quot;adj_close&quot;</span>
         <span class="p">)</span>
         <span class="n">cost</span> <span class="o">=</span> <span class="n">fill_dir</span> <span class="o">*</span> <span class="n">price</span> <span class="o">*</span> <span class="n">fill</span><span class="o">.</span><span class="n">quantity</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_holdings</span><span class="p">[</span><span class="n">fill</span><span class="o">.</span><span class="n">symbol</span><span class="p">]</span> <span class="o">+=</span> <span class="n">cost</span>
@@ -397,6 +413,7 @@
 <span class="sd">        list of dictionaries.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">curve</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_holdings</span><span class="p">)</span>
+        <span class="n">curve</span><span class="p">[</span><span class="s1">&#39;Datetime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">curve</span><span class="p">[</span><span class="s1">&#39;Datetime&#39;</span><span class="p">],</span> <span class="n">utc</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">curve</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;Datetime&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">curve</span><span class="p">[</span><span class="s1">&#39;Returns&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">curve</span><span class="p">[</span><span class="s1">&#39;Total&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">pct_change</span><span class="p">(</span><span class="n">fill_method</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
         <span class="n">curve</span><span class="p">[</span><span class="s1">&#39;Equity Curve&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="o">+</span><span class="n">curve</span><span class="p">[</span><span class="s1">&#39;Returns&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">cumprod</span><span class="p">()</span>
@@ -413,8 +430,8 @@
         <span class="n">returns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">equity_curve</span><span class="p">[</span><span class="s1">&#39;Returns&#39;</span><span class="p">]</span>
         <span class="n">pnl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">equity_curve</span><span class="p">[</span><span class="s1">&#39;Equity Curve&#39;</span><span class="p">]</span>
 
-        <span class="n">sharpe_ratio</span> <span class="o">=</span> <span class="n">qs</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sharpe</span><span class="p">(</span><span class="n">returns</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tf</span><span class="p">)</span>
-        <span class="n">sortino_ratio</span> <span class="o">=</span> <span class="n">qs</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sortino</span><span class="p">(</span><span class="n">returns</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tf</span><span class="p">)</span>
+        <span class="n">sharpe_ratio</span> <span class="o">=</span> <span class="n">create_sharpe_ratio</span><span class="p">(</span><span class="n">returns</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tf</span><span class="p">)</span>
+        <span class="n">sortino_ratio</span> <span class="o">=</span> <span class="n">create_sortino_ratio</span><span class="p">(</span><span class="n">returns</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tf</span><span class="p">)</span>
         <span class="n">drawdown</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">create_drawdowns</span><span class="p">(</span><span class="n">pnl</span><span class="p">)</span>
         <span class="n">max_dd</span> <span class="o">=</span> <span class="n">qs</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">max_drawdown</span><span class="p">(</span><span class="n">returns</span><span class="p">)</span>
         <span class="n">dd_details</span> <span class="o">=</span> <span class="n">qs</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">drawdown_details</span><span class="p">(</span><span class="n">drawdown</span><span class="p">)</span>
@@ -430,14 +447,24 @@
         <span class="p">]</span>
         <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H%M%S&#39;</span><span class="p">)</span>
         <span class="n">strategy_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span>
-        <span class="n">file</span> <span class="o">=</span>  <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">strategy_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">now</span><span class="si">}</span><span class="s2">_equity.csv&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">equity_curve</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
-        <span class="n">plot_performance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">equity_curve</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy_name</span><span class="p">)</span>
-        <span class="n">plot_returns_and_dd</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">equity_curve</span><span class="p">,</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">benchmark</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy_name</span><span class="p">)</span>
-        <span class="n">qs</span><span class="o">.</span><span class="n">plots</span><span class="o">.</span><span class="n">monthly_heatmap</span><span class="p">(</span><span class="n">returns</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="s1">&#39;monthly_heatmap.png&#39;</span><span class="p">)</span>
-        <span class="n">plot_monthly_yearly_returns</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">equity_curve</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy_name</span><span class="p">)</span>
-        <span class="n">show_qs_stats</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">equity_curve</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">benchmark</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">:</span>
+            <span class="n">results_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">)</span> <span class="o">/</span> <span class="n">strategy_name</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">results_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s1">&#39;.backtests&#39;</span><span class="p">)</span> <span class="o">/</span> <span class="n">strategy_name</span>
+        <span class="n">results_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        
+        <span class="n">csv_file</span> <span class="o">=</span>  <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">strategy_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">now</span><span class="si">}</span><span class="s2">_equities.csv&quot;</span>
+        <span class="n">png_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">strategy_name</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">now</span><span class="si">}</span><span class="s1">_returns_heatmap.png&#39;</span>
+        <span class="n">html_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">strategy_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">now</span><span class="si">}</span><span class="s2">_report.html&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">equity_curve</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">results_dir</span> <span class="o">/</span> <span class="n">csv_file</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">print_stats</span><span class="p">:</span>
+            <span class="n">plot_performance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">equity_curve</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy_name</span><span class="p">)</span>
+            <span class="n">plot_returns_and_dd</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">equity_curve</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">benchmark</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy_name</span><span class="p">)</span>
+            <span class="n">qs</span><span class="o">.</span><span class="n">plots</span><span class="o">.</span><span class="n">monthly_heatmap</span><span class="p">(</span><span class="n">returns</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">results_dir</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">png_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">plot_monthly_yearly_returns</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">equity_curve</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy_name</span><span class="p">)</span>
+            <span class="n">show_qs_stats</span><span class="p">(</span><span class="n">returns</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">benchmark</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy_name</span><span class="p">,</span> 
+                        <span class="n">save_dir</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">results_dir</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">html_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">stats</span></div>
 </div>

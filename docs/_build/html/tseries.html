@@ -1,23 +1,21 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="./">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Time Series &mdash; BBSTrader 0.1.07 documentation</title>
+  <title>Time Series &mdash; BBSTrader 0.1.08 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="_static/jquery.js?v=5d32c60e"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=15bc9eb9"></script>
-        <script src="_static/doctools.js?v=9a2dae69"></script>
-        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=fda63d7b"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -47,6 +45,9 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">bbstrader</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="btengine.html">Backtesting Egine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="config.html">config module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core.html">core package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ibkr.html">ibkr package</a></li>
 <li class="toctree-l2"><a class="reference internal" href="metatrader.html">MetaTrader5 (MT5) Trading</a></li>
 <li class="toctree-l2"><a class="reference internal" href="models.html">Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="trading.html">Trading Execution</a></li>
@@ -66,6 +67,7 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#tseries.KalmanFilterModel"><code class="docutils literal notranslate"><span class="pre">KalmanFilterModel</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#tseries.KalmanFilterModel.Array"><code class="docutils literal notranslate"><span class="pre">KalmanFilterModel.Array</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#tseries.KalmanFilterModel.calc_slope_intercep"><code class="docutils literal notranslate"><span class="pre">KalmanFilterModel.calc_slope_intercep()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#tseries.KalmanFilterModel.calculate_etqt"><code class="docutils literal notranslate"><span class="pre">KalmanFilterModel.calculate_etqt()</span></code></a></li>
 </ul>
@@ -338,7 +340,7 @@ ACF of residuals and conducting , Box-Pierce and Ljung-Box tests.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="tseries.KalmanFilterModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tseries.</span></span><span class="sig-name descname"><span class="pre">KalmanFilterModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tickers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">tuple</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#KalmanFilterModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.KalmanFilterModel" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tseries.</span></span><span class="sig-name descname"><span class="pre">KalmanFilterModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tickers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#KalmanFilterModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.KalmanFilterModel" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Implements a Kalman Filter model a recursive algorithm used for estimating
 the state of a linear dynamic system from a series of noisy measurements.
@@ -346,9 +348,15 @@ It’s designed to process market data, estimate dynamic parameters such as
 the slope and intercept of price relationships,
 forecast error and standard deviation of the predictions</p>
 <p>You can learn more here <a class="reference external" href="https://en.wikipedia.org/wiki/Kalman_filter">https://en.wikipedia.org/wiki/Kalman_filter</a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tseries.KalmanFilterModel.Array">
+<span class="sig-name descname"><span class="pre">Array</span></span><a class="headerlink" href="#tseries.KalmanFilterModel.Array" title="Link to this definition"></a></dt>
+<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="tseries.KalmanFilterModel.calc_slope_intercep">
-<span class="sig-name descname"><span class="pre">calc_slope_intercep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prices</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#KalmanFilterModel.calc_slope_intercep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.KalmanFilterModel.calc_slope_intercep" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">calc_slope_intercep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prices</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span></span></span><a class="reference internal" href="_modules/tseries.html#KalmanFilterModel.calc_slope_intercep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.KalmanFilterModel.calc_slope_intercep" title="Link to this definition"></a></dt>
 <dd><p>Calculates and returns the slope and intercept
 of the relationship between the provided prices using the Kalman Filter.
 This method updates the filter with the latest price and returns
@@ -365,7 +373,7 @@ the estimated slope and intercept.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="tseries.KalmanFilterModel.calculate_etqt">
-<span class="sig-name descname"><span class="pre">calculate_etqt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prices</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#KalmanFilterModel.calculate_etqt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.KalmanFilterModel.calculate_etqt" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">calculate_etqt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prices</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span></span></span><a class="reference internal" href="_modules/tseries.html#KalmanFilterModel.calculate_etqt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.KalmanFilterModel.calculate_etqt" title="Link to this definition"></a></dt>
 <dd><p>Calculates the forecast error and standard deviation of the predictions
 using the Kalman Filter.</p>
 <dl class="field-list simple">

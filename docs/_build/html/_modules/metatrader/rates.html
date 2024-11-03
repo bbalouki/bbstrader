@@ -1,22 +1,20 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>metatrader.rates &mdash; BBSTrader 0.1.07 documentation</title>
+  <title>metatrader.rates &mdash; BBSTrader 0.1.08 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
-  <!--[if lt IE 9]>
-    <script src="../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="../../_static/jquery.js?v=5d32c60e"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=15bc9eb9"></script>
-        <script src="../../_static/doctools.js?v=9a2dae69"></script>
-        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=fda63d7b"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
@@ -76,13 +74,65 @@
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span>
 <span class="kn">from</span> <span class="nn">bbstrader.metatrader.utils</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">raise_mt5_error</span><span class="p">,</span> <span class="n">TimeFrame</span><span class="p">,</span> <span class="n">TIMEFRAMES</span>
+    <span class="n">raise_mt5_error</span><span class="p">,</span> 
+    <span class="n">TimeFrame</span><span class="p">,</span> 
+    <span class="n">TIMEFRAMES</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">bbstrader.metatrader.account</span> <span class="kn">import</span> <span class="n">INIT_MSG</span>
+<span class="kn">from</span> <span class="nn">bbstrader.metatrader.account</span> <span class="kn">import</span> <span class="n">Account</span>
+<span class="kn">from</span> <span class="nn">bbstrader.metatrader.account</span> <span class="kn">import</span> <span class="n">AMG_EXCHANGES</span>
+<span class="kn">from</span> <span class="nn">bbstrader.metatrader.account</span> <span class="kn">import</span> <span class="n">check_mt5_connection</span>
 <span class="kn">from</span> <span class="nn">pandas.tseries.offsets</span> <span class="kn">import</span> <span class="n">CustomBusinessDay</span>
 <span class="kn">from</span> <span class="nn">pandas.tseries.holiday</span> <span class="kn">import</span> <span class="n">USFederalHolidayCalendar</span>
+<span class="kn">from</span> <span class="nn">exchange_calendars</span> <span class="kn">import</span><span class="p">(</span>
+    <span class="n">get_calendar</span><span class="p">,</span>
+    <span class="n">get_calendar_names</span>
+<span class="p">)</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;Rates&#39;</span><span class="p">,</span> 
+    <span class="s1">&#39;download_historical_data&#39;</span><span class="p">,</span> 
+    <span class="s1">&#39;get_data_from_pos&#39;</span>
+<span class="p">]</span>
 
 <span class="n">MAX_BARS</span> <span class="o">=</span> <span class="mi">10_000_000</span>
+
+<span class="n">IDX_CALENDARS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;CAD&quot;</span><span class="p">:</span> <span class="s2">&quot;XTSE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AUD&quot;</span><span class="p">:</span> <span class="s2">&quot;XASX&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GBP&quot;</span><span class="p">:</span> <span class="s2">&quot;XLON&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;HKD&quot;</span><span class="p">:</span> <span class="s2">&quot;XSHG&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ZAR&quot;</span><span class="p">:</span> <span class="s2">&quot;XJSE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CHF&quot;</span><span class="p">:</span> <span class="s2">&quot;XSWX&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;NOK&quot;</span><span class="p">:</span> <span class="s2">&quot;XOSL&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;EUR&quot;</span><span class="p">:</span> <span class="s2">&quot;XETR&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SGD&quot;</span><span class="p">:</span> <span class="s2">&quot;XSES&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;USD&quot;</span><span class="p">:</span> <span class="s2">&quot;us_futures&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;JPY&quot;</span><span class="p">:</span> <span class="s2">&quot;us_futures&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">COMD_CALENDARS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;Energies&quot;</span>      <span class="p">:</span> <span class="s2">&quot;us_futures&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Metals&quot;</span>        <span class="p">:</span> <span class="s2">&quot;us_futures&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Agricultures&quot;</span>  <span class="p">:</span> <span class="s2">&quot;CBOT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Bonds&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;USD&quot;</span> <span class="p">:</span> <span class="s2">&quot;CBOT&quot;</span><span class="p">,</span> <span class="s2">&quot;EUR&quot;</span><span class="p">:</span> <span class="s2">&quot;EUREX&quot;</span><span class="p">},</span>
+<span class="p">}</span>
+
+<span class="n">CALENDARS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;FX&quot;</span>    <span class="p">:</span> <span class="s2">&quot;us_futures&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;STK&quot;</span>   <span class="p">:</span> <span class="n">AMG_EXCHANGES</span><span class="p">,</span>
+    <span class="s2">&quot;ETF&quot;</span>   <span class="p">:</span> <span class="n">AMG_EXCHANGES</span><span class="p">,</span>
+    <span class="s2">&quot;IDX&quot;</span>   <span class="p">:</span> <span class="n">IDX_CALENDARS</span><span class="p">,</span>
+    <span class="s2">&quot;COMD&quot;</span>  <span class="p">:</span> <span class="n">COMD_CALENDARS</span><span class="p">,</span>
+    <span class="s2">&quot;CRYPTO&quot;</span><span class="p">:</span> <span class="s2">&quot;24/7&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FUT&quot;</span>   <span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">SESSION_TIMEFRAMES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">Mt5</span><span class="o">.</span><span class="n">TIMEFRAME_D1</span><span class="p">,</span>
+    <span class="n">Mt5</span><span class="o">.</span><span class="n">TIMEFRAME_W1</span><span class="p">,</span>
+    <span class="n">Mt5</span><span class="o">.</span><span class="n">TIMEFRAME_H12</span><span class="p">,</span>
+    <span class="n">Mt5</span><span class="o">.</span><span class="n">TIMEFRAME_MN1</span>
+<span class="p">]</span>
 
 
 <div class="viewcode-block" id="Rates">
@@ -102,8 +152,8 @@
 <span class="sd">        or just set it to Unlimited.</span>
 <span class="sd">        In your MT5 terminal, go to `Tools` -&gt; `Options` -&gt; `Charts` -&gt; `Max bars in chart`.</span>
 <span class="sd">        </span>
-<span class="sd">        2. The `get_open, get_high, get_low, get_close, get_adj_close, get_returns,</span>
-<span class="sd">        get_volume` properties return data in  Broker&#39;s timezone.</span>
+<span class="sd">        2. The `open, high, low, close, adjclose, returns,</span>
+<span class="sd">        volume` properties returns data in  Broker&#39;s timezone by default.</span>
 
 <span class="sd">    Example:</span>
 <span class="sd">        &gt;&gt;&gt; rates = Rates(&quot;EURUSD&quot;, &quot;1h&quot;)</span>
@@ -146,13 +196,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">start_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_start_pos</span><span class="p">(</span><span class="n">start_pos</span><span class="p">,</span> <span class="n">time_frame</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="n">count</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_mt5_initialized</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__account</span> <span class="o">=</span> <span class="n">Account</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_rates_from_pos</span><span class="p">()</span>
 
-
     <span class="k">def</span> <span class="nf">_mt5_initialized</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Ensures the MetaTrader 5 Terminal is initialized.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">Mt5</span><span class="o">.</span><span class="n">initialize</span><span class="p">():</span>
-            <span class="n">raise_mt5_error</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">INIT_MSG</span><span class="p">)</span>
+        <span class="n">check_mt5_connection</span><span class="p">()</span>
     
     <span class="k">def</span> <span class="nf">_get_start_pos</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">time_frame</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
@@ -203,8 +251,8 @@
         <span class="k">return</span> <span class="n">TIMEFRAMES</span><span class="p">[</span><span class="n">time_frame</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">_fetch_data</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">datetime</span><span class="p">],</span>
-        <span class="n">count</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">datetime</span><span class="p">]</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">datetime</span> <span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">],</span>
+        <span class="n">count</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">],</span> <span class="n">lower_colnames</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Fetches data from MT5 and returns a DataFrame or None.&quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
@@ -212,7 +260,10 @@
                 <span class="n">rates</span> <span class="o">=</span> <span class="n">Mt5</span><span class="o">.</span><span class="n">copy_rates_from_pos</span><span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_frame</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">count</span>
                 <span class="p">)</span>
-            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">datetime</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">count</span><span class="p">,</span> <span class="n">datetime</span><span class="p">):</span>
+            <span class="k">elif</span> <span class="p">(</span>
+                <span class="nb">isinstance</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="p">(</span><span class="n">datetime</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">))</span> <span class="ow">and</span> 
+                <span class="nb">isinstance</span><span class="p">(</span><span class="n">count</span><span class="p">,</span> <span class="p">(</span><span class="n">datetime</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">))</span>
+                <span class="p">):</span>
                 <span class="n">rates</span> <span class="o">=</span> <span class="n">Mt5</span><span class="o">.</span><span class="n">copy_rates_range</span><span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_frame</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">count</span>
                 <span class="p">)</span>
@@ -220,29 +271,104 @@
                 <span class="k">return</span> <span class="kc">None</span>
 
             <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">rates</span><span class="p">)</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_dataframe</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_dataframe</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">lower_colnames</span><span class="o">=</span><span class="n">lower_colnames</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="n">utc</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">raise_mt5_error</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_format_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_format_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> 
+                          <span class="n">lower_colnames</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Formats the raw MT5 data into a standardized DataFrame.&quot;&quot;&quot;</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="s1">&#39;open&#39;</span><span class="p">,</span> <span class="s1">&#39;high&#39;</span><span class="p">,</span> <span class="s1">&#39;low&#39;</span><span class="p">,</span> <span class="s1">&#39;close&#39;</span><span class="p">,</span> <span class="s1">&#39;tick_volume&#39;</span><span class="p">]]</span>
         <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Date&#39;</span><span class="p">,</span> <span class="s1">&#39;Open&#39;</span><span class="p">,</span> <span class="s1">&#39;High&#39;</span><span class="p">,</span> <span class="s1">&#39;Low&#39;</span><span class="p">,</span> <span class="s1">&#39;Close&#39;</span><span class="p">,</span> <span class="s1">&#39;Volume&#39;</span><span class="p">]</span>
         <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Adj Close&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Close&#39;</span><span class="p">]</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s1">&#39;Date&#39;</span><span class="p">,</span> <span class="s1">&#39;Open&#39;</span><span class="p">,</span> <span class="s1">&#39;High&#39;</span><span class="p">,</span> <span class="s1">&#39;Low&#39;</span><span class="p">,</span> <span class="s1">&#39;Close&#39;</span><span class="p">,</span> <span class="s1">&#39;Adj Close&#39;</span><span class="p">,</span> <span class="s1">&#39;Volume&#39;</span><span class="p">]]</span>
-        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Date&#39;</span><span class="p">],</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;s&#39;</span><span class="p">)</span>
+        <span class="c1">#df = df.columns.rename(str.lower).str.replace(&#39; &#39;, &#39;_&#39;)</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Date&#39;</span><span class="p">],</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;s&#39;</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="n">utc</span><span class="p">)</span>
         <span class="n">df</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;Date&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">lower_colnames</span><span class="p">:</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">df</span>
 
+    <span class="k">def</span> <span class="nf">_filter_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">date_from</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">date_to</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fill_na</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">symbol_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__account</span><span class="o">.</span><span class="n">get_symbol_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="p">)</span>
+        <span class="n">currencies</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__account</span><span class="o">.</span><span class="n">get_currency_rates</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="p">)</span>
+        <span class="n">s_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__account</span><span class="o">.</span><span class="n">get_symbol_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">symbol_type</span> <span class="ow">in</span> <span class="n">CALENDARS</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">symbol_type</span> <span class="o">==</span> <span class="s1">&#39;STK&#39;</span> <span class="ow">or</span> <span class="n">symbol_type</span> <span class="o">==</span> <span class="s1">&#39;ETF&#39;</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">exchange</span> <span class="ow">in</span> <span class="n">CALENDARS</span><span class="p">[</span><span class="n">symbol_type</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">exchange</span> <span class="ow">in</span> <span class="n">get_calendar_names</span><span class="p">():</span>
+                        <span class="n">symbols</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__account</span><span class="o">.</span><span class="n">get_stocks_from_exchange</span><span class="p">(</span>
+                            <span class="n">exchange_code</span><span class="o">=</span><span class="n">exchange</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol</span> <span class="ow">in</span> <span class="n">symbols</span><span class="p">:</span>
+                            <span class="n">calendar</span> <span class="o">=</span> <span class="n">get_calendar</span><span class="p">(</span><span class="n">exchange</span><span class="p">,</span> <span class="n">side</span><span class="o">=</span><span class="s1">&#39;right&#39;</span><span class="p">)</span>
+                            <span class="k">break</span>
+            <span class="k">elif</span> <span class="n">symbol_type</span> <span class="o">==</span> <span class="s1">&#39;IDX&#39;</span><span class="p">:</span>
+                <span class="n">calendar</span> <span class="o">=</span> <span class="n">get_calendar</span><span class="p">(</span><span class="n">CALENDARS</span><span class="p">[</span><span class="n">symbol_type</span><span class="p">][</span><span class="n">currencies</span><span class="p">[</span><span class="s1">&#39;mc&#39;</span><span class="p">]],</span> <span class="n">side</span><span class="o">=</span><span class="s1">&#39;right&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">symbol_type</span> <span class="o">==</span> <span class="s1">&#39;COMD&#39;</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">commodity</span> <span class="ow">in</span> <span class="n">CALENDARS</span><span class="p">[</span><span class="n">symbol_type</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">commodity</span> <span class="ow">in</span> <span class="n">s_info</span><span class="o">.</span><span class="n">path</span><span class="p">:</span>
+                        <span class="n">calendar</span> <span class="o">=</span> <span class="n">get_calendar</span><span class="p">(</span><span class="n">CALENDARS</span><span class="p">[</span><span class="n">symbol_type</span><span class="p">][</span><span class="n">commodity</span><span class="p">],</span> <span class="n">side</span><span class="o">=</span><span class="s1">&#39;right&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">symbol_type</span> <span class="o">==</span> <span class="s1">&#39;FUT&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s1">&#39;Index&#39;</span> <span class="ow">in</span> <span class="n">s_info</span><span class="o">.</span><span class="n">path</span><span class="p">:</span>
+                    <span class="n">calendar</span> <span class="o">=</span> <span class="n">get_calendar</span><span class="p">(</span><span class="n">CALENDARS</span><span class="p">[</span><span class="s1">&#39;IDX&#39;</span><span class="p">][</span><span class="n">currencies</span><span class="p">[</span><span class="s1">&#39;mc&#39;</span><span class="p">]],</span> <span class="n">side</span><span class="o">=</span><span class="s1">&#39;right&#39;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">commodity</span><span class="p">,</span> <span class="n">cal</span> <span class="ow">in</span> <span class="n">COMD_CALENDARS</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__account</span><span class="o">.</span><span class="n">get_future_symbols</span><span class="p">(</span><span class="n">category</span><span class="o">=</span><span class="n">commodity</span><span class="p">):</span>
+                            <span class="k">if</span> <span class="n">commodity</span> <span class="o">==</span> <span class="s1">&#39;Bonds&#39;</span><span class="p">:</span>
+                                <span class="n">calendar</span> <span class="o">=</span> <span class="n">get_calendar</span><span class="p">(</span><span class="n">cal</span><span class="p">[</span><span class="n">currencies</span><span class="p">[</span><span class="s1">&#39;mc&#39;</span><span class="p">]],</span> <span class="n">side</span><span class="o">=</span><span class="s1">&#39;right&#39;</span><span class="p">)</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">calendar</span> <span class="o">=</span> <span class="n">get_calendar</span><span class="p">(</span><span class="n">cal</span><span class="p">,</span> <span class="n">side</span><span class="o">=</span><span class="s1">&#39;right&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">calendar</span> <span class="o">=</span> <span class="n">get_calendar</span><span class="p">(</span><span class="n">CALENDARS</span><span class="p">[</span><span class="n">symbol_type</span><span class="p">],</span> <span class="n">side</span><span class="o">=</span><span class="s1">&#39;right&#39;</span><span class="p">)</span>
+            <span class="n">date_from</span> <span class="o">=</span> <span class="n">date_from</span> <span class="ow">or</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">date_to</span> <span class="o">=</span> <span class="n">date_to</span> <span class="ow">or</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_frame</span> <span class="ow">in</span> <span class="n">SESSION_TIMEFRAMES</span><span class="p">:</span>
+                <span class="n">valid_sessions</span> <span class="o">=</span> <span class="n">calendar</span><span class="o">.</span><span class="n">sessions_in_range</span><span class="p">(</span><span class="n">date_from</span><span class="p">,</span> <span class="n">date_to</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">valid_sessions</span> <span class="o">=</span> <span class="n">calendar</span><span class="o">.</span><span class="n">minutes_in_range</span><span class="p">(</span><span class="n">date_from</span><span class="p">,</span> <span class="n">date_to</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_frame</span> <span class="ow">in</span> <span class="p">[</span><span class="n">Mt5</span><span class="o">.</span><span class="n">TIMEFRAME_M1</span><span class="p">,</span> <span class="n">Mt5</span><span class="o">.</span><span class="n">TIMEFRAME_D1</span><span class="p">]:</span>
+                <span class="c1"># save the index name of the dataframe</span>
+                <span class="n">index_name</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span>
+                <span class="k">if</span> <span class="n">fill_na</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fill_na</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+                        <span class="n">method</span> <span class="o">=</span>  <span class="s1">&#39;nearest&#39;</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fill_na</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                        <span class="n">method</span> <span class="o">=</span> <span class="n">fill_na</span>
+                    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">valid_sessions</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">df</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">valid_sessions</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+                <span class="n">df</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">index_name</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">valid_sessions</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="n">df</span>
+    
+    <span class="k">def</span> <span class="nf">_check_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">filter</span><span class="p">,</span> <span class="n">utc</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">filter</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_frame</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">SESSION_TIMEFRAMES</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">utc</span><span class="p">:</span>
+            <span class="n">utc</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="nb">filter</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_frame</span> <span class="ow">in</span> <span class="n">SESSION_TIMEFRAMES</span> <span class="ow">and</span> <span class="n">utc</span><span class="p">:</span>
+            <span class="n">utc</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="n">utc</span>
+    
 <div class="viewcode-block" id="Rates.get_rates_from_pos">
 <a class="viewcode-back" href="../../metatrader.html#metatrader.rates.Rates.get_rates_from_pos">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_rates_from_pos</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">get_rates_from_pos</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">filter</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fill_na</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> 
+                           <span class="n">lower_colnames</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="kc">False</span>
+                           <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Retrieves historical data starting from a specific position.</span>
 
 <span class="sd">        Uses the `start_pos` and `count` attributes specified during</span>
 <span class="sd">        initialization to fetch data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            filter : See `Rates.get_historical_data` for more details.</span>
+<span class="sd">            fill_na : See `Rates.get_historical_data` for more details.</span>
+<span class="sd">            lower_colnames : If True, the column names will be converted to lowercase.</span>
+<span class="sd">            utc (bool, optional): If True, the data will be in UTC timezone.</span>
+<span class="sd">                Defaults to False.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Union[pd.DataFrame, None]: A DataFrame containing historical</span>
@@ -260,32 +386,38 @@
                 <span class="s2">&quot;Both &#39;start_pos&#39; and &#39;count&#39; must be provided &quot;</span>
                 <span class="s2">&quot;when calling &#39;get_rates_from_pos&#39;.&quot;</span>
             <span class="p">)</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fetch_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_pos</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span><span class="p">)</span>
+        <span class="n">utc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_filter</span><span class="p">(</span><span class="nb">filter</span><span class="p">,</span> <span class="n">utc</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fetch_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_pos</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span><span class="p">,</span>
+                              <span class="n">lower_colnames</span><span class="o">=</span><span class="n">lower_colnames</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="n">utc</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">df</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="nb">filter</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filter_data</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">fill_na</span><span class="o">=</span><span class="n">fill_na</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">df</span></div>
 
     
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">get_open</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">[</span><span class="s1">&#39;Open&#39;</span><span class="p">]</span>
         
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">get_high</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">high</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">[</span><span class="s1">&#39;High&#39;</span><span class="p">]</span>
     
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">get_low</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">low</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">[</span><span class="s1">&#39;Low&#39;</span><span class="p">]</span>
     
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">get_close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">[</span><span class="s1">&#39;Close&#39;</span><span class="p">]</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">get_adj_close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">adjclose</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">[</span><span class="s1">&#39;Adj Close&#39;</span><span class="p">]</span>
     
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">get_returns</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">returns</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Fractional change between the current and a prior element.</span>
 
@@ -303,25 +435,54 @@
         <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;Returns&#39;</span><span class="p">]</span>
     
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">get_volume</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;Volume&#39;</span><span class="p">]</span>
+    <span class="k">def</span> <span class="nf">volume</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">[</span><span class="s1">&#39;Volume&#39;</span><span class="p">]</span>
 
 <div class="viewcode-block" id="Rates.get_historical_data">
 <a class="viewcode-back" href="../../metatrader.html#metatrader.rates.Rates.get_historical_data">[docs]</a>
     <span class="k">def</span> <span class="nf">get_historical_data</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">date_from</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span>
-        <span class="n">date_to</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span>
+        <span class="n">date_from</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">,</span>
+        <span class="n">date_to</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span>
+        <span class="n">utc</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">fill_na</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">lower_colnames</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">save_csv</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Retrieves historical data within a specified date range.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            date_from (datetime): Starting date for data retrieval.</span>
-<span class="sd">            date_to (datetime, optional): Ending date for data retrieval.</span>
+<span class="sd">            date_from : Starting date for data retrieval.</span>
+<span class="sd">            </span>
+<span class="sd">            date_to : Ending date for data retrieval.</span>
 <span class="sd">                Defaults to the current time.</span>
-<span class="sd">            save_csv (str, optional): File path to save the data as a CSV.</span>
+<span class="sd">            </span>
+<span class="sd">            utc : If True, the data will be in UTC timezone.</span>
+<span class="sd">                Defaults to False.</span>
+<span class="sd">            </span>
+<span class="sd">            filter : If True, the data will be filtered based</span>
+<span class="sd">                on the trading sessions for the symbol.</span>
+<span class="sd">                This is use when we want to use the data for backtesting using Zipline.</span>
+<span class="sd">            </span>
+<span class="sd">            fill_na : If True, the data will be filled with the nearest value.</span>
+<span class="sd">                This is use only when `filter` is True and time frame is &quot;1m&quot; or &quot;D1&quot;,</span>
+<span class="sd">                this is because we use ``calendar.minutes_in_range`` or ``calendar.sessions_in_range``</span>
+<span class="sd">                where calendar is the ``ExchangeCalendar`` from `exchange_calendars` package.</span>
+<span class="sd">                So, for &quot;1m&quot; or &quot;D1&quot; time frame, the data will be filled with the nearest value</span>
+<span class="sd">                because the data from MT5 will have approximately the same number of rows as the</span>
+<span class="sd">                number of trading days or minute in the exchange calendar, so we can fill the missing</span>
+<span class="sd">                data with the nearest value.</span>
+<span class="sd">                </span>
+<span class="sd">                But for other time frames, the data will be reindexed with the exchange calendar</span>
+<span class="sd">                because the data from MT5 will have more rows than the number of trading days or minute</span>
+<span class="sd">                in the exchange calendar. So we only take the data that is in the range of the exchange</span>
+<span class="sd">                calendar sessions or minutes.</span>
+<span class="sd">            </span>
+<span class="sd">            lower_colnames : If True, the column names will be converted to lowercase.</span>
+<span class="sd">            </span>
+<span class="sd">            save_csv : File path to save the data as a CSV.</span>
 <span class="sd">                If None, the data won&#39;t be saved.</span>
 
 <span class="sd">        Returns:</span>
@@ -332,13 +493,58 @@
 <span class="sd">            ValueError: If the starting date is greater than the ending date.</span>
 <span class="sd">        </span>
 <span class="sd">        Notes:</span>
-<span class="sd">            The Datetime for this method is in UTC timezone.</span>
+<span class="sd">            The `filter` for this method can be use only for Admira Markets Group (AMG) symbols.</span>
+<span class="sd">            The Datetime for this method is in Local timezone by default.</span>
+<span class="sd">            All STK symbols are filtered based on the the exchange calendar.</span>
+<span class="sd">            All FX symbols are filtered based on the ``us_futures`` calendar.</span>
+<span class="sd">            All IDX symbols are filtered based on the exchange calendar of margin currency.</span>
+<span class="sd">            All COMD symbols are filtered based on the exchange calendar of the commodity.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fetch_data</span><span class="p">(</span><span class="n">date_from</span><span class="p">,</span> <span class="n">date_to</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">save_csv</span> <span class="ow">and</span> <span class="n">df</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">utc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_filter</span><span class="p">(</span><span class="nb">filter</span><span class="p">,</span> <span class="n">utc</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fetch_data</span><span class="p">(</span><span class="n">date_from</span><span class="p">,</span> <span class="n">date_to</span><span class="p">,</span>
+                              <span class="n">lower_colnames</span><span class="o">=</span><span class="n">lower_colnames</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="n">utc</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">df</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="nb">filter</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filter_data</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">date_from</span><span class="o">=</span><span class="n">date_from</span><span class="p">,</span> <span class="n">date_to</span><span class="o">=</span><span class="n">date_to</span><span class="p">,</span> <span class="n">fill_na</span><span class="o">=</span><span class="n">fill_na</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">save_csv</span><span class="p">:</span>
             <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="si">}</span><span class="s2">.csv&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">df</span></div>
 </div>
+
+
+<div class="viewcode-block" id="download_historical_data">
+<a class="viewcode-back" href="../../metatrader.html#metatrader.rates.download_historical_data">[docs]</a>
+<span class="k">def</span> <span class="nf">download_historical_data</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">time_frame</span><span class="p">,</span> <span class="n">date_from</span><span class="p">,</span> 
+                             <span class="n">date_to</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span><span class="n">lower_colnames</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+                             <span class="n">utc</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">filter</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fill_na</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">save_csv</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Download historical data from MetaTrader 5 terminal.</span>
+<span class="sd">    See `Rates.get_historical_data` for more details.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">rates</span> <span class="o">=</span> <span class="n">Rates</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">time_frame</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">rates</span><span class="o">.</span><span class="n">get_historical_data</span><span class="p">(</span>
+        <span class="n">date_from</span><span class="o">=</span><span class="n">date_from</span><span class="p">,</span>
+        <span class="n">date_to</span><span class="o">=</span><span class="n">date_to</span><span class="p">,</span>
+        <span class="n">save_csv</span><span class="o">=</span><span class="n">save_csv</span><span class="p">,</span>
+        <span class="n">utc</span><span class="o">=</span><span class="n">utc</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="o">=</span><span class="nb">filter</span><span class="p">,</span>
+        <span class="n">lower_colnames</span><span class="o">=</span><span class="n">lower_colnames</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">data</span></div>
+
+
+<div class="viewcode-block" id="get_data_from_pos">
+<a class="viewcode-back" href="../../metatrader.html#metatrader.rates.get_data_from_pos">[docs]</a>
+<span class="k">def</span> <span class="nf">get_data_from_pos</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">time_frame</span><span class="p">,</span> <span class="n">start_pos</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">fill_na</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> 
+                      <span class="n">count</span><span class="o">=</span><span class="n">MAX_BARS</span><span class="p">,</span> <span class="n">lower_colnames</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">filter</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="n">session_duration</span><span class="o">=</span><span class="mf">23.0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get historical data from a specific position.</span>
+<span class="sd">    See `Rates.get_rates_from_pos` for more details.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">rates</span> <span class="o">=</span> <span class="n">Rates</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">time_frame</span><span class="p">,</span> <span class="n">start_pos</span><span class="p">,</span> <span class="n">count</span><span class="p">,</span> <span class="n">session_duration</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">rates</span><span class="o">.</span><span class="n">get_rates_from_pos</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="nb">filter</span><span class="p">,</span> <span class="n">fill_na</span><span class="o">=</span><span class="n">fill_na</span><span class="p">,</span>
+                                    <span class="n">lower_colnames</span><span class="o">=</span><span class="n">lower_colnames</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="n">utc</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">data</span></div>
 
 </pre></div>
 

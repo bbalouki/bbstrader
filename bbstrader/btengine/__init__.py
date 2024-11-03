@@ -18,11 +18,11 @@ Features
 Components
 ==========
 
-- **Backtest**: Orchestrates the backtesting process, managing events and invoking components.
+- **BacktestEgine**: Orchestrates the backtesting process, managing events and invoking components.
 - **Event**: Abstract class for events, with implementations for market data, signals, fill and order events.
-- **DataHandler**: Abstract class for market data handling, with an implementation for `HistoricalCSVHandler`, `MT5HistoricDataHandler`, `YFHistoricDataHandler`. We will add another data handling in the future such as MacroEconomic Data, Fundamental Data, TICK Data and Real-time Data.
+- **DataHandler**: Abstract class for market data handling, with an implementation for `CSVDataHandler`, `MT5DataHandler`, `YFDataHandler`. We will add another data handling in the future such as MacroEconomic Data, Fundamental Data, TICK Data and Real-time Data.
 - **Portfolio**: Manages positions and calculates performance metrics, responding to market data and signals.
-- **ExecutionHandler**: Abstract class for order execution, with a simulated execution handler provided with an implementation for `SimulatedExecutionHandler`.
+- **ExecutionHandler**: Abstract class for order execution, with a simulated execution handler provided with an implementation for `SimExecutionHandler`.
 - **Performance**: Utility functions for calculating performance metrics and visualizing strategy performance.
 
 Examples
@@ -50,5 +50,5 @@ from bbstrader.btengine.event import *
 from bbstrader.btengine.execution import *
 from bbstrader.btengine.performance import *
 from bbstrader.btengine.backtest import *
-from bbstrader.btengine.strategy import Strategy
-from bbstrader.btengine.portfolio import Portfolio
+from bbstrader.btengine.strategy import *
+from bbstrader.btengine.portfolio import *

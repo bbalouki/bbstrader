@@ -2,6 +2,7 @@ from datetime import datetime
 from queue import Queue
 from abc import ABCMeta, abstractmethod
 from bbstrader.btengine.event import FillEvent, OrderEvent
+from bbstrader.btengine.data import DataHandler
 from bbstrader.metatrader.account import Account
 from bbstrader.config import config_logger
 
@@ -53,7 +54,7 @@ class SimExecutionHandler(ExecutionHandler):
     handler.
     """
 
-    def __init__(self, events: Queue, **kwargs):
+    def __init__(self, events: Queue, data: DataHandler, **kwargs):
         """
         Initialises the handler, setting the event queues
         up internally.
@@ -62,6 +63,7 @@ class SimExecutionHandler(ExecutionHandler):
             events (Queue): The Queue of Event objects.
         """
         self.events = events
+        self.bardata = data
         self.logger = kwargs.get("logger", config_logger("execution.log"))
 
     def execute_order(self, event: OrderEvent):
@@ -73,8 +75,9 @@ class SimExecutionHandler(ExecutionHandler):
             event (OrderEvent): Contains an Event object with order information.
         """
         if event.type == 'ORDER':
+            dtime = self.bardata.get_latest_bar_datetime(event.symbol)
             fill_event = FillEvent(
-                datetime.now(), event.symbol,
+                dtime, event.symbol,
                 'ARCA', event.quantity, event.direction, None
             )
             self.events.put(fill_event)
@@ -107,9 +110,9 @@ class MT5ExecutionHandler(ExecutionHandler):
     account fee calculation model from `Trade.MT5` account type for stocks and ETFs.
 
     NOTE:
-        This class only works with `bbstrader.metatrader.data.MT5HistoricDataHandler` class.
+        This class only works with `bbstrader.metatrader.data.MT5DataHandler` class.
     """
-    def __init__(self, events: Queue, **kwargs):
+    def __init__(self, events: Queue, data: DataHandler, **kwargs):
         """
         Initialises the handler, setting the event queues up internally.
 
@@ -117,6 +120,7 @@ class MT5ExecutionHandler(ExecutionHandler):
             events (Queue): The Queue of Event objects.
         """
         self.events = events
+        self.bardata = data
         self.logger = kwargs.get("logger", config_logger("execution.log"))
         self.__account = Account()
 
@@ -224,8 +228,9 @@ class MT5ExecutionHandler(ExecutionHandler):
             price = event.price
             lot = self._calculate_lot(symbol, quantity, price)
             fees = self._estimate_total_fees(symbol, lot, quantity, price)
+            dtime = self.bardata.get_latest_bar_datetime(symbol)
             fill_event = FillEvent(
-                timeindex=datetime.now(), symbol=symbol,
+                timeindex=dtime, symbol=symbol,
                 exchange='MT5', quantity=quantity, direction=direction,
                 fill_cost=None, commission=fees
             )

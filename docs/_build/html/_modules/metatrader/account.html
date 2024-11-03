@@ -1,22 +1,20 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>metatrader.account &mdash; BBSTrader 0.1.07 documentation</title>
+  <title>metatrader.account &mdash; BBSTrader 0.1.08 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
-  <!--[if lt IE 9]>
-    <script src="../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="../../_static/jquery.js?v=5d32c60e"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=15bc9eb9"></script>
-        <script src="../../_static/doctools.js?v=9a2dae69"></script>
-        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=fda63d7b"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
@@ -77,26 +75,64 @@
 <span class="kn">import</span> <span class="nn">urllib.request</span>
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
 <span class="kn">import</span> <span class="nn">MetaTrader5</span> <span class="k">as</span> <span class="nn">mt5</span>
-<span class="kn">from</span> <span class="nn">currency_converter</span> <span class="kn">import</span> <span class="n">SINGLE_DAY_ECB_URL</span><span class="p">,</span> <span class="n">CurrencyConverter</span>
-<span class="kn">from</span> <span class="nn">bbstrader.metatrader.utils</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">raise_mt5_error</span><span class="p">,</span> <span class="n">AccountInfo</span><span class="p">,</span> <span class="n">TerminalInfo</span><span class="p">,</span>
-    <span class="n">SymbolInfo</span><span class="p">,</span> <span class="n">TickInfo</span><span class="p">,</span> <span class="n">TradeRequest</span><span class="p">,</span> <span class="n">OrderCheckResult</span><span class="p">,</span>
-    <span class="n">OrderSentResult</span><span class="p">,</span> <span class="n">TradePosition</span><span class="p">,</span> <span class="n">TradeOrder</span><span class="p">,</span> <span class="n">TradeDeal</span><span class="p">,</span>
+<span class="kn">from</span> <span class="nn">dotenv</span> <span class="kn">import</span> <span class="n">load_dotenv</span>
+<span class="kn">from</span> <span class="nn">currency_converter</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SINGLE_DAY_ECB_URL</span><span class="p">,</span> 
+    <span class="n">CurrencyConverter</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Literal</span>
+<span class="kn">from</span> <span class="nn">bbstrader.metatrader.utils</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">raise_mt5_error</span><span class="p">,</span> 
+    <span class="n">AccountInfo</span><span class="p">,</span> 
+    <span class="n">TerminalInfo</span><span class="p">,</span> 
+    <span class="n">InvalidBroker</span><span class="p">,</span>
+    <span class="n">SymbolInfo</span><span class="p">,</span> 
+    <span class="n">TickInfo</span><span class="p">,</span> 
+    <span class="n">TradeRequest</span><span class="p">,</span> 
+    <span class="n">OrderCheckResult</span><span class="p">,</span>
+    <span class="n">OrderSentResult</span><span class="p">,</span> 
+    <span class="n">TradePosition</span><span class="p">,</span> 
+    <span class="n">TradeOrder</span><span class="p">,</span> 
+    <span class="n">TradeDeal</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Tuple</span><span class="p">,</span> 
+    <span class="n">Union</span><span class="p">,</span> 
+    <span class="n">List</span><span class="p">,</span> 
+    <span class="n">Dict</span><span class="p">,</span> 
+    <span class="n">Any</span><span class="p">,</span> 
+    <span class="n">Optional</span><span class="p">,</span> 
+    <span class="n">Literal</span><span class="p">,</span>
+    <span class="n">overload</span>
+<span class="p">)</span>
 
+<span class="n">load_dotenv</span><span class="p">()</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;Account&quot;</span><span class="p">,</span> 
+    <span class="s2">&quot;Broker&quot;</span><span class="p">,</span> 
+    <span class="s2">&quot;AdmiralMarktsGroup&quot;</span><span class="p">,</span> 
+    <span class="s2">&quot;JustGlobalMarkets&quot;</span><span class="p">,</span> 
+    <span class="s2">&quot;FTMO&quot;</span><span class="p">,</span> 
+<span class="p">]</span>
 
 <span class="n">__BROKERS__</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;AMG&#39;</span><span class="p">:</span> <span class="s2">&quot;Admirals Group AS&quot;</span><span class="p">,</span>
-    <span class="s1">&#39;JGM&#39;</span><span class="p">:</span> <span class="s2">&quot;Just Global Markets Ltd.&quot;</span><span class="p">,</span>
-    <span class="s1">&#39;FTMO&#39;</span><span class="p">:</span> <span class="s2">&quot;FTMO S.R.O.&quot;</span>
+    <span class="s1">&#39;AMG&#39;</span><span class="p">:</span> <span class="s1">&#39;Admirals Group AS&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;JGM&#39;</span><span class="p">:</span> <span class="s1">&#39;Just Global Markets Ltd.&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;FTMO&#39;</span><span class="p">:</span> <span class="s1">&#39;FTMO S.R.O.&#39;</span>
 <span class="p">}</span>
-<span class="n">_ADMIRAL_MARKETS_URL_</span> <span class="o">=</span> <span class="s2">&quot;https://cabinet.a-partnership.com/visit/?bta=35537&amp;brand=admiralmarkets&quot;</span>
+
+<span class="n">BROKERS_TIMEZONES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;AMG&#39;</span><span class="p">:</span> <span class="s1">&#39;Europe/Helsinki&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;JGM&#39;</span><span class="p">:</span> <span class="s1">&#39;Europe/Helsinki&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;FTMO&#39;</span><span class="p">:</span> <span class="s1">&#39;Europe/Helsinki&#39;</span>
+<span class="p">}</span>
+
+<span class="n">_ADMIRAL_MARKETS_URL_</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;ADMIRAL_MARKETS_URL&quot;</span><span class="p">)</span>
 <span class="n">_ADMIRAL_MARKETS_PRODUCTS_</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Stocks&quot;</span><span class="p">,</span> <span class="s2">&quot;ETFs&quot;</span><span class="p">,</span>
                             <span class="s2">&quot;Indices&quot;</span><span class="p">,</span> <span class="s2">&quot;Commodities&quot;</span><span class="p">,</span> <span class="s2">&quot;Futures&quot;</span><span class="p">,</span> <span class="s2">&quot;Forex&quot;</span><span class="p">]</span>
-<span class="n">_JUST_MARKETS_URL_</span> <span class="o">=</span> <span class="s2">&quot;https://one.justmarkets.link/a/tufvj0xugm/registration/trader&quot;</span>
+<span class="n">_JUST_MARKETS_URL_</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;JUST_MARKETS_URL&quot;</span><span class="p">)</span>
 <span class="n">_JUST_MARKETS_PRODUCTS_</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Stocks&quot;</span><span class="p">,</span> <span class="s2">&quot;Crypto&quot;</span><span class="p">,</span> <span class="s2">&quot;indices&quot;</span><span class="p">,</span> <span class="s2">&quot;Commodities&quot;</span><span class="p">,</span> <span class="s2">&quot;Forex&quot;</span><span class="p">]</span>
-<span class="n">_FTMO_URL_</span> <span class="o">=</span> <span class="s2">&quot;https://trader.ftmo.com/?affiliates=JGmeuQqepAZLMcdOEQRp&quot;</span>
+<span class="n">_FTMO_URL_</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;FTMO_URL&quot;</span><span class="p">)</span>
 
 <span class="n">INIT_MSG</span> <span class="o">=</span> <span class="p">(</span>
     <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">* Ensure you have a good and stable internet connexion</span><span class="se">\n</span><span class="s2">&quot;</span>
@@ -120,6 +156,126 @@
     <span class="s2">&quot;FUT&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s1">&#39;\b(Futures?)\b&#39;</span><span class="p">,</span>
     <span class="s2">&quot;CRYPTO&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s1">&#39;\b(Cryptos?)\b&#39;</span>
 <span class="p">}</span>
+
+<span class="n">_COUNTRY_MAP_</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;USA&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\b(US)\b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AUS&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\b(Australia)\b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;BEL&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\b(Belgium)\b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DNK&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\b(Denmark)\b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FIN&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\b(Finland)\b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FRA&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\b(France)\b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DEU&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\b(Germany)\b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;NLD&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\b(Netherlands)\b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;NOR&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\b(Norway)\b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PRT&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\b(Portugal)\b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ESP&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\b(Spain)\b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SWE&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\b(Sweden)\b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GBR&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\b(UK)\b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CHE&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\b(Switzerland)\b&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">AMG_EXCHANGES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;XASX&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;Australia.*\(ASX\)&quot;</span><span class="p">,</span>
+    <span class="s1">&#39;XBRU&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;Belgium.*\(Euronext\)&quot;</span><span class="p">,</span>
+    <span class="s1">&#39;XCSE&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;Denmark.*\(CSE\)&quot;</span><span class="p">,</span>
+    <span class="s1">&#39;XHEL&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;Finland.*\(NASDAQ\)&quot;</span><span class="p">,</span>
+    <span class="s1">&#39;XPAR&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;France.*\(Euronext\)&quot;</span><span class="p">,</span>
+    <span class="s1">&#39;XETR&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;Germany.*\(Xetra\)&quot;</span><span class="p">,</span>
+    <span class="s1">&#39;XAMS&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;Netherlands.*\(Euronext\)&quot;</span><span class="p">,</span>
+    <span class="s1">&#39;XOSL&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;Norway.*\(NASDAQ\)&quot;</span><span class="p">,</span>
+    <span class="s1">&#39;XLIS&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;Portugal.*\(Euronext\)&quot;</span><span class="p">,</span>
+    <span class="s1">&#39;XMAD&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;Spain.*\(BME\)&quot;</span><span class="p">,</span>
+    <span class="s1">&#39;XSTO&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;Sweden.*\(NASDAQ\)&quot;</span><span class="p">,</span>
+    <span class="s1">&#39;XLON&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;UK.*\(LSE\)&quot;</span><span class="p">,</span>
+    <span class="s1">&#39;XNYS&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;US.*\((NYSE|ARCA|AMEX)\)&quot;</span><span class="p">,</span>
+    <span class="s1">&#39;NYSE&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;US.*\(NYSE\)&quot;</span><span class="p">,</span>
+    <span class="s1">&#39;ARCA&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;US.*\(ARCA\)&quot;</span><span class="p">,</span>
+    <span class="s1">&#39;AMEX&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;US.*\(AMEX\)&quot;</span><span class="p">,</span>
+    <span class="s1">&#39;NASDAQ&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;US.*\(NASDAQ\)&quot;</span><span class="p">,</span>
+    <span class="s1">&#39;BATS&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;US.*\(BATS\)&quot;</span><span class="p">,</span>
+    <span class="s1">&#39;XSWX&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;Switzerland.*\(SWX\)&quot;</span>
+<span class="p">}</span>
+
+<span class="k">def</span> <span class="nf">check_mt5_connection</span><span class="p">():</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">init</span> <span class="o">=</span> <span class="n">mt5</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">init</span><span class="p">:</span>
+            <span class="n">raise_mt5_error</span><span class="p">(</span><span class="n">INIT_MSG</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="n">raise_mt5_error</span><span class="p">(</span><span class="n">INIT_MSG</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Broker">
+<a class="viewcode-back" href="../../metatrader.html#metatrader.account.Broker">[docs]</a>
+<span class="k">class</span> <span class="nc">Broker</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">check_mt5_connection</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">mt5</span><span class="o">.</span><span class="n">account_info</span><span class="p">()</span><span class="o">.</span><span class="n">company</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span>
+    
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+    
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orther</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">orther</span><span class="o">.</span><span class="n">name</span>
+    
+    <span class="k">def</span> <span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orther</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="n">orther</span><span class="o">.</span><span class="n">name</span></div>
+
+
+
+<div class="viewcode-block" id="AdmiralMarktsGroup">
+<a class="viewcode-back" href="../../metatrader.html#metatrader.account.AdmiralMarktsGroup">[docs]</a>
+<span class="k">class</span> <span class="nc">AdmiralMarktsGroup</span><span class="p">(</span><span class="n">Broker</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;Admirals Group AS&quot;</span><span class="p">)</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">timezone</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">BROKERS_TIMEZONES</span><span class="p">[</span><span class="s1">&#39;AMG&#39;</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="JustGlobalMarkets">
+<a class="viewcode-back" href="../../metatrader.html#metatrader.account.JustGlobalMarkets">[docs]</a>
+<span class="k">class</span> <span class="nc">JustGlobalMarkets</span><span class="p">(</span><span class="n">Broker</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;Just Global Markets Ltd.&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">timezone</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">BROKERS_TIMEZONES</span><span class="p">[</span><span class="s1">&#39;JGM&#39;</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="FTMO">
+<a class="viewcode-back" href="../../metatrader.html#metatrader.account.FTMO">[docs]</a>
+<span class="k">class</span> <span class="nc">FTMO</span><span class="p">(</span><span class="n">Broker</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;FTMO S.R.O.&quot;</span><span class="p">)</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">timezone</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">BROKERS_TIMEZONES</span><span class="p">[</span><span class="s1">&#39;FTMO&#39;</span><span class="p">]</span></div>
+
+    
+
+<span class="k">class</span> <span class="nc">AMP</span><span class="p">(</span><span class="n">Broker</span><span class="p">):</span>
+    <span class="o">...</span>
+
+
+<span class="n">BROKERS</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Broker</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;AMG&#39;</span><span class="p">:</span> <span class="n">AdmiralMarktsGroup</span><span class="p">(),</span>
+    <span class="s1">&#39;JGM&#39;</span><span class="p">:</span> <span class="n">JustGlobalMarkets</span><span class="p">(),</span>
+    <span class="s1">&#39;FTMO&#39;</span><span class="p">:</span> <span class="n">FTMO</span><span class="p">()</span>
+<span class="p">}</span>
+
 
 <div class="viewcode-block" id="Account">
 <a class="viewcode-back" href="../../metatrader.html#metatrader.account.Account">[docs]</a>
@@ -160,22 +316,72 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">mt5</span><span class="o">.</span><span class="n">initialize</span><span class="p">():</span>
-            <span class="n">raise_mt5_error</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">INIT_MSG</span><span class="p">)</span>
+        <span class="n">check_mt5_connection</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_check_brokers</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_check_brokers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">supported</span> <span class="o">=</span> <span class="n">__BROKERS__</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="n">broker</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_terminal_info</span><span class="p">()</span><span class="o">.</span><span class="n">company</span>
-        <span class="k">if</span> <span class="n">broker</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">supported</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">broker</span><span class="si">}</span><span class="s2"> is not currently supported broker for the Account() class</span><span class="se">\n</span><span class="s2">&quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;Currently Supported brokers are: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">supported</span><span class="o">.</span><span class="n">values</span><span class="p">())</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;For </span><span class="si">{</span><span class="n">supported</span><span class="p">[</span><span class="s1">&#39;AMG&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">, See [</span><span class="si">{</span><span class="n">amg_url</span><span class="si">}</span><span class="s2">]</span><span class="se">\n</span><span class="s2">&quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;For </span><span class="si">{</span><span class="n">supported</span><span class="p">[</span><span class="s1">&#39;JGM&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">, See [</span><span class="si">{</span><span class="n">jgm_url</span><span class="si">}</span><span class="s2">]</span><span class="se">\n</span><span class="s2">&quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;For </span><span class="si">{</span><span class="n">supported</span><span class="p">[</span><span class="s1">&#39;FTMO&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">, See [</span><span class="si">{</span><span class="n">ftmo_url</span><span class="si">}</span><span class="s2">]</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">supported</span> <span class="o">=</span> <span class="n">BROKERS</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">broker</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">supported</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> is not currently supported broker for the Account() class</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Currently Supported brokers are: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">b</span><span class="o">.</span><span class="n">name</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">supported</span><span class="o">.</span><span class="n">values</span><span class="p">()])</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;For </span><span class="si">{</span><span class="n">supported</span><span class="p">[</span><span class="s1">&#39;AMG&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">, See [</span><span class="si">{</span><span class="n">amg_url</span><span class="si">}</span><span class="s2">]</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;For </span><span class="si">{</span><span class="n">supported</span><span class="p">[</span><span class="s1">&#39;JGM&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">, See [</span><span class="si">{</span><span class="n">jgm_url</span><span class="si">}</span><span class="s2">]</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;For </span><span class="si">{</span><span class="n">supported</span><span class="p">[</span><span class="s1">&#39;FTMO&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">, See [</span><span class="si">{</span><span class="n">ftmo_url</span><span class="si">}</span><span class="s2">]</span><span class="se">\n</span><span class="s2">&quot;</span>
             <span class="p">)</span>
-
+            <span class="k">raise</span> <span class="n">InvalidBroker</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">msg</span><span class="p">)</span>
+        
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">broker</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Broker</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Broker</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_terminal_info</span><span class="p">()</span><span class="o">.</span><span class="n">company</span><span class="p">)</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">timezone</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">broker</span> <span class="ow">in</span> <span class="n">BROKERS</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">broker</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">broker</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">broker</span><span class="o">.</span><span class="n">timezone</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_account_info</span><span class="p">()</span><span class="o">.</span><span class="n">name</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">number</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_account_info</span><span class="p">()</span><span class="o">.</span><span class="n">login</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">server</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The name of the trade server to which the client terminal is connected.</span>
+<span class="sd">        (e.g., &#39;AdmiralsGroup-Demo&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_account_info</span><span class="p">()</span><span class="o">.</span><span class="n">server</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">balance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_account_info</span><span class="p">()</span><span class="o">.</span><span class="n">balance</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">leverage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_account_info</span><span class="p">()</span><span class="o">.</span><span class="n">leverage</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">equity</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_account_info</span><span class="p">()</span><span class="o">.</span><span class="n">equity</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">currency</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_account_info</span><span class="p">()</span><span class="o">.</span><span class="n">currency</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">language</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The language of the terminal interface.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_terminal_info</span><span class="p">()</span><span class="o">.</span><span class="n">language</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">maxbars</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The maximal bars count on the chart.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_terminal_info</span><span class="p">()</span><span class="o">.</span><span class="n">maxbars</span>
+  
 <div class="viewcode-block" id="Account.get_account_info">
 <a class="viewcode-back" href="../../metatrader.html#metatrader.account.Account.get_account_info">[docs]</a>
     <span class="k">def</span> <span class="nf">get_account_info</span><span class="p">(</span>
@@ -351,8 +557,8 @@
             <span class="n">c</span> <span class="o">=</span> <span class="n">CurrencyConverter</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
         <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
         <span class="n">supported</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">currencies</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">from_c</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">supported</span> <span class="ow">or</span>
-                <span class="n">to_c</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">supported</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">from_c</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">supported</span>
+            <span class="ow">or</span> <span class="n">to_c</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">supported</span>
             <span class="p">):</span>
             <span class="n">rate</span> <span class="o">=</span> <span class="n">qty</span>
         <span class="k">else</span><span class="p">:</span>
@@ -375,7 +581,7 @@
 
 <span class="sd">        Exemple:</span>
 <span class="sd">            &gt;&gt;&gt; account =  Account()</span>
-<span class="sd">            &gt;&gt;&gt; account.get_rates(&#39;EURUSD&#39;)</span>
+<span class="sd">            &gt;&gt;&gt; account.get_currency_rates(&#39;EURUSD&#39;)</span>
 <span class="sd">            {&#39;bc&#39;: &#39;EUR&#39;, &#39;mc&#39;: &#39;EUR&#39;, &#39;pc&#39;: &#39;USD&#39;, &#39;ac&#39;: &#39;USD&#39;}</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_symbol_info</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
@@ -580,19 +786,22 @@
 
 <span class="sd">        Notes:</span>
 <span class="sd">            This mthods works primarly with Admirals Group AS products,</span>
-<span class="sd">            For other brokers use `get_symbols()`</span>
+<span class="sd">            For other brokers use `get_symbols()` or this method will use it by default.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">fx_categories</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;majors&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\b(Majors?)\b&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;minors&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\b(Minors?)\b&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;exotics&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\b(Exotics?)\b&quot;</span><span class="p">,</span>
-        <span class="p">}</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_symbols_by_category</span><span class="p">(</span><span class="s1">&#39;forex&#39;</span><span class="p">,</span> <span class="n">category</span><span class="p">,</span> <span class="n">fx_categories</span><span class="p">)</span></div>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">broker</span> <span class="o">!=</span> <span class="n">AdmiralMarktsGroup</span><span class="p">():</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_symbols</span><span class="p">(</span><span class="n">symbol_type</span><span class="o">=</span><span class="s1">&#39;FX&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">fx_categories</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;majors&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\b(Majors?)\b&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;minors&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\b(Minors?)\b&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;exotics&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\b(Exotics?)\b&quot;</span><span class="p">,</span>
+            <span class="p">}</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_symbols_by_category</span><span class="p">(</span><span class="s1">&#39;forex&#39;</span><span class="p">,</span> <span class="n">category</span><span class="p">,</span> <span class="n">fx_categories</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="Account.get_stocks_from">
-<a class="viewcode-back" href="../../metatrader.html#metatrader.account.Account.get_stocks_from">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_stocks_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">country_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;USA&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<div class="viewcode-block" id="Account.get_stocks_from_country">
+<a class="viewcode-back" href="../../metatrader.html#metatrader.account.Account.get_stocks_from_country">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_stocks_from_country</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">country_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;USA&#39;</span><span class="p">,</span> <span class="n">etf</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Retrieves a list of stock symbols from a specific country.</span>
 
@@ -624,25 +833,139 @@
 
 <span class="sd">        Notes:</span>
 <span class="sd">            This mthods works primarly with Admirals Group AS products,</span>
-<span class="sd">            For other brokers use `get_symbols()`</span>
+<span class="sd">            For other brokers use `get_symbols()` or this method will use it by default.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">country_map</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;USA&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\b(US)\b&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;AUS&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\b(Australia)\b&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;BEL&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\b(Belgium)\b&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;DNK&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\b(Denmark)\b&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;FIN&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\b(Finland)\b&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;FRA&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\b(France)\b&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;DEU&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\b(Germany)\b&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;NLD&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\b(Netherlands)\b&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;NOR&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\b(Norway)\b&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;PRT&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\b(Portugal)\b&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;ESP&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\b(Spain)\b&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;SWE&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\b(Sweden)\b&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;GBR&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\b(UK)\b&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;CHE&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\b(Switzerland)\b&quot;</span><span class="p">,</span>
-        <span class="p">}</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_symbols_by_category</span><span class="p">(</span><span class="s1">&#39;stocks&#39;</span><span class="p">,</span> <span class="n">country_code</span><span class="p">,</span> <span class="n">country_map</span><span class="p">)</span></div>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">broker</span> <span class="o">!=</span> <span class="n">AdmiralMarktsGroup</span><span class="p">():</span>
+            <span class="n">stocks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_symbols</span><span class="p">(</span><span class="n">symbol_type</span><span class="o">=</span><span class="s1">&#39;STK&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">stocks</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">country_map</span> <span class="o">=</span> <span class="n">_COUNTRY_MAP_</span>
+            <span class="n">stocks</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">_get_symbols_by_category</span><span class="p">(</span><span class="s1">&#39;STK&#39;</span><span class="p">,</span> <span class="n">country_code</span><span class="p">,</span> <span class="n">country_map</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">etf</span><span class="p">:</span>
+                <span class="n">etfs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_symbols_by_category</span><span class="p">(</span><span class="s1">&#39;ETF&#39;</span><span class="p">,</span> <span class="n">country_code</span><span class="p">,</span> <span class="n">country_map</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">stocks</span> <span class="o">+</span> <span class="n">etfs</span>  
+            <span class="k">return</span> <span class="n">stocks</span>   </div>
+
+
+<div class="viewcode-block" id="Account.get_stocks_from_exchange">
+<a class="viewcode-back" href="../../metatrader.html#metatrader.account.Account.get_stocks_from_exchange">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_stocks_from_exchange</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exchange_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;XNYS&#39;</span><span class="p">,</span> <span class="n">etf</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get stock symbols from a specific exchange using the ISO Code for the exchange.</span>
+
+<span class="sd">        Supported exchanges are from Admirals Group AS products:</span>
+<span class="sd">        * **XASX:**        **Australian Securities Exchange**        </span>
+<span class="sd">        * **XBRU:**        **Euronext Brussels Exchange** </span>
+<span class="sd">        * **XCSE:**        **Copenhagen Stock Exchange**  </span>
+<span class="sd">        * **XHEL:**        **NASDAQ OMX Helsinki**</span>
+<span class="sd">        * **XPAR:**        **Euronext Paris**</span>
+<span class="sd">        * **XETR:**        **Xetra Frankfurt**</span>
+<span class="sd">        * **XOSL:**        **Oslo Stock Exchange**</span>
+<span class="sd">        * **XLIS:**        **Euronext Lisbon**</span>
+<span class="sd">        * **XMAD:**        **Bolsa de Madrid**</span>
+<span class="sd">        * **XSTO:**        **NASDAQ OMX Stockholm**</span>
+<span class="sd">        * **XLON:**        **London Stock Exchange**</span>
+<span class="sd">        * **NYSE:**        **New York Stock Exchange**</span>
+<span class="sd">        * **ARCA:**        **NYSE ARCA**</span>
+<span class="sd">        * **AMEX:**        **NYSE AMEX**</span>
+<span class="sd">        * **XNYS:**        **New York Stock Exchange (AMEX, ARCA, NYSE)**</span>
+<span class="sd">        * **NASDAQ:**      **NASDAQ**</span>
+<span class="sd">        * **BATS:**        **BATS Exchange**</span>
+<span class="sd">        * **XSWX:**        **SWX Swiss Exchange**</span>
+<span class="sd">        * **XAMS:**        **Euronext Amsterdam**   </span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            exchange_code (str, optional): The ISO code of the exchange.</span>
+<span class="sd">            etf (bool, optional): If True, include ETFs from the exchange. Defaults to True.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: A list of stock symbol names from the specified exchange.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If an unsupported exchange is provided.</span>
+
+<span class="sd">        Notes:</span>
+<span class="sd">            This mthods works primarly with Admirals Group AS products,</span>
+<span class="sd">            For other brokers use `get_symbols()` or this method will use it by default. </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">broker</span> <span class="o">!=</span> <span class="n">AdmiralMarktsGroup</span><span class="p">():</span>
+            <span class="n">stocks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_symbols</span><span class="p">(</span><span class="n">symbol_type</span><span class="o">=</span><span class="s1">&#39;STK&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">stocks</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">exchange_map</span> <span class="o">=</span> <span class="n">AMG_EXCHANGES</span>
+            <span class="n">stocks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_symbols_by_category</span><span class="p">(</span><span class="s1">&#39;STK&#39;</span><span class="p">,</span> <span class="n">exchange_code</span><span class="p">,</span> <span class="n">exchange_map</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">etf</span><span class="p">:</span>
+                <span class="n">etfs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_symbols_by_category</span><span class="p">(</span><span class="s1">&#39;ETF&#39;</span><span class="p">,</span> <span class="n">exchange_code</span><span class="p">,</span> <span class="n">exchange_map</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">stocks</span> <span class="o">+</span> <span class="n">etfs</span>
+            <span class="k">return</span> <span class="n">stocks</span></div>
+
+
+<div class="viewcode-block" id="Account.get_future_symbols">
+<a class="viewcode-back" href="../../metatrader.html#metatrader.account.Account.get_future_symbols">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_future_symbols</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">category</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;ALL&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieves a list of future symbols belonging to a specific category.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            category : The category of future symbols to retrieve. </span>
+<span class="sd">                                        Possible values are &#39;ALL&#39;, &#39;agricultures&#39;, &#39;energies&#39;, &#39;metals&#39;. </span>
+<span class="sd">                                        Defaults to &#39;ALL&#39;.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: A list of future symbol names matching the specified category.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If an unsupported category is provided.</span>
+
+<span class="sd">        Notes:</span>
+<span class="sd">            This mthods works primarly with Admirals Group AS products,</span>
+<span class="sd">            For other brokers use `get_symbols()` or this method will use it by default.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">category</span> <span class="o">=</span> <span class="n">category</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">broker</span> <span class="o">!=</span> <span class="n">AdmiralMarktsGroup</span><span class="p">():</span>
+             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_symbols</span><span class="p">(</span><span class="n">symbol_type</span><span class="o">=</span><span class="s1">&#39;FUT&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">category</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="s1">&#39;index&#39;</span><span class="p">]:</span>
+            <span class="n">categories</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;all&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\b(Futures?)\b&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;index&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\b(Index)\b&quot;</span><span class="p">,</span> 
+            <span class="p">}</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_symbols_by_category</span><span class="p">(</span><span class="s1">&#39;FUT&#39;</span><span class="p">,</span> <span class="n">category</span><span class="p">,</span> <span class="n">categories</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">metals</span> <span class="o">=</span>  <span class="p">[]</span>
+            <span class="n">energies</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">agricultures</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">bonds</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">commodities</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_symbols</span><span class="p">(</span><span class="n">symbol_type</span><span class="o">=</span><span class="s1">&#39;COMD&#39;</span><span class="p">)</span>
+            <span class="n">futures</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_symbols</span><span class="p">(</span><span class="n">symbol_type</span><span class="o">=</span><span class="s1">&#39;FUT&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="n">futures</span><span class="p">:</span>
+                <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_symbol_info</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">info</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="s1">&#39;XAU&#39;</span> <span class="ow">in</span> <span class="n">info</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+                        <span class="n">metals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="s1">&#39;oil&#39;</span> <span class="ow">in</span> <span class="n">info</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                        <span class="n">energies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                    <span class="n">name</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">commodities</span><span class="p">:</span>
+                        <span class="n">_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_symbol_info</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="s1">&#39;Metals&#39;</span> <span class="ow">in</span> <span class="n">_info</span><span class="o">.</span><span class="n">path</span><span class="p">:</span>
+                            <span class="n">metals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                        <span class="k">elif</span> <span class="s1">&#39;Energies&#39;</span> <span class="ow">in</span> <span class="n">_info</span><span class="o">.</span><span class="n">path</span><span class="p">:</span>
+                            <span class="n">energies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                        <span class="k">elif</span> <span class="s1">&#39;Agricultures&#39;</span> <span class="ow">in</span> <span class="n">_info</span><span class="o">.</span><span class="n">path</span><span class="p">:</span>
+                            <span class="n">agricultures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+                <span class="k">elif</span> <span class="n">info</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="s1">&#39;Index&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">info</span><span class="o">.</span><span class="n">path</span><span class="p">:</span>
+                        <span class="n">bonds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">category</span> <span class="o">==</span> <span class="s1">&#39;metals&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">metals</span>
+            <span class="k">elif</span> <span class="n">category</span> <span class="o">==</span> <span class="s1">&#39;energies&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">energies</span>
+            <span class="k">elif</span> <span class="n">category</span> <span class="o">==</span> <span class="s1">&#39;agricultures&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">agricultures</span>
+            <span class="k">elif</span> <span class="n">category</span> <span class="o">==</span> <span class="s1">&#39;bonds&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">bonds</span></div>
 
 
 <div class="viewcode-block" id="Account.get_symbol_info">
@@ -763,12 +1086,12 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            MT5TerminalError: A specific exception based on the error code.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">_action</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s1">&#39;buy&#39;</span><span class="p">:</span> <span class="n">mt5</span><span class="o">.</span><span class="n">ORDER_TYPE_BUY</span><span class="p">,</span>
             <span class="s1">&#39;sell&#39;</span><span class="p">:</span> <span class="n">mt5</span><span class="o">.</span><span class="n">ORDER_TYPE_SELL</span>
         <span class="p">}</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">margin</span> <span class="o">=</span> <span class="n">mt5</span><span class="o">.</span><span class="n">order_calc_margin</span><span class="p">(</span><span class="n">_action</span><span class="p">[</span><span class="n">action</span><span class="p">],</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">lot</span><span class="p">,</span> <span class="n">price</span><span class="p">)</span>
+            <span class="n">margin</span> <span class="o">=</span> <span class="n">mt5</span><span class="o">.</span><span class="n">order_calc_margin</span><span class="p">(</span><span class="n">actions</span><span class="p">[</span><span class="n">action</span><span class="p">],</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">lot</span><span class="p">,</span> <span class="n">price</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">margin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">return</span> <span class="kc">None</span>
             <span class="k">return</span> <span class="n">margin</span>
@@ -803,7 +1126,7 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="n">result</span> <span class="o">=</span> <span class="n">mt5</span><span class="o">.</span><span class="n">order_check</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
             <span class="n">result_dict</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">_asdict</span><span class="p">()</span>
-            <span class="n">trade_request</span> <span class="o">=</span>  <span class="n">TradeRequest</span><span class="p">(</span><span class="o">**</span><span class="n">result</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">_asdict</span><span class="p">())</span>
+            <span class="n">trade_request</span> <span class="o">=</span> <span class="n">TradeRequest</span><span class="p">(</span><span class="o">**</span><span class="n">result</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">_asdict</span><span class="p">())</span>
             <span class="n">result_dict</span><span class="p">[</span><span class="s1">&#39;request&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">trade_request</span>
             <span class="k">return</span> <span class="n">OrderCheckResult</span><span class="p">(</span><span class="o">**</span><span class="n">result_dict</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
@@ -832,7 +1155,7 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="n">result</span> <span class="o">=</span> <span class="n">mt5</span><span class="o">.</span><span class="n">order_send</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
             <span class="n">result_dict</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">_asdict</span><span class="p">()</span>
-            <span class="n">trade_request</span> <span class="o">=</span>  <span class="n">TradeRequest</span><span class="p">(</span><span class="o">**</span><span class="n">result</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">_asdict</span><span class="p">())</span>
+            <span class="n">trade_request</span> <span class="o">=</span> <span class="n">TradeRequest</span><span class="p">(</span><span class="o">**</span><span class="n">result</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">_asdict</span><span class="p">())</span>
             <span class="n">result_dict</span><span class="p">[</span><span class="s1">&#39;request&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">trade_request</span>
             <span class="k">return</span> <span class="n">OrderSentResult</span><span class="p">(</span><span class="o">**</span><span class="n">result_dict</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
@@ -1019,6 +1342,8 @@
         <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">position_deals</span><span class="p">),</span>
                           <span class="n">columns</span><span class="o">=</span><span class="n">position_deals</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_asdict</span><span class="p">())</span>
         <span class="n">df</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">],</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;s&#39;</span><span class="p">)</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s1">&#39;time_msc&#39;</span><span class="p">,</span> <span class="s1">&#39;external_id&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">save</span><span class="p">:</span>
             <span class="n">file</span> <span class="o">=</span> <span class="s2">&quot;trade_history.csv&quot;</span>
             <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>

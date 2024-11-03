@@ -1,22 +1,20 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>metatrader.risk &mdash; BBSTrader 0.1.07 documentation</title>
+  <title>metatrader.risk &mdash; BBSTrader 0.1.08 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
-  <!--[if lt IE 9]>
-    <script src="../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="../../_static/jquery.js?v=5d32c60e"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=15bc9eb9"></script>
-        <script src="../../_static/doctools.js?v=9a2dae69"></script>
-        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=fda63d7b"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
@@ -80,16 +78,24 @@
 <span class="kn">from</span> <span class="nn">bbstrader.metatrader.account</span> <span class="kn">import</span> <span class="n">Account</span>
 <span class="kn">from</span> <span class="nn">bbstrader.metatrader.rates</span> <span class="kn">import</span> <span class="n">Rates</span>
 <span class="kn">from</span> <span class="nn">bbstrader.metatrader.utils</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">TIMEFRAMES</span><span class="p">,</span> <span class="n">raise_mt5_error</span><span class="p">,</span> <span class="n">TimeFrame</span>
+    <span class="n">TIMEFRAMES</span><span class="p">,</span> 
+    <span class="n">raise_mt5_error</span><span class="p">,</span> 
+    <span class="n">TimeFrame</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">List</span><span class="p">,</span> 
+    <span class="n">Dict</span><span class="p">,</span> 
+    <span class="n">Optional</span><span class="p">,</span> 
+    <span class="n">Literal</span><span class="p">,</span> 
+    <span class="n">Union</span><span class="p">,</span> 
+    <span class="n">Any</span>
+<span class="p">)</span>
 
 
 <span class="n">_COMMD_SUPPORTED_</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">&quot;GOLD&quot;</span><span class="p">,</span> <span class="s2">&quot;XAUEUR&quot;</span><span class="p">,</span> <span class="s2">&quot;SILVER&quot;</span><span class="p">,</span> <span class="s2">&quot;BRENT&quot;</span><span class="p">,</span> <span class="s2">&quot;CRUDOIL&quot;</span><span class="p">,</span> <span class="s2">&quot;WTI&quot;</span><span class="p">,</span>  <span class="s2">&quot;UKOIL&quot;</span><span class="p">,</span>
     <span class="s1">&#39;XAGEUR&#39;</span><span class="p">,</span> <span class="s1">&#39;XAGUSD&#39;</span><span class="p">,</span> <span class="s1">&#39;XAUAUD&#39;</span><span class="p">,</span> <span class="s1">&#39;XAUEUR&#39;</span><span class="p">,</span> <span class="s1">&#39;XAUUSD&#39;</span><span class="p">,</span> <span class="s1">&#39;XAUGBP&#39;</span><span class="p">,</span>  <span class="s1">&#39;USOIL&#39;</span>
 <span class="p">]</span>
-
 
 <span class="n">_ADMIRAL_MARKETS_FUTURES_</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s1">&#39;#USTNote_&#39;</span><span class="p">,</span> <span class="s1">&#39;#Bund_&#39;</span><span class="p">,</span> <span class="s1">&#39;#USDX_&#39;</span><span class="p">,</span> <span class="s1">&#39;_AUS200_&#39;</span><span class="p">,</span> <span class="s1">&#39;_Canada60_&#39;</span><span class="p">,</span> <span class="s1">&#39;_SouthAfrica40_&#39;</span><span class="p">,</span>
@@ -99,6 +105,7 @@
     <span class="s1">&#39;_XAU_&#39;</span><span class="p">,</span> <span class="s1">&#39;_HK50_&#39;</span><span class="p">,</span> <span class="s1">&#39;_HSCEI50_&#39;</span>
 <span class="p">]</span>
 
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;RiskManagement&#39;</span><span class="p">]</span>
 
 <div class="viewcode-block" id="RiskManagement">
 <a class="viewcode-back" href="../../metatrader.html#metatrader.risk.RiskManagement">[docs]</a>
@@ -211,7 +218,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">pchange</span> <span class="o">=</span> <span class="n">pchange_sl</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">var_level</span> <span class="o">=</span> <span class="n">var_level</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">var_tf</span> <span class="o">=</span> <span class="n">var_time_frame</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">daily_dd</span> <span class="o">=</span> <span class="n">daily_risk</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">daily_dd</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">daily_risk</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_risk</span> <span class="o">=</span> <span class="n">max_risk</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rr</span> <span class="o">=</span> <span class="n">rr</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sl</span> <span class="o">=</span> <span class="n">sl</span>
@@ -274,7 +281,7 @@
         <span class="n">volume_step</span> <span class="o">=</span> <span class="n">s_info</span><span class="o">.</span><span class="n">volume_step</span>
         <span class="n">lot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">currency_risk</span><span class="p">()[</span><span class="s1">&#39;lot&#39;</span><span class="p">]</span>
         <span class="n">steps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_volume_step</span><span class="p">(</span><span class="n">volume_step</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">steps</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">float</span><span class="p">(</span><span class="n">steps</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="nb">float</span><span class="p">(</span><span class="mi">1</span><span class="p">):</span>
             <span class="k">return</span> <span class="nb">round</span><span class="p">(</span><span class="n">lot</span><span class="p">,</span> <span class="n">steps</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">round</span><span class="p">(</span><span class="n">lot</span><span class="p">)</span></div>
@@ -285,13 +292,13 @@
 
         <span class="n">value_str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="s1">&#39;.&#39;</span> <span class="ow">in</span> <span class="n">value_str</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s1">&#39;.&#39;</span> <span class="ow">in</span> <span class="n">value_str</span> <span class="ow">and</span> <span class="n">value_str</span> <span class="o">!=</span> <span class="s1">&#39;1.0&#39;</span><span class="p">:</span>
             <span class="n">decimal_index</span> <span class="o">=</span> <span class="n">value_str</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
             <span class="n">num_digits</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">value_str</span><span class="p">)</span> <span class="o">-</span> <span class="n">decimal_index</span> <span class="o">-</span> <span class="mi">1</span>
-
             <span class="k">return</span> <span class="n">num_digits</span>
-        <span class="k">elif</span> <span class="n">value_str</span> <span class="o">==</span> <span class="s1">&#39;1&#39;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="mi">1</span>
+        
+        <span class="k">elif</span> <span class="n">value_str</span> <span class="o">==</span> <span class="s1">&#39;1.0&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="mi">0</span>
 
@@ -347,7 +354,7 @@
         <span class="n">interval</span> <span class="o">=</span> <span class="nb">round</span><span class="p">((</span><span class="n">minutes</span> <span class="o">/</span> <span class="n">tf_int</span><span class="p">)</span>  <span class="o">*</span> <span class="mi">252</span><span class="p">)</span>
 
         <span class="n">rate</span> <span class="o">=</span> <span class="n">Rates</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tf</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">interval</span><span class="p">)</span>
-        <span class="n">returns</span> <span class="o">=</span> <span class="n">rate</span><span class="o">.</span><span class="n">get_returns</span><span class="o">*</span><span class="mi">100</span>
+        <span class="n">returns</span> <span class="o">=</span> <span class="n">rate</span><span class="o">.</span><span class="n">returns</span><span class="o">*</span><span class="mi">100</span>
         <span class="n">std</span> <span class="o">=</span> <span class="n">returns</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
         <span class="n">point</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_symbol_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="p">)</span><span class="o">.</span><span class="n">point</span>
         <span class="n">av_price</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol_info</span><span class="o">.</span><span class="n">bid</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol_info</span><span class="o">.</span><span class="n">ask</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
@@ -407,7 +414,7 @@
         <span class="n">interval</span> <span class="o">=</span> <span class="nb">round</span><span class="p">((</span><span class="n">minutes</span> <span class="o">/</span> <span class="n">tf_int</span><span class="p">)</span>  <span class="o">*</span> <span class="mi">252</span><span class="p">)</span>
 
         <span class="n">rate</span> <span class="o">=</span> <span class="n">Rates</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="p">,</span> <span class="n">tf</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">interval</span><span class="p">)</span>
-        <span class="n">returns</span> <span class="o">=</span> <span class="n">rate</span><span class="o">.</span><span class="n">get_returns</span><span class="o">*</span><span class="mi">100</span>
+        <span class="n">returns</span> <span class="o">=</span> <span class="n">rate</span><span class="o">.</span><span class="n">returns</span><span class="o">*</span><span class="mi">100</span>
         <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_account_info</span><span class="p">()</span><span class="o">.</span><span class="n">margin_free</span>
         <span class="n">mu</span> <span class="o">=</span> <span class="n">returns</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
         <span class="n">sigma</span> <span class="o">=</span> <span class="n">returns</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
@@ -446,7 +453,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">P</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_account_info</span><span class="p">()</span><span class="o">.</span><span class="n">margin_free</span>
         <span class="n">trade_risk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_trade_risk</span><span class="p">()</span>
-        <span class="n">loss_allowed</span> <span class="o">=</span> <span class="n">P</span> <span class="o">*</span> <span class="n">trade_risk</span>
+        <span class="n">loss_allowed</span> <span class="o">=</span> <span class="n">P</span> <span class="o">*</span> <span class="n">trade_risk</span> <span class="o">/</span> <span class="mi">100</span>
         <span class="n">var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_var</span><span class="p">(</span><span class="n">c</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">var_level</span><span class="p">,</span> <span class="n">tf</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">var_tf</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">loss_allowed</span><span class="p">)</span></div>
 
@@ -528,10 +535,11 @@
 
         <span class="n">av_price</span> <span class="o">=</span> <span class="p">(</span><span class="n">s_info</span><span class="o">.</span><span class="n">bid</span> <span class="o">+</span> <span class="n">s_info</span><span class="o">.</span><span class="n">ask</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
         <span class="n">trade_risk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_trade_risk</span><span class="p">()</span>
-        <span class="n">FX</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_symbol_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;FX&#39;</span>
-        <span class="n">COMD</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_symbol_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;COMD&#39;</span>
-        <span class="n">FUT</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_symbol_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;FUT&#39;</span>
-        <span class="n">CRYPTO</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_symbol_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;CRYPTO&#39;</span>
+        <span class="n">symbol_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_symbol_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="p">)</span>
+        <span class="n">FX</span>    <span class="o">=</span> <span class="n">symbol_type</span> <span class="o">==</span> <span class="s1">&#39;FX&#39;</span>
+        <span class="n">COMD</span>  <span class="o">=</span> <span class="n">symbol_type</span> <span class="o">==</span> <span class="s1">&#39;COMD&#39;</span>
+        <span class="n">FUT</span>   <span class="o">=</span> <span class="n">symbol_type</span> <span class="o">==</span> <span class="s1">&#39;FUT&#39;</span>
+        <span class="n">CRYPTO</span> <span class="o">=</span> <span class="n">symbol_type</span> <span class="o">==</span> <span class="s1">&#39;CRYPTO&#39;</span>
         <span class="k">if</span> <span class="n">COMD</span><span class="p">:</span>
             <span class="n">supported</span> <span class="o">=</span> <span class="n">_COMMD_SUPPORTED_</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">supported</span><span class="p">:</span>
@@ -626,14 +634,14 @@
                     <span class="n">trade_loss</span> <span class="o">=</span> <span class="p">(</span><span class="n">lot</span> <span class="o">*</span> <span class="n">contract_size</span><span class="p">)</span> <span class="o">*</span> <span class="n">tick_value_loss</span>
                     <span class="n">trade_profit</span> <span class="o">=</span> <span class="p">(</span><span class="n">lot</span> <span class="o">*</span> <span class="n">contract_size</span><span class="p">)</span> <span class="o">*</span> <span class="n">tick_value_profit</span>
 
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_symbol_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;IDX&#39;</span><span class="p">:</span>
-                <span class="n">rates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_currency_rates</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">rates</span><span class="p">[</span><span class="s1">&#39;mc&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">rates</span><span class="p">[</span><span class="s1">&#39;pc&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;JPY&#39;</span><span class="p">:</span>
-                    <span class="n">lot</span> <span class="o">=</span> <span class="n">lot</span> <span class="o">*</span> <span class="n">contract_size</span>
-                    <span class="n">lot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_lot</span><span class="p">(</span><span class="n">lot</span><span class="p">)</span>
-                    <span class="n">volume</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">lot</span> <span class="o">*</span> <span class="n">av_price</span> <span class="o">*</span> <span class="n">contract_size</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">contract_size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="n">volume</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">lot</span> <span class="o">*</span> <span class="n">av_price</span><span class="p">)</span>
+            <span class="c1"># if self.get_symbol_type(self.symbol) == &#39;IDX&#39;:</span>
+            <span class="c1">#     rates = self.get_currency_rates(self.symbol)</span>
+            <span class="c1">#     if rates[&#39;mc&#39;] == rates[&#39;pc&#39;] == &#39;JPY&#39;:</span>
+            <span class="c1">#         lot = lot * contract_size</span>
+            <span class="c1">#         lot = self._check_lot(lot)</span>
+            <span class="c1">#         volume = round(lot * av_price * contract_size)</span>
+            <span class="c1"># if contract_size == 1:</span>
+            <span class="c1">#     volume = round(lot * av_price)</span>
 
             <span class="k">return</span> <span class="p">{</span>
                 <span class="s1">&#39;currency_risk&#39;</span><span class="p">:</span> <span class="n">currency_risk</span><span class="p">,</span>

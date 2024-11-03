@@ -100,6 +100,7 @@ class SMAStrategy(Strategy):
     def get_backtest_data(self):
         symbol_data = {symbol: None for symbol in self.symbol_list}
         for s in self.symbol_list:
+            latest_bars = self.bars.get_latest_bars(s, N=self.long_window)
             bar_date = self.bars.get_latest_bar_datetime(s)
             bars = self.bars.get_latest_bars_values(
                 s, "adj_close", N=self.long_window
@@ -254,7 +255,6 @@ class ArimaGarchStrategy(Strategy):
         self.long_market = {s : False for s in self.symbol_list}
         self.short_market = {s : False for s in self.symbol_list}
 
-
     def _build_arch_models(self, **kwargs) -> Dict[str, ArimaGarchModel]:
         arch_models = {symbol: None for symbol in self.symbol_list}
         for symbol in self.symbol_list:
@@ -343,8 +343,9 @@ class ArimaGarchStrategy(Strategy):
     
     def create_live_signals(self):
         signals = {symbol: None for symbol in self.symbol_list}
+        data = self.get_live_data()
         for symbol in self.symbol_list:
-            symbol_data = self.get_live_data()[symbol]
+            symbol_data = data[symbol]
             if symbol_data is not None:
                 window_data, hmm_returns = symbol_data
                 prediction = self.arima_models[symbol].get_prediction(window_data)
@@ -674,7 +675,6 @@ class StockIndexSTBOTrading(Strategy):
                 and self.num_buys[index] <= self.max_trades[index]):
                 signal = SignalEvent(100, index, dt, 'LONG', 
                                      quantity=self.qty[index], price=current_price)
-                print(f'{dt}: LONG {self.qty[index]} units of {index} at {current_price}')
                 self.events.put(signal)
                 self.num_buys[index] += 1
                 self.buy_prices[index].append(current_price)
@@ -686,7 +686,6 @@ class StockIndexSTBOTrading(Strategy):
                 if self._calculate_pct_change(
                         current_price, av_price) >= (self.expeted_return[index]):
                     signal = SignalEvent(100, index, dt, 'EXIT', quantity=qty, price=current_price)
-                    print(f'{dt}: EXIT {qty} units of {index} at {current_price}')
                     self.events.put(signal)
                     self.num_buys[index] = 0
                     self.buy_prices[index] = []
@@ -759,8 +758,8 @@ def _run_sma_backtest(
         "hmm_end":  "2009-12-31",
         "yf_start": "2010-01-04",
         "hmm_data": spx_data,
-        "mt5_start": datetime(2010, 1, 4),
-        "mt5_end": datetime(2023, 1, 1),
+        "mt5_start": datetime(2010,1,1),
+        "mt5_end": datetime(2023,1,1),
         "backtester_class": SMAStrategy,
         "data_handler": MT5DataHandler,
         "exc_handler": MT5ExecutionHandler
