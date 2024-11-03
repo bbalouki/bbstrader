@@ -6,30 +6,35 @@ tasks such as cointegration testing, volatility modeling,
 and filter-based estimation to assist in trading strategy development, 
 market analysis, and financial data exploration.
 """
-import numpy as np
-import pandas as pd
 import pprint
 import warnings
+import numpy as np
+import pandas as pd
+from   tqdm import tqdm
 import yfinance as yf
-from arch import arch_model
-from statsmodels.tsa.arima.model import ARIMA
 import pmdarima as pm
-import matplotlib.pyplot as plt
+import seaborn as sns
 import statsmodels.api as sm
+import matplotlib.pyplot as plt
 import statsmodels.tsa.stattools as ts
 from hurst import compute_Hc
+from arch import arch_model
 from scipy.optimize import minimize
 from filterpy.kalman import KalmanFilter
+from pykalman import KalmanFilter as PyKalmanFilter
 from statsmodels.tsa.vector_ar.vecm import coint_johansen
 from statsmodels.graphics.tsaplots import plot_acf
+from statsmodels.tsa.stattools import adfuller, coint
+from statsmodels.tsa.arima.model import ARIMA
+from statsmodels.tsa.vector_ar.var_model import VAR
+from sklearn.model_selection import GridSearchCV
+from sklearn.tree import  DecisionTreeClassifier
+from sklearn.linear_model import LogisticRegressionCV
+from statsmodels.stats.diagnostic import acorr_ljungbox
 from itertools import combinations
 from typing import Union, List, Tuple
-from statsmodels.stats.diagnostic import acorr_ljungbox
-from arch.utility.exceptions import ConvergenceWarning as ArchWarning
-from statsmodels.tools.sm_exceptions import ConvergenceWarning as StatsWarning
 warnings.filterwarnings("ignore")
-warnings.filterwarnings("ignore", category=StatsWarning, module='statsmodels')
-warnings.filterwarnings("ignore", category=ArchWarning, module='arch')
+
 
 
 __all__ = [
@@ -115,18 +120,23 @@ def fit_best_arima(window_data: Union[pd.Series, np.ndarray]):
         stepwise=True
     )
     final_order = model.order
-    try:
-        best_arima_model = ARIMA(
-            window_data + 1e-5, order=final_order, missing='drop').fit()
-        return best_arima_model
-    except np.linalg.LinAlgError:
-        # Catch specific linear algebra errors
-        print("LinAlgError occurred, skipping this data point.")
-        return None
-    except Exception as e:
-        # Catch any other unexpected errors and log them
-        print(f"An error occurred: {e}")
-        return None
+    from arch.utility.exceptions import ConvergenceWarning as ArchWarning
+    from statsmodels.tools.sm_exceptions import ConvergenceWarning as StatsWarning
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=StatsWarning, module='statsmodels')
+        warnings.filterwarnings("ignore", category=ArchWarning, module='arch')
+        try:
+            best_arima_model = ARIMA(
+                window_data + 1e-5, order=final_order, missing='drop').fit()
+            return best_arima_model
+        except np.linalg.LinAlgError:
+            # Catch specific linear algebra errors
+            print("LinAlgError occurred, skipping this data point.")
+            return None
+        except Exception as e:
+            # Catch any other unexpected errors and log them
+            print(f"An error occurred: {e}")
+            return None
 
 
 def fit_garch(window_data:  Union[pd.Series, np.ndarray]):
@@ -1177,3 +1187,231 @@ class OrnsteinUhlenbeck():
                 self.sigma_hat * dW_matrix[:, t]
             )
         return simulations_matrix
+
+
+def remove_correlated_assets(df: pd.DataFrame, cutoff=.99):
+    corr = df.corr().stack()
+    corr = corr[corr < 1]
+    to_check = corr[corr.abs() > cutoff].index
+    keep, drop = set(), set()
+    for s1, s2 in to_check:
+        if s1 not in keep:
+            if s2 not in keep:
+                keep.add(s1)
+                drop.add(s2)
+            else:
+                drop.add(s1)
+        else:
+            keep.discard(s2)
+            drop.add(s2)
+    return df.drop(drop, axis=1)
+
+
+def check_stationarity(df: pd.DataFrame):
+    results = []
+    for ticker, prices in df.items():
+        results.append([ticker, adfuller(prices, regression='ct')[1]])
+    return pd.DataFrame(results, columns=['ticker', 'adf']).sort_values('adf')
+
+
+def remove_stationary_assets(df: pd.DataFrame, pval=.05):
+    test_result = check_stationarity(df)
+    stationary = test_result.loc[test_result.adf <= pval, 'ticker'].tolist()
+    return df.drop(stationary, axis=1).sort_index()
+
+
+def select_assets(df: pd.DataFrame, n=100, start=None, end=None):
+    idx = pd.IndexSlice
+    start = start or df.index.get_level_values('date').min()
+    end = end or df.index.get_level_values('date').max()
+    df = (df
+        .loc[lambda df: ~df.index.duplicated()]
+        .sort_index()
+        .loc[idx[:, f'{start}':f'{end}'], :]
+        .assign(dv=lambda df: df.close.mul(df.volume)))
+
+    # select n assets with the highest average trading volume
+    # we are taking a shortcut to simplify; should select
+    # based on historical only, e.g. yearly rolling avg
+    most_traded = (df.groupby(level='ticker')
+                .dv.mean()
+                .nlargest(n=n).index)
+
+    df = (df.loc[idx[most_traded, :], 'close']
+        .unstack('ticker')
+        .ffill(limit=5)  # fill up to five values
+        .dropna(axis=1))  # remove assets with any missing values
+
+    df = remove_correlated_assets(df)
+    return remove_stationary_assets(df).sort_index()
+
+def compute_pair_metrics(security: pd.Series, candidates: pd.DataFrame):
+    security = security.div(security.iloc[0])
+    ticker = security.name
+    candidates = candidates.div(candidates.iloc[0])
+    spreads = candidates.sub(security, axis=0)
+    n, m = spreads.shape
+    X = np.ones(shape=(n, 2))
+    X[:, 1] = np.arange(1, n + 1)
+    
+    # compute drift
+    drift = ((np.linalg.inv(X.T @ X) @ X.T @ spreads).iloc[1]
+             .to_frame('drift'))
+    
+    # compute volatility
+    vol = spreads.std().to_frame('vol')
+    
+    # return correlation
+    corr_ret = (candidates.pct_change()
+                .corrwith(security.pct_change())
+                .to_frame('corr_ret'))
+    
+    # normalized price series correlation
+    corr = candidates.corrwith(security).to_frame('corr')
+    metrics = drift.join(vol).join(corr).join(corr_ret).assign(n=n)
+    
+    tests = []
+    # run cointegration tests
+    for candidate, prices in tqdm(candidates.items()):
+        df = pd.DataFrame({'s1': security, 's2': prices})
+        var = VAR(df.values)
+        lags = var.select_order() # select VAR order
+        k_ar_diff = lags.selected_orders['aic']
+        # Johansen Test with constant Term and estd. lag order
+        cj0 = coint_johansen(df, det_order=0, k_ar_diff=k_ar_diff)
+        # Engle-Granger Tests
+        t1, p1 = coint(security, prices, trend='c')[:2]
+        t2, p2 = coint(prices, security, trend='c')[:2]
+        tests.append([ticker, candidate, t1, p1, t2, p2, 
+                      k_ar_diff, *cj0.lr1])
+    columns = ['s1', 's2', 't1', 'p1', 't2', 'p2', 'k_ar_diff', 'trace0', 'trace1']
+    tests = pd.DataFrame(tests, columns=columns).set_index('s2')
+    return metrics.join(tests)
+
+CRITICAL_VALUES = {
+    0: {.9: 13.4294, .95: 15.4943, .99: 19.9349},
+    1: {.9: 2.7055, .95: 3.8415, .99: 6.6349}
+}
+
+def find_cointegrated_pairs(securities: pd.DataFrame, candidates: pd.DataFrame, 
+                            n=None, start=None, stop=None):
+    trace0_cv = CRITICAL_VALUES[0][.95] # critical value for 0 cointegration relationships
+    trace1_cv = CRITICAL_VALUES[1][.95] # critical value for 1 cointegration relationship
+    spreads = []
+    if start is not None and stop is not None:
+        securities = securities.loc[str(start): str(stop), :]
+        candidates = candidates.loc[str(start): str(stop), :]
+    for i, (ticker, prices) in enumerate(securities.items(), 1):
+        df = compute_pair_metrics(prices, candidates)
+        spreads.append(df.set_index('s1', append=True))
+    spreads = pd.concat(spreads)
+    spreads.index.names = ['s2', 's1']
+    spreads = spreads.swaplevel()
+    spreads['t'] = spreads[['t1', 't2']].min(axis=1)
+    spreads['p'] = spreads[['p1', 'p2']].min(axis=1)
+    spreads['joh_sig'] = ((spreads.trace0 > trace0_cv) &
+                        (spreads.trace1 > trace1_cv)).astype(int)
+    spreads['eg_sig'] = (spreads.p < .05).astype(int)
+    spreads['s1_dep'] = spreads.p1 < spreads.p2
+    spreads['coint'] = (spreads.joh_sig & spreads.eg_sig).astype(int)
+    # select top n pairs
+    if n is not None:
+        top_pairs = (spreads.query('coint == 1')
+                    .sort_values('t', ascending=False)
+                    .head(n))
+    else:
+        top_pairs = spreads.query('coint == 1')
+    return top_pairs
+
+def analyze_cointegrated_pairs(spreads: pd.DataFrame, plot_coint=False, cosstab=False, 
+                               heuristics=False, log_reg=False, decis_tree=False):
+    if plot_coint:
+        trace0_cv = CRITICAL_VALUES[0][.95]
+        spreads = spreads.reset_index()
+        sns.scatterplot(x=np.log1p(spreads.t.abs()), 
+                        y=np.log1p(spreads.trace1), 
+                        hue='coint', data=spreads[spreads.trace0>trace0_cv]);
+        fig, axes = plt.subplots(ncols=4, figsize=(20, 5))
+        for i, heuristic in enumerate(['drift', 'vol', 'corr', 'corr_ret']):
+            sns.boxplot(x='coint', y=heuristic, data=spreads, ax=axes[i])
+        fig.tight_layout();
+    if heuristics:
+        spreads = spreads.reset_index()
+        h = spreads.groupby(spreads.coint)[
+            ['drift', 'vol', 'corr']].describe().stack(level=0).swaplevel().sort_index()
+        print(h)
+    if log_reg:
+        y = spreads.coint
+        X = spreads[['drift', 'vol', 'corr', 'corr_ret']]
+        log_reg = LogisticRegressionCV(Cs=np.logspace(-10, 10, 21), 
+                               class_weight='balanced',
+                               scoring='roc_auc')
+        log_reg.fit(X=X, y=y)
+        Cs = log_reg.Cs_
+        scores = pd.DataFrame(log_reg.scores_[True], columns=Cs).mean()
+        scores.plot(logx=True);
+        res = f'C:{np.log10(scores.idxmax()):.2f}, AUC: {scores.max():.2%}'
+        print(res)
+        print(log_reg.coef_)
+    if decis_tree:
+        model = DecisionTreeClassifier(class_weight='balanced')
+        decision_tree = GridSearchCV(model,
+                             param_grid={'max_depth': list(range(1, 10))},
+                             cv=5,
+                             scoring='roc_auc')
+        y = spreads.coint
+        X = spreads[['drift', 'vol', 'corr', 'corr_ret']]
+        decision_tree.fit(X, y)
+        res = f'{decision_tree.best_score_:.2%}, Depth: {decision_tree.best_params_["max_depth"]}'
+        print(res)
+    if cosstab:
+        pd.set_option('display.float_format', lambda x: f'{x:.2%}')
+        print(pd.crosstab(spreads.eg_sig, spreads.joh_sig))
+        print(pd.crosstab(spreads.eg_sig, spreads.joh_sig, normalize=True))
+
+
+def select_candidate_pairs(pairs: pd.DataFrame):
+    candidates = pairs.query('coint == 1').copy()
+    candidates['y'] = candidates.apply(lambda x: x.s1 if x.s1_dep else x.s2, axis=1)
+    candidates['x'] = candidates.apply(lambda x: x.s2 if x.s1_dep else x.s1, axis=1)
+    candidates.drop(['s1_dep', 's1', 's2'], axis=1)
+    return candidates[['x', 'y']].to_dict(orient='records')
+
+
+def KFSmoother(self, prices: pd.Series | np.ndarray) -> pd.Series | np.ndarray:
+    """Estimate rolling mean using Kalman Smoothing."""
+    kf = PyKalmanFilter(
+        transition_matrices=np.eye(1),
+        observation_matrices=np.eye(1),
+        initial_state_mean=0,
+        initial_state_covariance=1,
+        observation_covariance=1,
+        transition_covariance=0.05
+    )
+    if isinstance(prices, pd.Series):
+        state_means, _ = kf.filter(prices.values)
+        return pd.Series(state_means.flatten(), index=prices.index)
+    elif isinstance(prices, np.ndarray):
+        state_means, _ = kf.filter(prices)
+        return state_means.flatten()
+
+
+def KFHedgeRatio(self, x: pd.Series, y: pd.Series) -> np.ndarray:
+    """Estimate Hedge Ratio using Kalman Filter."""
+    delta = 1e-3
+    trans_cov = delta / (1 - delta) * np.eye(2)
+    obs_mat = np.expand_dims(np.vstack([[x], [np.ones(len(x))]]).T, axis=1)
+
+    kf = PyKalmanFilter(
+        n_dim_obs=1, n_dim_state=2,
+        initial_state_mean=[0, 0],
+        initial_state_covariance=np.ones((2, 2)),
+        transition_matrices=np.eye(2),
+        observation_matrices=obs_mat,
+        observation_covariance=2,
+        transition_covariance=trans_cov
+    )
+    state_means, _ = kf.filter(y.values)
+    # Indexing with [:, 0] in state_means[:, 0] extracts only the first state variable of 
+    # each Kalman Filter estimate, which is the estimated hedge ratio.
+    return -state_means[:, 0]
