@@ -39,9 +39,21 @@ class DataHandler(metaclass=ABCMeta):
     Specific example subclasses could include `HistoricCSVDataHandler`, 
     `YFinanceDataHandler`, `FMPDataHandler`, `IBMarketFeedDataHandler` etc.
     """
+    @property
+    def symbols(self) -> List[str]:
+        pass
+    @property
+    def data(self) -> Dict[str, pd.DataFrame]:
+        pass
+    @property
+    def labels(self) -> List[str]:
+        pass
+    @property
+    def index(self) -> str | List[str]:
+        pass
 
     @abstractmethod
-    def get_latest_bar(self, symbol):
+    def get_latest_bar(self, symbol) -> pd.Series:
         """
         Returns the last bar updated.
         """
@@ -50,7 +62,7 @@ class DataHandler(metaclass=ABCMeta):
         )
 
     @abstractmethod
-    def get_latest_bars(self, symbol, N=1):
+    def get_latest_bars(self, symbol, N=1, df=True) -> pd.DataFrame | List[pd.Series]:
         """
         Returns the last N bars updated.
         """
@@ -59,7 +71,7 @@ class DataHandler(metaclass=ABCMeta):
         )
 
     @abstractmethod
-    def get_latest_bar_datetime(self, symbol):
+    def get_latest_bar_datetime(self, symbol) -> datetime | pd.Timestamp:
         """
         Returns a Python datetime object for the last bar.
         """
@@ -68,7 +80,7 @@ class DataHandler(metaclass=ABCMeta):
         )
 
     @abstractmethod
-    def get_latest_bar_value(self, symbol, val_type):
+    def get_latest_bar_value(self, symbol, val_type) -> float:
         """
         Returns one of the Open, High, Low, Close, Adj Close, Volume or Returns
         from the last bar.
@@ -78,7 +90,7 @@ class DataHandler(metaclass=ABCMeta):
         )
 
     @abstractmethod
-    def get_latest_bars_values(self, symbol, val_type, N=1):
+    def get_latest_bars_values(self, symbol, val_type, N=1) -> np.ndarray:
         """
         Returns the last N bar values from the
         latest_symbol list, or N-k if less available.
@@ -130,6 +142,7 @@ class BaseCSVDataHandler(DataHandler):
         self.symbol_data = {}
         self.latest_symbol_data = {}
         self.continue_backtest = True
+        self._index = None
         self._load_and_process_data()
 
     @property
@@ -143,7 +156,7 @@ class BaseCSVDataHandler(DataHandler):
         return self.columns
     @property
     def index(self)-> str | List[str]:
-        return self.symbol_data[self.symbol_list[0]].index.name
+        return self._index
     
     def _load_and_process_data(self):
         """
@@ -184,6 +197,7 @@ class BaseCSVDataHandler(DataHandler):
             self.symbol_data[s]['returns'] = self.symbol_data[s][
                 'adj_close' if 'adj_close' in new_names else 'close'
             ].pct_change().dropna()
+            self._index = self.symbol_data[s].index.name
             if self.events is not None:
                 self.symbol_data[s] = self.symbol_data[s].iterrows()
 
@@ -194,7 +208,7 @@ class BaseCSVDataHandler(DataHandler):
         for b in self.symbol_data[symbol]:
             yield b
 
-    def get_latest_bar(self, symbol: str):
+    def get_latest_bar(self, symbol: str) -> pd.Series:
         """
         Returns the last bar from the latest_symbol list.
         """
@@ -206,7 +220,7 @@ class BaseCSVDataHandler(DataHandler):
         else:
             return bars_list[-1]
 
-    def get_latest_bars(self, symbol: str, N=1):
+    def get_latest_bars(self, symbol: str, N=1, df=True) -> pd.DataFrame | List[pd.Series]:
         """
         Returns the last N bars from the latest_symbol list,
         or N-k if less available.
@@ -217,9 +231,13 @@ class BaseCSVDataHandler(DataHandler):
             print("Symbol not available in the historical data set.")
             raise
         else:
+            if df:
+                df = pd.DataFrame([bar[1] for bar in bars_list[-N:]])
+                df.index.name = self._index
+                return df
             return bars_list[-N:]
 
-    def get_latest_bar_datetime(self, symbol: str):
+    def get_latest_bar_datetime(self, symbol: str) -> datetime | pd.Timestamp:
         """
         Returns a Python datetime object for the last bar.
         """
@@ -231,7 +249,7 @@ class BaseCSVDataHandler(DataHandler):
         else:
             return bars_list[-1][0]
 
-    def get_latest_bars_datetime(self, symbol: str, N=1):
+    def get_latest_bars_datetime(self, symbol: str, N=1) -> List[datetime | pd.Timestamp]:
         """
         Returns a list of Python datetime objects for the last N bars.
         """
@@ -243,7 +261,7 @@ class BaseCSVDataHandler(DataHandler):
         else:
             return [b[0] for b in bars_list]
 
-    def get_latest_bar_value(self, symbol: str, val_type: str):
+    def get_latest_bar_value(self, symbol: str, val_type: str) -> float:
         """
         Returns one of the Open, High, Low, Close, Volume or OI
         values from the pandas Bar series object.
@@ -256,13 +274,13 @@ class BaseCSVDataHandler(DataHandler):
         else:
             return getattr(bars_list[-1][1], val_type)
 
-    def get_latest_bars_values(self, symbol: str, val_type: str, N=1):
+    def get_latest_bars_values(self, symbol: str, val_type: str, N=1) -> np.ndarray:
         """
         Returns the last N bar values from the
         latest_symbol list, or N-k if less available.
         """
         try:
-            bars_list = self.get_latest_bars(symbol, N)
+            bars_list = self.get_latest_bars(symbol, N, df=False)
         except KeyError:
             print("That symbol is not available in the historical data set.")
             raise
@@ -359,7 +377,7 @@ class MT5DataHandler(BaseCSVDataHandler):
         super().__init__(events, symbol_list, csv_dir)
 
     def _download_data(self, cache_dir: str):
-        data_dir = cache_dir or BBSTRADER_DIR / 'mt5_data'
+        data_dir = cache_dir or BBSTRADER_DIR /  'mt5_data' / self.tf 
         data_dir.mkdir(parents=True, exist_ok=True)
         for symbol in self.symbol_list:
             try:
@@ -414,13 +432,13 @@ class YFDataHandler(BaseCSVDataHandler):
 
     def _download_and_cache_data(self, cache_dir: str):
         """Downloads and caches historical data as CSV files."""
-        cache_dir = cache_dir or BBSTRADER_DIR / 'yf_data'
+        cache_dir = cache_dir or BBSTRADER_DIR / 'yf_data' / 'daily'
         os.makedirs(cache_dir, exist_ok=True)
         for symbol in self.symbol_list:
             filepath = os.path.join(cache_dir, f"{symbol}.csv")
             try:
                 data = yf.download(
-                    symbol, start=self.start_date, end=self.end_date)
+                    symbol, start=self.start_date, end=self.end_date, multi_level_index=False)
                 if data.empty:
                     raise ValueError(f"No data found for {symbol}")
                 data.to_csv(filepath)  # Cache the data
