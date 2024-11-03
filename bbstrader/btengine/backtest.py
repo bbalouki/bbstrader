@@ -55,7 +55,11 @@ class Backtest(object):
     the new positions.
 
     """
+    pass
 
+
+class BacktestEngine(Backtest):
+    __doc__ = Backtest.__doc__
     def __init__(
         self,
         symbol_list: List[str],
@@ -123,7 +127,7 @@ class Backtest(object):
             self.initial_capital, **self.kwargs
         )
         self.execution_handler: ExecutionHandler = self.eh_cls(
-            self.events, **self.kwargs)
+            self.events, self.data_handler,  **self.kwargs)
 
     def _run_backtest(self):
         """
@@ -132,11 +136,13 @@ class Backtest(object):
         i = 0
         while True:
             i += 1
-            print(i)
             # Update the market bars
             if self.data_handler.continue_backtest == True:
                 self.data_handler.update_bars()
+                self.strategy.check_pending_orders()
             else:
+                print("\n[======= BACKTEST COMPLETE =======]\n")
+                print(f"Total bars: {i} ")
                 break
 
             # Handle the events
@@ -189,7 +195,7 @@ class Backtest(object):
 
         if self.show_equity:
             print("\nCreating equity curve...")
-            print("\n[======= EQUITY CURVE =======]")
+            print("\n[======= PORTFOLIO SUMMARY =======]")
             print(
                 tabulate(
                     self.portfolio.equity_curve.tail(10), 
@@ -201,11 +207,14 @@ class Backtest(object):
     def simulate_trading(self):
         """
         Simulates the backtest and outputs portfolio performance.
+        
+        Returns:
+            pd.DataFrame: The portfilio values over time (capital, equity, returns etc.)
         """
         self._run_backtest()
         self._output_performance()
+        return self.portfolio.equity_curve
 
-BacktestEngine = Backtest
 
 def run_backtest(
     symbol_list: List[str],
@@ -226,8 +235,8 @@ def run_backtest(
         start_date (datetime): Start date of the backtest.
         
         data_handler (DataHandler): An instance of the `DataHandler` class, responsible for managing 
-            and processing market data. Available options include `HistoricCSVDataHandler`, 
-            `MT5HistoricDataHandler`, and `YFHistoricDataHandler`. Ensure that the `DataHandler` 
+            and processing market data. Available options include `CSVDataHandler`, 
+            `MT5DataHandler`, and `YFDataHandler`. Ensure that the `DataHandler` 
             instance is initialized before passing it to the function.
 
         strategy (Strategy): The trading strategy to be employed during the backtest.
@@ -253,6 +262,9 @@ def run_backtest(
 
         **kwargs: Additional parameters passed to the `Backtest` instance, which may include strategy-specific,
             data handler, portfolio, or execution handler options.
+        
+    Returns:
+        pd.DataFrame: The portfolio values over time (capital, equities, returns etc.).
 
     Notes:
         This function generates three outputs:
@@ -263,7 +275,7 @@ def run_backtest(
     Example:
         >>> from bbstrader.trading.strategies import StockIndexSTBOTrading
         >>> from bbstrader.metatrader.utils import config_logger
-        >>> from bbstrader.datahandlers import MT5HistoricDataHandler
+        >>> from bbstrader.datahandlers import MT5DataHandler
         >>> from bbstrader.execution import MT5ExecutionHandler
         >>> from datetime import datetime
         >>> 
@@ -281,7 +293,7 @@ def run_backtest(
         >>> run_backtest(
         ...     symbol_list=symbol_list,
         ...     start_date=start,
-        ...     data_handler=MT5HistoricDataHandler(),
+        ...     data_handler=MT5DataHandler(),
         ...     strategy=StockIndexSTBOTrading(),
         ...     exc_handler=MT5ExecutionHandler(),
         ...     initial_capital=100000.0,
@@ -290,11 +302,40 @@ def run_backtest(
         ... )
     """
     if exc_handler is None:
-        execution_handler = SimulatedExecutionHandler
+        execution_handler = SimExecutionHandler
     else:
         execution_handler = exc_handler
     engine = BacktestEngine(
         symbol_list, initial_capital, heartbeat, start_date,
         data_handler, execution_handler, strategy, **kwargs
     )
-    engine.simulate_trading()
+    portfolio = engine.simulate_trading()
+    return portfolio
+
+
+class CerebroEngine:...
+
+
+class ZiplineEngine:...
+
+
+def run_backtest_with(engine: Literal["bbstrader", "cerebro", "zipline"], **kwargs):
+    """
+    """
+    if engine == "bbstrader":
+        return run_backtest(
+            symbol_list=kwargs.get("symbol_list"),
+            start_date=kwargs.get("start_date"),
+            data_handler=kwargs.get("data_handler"),
+            strategy=kwargs.get("strategy"),
+            exc_handler=kwargs.get("exc_handler"),
+            initial_capital=kwargs.get("initial_capital"),
+            heartbeat=kwargs.get("heartbeat", 0.0),
+            **kwargs
+        )
+    elif engine == "cerebro":
+        #TODO: 
+        pass
+    elif engine == "zipline":
+        #TODO: 
+        pass
