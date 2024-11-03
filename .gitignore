@@ -3,11 +3,11 @@
 build
 test.py
 __pycache__
-Researchs
 bbstrader.egg-info
 WS.code-workspace
 .pytest_cache
-equity.csv
+.backtests
 *.egg-info
 dist/
 Odocs/
+notes.txt

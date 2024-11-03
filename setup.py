@@ -1,13 +1,23 @@
-from setuptools import setup
 import sys
+import os
+import io
+from os import path
+from setuptools import setup
+
 
 if sys.version_info < (3, 10):
     sys.exit("Only Python 3.10 and greater is supported")
 
-with open("README.md", encoding="utf-8") as fh:
-    long_description = fh.read()
+here = path.abspath(path.dirname(__file__))
 
-VERSION = '0.1.09'
+# Get the long description from the README file
+with io.open(path.join(here, 'README.md'), encoding='utf-8') as f:
+    long_description = f.read()
+
+with io.open(path.join(here, 'requirements.txt'), encoding='utf-8') as f:
+    REQUIREMENTS = [line.rstrip() for line in f]
+
+VERSION = '0.1.91'
 DESCRIPTION = 'Simplified Investment & Trading Toolkit'
 
 KEYWORDS = [
@@ -31,13 +41,14 @@ CLASSIFIERS = [
     "License :: OSI Approved :: MIT License",
 ]
 
-REQUIREMENTS = [
-    "pandas", "numpy==1.26.4", "yfinance", "scipy",
-    "hmmlearn", "pmdarima", "arch", "hurst", "seaborn",
-    "statsmodels", "matplotlib", "filterpy", "pytest",
-    "CurrencyConverter", "tabulate", "ipython", "quantstats",
-    #"Metatrader5"
-]
+INLCUDE = [
+        "bbstrader",
+        "bbstrader.btengine",
+        "bbstrader.metatrader",
+        "bbstrader.models",
+        "bbstrader.trading"
+    ]
+EXCLUDE = ["config.py", "tests", "docs"]
 
 # Setting up
 setup(
@@ -56,14 +67,13 @@ setup(
     description=DESCRIPTION,
     long_description=long_description,
     long_description_content_type="text/markdown",
-    packages=[
-        "bbstrader",
-        "bbstrader.btengine",
-        "bbstrader.metatrader",
-        "bbstrader.models",
-        "bbstrader.trading"
-    ],
+    packages=INLCUDE,
     install_requires=REQUIREMENTS,
+    extras_require={
+        'MT5': ['MetaTrader5'],
+        # 'zipline': ['zipline'],
+        # 'cerebro': ['backtrader'],
+    },
     keywords=KEYWORDS,
     classifiers=CLASSIFIERS,
 )

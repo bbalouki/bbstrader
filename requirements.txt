@@ -10,9 +10,15 @@ seaborn
 statsmodels
 matplotlib
 filterpy
+pykalman
 pytest
 CurrencyConverter
 tabulate
+python-dotenv
 ipython
-quantstats
+QuantStats
 exchange-calendars
+tqdm
+scikit-learn
+notify-py
+python-telegram-bot
