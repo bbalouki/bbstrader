@@ -1,22 +1,20 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>btengine.data &mdash; BBSTrader 0.1.07 documentation</title>
+  <title>btengine.data &mdash; BBSTrader 0.1.08 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
-  <!--[if lt IE 9]>
-    <script src="../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="../../_static/jquery.js?v=5d32c60e"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=15bc9eb9"></script>
-        <script src="../../_static/doctools.js?v=9a2dae69"></script>
-        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=fda63d7b"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
@@ -76,20 +74,20 @@
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">yfinance</span> <span class="k">as</span> <span class="nn">yf</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span>
 <span class="kn">from</span> <span class="nn">queue</span> <span class="kn">import</span> <span class="n">Queue</span>
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
-<span class="kn">from</span> <span class="nn">bbstrader.metatrader.rates</span> <span class="kn">import</span> <span class="n">Rates</span>
+<span class="kn">from</span> <span class="nn">bbstrader.metatrader.rates</span> <span class="kn">import</span> <span class="n">download_historical_data</span>
 <span class="kn">from</span> <span class="nn">bbstrader.btengine.event</span> <span class="kn">import</span> <span class="n">MarketEvent</span>
+<span class="kn">from</span> <span class="nn">bbstrader.config</span> <span class="kn">import</span> <span class="n">BBSTRADER_DIR</span>
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
 
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">&quot;DataHandler&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;BaseCSVDataHandler&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;HistoricCSVDataHandler&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;MT5HistoricDataHandler&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;YFHistoricDataHandler&quot;</span>
+    <span class="s2">&quot;CSVDataHandler&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MT5DataHandler&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;YFDataHandler&quot;</span>
 <span class="p">]</span>
 
 
@@ -114,11 +112,23 @@
 <span class="sd">    Specific example subclasses could include `HistoricCSVDataHandler`, </span>
 <span class="sd">    `YFinanceDataHandler`, `FMPDataHandler`, `IBMarketFeedDataHandler` etc.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">symbols</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">pass</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]:</span>
+        <span class="k">pass</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">labels</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">pass</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">index</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">pass</span>
 
 <div class="viewcode-block" id="DataHandler.get_latest_bar">
 <a class="viewcode-back" href="../../btengine.html#btengine.data.DataHandler.get_latest_bar">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">get_latest_bar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get_latest_bar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the last bar updated.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -130,7 +140,7 @@
 <div class="viewcode-block" id="DataHandler.get_latest_bars">
 <a class="viewcode-back" href="../../btengine.html#btengine.data.DataHandler.get_latest_bars">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">get_latest_bars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get_latest_bars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the last N bars updated.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -142,7 +152,7 @@
 <div class="viewcode-block" id="DataHandler.get_latest_bar_datetime">
 <a class="viewcode-back" href="../../btengine.html#btengine.data.DataHandler.get_latest_bar_datetime">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">get_latest_bar_datetime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get_latest_bar_datetime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">datetime</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns a Python datetime object for the last bar.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -154,7 +164,7 @@
 <div class="viewcode-block" id="DataHandler.get_latest_bar_value">
 <a class="viewcode-back" href="../../btengine.html#btengine.data.DataHandler.get_latest_bar_value">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">get_latest_bar_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">val_type</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get_latest_bar_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">val_type</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns one of the Open, High, Low, Close, Adj Close, Volume or Returns</span>
 <span class="sd">        from the last bar.</span>
@@ -167,7 +177,7 @@
 <div class="viewcode-block" id="DataHandler.get_latest_bars_values">
 <a class="viewcode-back" href="../../btengine.html#btengine.data.DataHandler.get_latest_bars_values">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">get_latest_bars_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">val_type</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get_latest_bars_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">val_type</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the last N bar values from the</span>
 <span class="sd">        latest_symbol list, or N-k if less available.</span>
@@ -193,45 +203,81 @@
 
 
 
-<div class="viewcode-block" id="BaseCSVDataHandler">
-<a class="viewcode-back" href="../../btengine.html#btengine.data.BaseCSVDataHandler">[docs]</a>
 <span class="k">class</span> <span class="nc">BaseCSVDataHandler</span><span class="p">(</span><span class="n">DataHandler</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Base class for handling data loaded from CSV files.</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">events</span><span class="p">:</span> <span class="n">Queue</span><span class="p">,</span> <span class="n">symbol_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">csv_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">events</span><span class="p">:</span> <span class="n">Queue</span><span class="p">,</span> 
+                 <span class="n">symbol_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> 
+                 <span class="n">csv_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> 
+                 <span class="n">columns</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">index_col</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
+<span class="w">        </span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialises the data handler by requesting the location of the CSV files</span>
+<span class="sd">        and a list of symbols.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            events : The Event Queue.</span>
+<span class="sd">            symbol_list : A list of symbol strings.</span>
+<span class="sd">            csv_dir : Absolute directory path to the CSV files.</span>
+<span class="sd">            columns : List of column names to use for the data.</span>
+<span class="sd">            index_col : Column to use as the index.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">events</span> <span class="o">=</span> <span class="n">events</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">symbol_list</span> <span class="o">=</span> <span class="n">symbol_list</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">csv_dir</span> <span class="o">=</span> <span class="n">csv_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">columns</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">index_col</span> <span class="o">=</span> <span class="n">index_col</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">symbol_data</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">latest_symbol_data</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">continue_backtest</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_index</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_load_and_process_data</span><span class="p">()</span>
 
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">symbols</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol_list</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol_data</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">labels</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">index</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_index</span>
+    
     <span class="k">def</span> <span class="nf">_load_and_process_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Opens the CSV files from the data directory, converting</span>
 <span class="sd">        them into pandas DataFrames within a symbol dictionary.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">default_names</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">csv_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1">.csv&#39;</span><span class="p">)</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+        <span class="n">new_names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span> <span class="ow">or</span> <span class="n">default_names</span>
+        <span class="n">new_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">new_names</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">new_names</span>
+        <span class="k">assert</span> <span class="s1">&#39;adj_close&#39;</span> <span class="ow">in</span> <span class="n">new_names</span> <span class="ow">or</span> <span class="s1">&#39;close&#39;</span> <span class="ow">in</span> <span class="n">new_names</span><span class="p">,</span> \
+            <span class="s2">&quot;Column names must contain &#39;Adj Close&#39; and &#39;Close&#39; or adj_close and close&quot;</span>
         <span class="n">comb_index</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol_list</span><span class="p">:</span>
             <span class="c1"># Load the CSV file with no header information,</span>
             <span class="c1"># indexed on date</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">symbol_data</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
                 <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">csv_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s1">.csv&#39;</span><span class="p">),</span>
-                <span class="n">header</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">parse_dates</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                <span class="n">names</span><span class="o">=</span><span class="p">[</span>
-                    <span class="s1">&#39;Datetime&#39;</span><span class="p">,</span> <span class="s1">&#39;Open&#39;</span><span class="p">,</span> <span class="s1">&#39;High&#39;</span><span class="p">,</span>
-                    <span class="s1">&#39;Low&#39;</span><span class="p">,</span> <span class="s1">&#39;Close&#39;</span><span class="p">,</span> <span class="s1">&#39;Adj Close&#39;</span><span class="p">,</span> <span class="s1">&#39;Volume&#39;</span>
-                <span class="p">]</span>
+                <span class="n">header</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">index_col</span><span class="p">,</span> <span class="n">parse_dates</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">names</span><span class="o">=</span><span class="n">new_names</span>
             <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">symbol_data</span><span class="p">[</span><span class="n">s</span><span class="p">]</span><span class="o">.</span><span class="n">sort_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="c1"># Combine the index to pad forward values</span>
             <span class="k">if</span> <span class="n">comb_index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">comb_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol_data</span><span class="p">[</span><span class="n">s</span><span class="p">]</span><span class="o">.</span><span class="n">index</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">comb_index</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol_data</span><span class="p">[</span><span class="n">s</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol_data</span><span class="p">[</span><span class="n">s</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">comb_index</span><span class="p">):</span>
+                <span class="n">comb_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol_data</span><span class="p">[</span><span class="n">s</span><span class="p">]</span><span class="o">.</span><span class="n">index</span>
             <span class="c1"># Set the latest symbol_data to None</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">latest_symbol_data</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 
@@ -240,10 +286,12 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">symbol_data</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol_data</span><span class="p">[</span><span class="n">s</span><span class="p">]</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span>
                 <span class="n">index</span><span class="o">=</span><span class="n">comb_index</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;pad&#39;</span>
             <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">symbol_data</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="s2">&quot;Returns&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol_data</span><span class="p">[</span><span class="n">s</span><span class="p">][</span>
-                <span class="s2">&quot;Adj Close&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">symbol_data</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="s1">&#39;returns&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol_data</span><span class="p">[</span><span class="n">s</span><span class="p">][</span>
+                <span class="s1">&#39;adj_close&#39;</span> <span class="k">if</span> <span class="s1">&#39;adj_close&#39;</span> <span class="ow">in</span> <span class="n">new_names</span> <span class="k">else</span> <span class="s1">&#39;close&#39;</span>
             <span class="p">]</span><span class="o">.</span><span class="n">pct_change</span><span class="p">()</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">symbol_data</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol_data</span><span class="p">[</span><span class="n">s</span><span class="p">]</span><span class="o">.</span><span class="n">iterrows</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol_data</span><span class="p">[</span><span class="n">s</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">events</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">symbol_data</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol_data</span><span class="p">[</span><span class="n">s</span><span class="p">]</span><span class="o">.</span><span class="n">iterrows</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_get_new_bar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -252,9 +300,7 @@
         <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol_data</span><span class="p">[</span><span class="n">symbol</span><span class="p">]:</span>
             <span class="k">yield</span> <span class="n">b</span>
 
-<div class="viewcode-block" id="BaseCSVDataHandler.get_latest_bar">
-<a class="viewcode-back" href="../../btengine.html#btengine.data.BaseCSVDataHandler.get_latest_bar">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_latest_bar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get_latest_bar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the last bar from the latest_symbol list.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -264,12 +310,9 @@
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Symbol not available in the historical data set.&quot;</span><span class="p">)</span>
             <span class="k">raise</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">bars_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div>
+            <span class="k">return</span> <span class="n">bars_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
-
-<div class="viewcode-block" id="BaseCSVDataHandler.get_latest_bars">
-<a class="viewcode-back" href="../../btengine.html#btengine.data.BaseCSVDataHandler.get_latest_bars">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_latest_bars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get_latest_bars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the last N bars from the latest_symbol list,</span>
 <span class="sd">        or N-k if less available.</span>
@@ -280,12 +323,13 @@
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Symbol not available in the historical data set.&quot;</span><span class="p">)</span>
             <span class="k">raise</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">bars_list</span><span class="p">[</span><span class="o">-</span><span class="n">N</span><span class="p">:]</span></div>
+            <span class="k">if</span> <span class="n">df</span><span class="p">:</span>
+                <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">bar</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">bar</span> <span class="ow">in</span> <span class="n">bars_list</span><span class="p">[</span><span class="o">-</span><span class="n">N</span><span class="p">:]])</span>
+                <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_index</span>
+                <span class="k">return</span> <span class="n">df</span>
+            <span class="k">return</span> <span class="n">bars_list</span><span class="p">[</span><span class="o">-</span><span class="n">N</span><span class="p">:]</span>
 
-
-<div class="viewcode-block" id="BaseCSVDataHandler.get_latest_bar_datetime">
-<a class="viewcode-back" href="../../btengine.html#btengine.data.BaseCSVDataHandler.get_latest_bar_datetime">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_latest_bar_datetime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get_latest_bar_datetime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">datetime</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns a Python datetime object for the last bar.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -295,12 +339,21 @@
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Symbol not available in the historical data set.&quot;</span><span class="p">)</span>
             <span class="k">raise</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">bars_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span></div>
+            <span class="k">return</span> <span class="n">bars_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
 
+    <span class="k">def</span> <span class="nf">get_latest_bars_datetime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">datetime</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a list of Python datetime objects for the last N bars.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">bars_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_latest_bars</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Symbol not available in the historical data set.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">bars_list</span><span class="p">]</span>
 
-<div class="viewcode-block" id="BaseCSVDataHandler.get_latest_bar_value">
-<a class="viewcode-back" href="../../btengine.html#btengine.data.BaseCSVDataHandler.get_latest_bar_value">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_latest_bar_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">val_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get_latest_bar_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">val_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns one of the Open, High, Low, Close, Volume or OI</span>
 <span class="sd">        values from the pandas Bar series object.</span>
@@ -311,27 +364,21 @@
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Symbol not available in the historical data set.&quot;</span><span class="p">)</span>
             <span class="k">raise</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">bars_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">val_type</span><span class="p">)</span></div>
+            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">bars_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">val_type</span><span class="p">)</span>
 
-
-<div class="viewcode-block" id="BaseCSVDataHandler.get_latest_bars_values">
-<a class="viewcode-back" href="../../btengine.html#btengine.data.BaseCSVDataHandler.get_latest_bars_values">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_latest_bars_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">val_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get_latest_bars_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">val_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the last N bar values from the</span>
 <span class="sd">        latest_symbol list, or N-k if less available.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">bars_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_latest_bars</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+            <span class="n">bars_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_latest_bars</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;That symbol is not available in the historical data set.&quot;</span><span class="p">)</span>
             <span class="k">raise</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">getattr</span><span class="p">(</span><span class="n">b</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">val_type</span><span class="p">)</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">bars_list</span><span class="p">])</span></div>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">getattr</span><span class="p">(</span><span class="n">b</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">val_type</span><span class="p">)</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">bars_list</span><span class="p">])</span>
 
-
-<div class="viewcode-block" id="BaseCSVDataHandler.update_bars">
-<a class="viewcode-back" href="../../btengine.html#btengine.data.BaseCSVDataHandler.update_bars">[docs]</a>
     <span class="k">def</span> <span class="nf">update_bars</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Pushes the latest bar to the latest_symbol_data structure</span>
@@ -345,16 +392,14 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">bar</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">latest_symbol_data</span><span class="p">[</span><span class="n">s</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bar</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">MarketEvent</span><span class="p">())</span></div>
-</div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">MarketEvent</span><span class="p">())</span>
 
 
-
-<div class="viewcode-block" id="HistoricCSVDataHandler">
-<a class="viewcode-back" href="../../btengine.html#btengine.data.HistoricCSVDataHandler">[docs]</a>
-<span class="k">class</span> <span class="nc">HistoricCSVDataHandler</span><span class="p">(</span><span class="n">BaseCSVDataHandler</span><span class="p">):</span>
+<div class="viewcode-block" id="CSVDataHandler">
+<a class="viewcode-back" href="../../btengine.html#btengine.data.CSVDataHandler">[docs]</a>
+<span class="k">class</span> <span class="nc">CSVDataHandler</span><span class="p">(</span><span class="n">BaseCSVDataHandler</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    `HistoricCSVDataHandler` is designed to read CSV files for</span>
+<span class="sd">    `CSVDataHandler` is designed to read CSV files for</span>
 <span class="sd">    each requested symbol from disk and provide an interface</span>
 <span class="sd">    to obtain the &quot;latest&quot; bar in a manner identical to a live</span>
 <span class="sd">    trading interface.</span>
@@ -372,17 +417,22 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            events (Queue): The Event Queue.</span>
-<span class="sd">            csv_dir (str): Absolute directory path to the CSV files.</span>
 <span class="sd">            symbol_list (List[str]): A list of symbol strings.</span>
+<span class="sd">            csv_dir (str): Absolute directory path to the CSV files.</span>
+<span class="sd">        </span>
+<span class="sd">        NOTE:</span>
+<span class="sd">        All csv fille can be strored in &#39;Home/.bbstrader/csv_data&#39;</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">csv_dir</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;csv_dir&quot;</span><span class="p">)</span>
+        <span class="n">csv_dir</span> <span class="o">=</span>  <span class="n">csv_dir</span> <span class="ow">or</span> <span class="n">BBSTRADER_DIR</span> <span class="o">/</span> <span class="s1">&#39;csv_data&#39;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">events</span><span class="p">,</span> <span class="n">symbol_list</span><span class="p">,</span> <span class="n">csv_dir</span><span class="p">)</span></div>
 
 
 
-<div class="viewcode-block" id="MT5HistoricDataHandler">
-<a class="viewcode-back" href="../../btengine.html#btengine.data.MT5HistoricDataHandler">[docs]</a>
-<span class="k">class</span> <span class="nc">MT5HistoricDataHandler</span><span class="p">(</span><span class="n">BaseCSVDataHandler</span><span class="p">):</span>
+<div class="viewcode-block" id="MT5DataHandler">
+<a class="viewcode-back" href="../../btengine.html#btengine.data.MT5DataHandler">[docs]</a>
+<span class="k">class</span> <span class="nc">MT5DataHandler</span><span class="p">(</span><span class="n">BaseCSVDataHandler</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Downloads historical data from MetaTrader 5 (MT5) and provides </span>
 <span class="sd">    an interface for accessing this data bar-by-bar, simulating </span>
@@ -404,27 +454,39 @@
 <span class="sd">                time_frame (str): MT5 time frame (e.g., &#39;D1&#39; for daily).</span>
 <span class="sd">                mt5_start (datetime): Start date for historical data.</span>
 <span class="sd">                mt5_end (datetime): End date for historical data.</span>
-<span class="sd">                mt5_data (str): Directory for storing data (default: &#39;mt5_data&#39;).</span>
+<span class="sd">                data_dir (str): Directory for storing data .</span>
 
 <span class="sd">        Note:</span>
 <span class="sd">            Requires a working connection to an MT5 terminal.</span>
+<span class="sd">            See `bbstrader.metatrader.rates.Rates` for other arguments.</span>
+<span class="sd">            See `bbstrader.btengine.data.BaseCSVDataHandler` for other arguments.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tf</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;time_frame&#39;</span><span class="p">,</span> <span class="s1">&#39;D1&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mt5_start&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mt5_start&#39;</span><span class="p">,</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">end</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mt5_end&#39;</span><span class="p">,</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data_dir</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mt5_data&#39;</span><span class="p">,</span> <span class="s1">&#39;mt5_data&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_utc</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;use_utc&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filer</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;filter&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fill_na</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;fill_na&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lower_cols</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;lower_cols&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_dir</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;data_dir&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">symbol_list</span> <span class="o">=</span> <span class="n">symbol_list</span>
         <span class="n">csv_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_download_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_dir</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">events</span><span class="p">,</span> <span class="n">symbol_list</span><span class="p">,</span> <span class="n">csv_dir</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_download_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cache_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="n">data_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">()</span> <span class="o">/</span> <span class="n">cache_dir</span>
+        <span class="n">data_dir</span> <span class="o">=</span> <span class="n">cache_dir</span> <span class="ow">or</span> <span class="n">BBSTRADER_DIR</span> <span class="o">/</span>  <span class="s1">&#39;mt5_data&#39;</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf</span> 
         <span class="n">data_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol_list</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">rate</span> <span class="o">=</span> <span class="n">Rates</span><span class="p">(</span><span class="n">symbol</span><span class="o">=</span><span class="n">symbol</span><span class="p">,</span> <span class="n">time_frame</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tf</span><span class="p">)</span>
-                <span class="n">data</span> <span class="o">=</span> <span class="n">rate</span><span class="o">.</span><span class="n">get_historical_data</span><span class="p">(</span>
-                    <span class="n">date_from</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">date_to</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">end</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">download_historical_data</span><span class="p">(</span>
+                    <span class="n">symbol</span><span class="o">=</span><span class="n">symbol</span><span class="p">,</span>
+                    <span class="n">time_frame</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tf</span><span class="p">,</span>
+                    <span class="n">date_from</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> 
+                    <span class="n">date_to</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="p">,</span> 
+                    <span class="n">utc</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">use_utc</span><span class="p">,</span>
+                    <span class="nb">filter</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">filer</span><span class="p">,</span>
+                    <span class="n">fill_na</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fill_na</span><span class="p">,</span>
+                    <span class="n">lower_colnames</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lower_cols</span>
                 <span class="p">)</span>
                 <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No data found for </span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -435,9 +497,9 @@
 
 
 
-<div class="viewcode-block" id="YFHistoricDataHandler">
-<a class="viewcode-back" href="../../btengine.html#btengine.data.YFHistoricDataHandler">[docs]</a>
-<span class="k">class</span> <span class="nc">YFHistoricDataHandler</span><span class="p">(</span><span class="n">BaseCSVDataHandler</span><span class="p">):</span>
+<div class="viewcode-block" id="YFDataHandler">
+<a class="viewcode-back" href="../../btengine.html#btengine.data.YFDataHandler">[docs]</a>
+<span class="k">class</span> <span class="nc">YFDataHandler</span><span class="p">(</span><span class="n">BaseCSVDataHandler</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Downloads historical data from Yahoo Finance and provides </span>
 <span class="sd">    an interface for accessing this data bar-by-bar, simulating</span>
@@ -456,41 +518,48 @@
 <span class="sd">            symbol_list (list[str]): List of symbols to download data for.</span>
 <span class="sd">            yf_start (str): Start date for historical data (YYYY-MM-DD).</span>
 <span class="sd">            yf_end (str): End date for historical data (YYYY-MM-DD).</span>
-<span class="sd">            cache_dir (str, optional): Directory for caching data (default: &#39;yf_cache&#39;).</span>
+<span class="sd">            data_dir (str, optional): Directory for caching data .</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            See `bbstrader.btengine.data.BaseCSVDataHandler` for other arguments.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">symbol_list</span> <span class="o">=</span> <span class="n">symbol_list</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">start_date</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;yf_start&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">end_date</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;yf_end&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;yf_cache&#39;</span><span class="p">,</span> <span class="s1">&#39;yf_cache&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_date</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;yf_start&#39;</span><span class="p">,</span> <span class="s1">&#39;2000-01-01&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">end_date</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;yf_end&#39;</span><span class="p">,</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;data_dir&#39;</span><span class="p">)</span>
         <span class="n">csv_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_download_and_cache_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">events</span><span class="p">,</span> <span class="n">symbol_list</span><span class="p">,</span> <span class="n">csv_dir</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_download_and_cache_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cache_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Downloads and caches historical data as CSV files.&quot;&quot;&quot;</span>
+        <span class="n">cache_dir</span> <span class="o">=</span> <span class="n">cache_dir</span> <span class="ow">or</span> <span class="n">BBSTRADER_DIR</span> <span class="o">/</span> <span class="s1">&#39;yf_data&#39;</span> <span class="o">/</span> <span class="s1">&#39;daily&#39;</span>
         <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol_list</span><span class="p">:</span>
             <span class="n">filepath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2">.csv&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">filepath</span><span class="p">):</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="n">data</span> <span class="o">=</span> <span class="n">yf</span><span class="o">.</span><span class="n">download</span><span class="p">(</span>
-                        <span class="n">symbol</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">start_date</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">end_date</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
-                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No data found for </span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                    <span class="n">data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>  <span class="c1"># Cache the data</span>
-                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error downloading </span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">yf</span><span class="o">.</span><span class="n">download</span><span class="p">(</span>
+                    <span class="n">symbol</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">start_date</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">end_date</span><span class="p">,</span> <span class="n">multi_level_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No data found for </span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>  <span class="c1"># Cache the data</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error downloading </span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">cache_dir</span></div>
 
 
 
 <span class="c1"># TODO # Get data from EODHD</span>
 <span class="c1"># https://eodhd.com/</span>
-<span class="k">class</span> <span class="nc">EODHDHistoricDataHandler</span><span class="p">(</span><span class="n">BaseCSVDataHandler</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">EODHDataHandler</span><span class="p">(</span><span class="n">BaseCSVDataHandler</span><span class="p">):</span>
     <span class="o">...</span>
 
 <span class="c1"># TODO # Get data from FMP using Financialtoolkit API</span>
 <span class="c1"># https://github.com/bbalouki/FinanceToolkit</span>
-<span class="k">class</span> <span class="nc">FMPHistoricDataHandler</span><span class="p">(</span><span class="n">BaseCSVDataHandler</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">FMPDataHandler</span><span class="p">(</span><span class="n">BaseCSVDataHandler</span><span class="p">):</span>
+    <span class="o">...</span>
+
+
+<span class="k">class</span> <span class="nc">AlgoseekDataHandler</span><span class="p">(</span><span class="n">BaseCSVDataHandler</span><span class="p">):</span>
     <span class="o">...</span>
 
 

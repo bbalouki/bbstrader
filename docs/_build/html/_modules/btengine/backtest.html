@@ -1,22 +1,20 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>btengine.backtest &mdash; BBSTrader 0.1.07 documentation</title>
+  <title>btengine.backtest &mdash; BBSTrader 0.1.08 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
-  <!--[if lt IE 9]>
-    <script src="../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="../../_static/jquery.js?v=5d32c60e"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=15bc9eb9"></script>
-        <script src="../../_static/doctools.js?v=9a2dae69"></script>
-        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=fda63d7b"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
@@ -130,7 +128,14 @@
 <span class="sd">    the new positions.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">pass</span></div>
 
+
+
+<div class="viewcode-block" id="BacktestEngine">
+<a class="viewcode-back" href="../../btengine.html#btengine.backtest.BacktestEngine">[docs]</a>
+<span class="k">class</span> <span class="nc">BacktestEngine</span><span class="p">(</span><span class="n">Backtest</span><span class="p">):</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="n">Backtest</span><span class="o">.</span><span class="vm">__doc__</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">symbol_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
@@ -174,6 +179,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">fills</span> <span class="o">=</span> <span class="mi">0</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_generate_trading_instances</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">show_equity</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;show_equity&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_generate_trading_instances</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -197,7 +203,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">initial_capital</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">execution_handler</span><span class="p">:</span> <span class="n">ExecutionHandler</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eh_cls</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_handler</span><span class="p">,</span>  <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_run_backtest</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -206,11 +212,13 @@
         <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
             <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
             <span class="c1"># Update the market bars</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_handler</span><span class="o">.</span><span class="n">continue_backtest</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">data_handler</span><span class="o">.</span><span class="n">update_bars</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">check_pending_orders</span><span class="p">()</span>
             <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">[======= BACKTEST COMPLETE =======]</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total bars: </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> &quot;</span><span class="p">)</span>
                 <span class="k">break</span>
 
             <span class="c1"># Handle the events</span>
@@ -261,28 +269,32 @@
                 <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
             <span class="p">)</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Creating equity curve...&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">[======= EQUITY CURVE =======]&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span>
-            <span class="n">tabulate</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">portfolio</span><span class="o">.</span><span class="n">equity_curve</span><span class="o">.</span><span class="n">tail</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> 
-                <span class="n">headers</span><span class="o">=</span><span class="s2">&quot;keys&quot;</span><span class="p">,</span> 
-                <span class="n">tablefmt</span><span class="o">=</span><span class="s2">&quot;outline&quot;</span><span class="p">),</span> 
-                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_equity</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Creating equity curve...&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">[======= PORTFOLIO SUMMARY =======]&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="n">tabulate</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">portfolio</span><span class="o">.</span><span class="n">equity_curve</span><span class="o">.</span><span class="n">tail</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> 
+                    <span class="n">headers</span><span class="o">=</span><span class="s2">&quot;keys&quot;</span><span class="p">,</span> 
+                    <span class="n">tablefmt</span><span class="o">=</span><span class="s2">&quot;outline&quot;</span><span class="p">),</span> 
+                    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
     
-<div class="viewcode-block" id="Backtest.simulate_trading">
-<a class="viewcode-back" href="../../btengine.html#btengine.backtest.Backtest.simulate_trading">[docs]</a>
+<div class="viewcode-block" id="BacktestEngine.simulate_trading">
+<a class="viewcode-back" href="../../btengine.html#btengine.backtest.BacktestEngine.simulate_trading">[docs]</a>
     <span class="k">def</span> <span class="nf">simulate_trading</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Simulates the backtest and outputs portfolio performance.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            pd.DataFrame: The portfilio values over time (capital, equity, returns etc.)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_run_backtest</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_output_performance</span><span class="p">()</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_output_performance</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">portfolio</span><span class="o">.</span><span class="n">equity_curve</span></div>
 </div>
 
 
-<span class="n">BacktestEngine</span> <span class="o">=</span> <span class="n">Backtest</span>
 
 <div class="viewcode-block" id="run_backtest">
 <a class="viewcode-back" href="../../btengine.html#btengine.backtest.run_backtest">[docs]</a>
@@ -305,8 +317,8 @@
 <span class="sd">        start_date (datetime): Start date of the backtest.</span>
 <span class="sd">        </span>
 <span class="sd">        data_handler (DataHandler): An instance of the `DataHandler` class, responsible for managing </span>
-<span class="sd">            and processing market data. Available options include `HistoricCSVDataHandler`, </span>
-<span class="sd">            `MT5HistoricDataHandler`, and `YFHistoricDataHandler`. Ensure that the `DataHandler` </span>
+<span class="sd">            and processing market data. Available options include `CSVDataHandler`, </span>
+<span class="sd">            `MT5DataHandler`, and `YFDataHandler`. Ensure that the `DataHandler` </span>
 <span class="sd">            instance is initialized before passing it to the function.</span>
 
 <span class="sd">        strategy (Strategy): The trading strategy to be employed during the backtest.</span>
@@ -332,6 +344,9 @@
 
 <span class="sd">        **kwargs: Additional parameters passed to the `Backtest` instance, which may include strategy-specific,</span>
 <span class="sd">            data handler, portfolio, or execution handler options.</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        pd.DataFrame: The portfolio values over time (capital, equities, returns etc.).</span>
 
 <span class="sd">    Notes:</span>
 <span class="sd">        This function generates three outputs:</span>
@@ -342,7 +357,7 @@
 <span class="sd">    Example:</span>
 <span class="sd">        &gt;&gt;&gt; from bbstrader.trading.strategies import StockIndexSTBOTrading</span>
 <span class="sd">        &gt;&gt;&gt; from bbstrader.metatrader.utils import config_logger</span>
-<span class="sd">        &gt;&gt;&gt; from bbstrader.datahandlers import MT5HistoricDataHandler</span>
+<span class="sd">        &gt;&gt;&gt; from bbstrader.datahandlers import MT5DataHandler</span>
 <span class="sd">        &gt;&gt;&gt; from bbstrader.execution import MT5ExecutionHandler</span>
 <span class="sd">        &gt;&gt;&gt; from datetime import datetime</span>
 <span class="sd">        &gt;&gt;&gt; </span>
@@ -360,7 +375,7 @@
 <span class="sd">        &gt;&gt;&gt; run_backtest(</span>
 <span class="sd">        ...     symbol_list=symbol_list,</span>
 <span class="sd">        ...     start_date=start,</span>
-<span class="sd">        ...     data_handler=MT5HistoricDataHandler(),</span>
+<span class="sd">        ...     data_handler=MT5DataHandler(),</span>
 <span class="sd">        ...     strategy=StockIndexSTBOTrading(),</span>
 <span class="sd">        ...     exc_handler=MT5ExecutionHandler(),</span>
 <span class="sd">        ...     initial_capital=100000.0,</span>
@@ -369,15 +384,44 @@
 <span class="sd">        ... )</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">exc_handler</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">execution_handler</span> <span class="o">=</span> <span class="n">SimulatedExecutionHandler</span>
+        <span class="n">execution_handler</span> <span class="o">=</span> <span class="n">SimExecutionHandler</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">execution_handler</span> <span class="o">=</span> <span class="n">exc_handler</span>
     <span class="n">engine</span> <span class="o">=</span> <span class="n">BacktestEngine</span><span class="p">(</span>
         <span class="n">symbol_list</span><span class="p">,</span> <span class="n">initial_capital</span><span class="p">,</span> <span class="n">heartbeat</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span>
         <span class="n">data_handler</span><span class="p">,</span> <span class="n">execution_handler</span><span class="p">,</span> <span class="n">strategy</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">)</span>
-    <span class="n">engine</span><span class="o">.</span><span class="n">simulate_trading</span><span class="p">()</span></div>
+    <span class="n">portfolio</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate_trading</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">portfolio</span></div>
 
+
+
+<span class="k">class</span> <span class="nc">CerebroEngine</span><span class="p">:</span><span class="o">...</span>
+
+
+<span class="k">class</span> <span class="nc">ZiplineEngine</span><span class="p">:</span><span class="o">...</span>
+
+
+<span class="k">def</span> <span class="nf">run_backtest_with</span><span class="p">(</span><span class="n">engine</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;bbstrader&quot;</span><span class="p">,</span> <span class="s2">&quot;cerebro&quot;</span><span class="p">,</span> <span class="s2">&quot;zipline&quot;</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">engine</span> <span class="o">==</span> <span class="s2">&quot;bbstrader&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">run_backtest</span><span class="p">(</span>
+            <span class="n">symbol_list</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;symbol_list&quot;</span><span class="p">),</span>
+            <span class="n">start_date</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;start_date&quot;</span><span class="p">),</span>
+            <span class="n">data_handler</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;data_handler&quot;</span><span class="p">),</span>
+            <span class="n">strategy</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;strategy&quot;</span><span class="p">),</span>
+            <span class="n">exc_handler</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;exc_handler&quot;</span><span class="p">),</span>
+            <span class="n">initial_capital</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;initial_capital&quot;</span><span class="p">),</span>
+            <span class="n">heartbeat</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;heartbeat&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+            <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+    <span class="k">elif</span> <span class="n">engine</span> <span class="o">==</span> <span class="s2">&quot;cerebro&quot;</span><span class="p">:</span>
+        <span class="c1">#TODO: </span>
+        <span class="k">pass</span>
+    <span class="k">elif</span> <span class="n">engine</span> <span class="o">==</span> <span class="s2">&quot;zipline&quot;</span><span class="p">:</span>
+        <span class="c1">#TODO: </span>
+        <span class="k">pass</span>
 </pre></div>
 
            </div>

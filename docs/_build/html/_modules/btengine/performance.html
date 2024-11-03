@@ -1,22 +1,20 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>btengine.performance &mdash; BBSTrader 0.1.07 documentation</title>
+  <title>btengine.performance &mdash; BBSTrader 0.1.08 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
-  <!--[if lt IE 9]>
-    <script src="../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="../../_static/jquery.js?v=5d32c60e"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=15bc9eb9"></script>
-        <script src="../../_static/doctools.js?v=9a2dae69"></script>
-        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=fda63d7b"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
@@ -75,15 +73,11 @@
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
 <span class="kn">import</span> <span class="nn">yfinance</span> <span class="k">as</span> <span class="nn">yf</span>
-
 <span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">mstats</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">from</span> <span class="nn">matplotlib.ticker</span> <span class="kn">import</span> <span class="n">MaxNLocator</span>
 <span class="kn">import</span> <span class="nn">quantstats</span> <span class="k">as</span> <span class="nn">qs</span>
 
-<span class="kn">import</span> <span class="nn">warnings</span>
-<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
-<span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="n">action</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">FutureWarning</span><span class="p">)</span>
 <span class="n">sns</span><span class="o">.</span><span class="n">set_theme</span><span class="p">()</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
@@ -99,7 +93,7 @@
 
 <div class="viewcode-block" id="create_sharpe_ratio">
 <a class="viewcode-back" href="../../btengine.html#btengine.performance.create_sharpe_ratio">[docs]</a>
-<span class="k">def</span> <span class="nf">create_sharpe_ratio</span><span class="p">(</span><span class="n">returns</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="mi">252</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">create_sharpe_ratio</span><span class="p">(</span><span class="n">returns</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="mi">252</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Create the Sharpe ratio for the strategy, based on a</span>
 <span class="sd">    benchmark of zero (i.e. no risk-free rate information).</span>
@@ -111,18 +105,13 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        S (float): Sharpe ratio</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">returns</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">periods</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">returns</span><span class="p">))</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">returns</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="mf">0.0</span></div>
+    <span class="k">return</span> <span class="n">qs</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sharpe</span><span class="p">(</span><span class="n">returns</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="n">periods</span><span class="p">)</span></div>
 
 
 <span class="c1"># Define a function to calculate the Sortino Ratio</span>
-
-
 <div class="viewcode-block" id="create_sortino_ratio">
 <a class="viewcode-back" href="../../btengine.html#btengine.performance.create_sortino_ratio">[docs]</a>
-<span class="k">def</span> <span class="nf">create_sortino_ratio</span><span class="p">(</span><span class="n">returns</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="mi">252</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">create_sortino_ratio</span><span class="p">(</span><span class="n">returns</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="mi">252</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Create the Sortino ratio for the strategy, based on a</span>
 <span class="sd">    benchmark of zero (i.e. no risk-free rate information).</span>
@@ -134,16 +123,7 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        S (float): Sortino ratio</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Calculate the annualized return</span>
-    <span class="n">annualized_return</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">returns</span><span class="p">),</span> <span class="n">periods</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
-    <span class="c1"># Calculate the downside deviation</span>
-    <span class="n">downside_returns</span> <span class="o">=</span> <span class="n">returns</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-    <span class="n">downside_returns</span><span class="p">[</span><span class="n">returns</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">annualized_downside_std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">downside_returns</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">periods</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">annualized_downside_std</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">annualized_return</span> <span class="o">/</span> <span class="n">annualized_downside_std</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="mf">0.0</span></div>
+    <span class="k">return</span> <span class="n">qs</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sortino</span><span class="p">(</span><span class="n">returns</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="n">periods</span><span class="p">)</span></div>
 
 
 
@@ -240,7 +220,7 @@
 
 <div class="viewcode-block" id="plot_returns_and_dd">
 <a class="viewcode-back" href="../../btengine.html#btengine.performance.plot_returns_and_dd">[docs]</a>
-<span class="k">def</span> <span class="nf">plot_returns_and_dd</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">benchmark</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">title</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">plot_returns_and_dd</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">benchmark</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">title</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Plot the returns and drawdowns of the strategy</span>
 <span class="sd">    compared to a benchmark.</span>
@@ -321,7 +301,7 @@
 
 <div class="viewcode-block" id="plot_monthly_yearly_returns">
 <a class="viewcode-back" href="../../btengine.html#btengine.performance.plot_monthly_yearly_returns">[docs]</a>
-<span class="k">def</span> <span class="nf">plot_monthly_yearly_returns</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">title</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">plot_monthly_yearly_returns</span><span class="p">(</span><span class="n">df</span><span class="p">:</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">title</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Plot the monthly and yearly returns of the strategy.</span>
 
@@ -358,7 +338,7 @@
 
     <span class="c1"># Calculate and prepare yearly returns DataFrame</span>
     <span class="n">yearly_returns_df</span> <span class="o">=</span> <span class="n">equity_df</span><span class="p">[</span><span class="s1">&#39;Total&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span>
-        <span class="s1">&#39;YE&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">last</span><span class="p">()</span><span class="o">.</span><span class="n">pct_change</span><span class="p">()</span><span class="o">.</span><span class="n">to_frame</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Yearly Returns&#39;</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>
+        <span class="s1">&#39;A&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">last</span><span class="p">()</span><span class="o">.</span><span class="n">pct_change</span><span class="p">()</span><span class="o">.</span><span class="n">to_frame</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Yearly Returns&#39;</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>
 
     <span class="c1"># Set the aesthetics for the plots</span>
     <span class="n">sns</span><span class="o">.</span><span class="n">set_theme</span><span class="p">(</span><span class="n">style</span><span class="o">=</span><span class="s2">&quot;darkgrid&quot;</span><span class="p">)</span>
@@ -404,19 +384,19 @@
 
 <div class="viewcode-block" id="show_qs_stats">
 <a class="viewcode-back" href="../../btengine.html#btengine.performance.show_qs_stats">[docs]</a>
-<span class="k">def</span> <span class="nf">show_qs_stats</span><span class="p">(</span><span class="n">equity_curve</span><span class="p">,</span> <span class="n">benchmark</span><span class="p">,</span> <span class="n">strategy_name</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">show_qs_stats</span><span class="p">(</span><span class="n">returns</span><span class="p">,</span> <span class="n">benchmark</span><span class="p">,</span> <span class="n">strategy_name</span><span class="p">,</span> <span class="n">save_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Generate the full quantstats report for the strategy.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        equity_curve (pd.DataFrame): </span>
+<span class="sd">        returns (pd.Serie): </span>
 <span class="sd">            The DataFrame containing the strategy returns and drawdowns.</span>
 <span class="sd">        benchmark (str): </span>
 <span class="sd">            The ticker symbol of the benchmark to compare the strategy to.</span>
 <span class="sd">        strategy_name (str): The name of the strategy.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Load the returns data</span>
-    <span class="n">returns</span> <span class="o">=</span> <span class="n">equity_curve</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">returns</span> <span class="o">=</span> <span class="n">returns</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
     <span class="c1"># Drop duplicate index entries</span>
     <span class="n">returns</span> <span class="o">=</span> <span class="n">returns</span><span class="p">[</span><span class="o">~</span><span class="n">returns</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">duplicated</span><span class="p">(</span><span class="n">keep</span><span class="o">=</span><span class="s1">&#39;first&#39;</span><span class="p">)]</span>
@@ -425,14 +405,8 @@
     <span class="n">qs</span><span class="o">.</span><span class="n">extend_pandas</span><span class="p">()</span>
 
     <span class="c1"># Generate the full report with a benchmark</span>
-    <span class="n">file</span> <span class="o">=</span> <span class="n">strategy_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span>
-    <span class="n">qs</span><span class="o">.</span><span class="n">reports</span><span class="o">.</span><span class="n">full</span><span class="p">(</span>
-        <span class="n">returns</span><span class="p">[</span><span class="s1">&#39;Returns&#39;</span><span class="p">],</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;full&#39;</span><span class="p">,</span> <span class="n">benchmark</span><span class="o">=</span><span class="n">benchmark</span><span class="p">)</span>
-    <span class="n">qs</span><span class="o">.</span><span class="n">reports</span><span class="o">.</span><span class="n">html</span><span class="p">(</span>
-        <span class="n">returns</span><span class="p">[</span><span class="s1">&#39;Returns&#39;</span><span class="p">],</span> 
-        <span class="n">benchmark</span><span class="o">=</span><span class="s1">&#39;SPY&#39;</span><span class="p">,</span> 
-        <span class="n">output</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2">_report.html&quot;</span><span class="p">,</span> 
-        <span class="n">title</span><span class="o">=</span><span class="n">strategy_name</span><span class="p">)</span></div>
+    <span class="n">qs</span><span class="o">.</span><span class="n">reports</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">returns</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;full&#39;</span><span class="p">,</span> <span class="n">benchmark</span><span class="o">=</span><span class="n">benchmark</span><span class="p">)</span>
+    <span class="n">qs</span><span class="o">.</span><span class="n">reports</span><span class="o">.</span><span class="n">html</span><span class="p">(</span><span class="n">returns</span><span class="p">,</span> <span class="n">benchmark</span><span class="o">=</span><span class="n">benchmark</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="n">save_dir</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">strategy_name</span><span class="p">)</span></div>
 
 </pre></div>
 
