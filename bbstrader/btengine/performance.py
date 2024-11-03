@@ -7,9 +7,6 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 import quantstats as qs
 
-import warnings
-warnings.filterwarnings("ignore")
-warnings.simplefilter(action='ignore', category=FutureWarning)
 sns.set_theme()
 
 __all__ = [
@@ -51,6 +48,7 @@ def create_sortino_ratio(returns, periods=252) -> float:
         S (float): Sortino ratio
     """
     return qs.stats.sortino(returns, periods=periods)
+
 
 def create_drawdowns(pnl):
     """
@@ -252,7 +250,7 @@ def plot_monthly_yearly_returns(df:pd.DataFrame, title):
 
     # Calculate and prepare yearly returns DataFrame
     yearly_returns_df = equity_df['Total'].resample(
-        'YE').last().pct_change().to_frame(name='Yearly Returns') * 100
+        'A').last().pct_change().to_frame(name='Yearly Returns') * 100
 
     # Set the aesthetics for the plots
     sns.set_theme(style="darkgrid")
