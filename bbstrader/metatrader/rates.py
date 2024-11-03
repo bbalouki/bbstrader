@@ -124,7 +124,7 @@ class Rates(object):
         self.count = count
         self._mt5_initialized()
         self.__account = Account()
-        self.__data = self.get_rates_from_pos(lower_colnames=True)
+        self.__data = self.get_rates_from_pos()
 
     def _mt5_initialized(self):
         check_mt5_connection()
