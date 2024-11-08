@@ -7,6 +7,7 @@ from queue import Queue
 from datetime import datetime
 from bbstrader.config import config_logger
 from bbstrader.btengine.event import SignalEvent
+from bbstrader.btengine.event import FillEvent
 from bbstrader.btengine.data import DataHandler
 from bbstrader.metatrader.account import Account
 from bbstrader.metatrader.rates import Rates
@@ -38,6 +39,8 @@ class Strategy(metaclass=ABCMeta):
 
     The strategy hierarchy is relatively simple as it consists of an abstract 
     base class with a single pure virtual method for generating `SignalEvent` objects. 
+    Other methods are provided to check for pending orders, update trades from fills,
+    and get updates from the portfolio.
     """
 
     @abstractmethod
@@ -45,8 +48,9 @@ class Strategy(metaclass=ABCMeta):
         raise NotImplementedError(
             "Should implement calculate_signals()"
         )
-
-    def check_pending_orders(self): ...
+    def check_pending_orders(self, *args, **kwargs): ...
+    def get_update_from_portfolio(self, *args, **kwargs): ...
+    def update_trades_from_fill(self, *args, **kwargs): ...
 
 
 class MT5Strategy(Strategy):
@@ -74,17 +78,71 @@ class MT5Strategy(Strategy):
         self.symbols = symbol_list
         self.mode = mode
         self.volume = kwargs.get("volume")
-        self.logger = kwargs.get("logger", config_logger("mt5_strategy.log"))
-        self._construct_positions_and_orders()
+        self.max_trades = kwargs.get("max_trades",
+                                     {symbol: 1 for symbol in self.symbols})
+        self.logger = kwargs.get("logger")
+        self._initialize_portfolio()
+    
+    @property
+    def orders(self) -> Dict[str, Dict[str, List[SignalEvent]]]:
+        return self._orders
+    
+    @property
+    def trades(self) -> Dict[str, Dict[str, int]]:
+        return self._trades
 
-    def _construct_positions_and_orders(self):
-        self.positions: Dict[str, Dict[str, int]] = {}
-        self.orders: Dict[str, Dict[str, List[SignalEvent]]] = {}
+    @property
+    def positions(self) -> Dict[str, Dict[str, int|float]]:
+        return self._positions
+    
+    @property
+    def holdings(self) -> Dict[str,  float]:
+        return self._holdings
+
+    def _initialize_portfolio(self):
         positions = ['LONG', 'SHORT']
         orders = ['BLMT', 'BSTP', 'BSTPLMT', 'SLMT', 'SSTP', 'SSTPLMT']
+        self._positions: Dict[str, Dict[str, int]] = {}
+        self._trades: Dict[str, Dict[str, int]] = {}
+        self._orders: Dict[str, Dict[str, List[SignalEvent]]] = {}
         for symbol in self.symbols:
-            self.positions[symbol] = {position: 0 for position in positions}
-            self.orders[symbol] = {order: [] for order in orders}
+            self._positions[symbol] = {}
+            self._orders[symbol] = {}
+            self._trades[symbol] = {}
+            for position in positions:
+                self._trades[symbol][position] = 0
+                self._positions[symbol][position] = 0
+            for order in orders:
+                self._orders[symbol][order] = []
+        self._holdings = {s: 0.0 for s in self.symbols}
+        
+    def get_update_from_portfolio(self, positions, holdings):
+        """
+        Update the positions and holdings for the strategy from the portfolio.
+
+        Positions are the number of shares of a security that are owned in long or short.
+        Holdings are the value (postions * price) of the security that are owned in long or short.
+
+        Args:
+            positions : The positions for the symbols in the strategy.
+            holdings : The holdings for the symbols in the strategy.
+        """
+        for symbol in self.symbols:
+            if symbol in positions:
+                if positions[symbol] > 0:
+                    self._positions[symbol]['LONG'] = positions[symbol]
+                elif positions[symbol] < 0:
+                    self._positions[symbol]['SHORT'] = positions[symbol]
+            if symbol in holdings:
+                self._holdings[symbol] = holdings[symbol]
+    
+    def update_trades_from_fill(self, event: FillEvent):
+        """
+        This method updates the trades for the strategy based on the fill event.
+        It is used to keep track of the number of trades executed for each order.
+        """
+        if event.type == 'FILL':
+            self._trades[event.symbol][event.order] += 1
 
     def calculate_signals(self, *args, **kwargs
                           ) -> Dict[str, Union[str, dict, None]] | None:
@@ -115,7 +173,7 @@ class MT5Strategy(Strategy):
         """
         pass
 
-    def get_quantity(self, symbol) -> int:
+    def get_quantity(self, symbol, volume=None) -> int:
         """
         Calculate the quantity to buy or sell for a given symbol based on the dollar value provided.
         The quantity calculated can be used to evalute a strategy's performance for each symbol
@@ -127,11 +185,15 @@ class MT5Strategy(Strategy):
         Returns:
             qty : The quantity to buy or sell for the symbol.
         """
-        if self.volume is None:
+        if self.volume is None and volume is None:
             raise ValueError("Volume must be provided for the method.")
         current_price = self.data.get_latest_bar_value(symbol, 'close')
-        qty = math.ceil(self.volume / current_price)
-        return max(qty, 1)
+        try:
+            qty = math.ceil(self.volume or volume / current_price)
+            qty = max(qty, 1) / self.max_trades[symbol]
+            return max(math.ceil(qty), 1)
+        except Exception:
+            return 1
     
     def get_quantities(self, quantities: Union[None, dict, int]) -> dict:
         """
@@ -157,7 +219,7 @@ class MT5Strategy(Strategy):
         self.logger.info(
             f"{signal} ORDER EXECUTED: SYMBOL={symbol}, QUANTITY={quantity}, PRICE @{price}", custom_time=dtime)
 
-    def buy(self, id: int, symbol: str, price: float, quantity: int, 
+    def buy_mkt(self, id: int, symbol: str, price: float, quantity: int, 
             strength: float=1.0, dtime: datetime | pd.Timestamp=None):
         """
         Open a long position
@@ -165,25 +227,22 @@ class MT5Strategy(Strategy):
         See `bbstrader.btengine.event.SignalEvent` for more details on arguments.
         """
         self._send_order(id, symbol, 'LONG', strength, price, quantity, dtime)
-        self.positions[symbol]['LONG'] += quantity
 
-    def sell(self, id, symbol, price, quantity, strength=1.0, dtime=None):
+    def sell_mkt(self, id, symbol, price, quantity, strength=1.0, dtime=None):
         """
         Open a short position
 
         See `bbstrader.btengine.event.SignalEvent` for more details on arguments.
         """
         self._send_order(id, symbol, 'SHORT', strength,  price, quantity, dtime)
-        self.positions[symbol]['SHORT'] += quantity
 
-    def close(self, id, symbol, price, quantity, strength=1.0, dtime=None):
+    def close_positions(self, id, symbol, price, quantity, strength=1.0, dtime=None):
         """
-        Close a position
+        Close a position or exit all positions
 
         See `bbstrader.btengine.event.SignalEvent` for more details on arguments.
         """
         self._send_order(id, symbol, 'EXIT', strength, price, quantity, dtime)
-        self.positions[symbol]['LONG'] -= quantity
 
     def buy_stop(self, id, symbol, price, quantity, strength=1.0, dtime=None):
         """
@@ -197,7 +256,7 @@ class MT5Strategy(Strategy):
                 "The buy_stop price must be greater than the current price.")
         order = SignalEvent(id, symbol, dtime, 'LONG',
                             quantity=quantity, strength=strength, price=price)
-        self.orders[symbol]['BSTP'].append(order)
+        self._orders[symbol]['BSTP'].append(order)
 
     def sell_stop(self, id, symbol, price, quantity, strength=1.0, dtime=None):
         """
@@ -211,7 +270,7 @@ class MT5Strategy(Strategy):
                 "The sell_stop price must be less than the current price.")
         order = SignalEvent(id, symbol, dtime, 'SHORT',
                             quantity=quantity, strength=strength, price=price)
-        self.orders[symbol]['SSTP'].append(order)
+        self._orders[symbol]['SSTP'].append(order)
 
     def buy_limit(self, id, symbol, price, quantity, strength=1.0, dtime=None):
         """
@@ -225,7 +284,7 @@ class MT5Strategy(Strategy):
                 "The buy_limit price must be less than the current price.")
         order = SignalEvent(id, symbol, dtime, 'LONG',
                             quantity=quantity, strength=strength, price=price)
-        self.orders[symbol]['BLMT'].append(order)
+        self._orders[symbol]['BLMT'].append(order)
 
     def sell_limit(self, id, symbol, price, quantity, strength=1.0, dtime=None):
         """
@@ -239,7 +298,7 @@ class MT5Strategy(Strategy):
                 "The sell_limit price must be greater than the current price.")
         order = SignalEvent(id, symbol, dtime, 'SHORT',
                             quantity=quantity, strength=strength, price=price)
-        self.orders[symbol]['SLMT'].append(order)
+        self._orders[symbol]['SLMT'].append(order)
 
     def buy_stop_limit(self, id: int, symbol: str, price: float, stoplimit: float, 
                        quantity: int, strength: float=1.0, dtime: datetime | pd.Timestamp = None):
@@ -257,7 +316,7 @@ class MT5Strategy(Strategy):
                 f"The stop-limit price {stoplimit} must be greater than the price {price}.")
         order = SignalEvent(id, symbol, dtime, 'LONG',
                             quantity=quantity, strength=strength, price=price, stoplimit=stoplimit)
-        self.orders[symbol]['BSTPLMT'].append(order)
+        self._orders[symbol]['BSTPLMT'].append(order)
 
     def sell_stop_limit(self, id, symbol, price, stoplimit, quantity, strength=1.0, dtime=None):
         """
@@ -274,7 +333,7 @@ class MT5Strategy(Strategy):
                 f"The stop-limit price {stoplimit} must be less than the price {price}.")
         order = SignalEvent(id, symbol, dtime, 'SHORT',
                             quantity=quantity, strength=strength, price=price, stoplimit=stoplimit)
-        self.orders[symbol]['SSTPLMT'].append(order)
+        self._orders[symbol]['SSTPLMT'].append(order)
 
     def check_pending_orders(self):
         """
@@ -282,54 +341,54 @@ class MT5Strategy(Strategy):
         """
         for symbol in self.symbols:
             dtime = self.data.get_latest_bar_datetime(symbol)
-            for order in self.orders[symbol]['BLMT'].copy():
+            for order in self._orders[symbol]['BLMT'].copy():
                 if self.data.get_latest_bar_value(symbol, 'close') <= order.price:
-                    self.buy(order.strategy_id, symbol,
+                    self.buy_mkt(order.strategy_id, symbol,
                              order.price, order.quantity, dtime)
                     self.logger.info(
                         f"BUY LIMIT ORDER EXECUTED: SYMBOL={symbol}, QUANTITY={order.quantity}, "
                         f"PRICE @ {order.price}", custom_time=dtime)
-                    self.orders[symbol]['BLMT'].remove(order)
-            for order in self.orders[symbol]['SLMT'].copy():
+                    self._orders[symbol]['BLMT'].remove(order)
+            for order in self._orders[symbol]['SLMT'].copy():
                 if self.data.get_latest_bar_value(symbol, 'close') >= order.price:
-                    self.sell(order.strategy_id, symbol,
+                    self.sell_mkt(order.strategy_id, symbol,
                               order.price, order.quantity, dtime)
                     self.logger.info(
                         f"SELL LIMIT ORDER EXECUTED: SYMBOL={symbol}, QUANTITY={order.quantity}, "
                         f"PRICE @ {order.price}", custom_time=dtime)
-                    self.orders[symbol]['SLMT'].remove(order)
-            for order in self.orders[symbol]['BSTP'].copy():
+                    self._orders[symbol]['SLMT'].remove(order)
+            for order in self._orders[symbol]['BSTP'].copy():
                 if self.data.get_latest_bar_value(symbol, 'close') >= order.price:
-                    self.buy(order.strategy_id, symbol,
+                    self.buy_mkt(order.strategy_id, symbol,
                              order.price, order.quantity, dtime)
                     self.logger.info(
                         f"BUY STOP ORDER EXECUTED: SYMBOL={symbol}, QUANTITY={order.quantity}, "
                         f"PRICE @ {order.price}", custom_time=dtime)
-                    self.orders[symbol]['BSTP'].remove(order)
-            for order in self.orders[symbol]['SSTP'].copy():
+                    self._orders[symbol]['BSTP'].remove(order)
+            for order in self._orders[symbol]['SSTP'].copy():
                 if self.data.get_latest_bar_value(symbol, 'close') <= order.price:
-                    self.sell(order.strategy_id, symbol,
+                    self.sell_mkt(order.strategy_id, symbol,
                               order.price, order.quantity, dtime)
                     self.logger.info(
                         f"SELL STOP ORDER EXECUTED: SYMBOL={symbol}, QUANTITY={order.quantity}, "
                         f"PRICE @ {order.price}", custom_time=dtime)
-                    self.orders[symbol]['SSTP'].remove(order)
-            for order in self.orders[symbol]['BSTPLMT'].copy():
+                    self._orders[symbol]['SSTP'].remove(order)
+            for order in self._orders[symbol]['BSTPLMT'].copy():
                 if self.data.get_latest_bar_value(symbol, 'close') >= order.price:
                     self.buy_limit(order.strategy_id, symbol,
                                    order.stoplimit, order.quantity, dtime)
                     self.logger.info(
                         f"BUY STOP LIMIT ORDER EXECUTED: SYMBOL={symbol}, QUANTITY={order.quantity}, "
                         f"PRICE @ {order.price}", custom_time=dtime)
-                    self.orders[symbol]['BSTPLMT'].remove(order)
-            for order in self.orders[symbol]['SSTPLMT'].copy():
+                    self._orders[symbol]['BSTPLMT'].remove(order)
+            for order in self._orders[symbol]['SSTPLMT'].copy():
                 if self.data.get_latest_bar_value(symbol, 'close') <= order.price:
                     self.sell_limit(order.strategy_id, symbol,
                                     order.stoplimit, order.quantity, dtime)
                     self.logger.info(
                         f"SELL STOP LIMIT ORDER EXECUTED: SYMBOL={symbol}, QUANTITY={order.quantity}, "
                         f"PRICE @ {order.price}", custom_time=dtime)
-                    self.orders[symbol]['SSTPLMT'].remove(order)
+                    self._orders[symbol]['SSTPLMT'].remove(order)
 
     def get_asset_values(self,
                           symbol_list: List[str],
