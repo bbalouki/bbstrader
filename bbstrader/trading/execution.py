@@ -90,7 +90,7 @@ def _mt5_execution(
         bot_token = kwargs.get('bot_token')
         chat_id   = kwargs.get('chat_id')
 
-    def _send_notification(self, signal):
+    def _send_notification(signal):
         send_message(message=signal, notify_me=notify, 
                     telegram=telegram, token=bot_token, chat_id=chat_id)
         
@@ -104,8 +104,6 @@ def _mt5_execution(
         if not mm:
             return
         if buys is not None or sells is not None:
-            logger.info(
-                f"Checking for Break even, SYMBOL={symbol}...STRATEGY={STRATEGY}")
             trades_instances[symbol].break_even(
                 mm=mm, trail=trail, stop_trail=stop_trail, 
                 trail_after_points=trail_after_points, be_plus_points=be_plus_points)
@@ -119,10 +117,10 @@ def _mt5_execution(
         check_mt5_connection()
         strategy: MT5Strategy = strategy_cls(symbol_list=symbols, mode='live', **kwargs)
     except Exception as e:
-        logger.error(f"Error initializing strategy, {e}, STRATEGY={STRATEGY}")
+        logger.error(f"Initializing strategy, {e}, STRATEGY={STRATEGY}")
         return
     logger.info(
-        f'Running {STRATEGY} Strategy on {symbols} in {time_frame} Interval ...')
+        f'Running {STRATEGY} Strategy in {time_frame} Interval ...')
     
     while True:
         try:
@@ -132,7 +130,9 @@ def _mt5_execution(
             time.sleep(0.5)
             positions_orders = {}
             for type in POSITIONS_TYPES + ORDERS_TYPES:
+                positions_orders[type] = {}
                 for symbol in symbols:
+                    positions_orders[type][symbol] = None
                     func = getattr(trades_instances[symbol], f"get_current_{type}")
                     positions_orders[type][symbol] = func()
             buys = positions_orders['buys']
@@ -154,7 +154,7 @@ def _mt5_execution(
             }
 
         except Exception as e:
-            logger.error(f"{e}, STRATEGY={STRATEGY}")
+            logger.error(f"Handling Positions and Orders, {e}, STRATEGY={STRATEGY}")
             continue
         time.sleep(0.5)
         try:
@@ -183,7 +183,8 @@ def _mt5_execution(
                         signal = 'SMKT' if signal == 'SHORT' else signal
                         info = f"SIGNAL = {signal}, SYMBOL={trade.symbol}, STRATEGY={STRATEGY}"
                         msg = f"Sending {signal} Order ... SYMBOL={trade.symbol}, STRATEGY={STRATEGY}"
-                        logger.info(info)
+                        if signal not in EXIT_SIGNAL_ACTIONS:
+                            logger.info(info)
                         if signal in EXIT_SIGNAL_ACTIONS:
                             for exit_signal, actions in EXIT_SIGNAL_ACTIONS.items():
                                 for position_type, order_type in actions.items():
@@ -235,13 +236,15 @@ def _mt5_execution(
                         elif signal in SELLS and short_market[symbol]:
                             logger.info(riskmsg)
                             check(buys[symbol], sells[symbol], symbol)
+                    else:
+                        check(buys[symbol], sells[symbol], symbol)
                 else:
                     logger.info(
                         f"Not trading Time !!! SYMBOL={trade.symbol}, STRATEGY={STRATEGY}")
                     check(buys[symbol], sells[symbol], symbol)
 
             except Exception as e:
-                logger.error(f"{e}, SYMBOL={symbol}, STRATEGY={STRATEGY}")
+                logger.error(f"Handling Signals {e}, SYMBOL={symbol}, STRATEGY={STRATEGY}")
                 continue
         time.sleep((60 * iter_time) - 1.0)
         if iter_time == 1:
@@ -253,7 +256,6 @@ def _mt5_execution(
                 f"iter_time must be a multiple of the {time_frame} !!!"
                 f"(e.g; if time_frame is 15m, iter_time must be 1.5, 3, 3, 15 etc)"
             )
-        print()
         try:
             FRIDAY = 'friday'
             check_mt5_connection()
