@@ -178,13 +178,22 @@ class Rates(object):
         return TIMEFRAMES[time_frame]
 
     def _fetch_data(
-        self, start: Union[int, datetime , pd.Timestamp],
-        count: Union[int, datetime, pd.Timestamp], lower_colnames=False, utc=False,
+        self, 
+        start: Union[int, datetime, pd.Timestamp],
+        count: Union[int, datetime, pd.Timestamp], 
+        lower_colnames=False, utc=False,
     ) -> Union[pd.DataFrame, None]:
         """Fetches data from MT5 and returns a DataFrame or None."""
         try:
             if isinstance(start, int) and isinstance(count, int):
                 rates = Mt5.copy_rates_from_pos(
+                    self.symbol, self.time_frame, start, count
+                )
+            elif ( 
+                isinstance(start, (datetime, pd.Timestamp)) and 
+                isinstance(count, int)
+                ):
+                rates = Mt5.copy_rates_from(
                     self.symbol, self.time_frame, start, count
                 )
             elif (
@@ -320,6 +329,35 @@ class Rates(object):
             return self._filter_data(df, fill_na=fill_na)
         return df
     
+    def get_rates_from(self, date_from: datetime | pd.Timestamp, count: int=MAX_BARS,
+                       filter=False, fill_na=False, lower_colnames=False, utc=False) -> Union[pd.DataFrame, None]:
+        """
+        Retrieves historical data within a specified date range.
+
+        Args:
+            date_from : Starting date for data retrieval.
+                The data will be retrieved from this date going to the past.
+            
+            count : Number of bars to retrieve.
+            
+            filter : See `Rates.get_historical_data` for more details.
+            fill_na : See `Rates.get_historical_data` for more details.
+            lower_colnames : If True, the column names will be converted to lowercase.
+            utc (bool, optional): If True, the data will be in UTC timezone.
+                Defaults to False.
+
+        Returns:
+            Union[pd.DataFrame, None]: A DataFrame containing historical
+            data if successful, otherwise None.
+        """
+        utc = self._check_filter(filter, utc)
+        df = self._fetch_data(date_from, count, lower_colnames=lower_colnames, utc=utc)
+        if df is None:
+            return None
+        if filter:
+            return self._filter_data(df, fill_na=fill_na)
+        return df
+
     @property
     def open(self):
         return self.__data['Open']
@@ -459,4 +497,14 @@ def get_data_from_pos(symbol, time_frame, start_pos=0, fill_na=False,
     rates = Rates(symbol, time_frame, start_pos, count, session_duration)
     data = rates.get_rates_from_pos(filter=filter, fill_na=fill_na,
                                     lower_colnames=lower_colnames, utc=utc)
+    return data
+
+def get_data_from_date(symbol, time_frame, date_from, count=MAX_BARS, fill_na=False, 
+                  lower_colnames=False, utc=False, filter=False):
+    """Get historical data from a specific date.
+    See `Rates.get_rates_from` for more details.
+    """
+    rates = Rates(symbol, time_frame)
+    data = rates.get_rates_from(date_from, count, filter=filter, fill_na=fill_na,
+                                lower_colnames=lower_colnames, utc=utc)
     return data
