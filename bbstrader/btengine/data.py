@@ -272,7 +272,11 @@ class BaseCSVDataHandler(DataHandler):
             print("Symbol not available in the historical data set.")
             raise
         else:
-            return getattr(bars_list[-1][1], val_type)
+            try:
+                return getattr(bars_list[-1][1], val_type)
+            except AttributeError:
+                print(f"Value type {val_type} not available in the historical data set.")
+                raise
 
     def get_latest_bars_values(self, symbol: str, val_type: str, N=1) -> np.ndarray:
         """
@@ -285,7 +289,11 @@ class BaseCSVDataHandler(DataHandler):
             print("That symbol is not available in the historical data set.")
             raise
         else:
-            return np.array([getattr(b[1], val_type) for b in bars_list])
+            try:
+                return np.array([getattr(b[1], val_type) for b in bars_list])
+            except AttributeError:
+                print(f"Value type {val_type} not available in the historical data set.")
+                raise
 
     def update_bars(self):
         """
