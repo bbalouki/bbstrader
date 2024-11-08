@@ -111,8 +111,9 @@ class BacktestEngine(Backtest):
         their class types.
         """
         print(
-            f"\nStarting Backtest on {self.symbol_list} "
-            f"with ${self.initial_capital} Initial Capital\n"
+            f"\n[=======   STARTING BACKTEST   =======]\n"
+            f"START DATE: {self.start_date} \n"
+            f"INITIAL CAPITAL: {self.initial_capital}\n"
         )
         self.data_handler: DataHandler = self.dh_cls(
             self.events, self.symbol_list, **self.kwargs
@@ -141,8 +142,9 @@ class BacktestEngine(Backtest):
                 self.data_handler.update_bars()
                 self.strategy.check_pending_orders()
             else:
-                print("\n[======= BACKTEST COMPLETE =======]\n")
-                print(f"Total bars: {i} ")
+                print("\n[======= BACKTEST COMPLETED =======]")
+                print(f"END DATE: {self.data_handler.get_latest_bar_datetime()}")
+                print(f"TOTAL BARS: {i} ")
                 break
 
             # Handle the events
@@ -168,6 +170,11 @@ class BacktestEngine(Backtest):
                         elif event.type == 'FILL':
                             self.fills += 1
                             self.portfolio.update_fill(event)
+                            self.strategy.update_trades_from_fill(event)
+                            self.strategy.get_update_from_portfolio(
+                                self.portfolio.current_positions,
+                                self.portfolio.current_holdings
+                            )
 
             time.sleep(self.heartbeat)
 
