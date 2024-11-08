@@ -31,8 +31,6 @@ class Portfolio(object):
     """
     This  describes a `Portfolio()` object that keeps track of the positions 
     within a portfolio and generates orders of a fixed quantity of stock based on signals. 
-    More sophisticated portfolio objects could include risk management and position 
-    sizing tools (such as the `Kelly Criterion`).
 
     The portfolio order management system is possibly the most complex component of 
     an event driven backtester. Its role is to keep track of all current market positions 
@@ -57,10 +55,9 @@ class Portfolio(object):
     value (defaulting to `100,000 USD`) and others parameter based on the `Strategy` requirement.
 
     The `Portfolio` is designed to handle position sizing and current holdings, 
-    but will carry out trading orders in a "dumb" manner by simply sending them directly 
-    to the brokerage with a predetermined fixed quantity size, irrespective of cash held. 
-    These are all unrealistic assumptions, but they help to outline how a portfolio order 
-    management system (OMS) functions in an eventdriven fashion.
+    but will carry out trading orders by simply them to the brokerage with a predetermined 
+    fixed quantity size, if the portfolio has enough cash to place the order.
+
 
     The portfolio contains the `all_positions` and `current_positions` members. 
     The former stores a list of all previous positions recorded at the timestamp of a market data event. 
@@ -108,7 +105,7 @@ class Portfolio(object):
         self.initial_capital = initial_capital
 
         self.timeframe = kwargs.get("time_frame", "D1")
-        self.trading_hours = kwargs.get("session_duration", 6.5)
+        self.trading_hours = kwargs.get("session_duration", 23)
         self.benchmark = kwargs.get('benchmark', 'SPY')
         self.output_dir = kwargs.get('output_dir', None)
         self.strategy_name = kwargs.get('strategy_name', '')
@@ -174,6 +171,23 @@ class Portfolio(object):
         d['Commission'] = 0.0
         d['Total'] = self.initial_capital
         return d
+    
+    def _get_price(self, symbol: str) -> float:
+        try:
+            price = self.bars.get_latest_bar_value(
+                symbol, "adj_close"
+            )
+            return price
+        except AttributeError:
+            try:
+                price = self.bars.get_latest_bar_value(
+                    symbol, "close"
+                )
+                return price
+            except AttributeError:
+                raise AttributeError(
+                    f"Bars object must have 'adj_close' or 'close' prices"
+                )
 
     def update_timeindex(self, event: MarketEvent):
         """
@@ -203,8 +217,8 @@ class Portfolio(object):
         dh['Total'] = self.current_holdings['Cash']
         for s in self.symbol_list:
             # Approximation to the real value
-            market_value = self.current_positions[s] * \
-                self.bars.get_latest_bar_value(s, "adj_close")
+            price = self._get_price(s)
+            market_value = self.current_positions[s] * price
             dh[s] = market_value
             dh['Total'] += market_value
 
@@ -245,9 +259,7 @@ class Portfolio(object):
             fill_dir = -1
 
         # Update holdings list with new quantities
-        price = self.bars.get_latest_bar_value(
-            fill.symbol, "adj_close"
-        )
+        price = self._get_price(fill.symbol)
         cost = fill_dir * price * fill.quantity
         self.current_holdings[fill.symbol] += cost
         self.current_holdings['Commission'] += fill.commission
@@ -263,14 +275,16 @@ class Portfolio(object):
             self.update_positions_from_fill(event)
             self.update_holdings_from_fill(event)
 
-    def generate_naive_order(self, signal: SignalEvent):
+    def generate_order(self, signal: SignalEvent):
         """
-        Simply files an Order object as a constant quantity
-        sizing of the signal object, without risk management or
-        position sizing considerations.
+        Check if the portfolio has enough cash to place an order
+        and generate an OrderEvent, else return None.
 
         Args:
             signal (SignalEvent): The tuple containing Signal information.
+        
+        Returns:
+            OrderEvent: The OrderEvent to be executed.
         """
         order = None
 
@@ -278,21 +292,33 @@ class Portfolio(object):
         direction = signal.signal_type
         quantity = signal.quantity
         strength = signal.strength
-        price = signal.price
+        price = signal.price or self._get_price(symbol)
         cur_quantity = self.current_positions[symbol]
+        cash = self.current_holdings['Cash']
 
-        order_type = 'MKT'
+        if direction in ['LONG', 'SHORT', 'EXIT']:
+            order_type = 'MKT'
+        else:
+            order_type = direction
         mkt_quantity = round(quantity * strength)
+        cost = mkt_quantity * price
 
-        if direction == 'LONG' and cur_quantity == 0:
-            order = OrderEvent(symbol, order_type, mkt_quantity, 'BUY', price)
-        if direction == 'SHORT' and cur_quantity == 0:
-            order = OrderEvent(symbol, order_type, mkt_quantity, 'SELL', price)
+        if cash >= cost:
+            new_quantity = mkt_quantity
+        elif cash < cost and cash > 0:
+            new_quantity =  round(cash // price)
+        else:
+            new_quantity = 0
+
+        if new_quantity > 0 and direction == 'LONG':
+            order = OrderEvent(symbol, order_type, new_quantity, 'BUY', price, direction)
+        if new_quantity > 0 and direction == 'SHORT':
+            order = OrderEvent(symbol, order_type, new_quantity, 'SELL', price, direction)
 
         if direction == 'EXIT' and cur_quantity > 0:
-            order = OrderEvent(symbol, order_type, abs(cur_quantity), 'SELL', price)
+            order = OrderEvent(symbol, order_type, abs(cur_quantity), 'SELL', price, direction)
         if direction == 'EXIT' and cur_quantity < 0:
-            order = OrderEvent(symbol, order_type, abs(cur_quantity), 'BUY', price)
+            order = OrderEvent(symbol, order_type, abs(cur_quantity), 'BUY', price, direction)
 
         return order
 
@@ -302,7 +328,7 @@ class Portfolio(object):
         based on the portfolio logic.
         """
         if event.type == 'SIGNAL':
-            order_event = self.generate_naive_order(event)
+            order_event = self.generate_order(event)
             self.events.put(order_event)
 
     def create_equity_curve_dataframe(self):
