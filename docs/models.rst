@@ -39,3 +39,11 @@ optimization
    :members:
    :undoc-members:
    :show-inheritance:
+
+portfolios
+----------
+
+.. automodule:: models.portfolio
+   :members:
+   :undoc-members:
+   :show-inheritance:
