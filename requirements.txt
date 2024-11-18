@@ -22,3 +22,4 @@ tqdm
 scikit-learn
 notify-py
 python-telegram-bot
+pyportfolioopt

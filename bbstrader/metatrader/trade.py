@@ -838,14 +838,16 @@ class Trade(RiskManagement):
         elif account and id is not None:
             # All open positions for a specific strategy or expert no matter the symbol
             positions = self.get_positions()
-            positions = [position for position in positions if position.magic == id]
+            if positions is not None:
+                positions = [position for position in positions if position.magic == id]
         elif not account and id is None:
             # All open positions for the current symbol no matter the strategy or expert
             positions = self.get_positions(symbol=self.symbol)
         elif not account and id is not None:
             # All open positions for the current symbol and a specific strategy or expert
             positions = self.get_positions(symbol=self.symbol)
-            positions = [position for position in positions if position.magic == id]
+            if positions is not None:
+                positions = [position for position in positions if position.magic == id]
         profit = 0.0
         balance = self.get_account_info().balance
         target = round((balance * self.target)/100, 2)
@@ -1026,8 +1028,9 @@ class Trade(RiskManagement):
                 result.retcode, display=True, add_msg=f"{e}{addtionnal}")
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
             msg = trade_retcode_message(result.retcode)
-            self.logger.error(
-                f"Break-Even Order Request, Position: #{tiket}, RETCODE={result.retcode}: {msg}{addtionnal}")
+            if result.retcode != Mt5.TRADE_RETCODE_NO_CHANGES:
+                self.logger.error(
+                    f"Break-Even Order Request, Position: #{tiket}, RETCODE={result.retcode}: {msg}{addtionnal}")
             tries = 0
             while result.retcode != Mt5.TRADE_RETCODE_DONE and tries < 10:
                 if result.retcode == Mt5.TRADE_RETCODE_NO_CHANGES:

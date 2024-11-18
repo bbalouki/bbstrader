@@ -17,7 +17,7 @@ with io.open(path.join(here, 'README.md'), encoding='utf-8') as f:
 with io.open(path.join(here, 'requirements.txt'), encoding='utf-8') as f:
     REQUIREMENTS = [line.rstrip() for line in f]
 
-VERSION = '0.1.91'
+VERSION = '0.1.93'
 DESCRIPTION = 'Simplified Investment & Trading Toolkit'
 
 KEYWORDS = [

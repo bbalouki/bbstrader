@@ -156,6 +156,22 @@ class RiskManagement(Account):
         self.symbol_info = super().get_symbol_info(self.symbol)
 
         self._tf = time_frame
+
+    @property
+    def dailydd(self) -> float:
+        return self.daily_dd
+
+    @dailydd.setter
+    def dailydd(self, value: float):
+        self.daily_dd = value
+    
+    @property
+    def maxrisk(self) -> float:
+        return self.max_risk
+    
+    @maxrisk.setter
+    def maxrisk(self, value: float):
+        self.max_risk = value
     
     def _convert_time_frame(self, tf: str) -> int:
         """Convert time frame to minutes"""
@@ -437,14 +453,23 @@ class RiskManagement(Account):
         if trade_risk > 0:
             currency_risk = round(self.var_loss_value(), 5)
             volume = round(currency_risk*laverage)
-            _lot = round((volume / (contract_size * av_price)), 2)
+            try:
+                _lot = round((volume / (contract_size * av_price)), 2)
+            except ZeroDivisionError:
+                _lot = 0.0
             lot = self._check_lot(_lot)
             if COMD and contract_size > 1:
                 # lot = volume / av_price / contract_size
-                lot = volume / av_price / contract_size
+                try:
+                    lot = volume / av_price / contract_size
+                except ZeroDivisionError:
+                    lot = 0.0
                 lot = self._check_lot(_lot)
             if FX:
-                __lot = round((volume / contract_size), 2)
+                try:
+                    __lot = round((volume / contract_size), 2)
+                except ZeroDivisionError:
+                    __lot = 0.0
                 lot = self._check_lot(__lot)
 
             tick_value = s_info.trade_tick_value

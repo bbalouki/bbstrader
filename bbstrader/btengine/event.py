@@ -102,14 +102,15 @@ class OrderEvent(Event):
 
     def __init__(self,
                  symbol: str,
-                 order_type: Literal['MKT', 'LMT'],
+                 order_type: Literal['MKT', 'LMT', 'STP', 'STPLMT'],
                  quantity: int | float,
                  direction: Literal['BUY', 'SELL'],
-                 price: int | float = None
+                 price: int | float = None,
+                 signal: str = None
                  ):
         """
         Initialises the order type, setting whether it is
-        a Market order ('MKT') or Limit order ('LMT'), has
+        a Market order ('MKT') or Limit order ('LMT'), or Stop order ('STP').
         a quantity (integral or float) and its direction ('BUY' or 'SELL').
 
         Args:
@@ -118,6 +119,7 @@ class OrderEvent(Event):
             quantity (int | float): Non-negative number for quantity.            
             direction (str): 'BUY' or 'SELL' for long or short.
             price (int | float): The price at which to order.
+            signal (str): The signal that generated the order.
         """
         self.type = 'ORDER'
         self.symbol = symbol
@@ -125,6 +127,7 @@ class OrderEvent(Event):
         self.quantity = quantity
         self.direction = direction
         self.price = price
+        self.signal = signal
 
         def print_order(self):
             """
@@ -162,7 +165,8 @@ class FillEvent(Event):
                  quantity: int | float,
                  direction: Literal['BUY', 'SELL'],
                  fill_cost: int | float | None,
-                 commission: float | None = None
+                 commission: float | None = None,
+                 order: str = None
                  ):
         """
         Initialises the FillEvent object. Sets the symbol, exchange,
@@ -181,6 +185,7 @@ class FillEvent(Event):
             direction (str): The direction of fill `('LONG', 'SHORT', 'EXIT')`
             fill_cost (int | float): Price of the shares when filled.
             commission (float | None): An optional commission sent from IB.
+            order (str): The order that this fill is related
         """
         self.type = 'FILL'
         self.timeindex = timeindex
@@ -194,6 +199,7 @@ class FillEvent(Event):
             self.commission = self.calculate_ib_commission()
         else:
             self.commission = commission
+        self.order = order
 
     def calculate_ib_commission(self):
         """

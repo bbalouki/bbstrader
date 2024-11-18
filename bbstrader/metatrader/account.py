@@ -688,7 +688,7 @@ class Account(object):
                 "minors": r"\b(Minors?)\b",
                 "exotics": r"\b(Exotics?)\b",
             }
-            return self._get_symbols_by_category('forex', category, fx_categories)
+            return self._get_symbols_by_category('FX', category, fx_categories)
 
     def get_stocks_from_country(self, country_code: str = 'USA', etf=True) -> List[str]:
         """

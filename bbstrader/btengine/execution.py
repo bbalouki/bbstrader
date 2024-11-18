@@ -4,7 +4,6 @@ from abc import ABCMeta, abstractmethod
 from bbstrader.btengine.event import FillEvent, OrderEvent
 from bbstrader.btengine.data import DataHandler
 from bbstrader.metatrader.account import Account
-from bbstrader.config import config_logger
 
 __all__ = [
     "ExecutionHandler",
@@ -26,7 +25,8 @@ class ExecutionHandler(metaclass=ABCMeta):
 
     The ExecutionHandler described here is exceedingly simple, 
     since it fills all orders at the current market price. 
-    This is highly unrealistic, but serves as a good baseline for improvement.
+    This is highly unrealistic, for other markets thant ``CFDs`` 
+    but serves as a good baseline for improvement.
     """
 
     @abstractmethod
@@ -64,7 +64,7 @@ class SimExecutionHandler(ExecutionHandler):
         """
         self.events = events
         self.bardata = data
-        self.logger = kwargs.get("logger", config_logger("execution.log"))
+        self.logger = kwargs.get("logger")
 
     def execute_order(self, event: OrderEvent):
         """
@@ -77,8 +77,9 @@ class SimExecutionHandler(ExecutionHandler):
         if event.type == 'ORDER':
             dtime = self.bardata.get_latest_bar_datetime(event.symbol)
             fill_event = FillEvent(
-                dtime, event.symbol,
-                'ARCA', event.quantity, event.direction, None
+                timeindex=dtime, symbol=event.symbol,
+                exchange='ARCA', quantity=event.quantity, direction=event.direction,
+                fill_cost=None, commission=None, order=event.signal
             )
             self.events.put(fill_event)
             self.logger.info(
@@ -121,7 +122,7 @@ class MT5ExecutionHandler(ExecutionHandler):
         """
         self.events = events
         self.bardata = data
-        self.logger = kwargs.get("logger", config_logger("execution.log"))
+        self.logger = kwargs.get("logger")
         self.__account = Account()
 
     def _calculate_lot(self, symbol, quantity, price):
@@ -232,7 +233,7 @@ class MT5ExecutionHandler(ExecutionHandler):
             fill_event = FillEvent(
                 timeindex=dtime, symbol=symbol,
                 exchange='MT5', quantity=quantity, direction=direction,
-                fill_cost=None, commission=fees
+                fill_cost=None, commission=fees, order=event.signal
             )
             self.events.put(fill_event)
             self.logger.info(

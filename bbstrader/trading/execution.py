@@ -78,10 +78,11 @@ EXIT_SIGNAL_ACTIONS = {
 
 def _mt5_execution(
         symbol_list, trades_instances, strategy_cls, /,
-        mm, trail, stop_trail, trail_after_points, be_plus_points, show_positions_orders,
-        time_frame, iter_time, use_trade_time, period, period_end_action, closing_pnl, trading_days,
+        mm, optimizer, trail, stop_trail, trail_after_points, be_plus_points, show_positions_orders,
+        iter_time, use_trade_time, period, period_end_action, closing_pnl, trading_days,
         comment, **kwargs):
     symbols  = symbol_list.copy()
+    time_frame = kwargs.get('time_frame', '15m')
     STRATEGY = kwargs.get('strategy_name')
     mtrades  = kwargs.get('max_trades')
     notify   = kwargs.get('notify', False)
@@ -89,8 +90,16 @@ def _mt5_execution(
         telegram  = kwargs.get('telegram', False)
         bot_token = kwargs.get('bot_token')
         chat_id   = kwargs.get('chat_id')
+    
+    def update_risk(weights):
+        if weights is not None:
+            for symbol in symbols:
+                if symbol not in weights:
+                    continue
+                trade = trades_instances[symbol]
+                trade.dailydd = round(weights[symbol], 5)
 
-    def _send_notification(self, signal):
+    def _send_notification(signal):
         send_message(message=signal, notify_me=notify, 
                     telegram=telegram, token=bot_token, chat_id=chat_id)
         
@@ -104,8 +113,6 @@ def _mt5_execution(
         if not mm:
             return
         if buys is not None or sells is not None:
-            logger.info(
-                f"Checking for Break even, SYMBOL={symbol}...STRATEGY={STRATEGY}")
             trades_instances[symbol].break_even(
                 mm=mm, trail=trail, stop_trail=stop_trail, 
                 trail_after_points=trail_after_points, be_plus_points=be_plus_points)
@@ -119,10 +126,10 @@ def _mt5_execution(
         check_mt5_connection()
         strategy: MT5Strategy = strategy_cls(symbol_list=symbols, mode='live', **kwargs)
     except Exception as e:
-        logger.error(f"Error initializing strategy, {e}, STRATEGY={STRATEGY}")
+        logger.error(f"Initializing strategy, {e}, STRATEGY={STRATEGY}")
         return
     logger.info(
-        f'Running {STRATEGY} Strategy on {symbols} in {time_frame} Interval ...')
+        f'Running {STRATEGY} Strategy in {time_frame} Interval ...')
     
     while True:
         try:
@@ -132,7 +139,9 @@ def _mt5_execution(
             time.sleep(0.5)
             positions_orders = {}
             for type in POSITIONS_TYPES + ORDERS_TYPES:
+                positions_orders[type] = {}
                 for symbol in symbols:
+                    positions_orders[type][symbol] = None
                     func = getattr(trades_instances[symbol], f"get_current_{type}")
                     positions_orders[type][symbol] = func()
             buys = positions_orders['buys']
@@ -154,12 +163,14 @@ def _mt5_execution(
             }
 
         except Exception as e:
-            logger.error(f"{e}, STRATEGY={STRATEGY}")
+            logger.error(f"Handling Positions and Orders, {e}, STRATEGY={STRATEGY}")
             continue
         time.sleep(0.5)
         try:
             check_mt5_connection()
             signals = strategy.calculate_signals()
+            weights = strategy.apply_risk_management(optimizer)
+            update_risk(weights)
         except Exception as e:
             logger.error(f"Calculating signal, {e}, STRATEGY={STRATEGY}")
             continue
@@ -181,9 +192,10 @@ def _mt5_execution(
                     if signal is not None:
                         signal = 'BMKT' if signal == 'LONG' else signal
                         signal = 'SMKT' if signal == 'SHORT' else signal
-                        info = f"SIGNAL = {signal}, SYMBOL={trade.symbol}, STRATEGY={STRATEGY}"
+                        info = f"SIGNAL = {signal}, SYMBOL={trade.symbol}, STRATEGY={STRATEGY}, TIMEFRAME={time_frame}"
                         msg = f"Sending {signal} Order ... SYMBOL={trade.symbol}, STRATEGY={STRATEGY}"
-                        logger.info(info)
+                        if signal not in EXIT_SIGNAL_ACTIONS:
+                            logger.info(info)
                         if signal in EXIT_SIGNAL_ACTIONS:
                             for exit_signal, actions in EXIT_SIGNAL_ACTIONS.items():
                                 for position_type, order_type in actions.items():
@@ -235,13 +247,15 @@ def _mt5_execution(
                         elif signal in SELLS and short_market[symbol]:
                             logger.info(riskmsg)
                             check(buys[symbol], sells[symbol], symbol)
+                    else:
+                        check(buys[symbol], sells[symbol], symbol)
                 else:
                     logger.info(
                         f"Not trading Time !!! SYMBOL={trade.symbol}, STRATEGY={STRATEGY}")
                     check(buys[symbol], sells[symbol], symbol)
 
             except Exception as e:
-                logger.error(f"{e}, SYMBOL={symbol}, STRATEGY={STRATEGY}")
+                logger.error(f"Handling Signals {e}, SYMBOL={symbol}, STRATEGY={STRATEGY}")
                 continue
         time.sleep((60 * iter_time) - 1.0)
         if iter_time == 1:
@@ -253,7 +267,6 @@ def _mt5_execution(
                 f"iter_time must be a multiple of the {time_frame} !!!"
                 f"(e.g; if time_frame is 15m, iter_time must be 1.5, 3, 3, 15 etc)"
             )
-        print()
         try:
             FRIDAY = 'friday'
             check_mt5_connection()
@@ -434,12 +447,12 @@ class MT5ExecutionEngine():
                  strategy_cls:       Strategy,
                  /,
                  mm:                 bool = True,
+                 optimizer:          str = 'equal',
                  trail:              bool = True,
                  stop_trail:         Optional[int] = None,
                  trail_after_points: Optional[int] = None,
                  be_plus_points:     Optional[int] = None,
                  show_positions_orders: bool = False,
-                 time_frame:         str = '15m',
                  iter_time:          int | float = 5,
                  use_trade_time:     bool = True,
                  period:             Literal['day', 'week', 'month'] = 'week',
@@ -455,8 +468,9 @@ class MT5ExecutionEngine():
             trades_instances : Dictionary of Trade instances
             strategy_cls : Strategy class to use for trading
             mm : Enable Money Management. Defaults to False.
+            optimizer : Risk management optimizer. Defaults to 'equal'.
+                See `bbstrader.models.optimization` module for more information.
             show_positions_orders : Print open positions and orders. Defaults to False.
-            time_frame : Time frame to trade. Defaults to '15m'.
             iter_time : Interval to check for signals and `mm`. Defaults to 5.
             use_trade_time : Open trades after the time is completed. Defaults to True.
             period : Period to trade. Defaults to 'week'.
@@ -466,6 +480,7 @@ class MT5ExecutionEngine():
             trading_days : Trading days in a week. Defaults to monday to friday.
             comment: Comment for trades. Defaults to None.
             **kwargs: Additional keyword arguments
+                _ time_frame : Time frame to trade. Defaults to '15m'.
                 - strategy_name (Optional[str]): Strategy name. Defaults to None.
                 - max_trades (Dict[str, int]): Maximum trades per symbol. Defaults to None.
                 - notify (bool): Enable notifications. Defaults to False.
@@ -495,12 +510,12 @@ class MT5ExecutionEngine():
         self.trades_instances = trades_instances
         self.strategy_cls = strategy_cls
         self.mm = mm
+        self.optimizer = optimizer
         self.trail = trail
         self.stop_trail = stop_trail
         self.trail_after_points = trail_after_points
         self.be_plus_points = be_plus_points
         self.show_positions_orders = show_positions_orders
-        self.time_frame = time_frame
         self.iter_time = iter_time
         self.use_trade_time = use_trade_time
         self.period = period
@@ -517,12 +532,12 @@ class MT5ExecutionEngine():
             self.trades_instances,
             self.strategy_cls,
             mm=self.mm,
+            optimizer=self.optimizer,
             trail=self.trail,
             stop_trail=self.stop_trail,
             trail_after_points=self.trail_after_points,
             be_plus_points=self.be_plus_points,
             show_positions_orders=self.show_positions_orders,
-            time_frame=self.time_frame,
             iter_time=self.iter_time,
             use_trade_time=self.use_trade_time,
             period=self.period,
