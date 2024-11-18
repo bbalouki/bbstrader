@@ -77,8 +77,9 @@ class SimExecutionHandler(ExecutionHandler):
         if event.type == 'ORDER':
             dtime = self.bardata.get_latest_bar_datetime(event.symbol)
             fill_event = FillEvent(
-                dtime, event.symbol,
-                'ARCA', event.quantity, event.direction, order=event.signal
+                timeindex=dtime, symbol=event.symbol,
+                exchange='ARCA', quantity=event.quantity, direction=event.direction,
+                fill_cost=None, commission=None, order=event.signal
             )
             self.events.put(fill_event)
             self.logger.info(

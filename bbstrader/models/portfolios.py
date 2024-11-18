@@ -10,6 +10,9 @@ from bbstrader.models.optimization import (
     equal_weighted
 )
 
+__all__ = [
+    'EigenPortfolios'
+]
 
 class EigenPortfolios(object):
     """

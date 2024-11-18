@@ -85,6 +85,8 @@ class BacktestEngine(Backtest):
             strategy (Strategy): Generates signals based on market data.
             kwargs : Additional parameters based on the `ExecutionHandler`, 
                 the `DataHandler`, the `Strategy` used and the `Portfolio`.
+                - show_equity (bool): Show the equity curve of the portfolio.
+                - stats_file (str): File to save the summary stats.
         """
         self.symbol_list = symbol_list
         self.initial_capital = initial_capital
@@ -104,6 +106,7 @@ class BacktestEngine(Backtest):
 
         self._generate_trading_instances()
         self.show_equity = kwargs.get("show_equity", False)
+        self.stats_file = kwargs.get("stats_file", None)
 
     def _generate_trading_instances(self):
         """
@@ -137,14 +140,21 @@ class BacktestEngine(Backtest):
         i = 0
         while True:
             i += 1
-            # Update the market bars
+            value = self.portfolio.all_holdings[-1]['Total']
             if self.data_handler.continue_backtest == True:
+                # Update the market bars
                 self.data_handler.update_bars()
                 self.strategy.check_pending_orders()
+                self.strategy.get_update_from_portfolio(
+                    self.portfolio.current_positions,
+                    self.portfolio.current_holdings
+                )
+                self.strategy.cash = value
             else:
                 print("\n[======= BACKTEST COMPLETED =======]")
-                print(f"END DATE: {self.data_handler.get_latest_bar_datetime()}")
+                print(f"END DATE: {self.data_handler.get_latest_bar_datetime(self.symbol_list[0])}")
                 print(f"TOTAL BARS: {i} ")
+                print(f"PORFOLIO VALUE: {round(value, 2)}")
                 break
 
             # Handle the events
@@ -171,10 +181,6 @@ class BacktestEngine(Backtest):
                             self.fills += 1
                             self.portfolio.update_fill(event)
                             self.strategy.update_trades_from_fill(event)
-                            self.strategy.get_update_from_portfolio(
-                                self.portfolio.current_positions,
-                                self.portfolio.current_holdings
-                            )
 
             time.sleep(self.heartbeat)
 
@@ -192,13 +198,13 @@ class BacktestEngine(Backtest):
         stat2['Orders'] = self.orders
         stat2['Fills'] = self.fills
         stats.extend(stat2.items())
-        print(
-            tabulate(
-                stats, 
-                headers=["Metric", "Value"], 
-                tablefmt="outline"), 
-                "\n"
-            )
+        tab_stats = tabulate(stats, headers=["Metric", "Value"], tablefmt="outline")
+        print(tab_stats, "\n")
+        if self.stats_file:
+            with open(self.stats_file, 'a') as f:
+                f.write("\n[======= Summary Stats =======]\n")
+                f.write(tab_stats)
+                f.write("\n")
 
         if self.show_equity:
             print("\nCreating equity curve...")
@@ -336,7 +342,7 @@ def run_backtest_with(engine: Literal["bbstrader", "cerebro", "zipline"], **kwar
             data_handler=kwargs.get("data_handler"),
             strategy=kwargs.get("strategy"),
             exc_handler=kwargs.get("exc_handler"),
-            initial_capital=kwargs.get("initial_capital"),
+            initial_capital=kwargs.get("initial_capital", 100000.0),
             heartbeat=kwargs.get("heartbeat", 0.0),
             **kwargs
         )

@@ -6,7 +6,14 @@ from pypfopt.efficient_frontier import EfficientFrontier
 from pypfopt.hierarchical_portfolio import HRPOpt
 import warnings
 
-def markowitz_weights(prices=None, freq=252):
+__all__ = [
+    'markowitz_weights', 
+    'hierarchical_risk_parity', 
+    'equal_weighted', 
+    'optimized_weights'
+]
+
+def markowitz_weights(prices=None, rfr=0.0, freq=252):
     """
     Calculates optimal portfolio weights using Markowitz's mean-variance optimization (Max Sharpe Ratio) with multiple solvers.
 
@@ -45,7 +52,7 @@ def markowitz_weights(prices=None, freq=252):
                                weight_bounds=(0, 1),
                                solver=solver)
         try:
-            weights = ef.max_sharpe()
+            weights = ef.max_sharpe(risk_free_rate=rfr)
             return ef.clean_weights()
         except Exception as e:
             print(f"Solver {solver} failed with error: {e}")
@@ -83,7 +90,7 @@ def hierarchical_risk_parity(prices=None, returns=None, freq=252):
     if returns is None and prices is None:
         raise ValueError("Either prices or returns must be provided")
     if returns is None:
-        returns = prices.pct_change().dropna()
+        returns = prices.pct_change().dropna(how='all')
     # Remove duplicate columns and index
     returns = returns.loc[:, ~returns.columns.duplicated()]
     returns = returns.loc[~returns.index.duplicated(keep='first')]
@@ -128,7 +135,7 @@ def equal_weighted(prices=None, returns=None, round_digits=5):
         columns = returns.columns
     return {col: round(1/n, round_digits) for col in columns}
 
-def optimized_weights(prices=None, returns=None, freq=252, method='markowitz'):
+def optimized_weights(prices=None, returns=None, rfr=0.0, freq=252, method='equal'):
     """
     Selects an optimization method to calculate portfolio weights based on user preference.
 
@@ -161,7 +168,7 @@ def optimized_weights(prices=None, returns=None, freq=252, method='markowitz'):
     - 'equal': Equal weighting across all assets
     """
     if method == 'markowitz':
-        return markowitz_weights(prices=prices, freq=freq)
+        return markowitz_weights(prices=prices, rfr=rfr, freq=freq)
     elif method == 'hrp':
         return hierarchical_risk_parity(prices=prices, returns=returns, freq=freq)
     elif method == 'equal':

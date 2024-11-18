@@ -6,6 +6,8 @@ from scipy.stats import mstats
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 import quantstats as qs
+import warnings
+warnings.filterwarnings("ignore")
 
 sns.set_theme()
 

@@ -93,16 +93,20 @@ class Portfolio(object):
             initial_capital (float): The starting capital in USD.
 
             kwargs (dict): Additional arguments
+                - `leverage`: The leverage to apply to the portfolio.
                 - `time_frame`: The time frame of the bars.
-                - `trading_hours`: The number of trading hours in a day.
+                - `session_duration`: The number of trading hours in a day.
                 - `benchmark`: The benchmark symbol to compare the portfolio.
-                - `strategy_name`: The name of the strategy  (the name must not include 'Strategy' in it).    
+                - `output_dir`: The directory to save the backtest results.
+                - `strategy_name`: The name of the strategy  (the name must not include 'Strategy' in it). 
+                - `print_stats`: Whether to print the backtest statistics.   
         """
         self.bars = bars
         self.events = events
         self.symbol_list = self.bars.symbol_list
         self.start_date = start_date
         self.initial_capital = initial_capital
+        self._leverage = kwargs.get('leverage', 1)
 
         self.timeframe = kwargs.get("time_frame", "D1")
         self.trading_hours = kwargs.get("session_duration", 23)
@@ -277,8 +281,7 @@ class Portfolio(object):
 
     def generate_order(self, signal: SignalEvent):
         """
-        Check if the portfolio has enough cash to place an order
-        and generate an OrderEvent, else return None.
+        Turns a SignalEvent into an OrderEvent.
 
         Args:
             signal (SignalEvent): The tuple containing Signal information.
@@ -294,25 +297,17 @@ class Portfolio(object):
         strength = signal.strength
         price = signal.price or self._get_price(symbol)
         cur_quantity = self.current_positions[symbol]
-        cash = self.current_holdings['Cash']
+        mkt_quantity = round(quantity * strength, 2)
+        new_quantity = mkt_quantity * self._leverage
 
         if direction in ['LONG', 'SHORT', 'EXIT']:
             order_type = 'MKT'
         else:
             order_type = direction
-        mkt_quantity = round(quantity * strength)
-        cost = mkt_quantity * price
 
-        if cash >= cost:
-            new_quantity = mkt_quantity
-        elif cash < cost and cash > 0:
-            new_quantity =  round(cash // price)
-        else:
-            new_quantity = 0
-
-        if new_quantity > 0 and direction == 'LONG':
+        if  direction == 'LONG' and new_quantity > 0: 
             order = OrderEvent(symbol, order_type, new_quantity, 'BUY', price, direction)
-        if new_quantity > 0 and direction == 'SHORT':
+        if direction == 'SHORT' and new_quantity > 0:
             order = OrderEvent(symbol, order_type, new_quantity, 'SELL', price, direction)
 
         if direction == 'EXIT' and cur_quantity > 0:
@@ -321,6 +316,7 @@ class Portfolio(object):
             order = OrderEvent(symbol, order_type, abs(cur_quantity), 'BUY', price, direction)
 
         return order
+
 
     def update_signal(self, event: SignalEvent):
         """
