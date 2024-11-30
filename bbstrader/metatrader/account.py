@@ -125,9 +125,57 @@ AMG_EXCHANGES = {
     'XSWX': r"Switzerland.*\(SWX\)"
 }
 
-def check_mt5_connection():
+def check_mt5_connection(**kwargs):
+    """
+    Initialize the connection to the MetaTrader 5 terminal.
+
+    Args:
+        path (str, optional): The path to the MetaTrader 5 terminal executable file. 
+            Defaults to None (e.g., "C:\\Program Files\\MetaTrader 5\\terminal64.exe").
+        login (int, optional): The login ID of the trading account. Defaults to None.
+        password (str, optional): The password of the trading account. Defaults to None.
+        server (str, optional): The name of the trade server to which the client terminal is connected. 
+            Defaults to None.
+        timeout (int, optional): Connection timeout in milliseconds. Defaults to 60_000.
+        portable (bool, optional): If True, the portable mode of the terminal is used. 
+            Defaults to False (See https://www.metatrader5.com/en/terminal/help/start_advanced/start#portable).
+    
+    Notes:
+        If you want to lunch multiple terminal instances:
+        - Follow these instructions to lunch each terminal in portable mode first:
+            https://www.metatrader5.com/en/terminal/help/start_advanced/start#configuration_file
+    """
+    path     = kwargs.get('path', None)
+    login    = kwargs.get('login', None)
+    password = kwargs.get('password', None)
+    server   = kwargs.get('server', None)
+    timeout  = kwargs.get('timeout', 60_000)
+    portable = kwargs.get('portable', False)
+
+    if path is None and (login or password or server):
+        raise ValueError(
+            f"You must provide a path to the terminal executable file"
+            f"when providing login, password or server"
+        )
     try:
-        init = mt5.initialize()
+        if path is not None:
+            if (
+                login is not None and 
+                password is not None and 
+                server is not None
+            ):
+                init = mt5.initialize(
+                    path=path,
+                    login=login,
+                    password=password,
+                    server=server,
+                    timeout=timeout,
+                    portable=portable
+                )
+            else:
+                init = mt5.initialize(path=path)
+        else:
+            init = mt5.initialize()
         if not init:
             raise_mt5_error(INIT_MSG)
     except Exception:
@@ -135,9 +183,9 @@ def check_mt5_connection():
 
 
 class Broker(object):
-    def __init__(self, name: str=None):
+    def __init__(self, name: str=None, **kwargs):
         if name is None:
-            check_mt5_connection()
+            check_mt5_connection(**kwargs)
             self._name = mt5.account_info().company
         else:
             self._name = name
@@ -157,8 +205,8 @@ class Broker(object):
 
 
 class AdmiralMarktsGroup(Broker):
-    def __init__(self):
-        super().__init__("Admirals Group AS")
+    def __init__(self, **kwargs):
+        super().__init__("Admirals Group AS", **kwargs)
     
     @property
     def timezone(self) -> str:
@@ -166,8 +214,8 @@ class AdmiralMarktsGroup(Broker):
 
 
 class JustGlobalMarkets(Broker):
-    def __init__(self):
-        super().__init__("Just Global Markets Ltd.")
+    def __init__(self, **kwargs):
+        super().__init__("Just Global Markets Ltd.", **kwargs)
 
     @property
     def timezone(self) -> str:
@@ -175,8 +223,8 @@ class JustGlobalMarkets(Broker):
 
 
 class FTMO(Broker):
-    def __init__(self):
-        super().__init__("FTMO S.R.O.")
+    def __init__(self, **kwargs):
+        super().__init__("FTMO S.R.O.", **kwargs)
     
     @property
     def timezone(self) -> str:
@@ -230,8 +278,14 @@ class Account(object):
         >>> trade_history = account.get_trade_history(from_date, to_date)
     """
 
-    def __init__(self):
-        check_mt5_connection()
+    def __init__(self, **kwargs):
+        """
+        Initialize the Account class.
+
+        See `bbstrader.metatrader.account.check_mt5_connection()` for more details on how to connect to MT5 terminal.
+
+        """
+        check_mt5_connection(**kwargs)
         self._check_brokers()
 
     def _check_brokers(self):

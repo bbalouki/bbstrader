@@ -310,7 +310,15 @@ class HMMRiskManager(RiskModel):
                 and data filtered up to the end date if specified.
         """
         df = data_frame.copy()
-        df['Returns'] = df['Adj Close'].pct_change()
+        if 'Returns' or 'returns' not in df.columns:
+            if 'Close'  in df.columns:
+                df['Returns'] = df['Close'].pct_change()
+            elif 'Adj Close' in df.columns:
+                df['Returns'] = df['Adj Close'].pct_change()
+            else:
+                raise ValueError("No 'Close' or 'Adj Close' columns found.")
+        elif 'returns' in df.columns:
+            df.rename(columns={'returns': 'Returns'}, inplace=True)
         if end is not None:
             df = df[:end.strftime('%Y-%m-%d')]
         df.dropna(inplace=True)

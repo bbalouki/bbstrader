@@ -118,8 +118,10 @@ class RiskManagement(Account):
             tp (int, optional): Take Profit in points, Must be a positive number.
             be (int, optional): Break Even in points, Must be a positive number.
             rr (float, optional): Risk reward ratio, Must be a positive number. Defaults to 1.5.
+        
+        See `bbstrader.metatrader.account.check_mt5_connection()` for more details on how to connect to MT5 terminal.
         """
-        super().__init__()
+        super().__init__(**kwargs)
 
         # Validation
         if daily_risk is not None and daily_risk < 0:
@@ -137,6 +139,7 @@ class RiskManagement(Account):
         if var_time_frame not in TIMEFRAMES:
             raise ValueError("Unsupported time frame {}".format(var_time_frame))
 
+        self.kwargs = kwargs
         self.symbol = symbol
         self.start_time = start_time
         self.finishing_time = finishing_time
@@ -279,7 +282,7 @@ class RiskManagement(Account):
         tf_int = self._convert_time_frame(self._tf)
         interval = round((minutes / tf_int)  * 252)
 
-        rate = Rates(self.symbol, self._tf, 0, interval)
+        rate = Rates(self.symbol, self._tf, 0, interval, **self.kwargs)
         returns = rate.returns*100
         std = returns.std()
         point = self.get_symbol_info(self.symbol).point
@@ -333,7 +336,7 @@ class RiskManagement(Account):
         tf_int = self._convert_time_frame(tf)
         interval = round((minutes / tf_int)  * 252)
 
-        rate = Rates(self.symbol, tf, 0, interval)
+        rate = Rates(self.symbol, tf, 0, interval, **self.kwargs)
         returns = rate.returns*100
         p = self.get_account_info().margin_free
         mu = returns.mean()
