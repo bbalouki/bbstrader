@@ -138,6 +138,7 @@ class Trade(RiskManagement):
             -   tp
             -   be
         See the RiskManagement class for more details on these parameters.
+        See `bbstrader.metatrader.account.check_mt5_connection()` for more details on how to connect to MT5 terminal.
         """
         # Call the parent class constructor first
         super().__init__(
@@ -160,6 +161,7 @@ class Trade(RiskManagement):
         self.console_log = console_log
         self.logger = self._get_logger(logger, console_log)
         self.tf = kwargs.get("time_frame", 'D1')
+        self.kwargs = kwargs
 
         self.start_time_hour, self.start_time_minutes = self.start.split(":")
         self.finishing_time_hour, self.finishing_time_minutes = self.finishing.split(
@@ -174,8 +176,8 @@ class Trade(RiskManagement):
         self.break_even_points  = {}
         self.trail_after_points = []
 
-        self.initialize()
-        self.select_symbol()
+        self.initialize(**kwargs)
+        self.select_symbol(**kwargs)
         self.prepare_symbol()
 
         if self.verbose:
@@ -194,7 +196,7 @@ class Trade(RiskManagement):
             return config_logger(f'{log_path}/{logger}', consol_log)
         return logger
     
-    def initialize(self):
+    def initialize(self, **kwargs):
         """
         Initializes the MetaTrader 5 (MT5) terminal for trading operations. 
         This method attempts to establish a connection with the MT5 terminal. 
@@ -207,7 +209,7 @@ class Trade(RiskManagement):
         try:
             if self.verbose:
                 print("\nInitializing the basics.")
-            check_mt5_connection()
+            check_mt5_connection(**kwargs)
             if self.verbose:
                 print(
                     f"You are running the @{self.expert_name} Expert advisor,"
@@ -216,7 +218,7 @@ class Trade(RiskManagement):
         except Exception as e:
             self.logger.error(f"During initialization: {e}")
 
-    def select_symbol(self):
+    def select_symbol(self, **kwargs):
         """
         Selects the trading symbol in the MetaTrader 5 (MT5) terminal. 
         This method ensures that the specified trading 
@@ -228,6 +230,7 @@ class Trade(RiskManagement):
             MT5TerminalError: If symbole selection fails.
         """
         try:
+            check_mt5_connection(**kwargs)
             if not Mt5.symbol_select(self.symbol, True):
                 raise_mt5_error(message=INIT_MSG)
         except Exception as e:
@@ -848,10 +851,11 @@ class Trade(RiskManagement):
             positions = self.get_positions(symbol=self.symbol)
             if positions is not None:
                 positions = [position for position in positions if position.magic == id]
-        profit = 0.0
-        balance = self.get_account_info().balance
-        target = round((balance * self.target)/100, 2)
-        if positions is not None or len(positions) != 0:
+        
+        if positions is not None:
+            profit = 0.0
+            balance = self.get_account_info().balance
+            target = round((balance * self.target)/100, 2)
             for position in positions:
                 profit += position.profit
             fees = self.get_stats()[0]["average_fee"] * len(positions)
@@ -1489,6 +1493,7 @@ def create_trade_instance(
         daily_risk: Optional[Dict[str, float]] = None,
         max_risk: Optional[Dict[str, float]] = None,
         pchange_sl: Optional[Dict[str, float] | float] = None,
+        **kwargs
     ) -> Dict[str, Trade]:
     """
     Creates Trade instances for each symbol provided.

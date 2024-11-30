@@ -82,6 +82,8 @@ class Rates(object):
         2. The `open, high, low, close, adjclose, returns,
         volume` properties returns data in  Broker's timezone by default.
 
+        See `bbstrader.metatrader.account.check_mt5_connection()` for more details on how to connect to MT5 terminal.
+
     Example:
         >>> rates = Rates("EURUSD", "1h")
         >>> df = rates.get_historical_data(
@@ -94,17 +96,18 @@ class Rates(object):
     def __init__(
         self,
         symbol: str,
-        time_frame: TimeFrame = 'D1',
+        timeframe: TimeFrame = 'D1',
         start_pos: Union[int , str] = 0,
         count: Optional[int] = MAX_BARS,
-        session_duration: Optional[float] = None
+        session_duration: Optional[float] = None,
+        **kwargs
     ):
         """
         Initializes a new Rates instance.
 
         Args:
             symbol (str): Financial instrument symbol (e.g., "EURUSD").
-            time_frame (str): Timeframe string (e.g., "D1", "1h", "5m").
+            timeframe (str): Timeframe string (e.g., "D1", "1h", "5m").
             start_pos (int, | str): Starting index (int)  or date (str) for data retrieval.
             count (int, optional): Number of bars to retrieve default is
                 the maximum bars availble in the MT5 terminal.
@@ -118,16 +121,17 @@ class Rates(object):
             For `session_duration` check your broker symbols details
         """
         self.symbol = symbol
-        self.time_frame = self._validate_time_frame(time_frame)
+        tf = kwargs.get('time_frame')
+        self.time_frame = self._validate_time_frame(timeframe)
         self.sd = session_duration
-        self.start_pos = self._get_start_pos(start_pos, time_frame)
+        self.start_pos = self._get_start_pos(start_pos, timeframe)
         self.count = count
-        self._mt5_initialized()
-        self.__account = Account()
+        self._mt5_initialized(**kwargs)
+        self.__account = Account(**kwargs)
         self.__data = self.get_rates_from_pos()
 
-    def _mt5_initialized(self):
-        check_mt5_connection()
+    def _mt5_initialized(self, **kwargs):
+        check_mt5_connection(**kwargs)
     
     def _get_start_pos(self, index, time_frame):
         if isinstance(index, int):
@@ -471,13 +475,13 @@ class Rates(object):
             df.to_csv(f"{self.symbol}.csv")
         return df
 
-def download_historical_data(symbol, time_frame, date_from, 
+def download_historical_data(symbol, timeframe, date_from, 
                              date_to=pd.Timestamp.now(),lower_colnames=True, 
-                             utc=False, filter=False, fill_na=False, save_csv=False):
+                             utc=False, filter=False, fill_na=False, save_csv=False, **kwargs):
     """Download historical data from MetaTrader 5 terminal.
     See `Rates.get_historical_data` for more details.
     """
-    rates = Rates(symbol, time_frame)
+    rates = Rates(symbol, timeframe, **kwargs)
     data = rates.get_historical_data(
         date_from=date_from,
         date_to=date_to,
@@ -488,23 +492,23 @@ def download_historical_data(symbol, time_frame, date_from,
     )
     return data
 
-def get_data_from_pos(symbol, time_frame, start_pos=0, fill_na=False, 
+def get_data_from_pos(symbol, timeframe, start_pos=0, fill_na=False, 
                       count=MAX_BARS, lower_colnames=False, utc=False, filter=False,
-                        session_duration=23.0):
+                        session_duration=23.0, **kwargs):
     """Get historical data from a specific position.
     See `Rates.get_rates_from_pos` for more details.
     """
-    rates = Rates(symbol, time_frame, start_pos, count, session_duration)
+    rates = Rates(symbol, timeframe, start_pos, count, session_duration, **kwargs)
     data = rates.get_rates_from_pos(filter=filter, fill_na=fill_na,
                                     lower_colnames=lower_colnames, utc=utc)
     return data
 
-def get_data_from_date(symbol, time_frame, date_from, count=MAX_BARS, fill_na=False, 
-                  lower_colnames=False, utc=False, filter=False):
+def get_data_from_date(symbol, timeframe, date_from, count=MAX_BARS, fill_na=False, 
+                  lower_colnames=False, utc=False, filter=False, **kwargs):
     """Get historical data from a specific date.
     See `Rates.get_rates_from` for more details.
     """
-    rates = Rates(symbol, time_frame)
+    rates = Rates(symbol, timeframe, **kwargs)
     data = rates.get_rates_from(date_from, count, filter=filter, fill_na=fill_na,
                                 lower_colnames=lower_colnames, utc=utc)
     return data
