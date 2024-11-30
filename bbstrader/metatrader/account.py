@@ -279,6 +279,12 @@ class Account(object):
     """
 
     def __init__(self, **kwargs):
+        """
+        Initialize the Account class.
+
+        See `bbstrader.metatrader.account.check_mt5_connection()` for more details on how to connect to MT5 terminal.
+
+        """
         check_mt5_connection(**kwargs)
         self._check_brokers()
 

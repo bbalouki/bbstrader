@@ -104,7 +104,9 @@ def _mt5_execution(
                     telegram=telegram, token=bot_token, chat_id=chat_id)
         
     logger   = trades_instances[symbols[0]].logger
-    max_trades = {symbol: mtrades[symbol] for symbol in symbols}
+    max_trades = {symbol: mtrades[symbol]
+                  if mtrades is not None and symbol in mtrades
+                  else trades_instances[symbol].max_trade() for symbol in symbols}
     if comment is None:
         trade = trades_instances[symbols[0]]
         comment = f"{trade.expert_name}@{trade.version}"
@@ -123,7 +125,7 @@ def _mt5_execution(
     long_market   = {symbol: False for symbol in symbols}
     short_market  = {symbol: False for symbol in symbols}
     try:
-        check_mt5_connection()
+        check_mt5_connection(**kwargs)
         strategy: MT5Strategy = strategy_cls(symbol_list=symbols, mode='live', **kwargs)
     except Exception as e:
         logger.error(f"Initializing strategy, {e}, STRATEGY={STRATEGY}")
@@ -133,7 +135,7 @@ def _mt5_execution(
     
     while True:
         try:
-            check_mt5_connection()
+            check_mt5_connection(**kwargs)
             current_date = datetime.now()
             today = current_date.strftime("%A").lower()
             time.sleep(0.5)
@@ -167,16 +169,18 @@ def _mt5_execution(
             continue
         time.sleep(0.5)
         try:
-            check_mt5_connection()
+            check_mt5_connection(**kwargs)
             signals = strategy.calculate_signals()
-            weights = strategy.apply_risk_management(optimizer)
+            weights = None
+            if hasattr(strategy, 'apply_risk_management'):
+                weights = strategy.apply_risk_management(optimizer)
             update_risk(weights)
         except Exception as e:
             logger.error(f"Calculating signal, {e}, STRATEGY={STRATEGY}")
             continue
         for symbol in symbols:
             try:
-                check_mt5_connection()
+                check_mt5_connection(**kwargs)
                 trade: Trade = trades_instances[symbol]
                 tfmsg = f"Time Frame Not completed !!! SYMBOL={trade.symbol}, STRATEGY={STRATEGY}"
                 riskmsg = f"Risk not allowed !!! SYMBOL={trade.symbol}, STRATEGY={STRATEGY}"
@@ -269,7 +273,7 @@ def _mt5_execution(
             )
         try:
             FRIDAY = 'friday'
-            check_mt5_connection()
+            check_mt5_connection(**kwargs)
             day_end = all(trade.days_end() for trade in trades_instances.values())
             if closing_pnl is not None:
                 closing = all(trade.positive_profit(id=trade.expert_id, th=closing_pnl) 
@@ -461,7 +465,7 @@ class MT5ExecutionEngine():
                  trading_days:       Optional[List[str]] = TradingDays,
                  comment:            Optional[str] = None,
                  **kwargs
-                 ):
+        ):
         """
         Args:
             symbol_list : List of symbols to trade
@@ -505,6 +509,7 @@ class MT5ExecutionEngine():
             
             4. All strategies must generate signals for backtesting and live trading.
             See the `bbstrader.trading.strategies` module for more information on how to create custom strategies.
+            See `bbstrader.metatrader.account.check_mt5_connection()` for more details on how to connect to MT5 terminal.
         """
         self.symbol_list = symbol_list
         self.trades_instances = trades_instances
@@ -525,8 +530,13 @@ class MT5ExecutionEngine():
         self.comment = comment
         self.kwargs = kwargs
 
+    def __repr__(self):
+        trades = self.trades_instances.keys()
+        s = self.strategy_cls.__name__
+        return f"MT5ExecutionEngine(Symbols={list(trades)}, Strategy={s})"
+    
     def run(self):
-        check_mt5_connection()
+        check_mt5_connection(**self.kwargs)
         _mt5_execution(
             self.symbol_list,
             self.trades_instances,
