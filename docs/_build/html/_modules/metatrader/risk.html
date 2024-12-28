@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>metatrader.risk &mdash; BBSTrader 0.1.08 documentation</title>
+  <title>metatrader.risk &mdash; BBSTrader 0.2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=fda63d7b"></script>
+      <script src="../../_static/documentation_options.js?v=938c9ccc"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -191,8 +191,10 @@
 <span class="sd">            tp (int, optional): Take Profit in points, Must be a positive number.</span>
 <span class="sd">            be (int, optional): Break Even in points, Must be a positive number.</span>
 <span class="sd">            rr (float, optional): Risk reward ratio, Must be a positive number. Defaults to 1.5.</span>
+<span class="sd">        </span>
+<span class="sd">        See `bbstrader.metatrader.account.check_mt5_connection()` for more details on how to connect to MT5 terminal.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
         <span class="c1"># Validation</span>
         <span class="k">if</span> <span class="n">daily_risk</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">daily_risk</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -210,6 +212,7 @@
         <span class="k">if</span> <span class="n">var_time_frame</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">TIMEFRAMES</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unsupported time frame </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var_time_frame</span><span class="p">))</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">symbol</span> <span class="o">=</span> <span class="n">symbol</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">=</span> <span class="n">start_time</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">finishing_time</span> <span class="o">=</span> <span class="n">finishing_time</span>
@@ -229,6 +232,22 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">symbol_info</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_symbol_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_tf</span> <span class="o">=</span> <span class="n">time_frame</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">dailydd</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">daily_dd</span>
+
+    <span class="nd">@dailydd</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">dailydd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">daily_dd</span> <span class="o">=</span> <span class="n">value</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">maxrisk</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_risk</span>
+    
+    <span class="nd">@maxrisk</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">maxrisk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_risk</span> <span class="o">=</span> <span class="n">value</span>
     
     <span class="k">def</span> <span class="nf">_convert_time_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tf</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert time frame to minutes&quot;&quot;&quot;</span>
@@ -353,7 +372,7 @@
         <span class="n">tf_int</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_time_frame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tf</span><span class="p">)</span>
         <span class="n">interval</span> <span class="o">=</span> <span class="nb">round</span><span class="p">((</span><span class="n">minutes</span> <span class="o">/</span> <span class="n">tf_int</span><span class="p">)</span>  <span class="o">*</span> <span class="mi">252</span><span class="p">)</span>
 
-        <span class="n">rate</span> <span class="o">=</span> <span class="n">Rates</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tf</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">interval</span><span class="p">)</span>
+        <span class="n">rate</span> <span class="o">=</span> <span class="n">Rates</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tf</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">interval</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">returns</span> <span class="o">=</span> <span class="n">rate</span><span class="o">.</span><span class="n">returns</span><span class="o">*</span><span class="mi">100</span>
         <span class="n">std</span> <span class="o">=</span> <span class="n">returns</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
         <span class="n">point</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_symbol_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="p">)</span><span class="o">.</span><span class="n">point</span>
@@ -413,7 +432,7 @@
         <span class="n">tf_int</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_time_frame</span><span class="p">(</span><span class="n">tf</span><span class="p">)</span>
         <span class="n">interval</span> <span class="o">=</span> <span class="nb">round</span><span class="p">((</span><span class="n">minutes</span> <span class="o">/</span> <span class="n">tf_int</span><span class="p">)</span>  <span class="o">*</span> <span class="mi">252</span><span class="p">)</span>
 
-        <span class="n">rate</span> <span class="o">=</span> <span class="n">Rates</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="p">,</span> <span class="n">tf</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">interval</span><span class="p">)</span>
+        <span class="n">rate</span> <span class="o">=</span> <span class="n">Rates</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="p">,</span> <span class="n">tf</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">interval</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">returns</span> <span class="o">=</span> <span class="n">rate</span><span class="o">.</span><span class="n">returns</span><span class="o">*</span><span class="mi">100</span>
         <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_account_info</span><span class="p">()</span><span class="o">.</span><span class="n">margin_free</span>
         <span class="n">mu</span> <span class="o">=</span> <span class="n">returns</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
@@ -557,14 +576,23 @@
         <span class="k">if</span> <span class="n">trade_risk</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">currency_risk</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_loss_value</span><span class="p">(),</span> <span class="mi">5</span><span class="p">)</span>
             <span class="n">volume</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">currency_risk</span><span class="o">*</span><span class="n">laverage</span><span class="p">)</span>
-            <span class="n">_lot</span> <span class="o">=</span> <span class="nb">round</span><span class="p">((</span><span class="n">volume</span> <span class="o">/</span> <span class="p">(</span><span class="n">contract_size</span> <span class="o">*</span> <span class="n">av_price</span><span class="p">)),</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">_lot</span> <span class="o">=</span> <span class="nb">round</span><span class="p">((</span><span class="n">volume</span> <span class="o">/</span> <span class="p">(</span><span class="n">contract_size</span> <span class="o">*</span> <span class="n">av_price</span><span class="p">)),</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ZeroDivisionError</span><span class="p">:</span>
+                <span class="n">_lot</span> <span class="o">=</span> <span class="mf">0.0</span>
             <span class="n">lot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_lot</span><span class="p">(</span><span class="n">_lot</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">COMD</span> <span class="ow">and</span> <span class="n">contract_size</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="c1"># lot = volume / av_price / contract_size</span>
-                <span class="n">lot</span> <span class="o">=</span> <span class="n">volume</span> <span class="o">/</span> <span class="n">av_price</span> <span class="o">/</span> <span class="n">contract_size</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">lot</span> <span class="o">=</span> <span class="n">volume</span> <span class="o">/</span> <span class="n">av_price</span> <span class="o">/</span> <span class="n">contract_size</span>
+                <span class="k">except</span> <span class="ne">ZeroDivisionError</span><span class="p">:</span>
+                    <span class="n">lot</span> <span class="o">=</span> <span class="mf">0.0</span>
                 <span class="n">lot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_lot</span><span class="p">(</span><span class="n">_lot</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">FX</span><span class="p">:</span>
-                <span class="n">__lot</span> <span class="o">=</span> <span class="nb">round</span><span class="p">((</span><span class="n">volume</span> <span class="o">/</span> <span class="n">contract_size</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">__lot</span> <span class="o">=</span> <span class="nb">round</span><span class="p">((</span><span class="n">volume</span> <span class="o">/</span> <span class="n">contract_size</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">ZeroDivisionError</span><span class="p">:</span>
+                    <span class="n">__lot</span> <span class="o">=</span> <span class="mf">0.0</span>
                 <span class="n">lot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_lot</span><span class="p">(</span><span class="n">__lot</span><span class="p">)</span>
 
             <span class="n">tick_value</span> <span class="o">=</span> <span class="n">s_info</span><span class="o">.</span><span class="n">trade_tick_value</span>

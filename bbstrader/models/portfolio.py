@@ -20,6 +20,15 @@ class EigenPortfolios(object):
     to derive portfolios (eigenportfolios) that capture distinct risk factors in the asset returns. Each eigenportfolio 
     represents a principal component of the return covariance matrix, ordered by the magnitude of its eigenvalue. These 
     portfolios capture most of the variance in asset returns and are mutually uncorrelated.
+
+    Notes
+    -----
+    The implementation is inspired by the book "Machine Learning for Algorithmic Trading" by Stefan Jansen.
+
+    References
+    ----------
+    Stefan Jansen (2020). Machine Learning for Algorithmic Trading - Second Edition.
+    chapter 13, Data-Driven Risk Factors and Asset Allocation with Unsupervised Learning.
     
     """
     def __init__(self):
@@ -32,12 +41,12 @@ class EigenPortfolios(object):
         """
         Returns the computed eigenportfolios (weights of assets in each portfolio).
         
-        Returns:
+        Returns
         -------
         pd.DataFrame
             DataFrame containing eigenportfolio weights for each asset.
         
-        Raises:
+        Raises
         ------
         ValueError
             If `fit()` has not been called before retrieving portfolios.
@@ -50,19 +59,19 @@ class EigenPortfolios(object):
         """
         Computes the eigenportfolios based on PCA of the asset returns' covariance matrix.
         
-        Parameters:
+        Parameters
         ----------
         returns : pd.DataFrame
             Historical returns of assets to be used for PCA.
         n_portfolios : int, optional
             Number of eigenportfolios to compute (default is 4).
         
-        Returns:
+        Returns
         -------
         pd.DataFrame
             DataFrame containing normalized weights for each eigenportfolio.
 
-        Notes:
+        Notes
         -----
         This method performs winsorization and normalization on returns to reduce the impact of outliers 
         and achieve zero mean and unit variance. It uses the first `n_portfolios` principal components 
@@ -94,7 +103,7 @@ class EigenPortfolios(object):
         """
         Plots the weights of each asset in each eigenportfolio as bar charts.
         
-        Notes:
+        Notes
         -----
         Each subplot represents one eigenportfolio, showing the contribution of each asset.
         """
@@ -118,7 +127,7 @@ class EigenPortfolios(object):
         """
         Plots the cumulative returns of each eigenportfolio over time.
         
-        Notes:
+        Notes
         -----
         This method calculates the historical cumulative performance of each eigenportfolio 
         by weighting asset returns according to eigenportfolio weights.
@@ -152,7 +161,7 @@ class EigenPortfolios(object):
         """
         Optimizes the chosen eigenportfolio based on a specified optimization method.
         
-        Parameters:
+        Parameters
         ----------
         portfolio : int, optional
             Index of the eigenportfolio to optimize (default is 1).
@@ -165,17 +174,17 @@ class EigenPortfolios(object):
         plot : bool, optional
             Whether to plot the performance of the optimized portfolio (default is True).
         
-        Returns:
+        Returns
         -------
         dict
             Dictionary of optimized asset weights.
         
-        Raises:
+        Raises
         ------
         ValueError
             If an unknown optimizer is specified, or if prices are not provided when using Markowitz optimization.
         
-        Notes:
+        Notes
         -----
         The optimization method varies based on risk-return assumptions, with options for traditional Markowitz optimization,
         Hierarchical Risk Parity, or equal weighting.

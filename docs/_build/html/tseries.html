@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Time Series &mdash; BBSTrader 0.1.08 documentation</title>
+  <title>Time Series &mdash; BBSTrader 0.2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=fda63d7b"></script>
+      <script src="_static/documentation_options.js?v=938c9ccc"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -45,7 +45,7 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">bbstrader</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="btengine.html">Backtesting Egine</a></li>
-<li class="toctree-l2"><a class="reference internal" href="config.html">config module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="config.html">configurations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="core.html">core package</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ibkr.html">ibkr package</a></li>
 <li class="toctree-l2"><a class="reference internal" href="metatrader.html">MetaTrader5 (MT5) Trading</a></li>
@@ -374,14 +374,14 @@ the estimated slope and intercept.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="tseries.KalmanFilterModel.calculate_etqt">
 <span class="sig-name descname"><span class="pre">calculate_etqt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prices</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span></span></span><a class="reference internal" href="_modules/tseries.html#KalmanFilterModel.calculate_etqt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.KalmanFilterModel.calculate_etqt" title="Link to this definition"></a></dt>
-<dd><p>Calculates the forecast error and standard deviation of the predictions
+<dd><p>Calculates the <code class="docutils literal notranslate"><span class="pre">forecast</span> <span class="pre">error</span></code> and <code class="docutils literal notranslate"><span class="pre">standard</span> <span class="pre">deviation</span></code> of the predictions
 using the Kalman Filter.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>prices</strong> – A numpy array of prices for two financial instruments.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A tuple containing the forecast error and standard deviation of the predictions.</p>
+<dd class="field-even"><p>A tuple containing the <code class="docutils literal notranslate"><span class="pre">forecast</span> <span class="pre">error</span></code> and <code class="docutils literal notranslate"><span class="pre">standard</span> <span class="pre">deviation</span></code> of the predictions.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -645,16 +645,16 @@ Mean-Reverting, and Trending).</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="tseries.run_kalman_filter">
 <span class="sig-prename descclassname"><span class="pre">tseries.</span></span><span class="sig-name descname"><span class="pre">run_kalman_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">etfs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/tseries.html#run_kalman_filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.run_kalman_filter" title="Link to this definition"></a></dt>
-<dd><p>Applies a Kalman filter to a pair of ETF adjusted closing prices within a specified date range
+<dd><p>Applies a Kalman filter to a pair of assets adjusted closing prices within a specified date range
 to estimate the slope and intercept over time.</p>
-<p>The function downloads historical adjusted closing prices for the specified pair of ETFs,
+<p>The function downloads historical adjusted closing prices for the specified pair of assets,
 visualizes their price relationship, calculates the Kalman filter estimates for the slope and
 intercept, and visualizes the changes in these estimates over time.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>etfs</strong> (<em>Union</em><em>[</em><em>List</em><em>[</em><em>str</em><em>] </em><em>, </em><em>Tuple</em><em>[</em><em>str</em><em>, </em><em>...</em><em>]</em><em>]</em>)</p></li>
-<li><p><strong>tickers</strong> (<em>A list</em><em> or </em><em>tuple containing two valid ETF</em>)</p></li>
+<li><p><strong>tickers</strong> (<em>A list</em><em> or </em><em>tuple containing two valid assets</em>)</p></li>
 <li><p><strong>start</strong> (<em>str</em>) – The start date for the historical data in ‘YYYY-MM-DD’ format.</p></li>
 <li><p><strong>end</strong> (<em>str</em>) – The end date for the historical data in ‘YYYY-MM-DD’ format.</p></li>
 </ul>

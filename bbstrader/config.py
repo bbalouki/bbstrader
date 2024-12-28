@@ -3,6 +3,10 @@ from typing import List
 from pathlib import Path
 from datetime import datetime
 
+
+ADMIRAL_PATH = "C:\\Program Files\\Admirals Group MT5 Terminal\\terminal64.exe"
+FTMO_PATH    = "C:\\Program Files\\FTMO MetaTrader 5\\terminal64.exe"
+
 def get_config_dir(name: str=".bbstrader") -> Path:
     """
     Get the path to the configuration directory.

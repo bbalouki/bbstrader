@@ -6,21 +6,21 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>core package &mdash; BBSTrader 0.1.08 documentation</title>
+  <title>core package &mdash; BBSTrader 0.2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=fda63d7b"></script>
+      <script src="_static/documentation_options.js?v=938c9ccc"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="ibkr package" href="ibkr.html" />
-    <link rel="prev" title="config module" href="config.html" /> 
+    <link rel="prev" title="configurations" href="config.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -46,11 +46,13 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">bbstrader</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="btengine.html">Backtesting Egine</a></li>
-<li class="toctree-l2"><a class="reference internal" href="config.html">config module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="config.html">configurations</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">core package</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-core.utils">core.utils module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-core">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-core.data">core.data</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#core.data.FMP"><code class="docutils literal notranslate"><span class="pre">FMP</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-core.utils">core.utils</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="ibkr.html">ibkr package</a></li>
@@ -87,16 +89,22 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="core-package">
-<h1>core package<a class="headerlink" href="#core-package" title="Link to this heading"></a></h1>
-<section id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+  <section id="module-core">
+<span id="core-package"></span><h1>core package<a class="headerlink" href="#module-core" title="Link to this heading"></a></h1>
+<section id="module-core.data">
+<span id="core-data"></span><h2>core.data<a class="headerlink" href="#module-core.data" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="core.data.FMP">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">core.data.</span></span><span class="sig-name descname"><span class="pre">FMP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">api_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbols</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'AAPL'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/data.html#FMP"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.data.FMP" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Toolkit</span></code></p>
+<p>FMPData class for fetching data from Financial Modeling Prep API
+using the Toolkit class from financetoolkit package.</p>
+<p>See <cite>financetoolkit</cite> for more details.</p>
+</dd></dl>
+
 </section>
 <section id="module-core.utils">
-<span id="core-utils-module"></span><h2>core.utils module<a class="headerlink" href="#module-core.utils" title="Link to this heading"></a></h2>
-</section>
-<section id="module-core">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-core" title="Link to this heading"></a></h2>
+<span id="core-utils"></span><h2>core.utils<a class="headerlink" href="#module-core.utils" title="Link to this heading"></a></h2>
 </section>
 </section>
 
@@ -104,7 +112,7 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="config.html" class="btn btn-neutral float-left" title="config module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="config.html" class="btn btn-neutral float-left" title="configurations" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="ibkr.html" class="btn btn-neutral float-right" title="ibkr package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

@@ -1,21 +1,24 @@
 core package
 ============
 
-Submodules
-----------
-
-core.utils module
------------------
-
-.. automodule:: core.utils
+.. automodule:: core
    :members:
    :undoc-members:
    :show-inheritance:
 
-Module contents
----------------
 
-.. automodule:: core
+core.data
+---------
+
+.. automodule:: core.data
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+core.utils
+----------
+
+.. automodule:: core.utils
    :members:
    :undoc-members:
    :show-inheritance:

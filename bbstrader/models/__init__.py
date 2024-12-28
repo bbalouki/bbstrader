@@ -5,6 +5,6 @@ It is designed to be a versatile base module for different types of models used 
 """
 from bbstrader.models.risk import *
 from bbstrader.models.optimization import *
-from bbstrader.models.portfolios import *
+from bbstrader.models.portfolio import *
 from bbstrader.models.factors import *
 from bbstrader.models.ml import *

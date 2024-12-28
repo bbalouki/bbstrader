@@ -385,7 +385,7 @@ def build_hmm_models(symbol_list=None, **kwargs
                 hmm_models[symbol] = hmm
     if mt5_data:
         for symbol in symbols:
-            rates = Rates(symbol, tf, start_pos=hmm_end, session_duration=sd)
+            rates = Rates(symbol, timeframe=tf, start_pos=hmm_end, session_duration=sd, **kwargs)
             data = rates.get_rates_from_pos()
             assert data is not None, f"No data for {symbol}"
             hmm = HMMRiskManager(

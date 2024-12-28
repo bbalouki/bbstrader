@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>trading.strategies &mdash; BBSTrader 0.1.08 documentation</title>
+  <title>trading.strategies &mdash; BBSTrader 0.2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=fda63d7b"></script>
+      <script src="../../_static/documentation_options.js?v=938c9ccc"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -156,16 +156,16 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">symbol_list</span> <span class="o">=</span> <span class="n">symbol_list</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">bars</span><span class="o">.</span><span class="n">symbol_list</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">mode</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">short_window</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;short_window&quot;</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">long_window</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;long_window&quot;</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tf</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;time_frame&quot;</span><span class="p">,</span> <span class="s1">&#39;D1&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">qty</span> <span class="o">=</span> <span class="n">get_quantities</span><span class="p">(</span>
             <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;quantities&#39;</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol_list</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sd</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;session_duration&quot;</span><span class="p">,</span> <span class="mf">23.0</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">risk_models</span> <span class="o">=</span> <span class="n">build_hmm_models</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol_list</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">risk_models</span> <span class="o">=</span> <span class="n">build_hmm_models</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol_list</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">risk_window</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;risk_window&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">long_window</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bought</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_initial_bought</span><span class="p">()</span>
-
 
     <span class="k">def</span> <span class="nf">_calculate_initial_bought</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">bought</span> <span class="o">=</span> <span class="p">{}</span>
@@ -232,7 +232,7 @@
                         <span class="n">signal</span> <span class="o">=</span> <span class="n">SignalEvent</span><span class="p">(</span>
                             <span class="mi">1</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="s1">&#39;SHORT&#39;</span><span class="p">,</span> <span class="n">quantity</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">qty</span><span class="p">[</span><span class="n">s</span><span class="p">],</span> <span class="n">price</span><span class="o">=</span><span class="n">price</span><span class="p">)</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">bought</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SHORT&#39;</span>
-        <span class="n">signals</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">signal</span>
+                <span class="n">signals</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">signal</span>
         <span class="k">return</span> <span class="n">signals</span></div>
 
 
@@ -241,7 +241,7 @@
     <span class="k">def</span> <span class="nf">get_live_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">symbol_data</span> <span class="o">=</span> <span class="p">{</span><span class="n">symbol</span><span class="p">:</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol_list</span><span class="p">}</span>
         <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol_list</span><span class="p">:</span>
-            <span class="n">sig_rate</span> <span class="o">=</span> <span class="n">Rates</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">risk_window</span><span class="p">)</span>
+            <span class="n">sig_rate</span> <span class="o">=</span> <span class="n">Rates</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">risk_window</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="n">hmm_data</span> <span class="o">=</span> <span class="n">sig_rate</span><span class="o">.</span><span class="n">returns</span><span class="o">.</span><span class="n">values</span>
             <span class="n">prices</span> <span class="o">=</span> <span class="n">sig_rate</span><span class="o">.</span><span class="n">close</span><span class="o">.</span><span class="n">values</span>
             <span class="n">current_regime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">risk_models</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span><span class="o">.</span><span class="n">which_trade_allowed</span><span class="p">(</span><span class="n">hmm_data</span><span class="p">)</span>
@@ -516,7 +516,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">hmm_tiker</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;hmm_tiker&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_assert_tikers</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">account</span> <span class="o">=</span> <span class="n">Account</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">account</span> <span class="o">=</span> <span class="n">Account</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hmm_window</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;hmm_window&quot;</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">qty</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;quantity&quot;</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tf</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;time_frame&quot;</span><span class="p">,</span> <span class="s2">&quot;D1&quot;</span><span class="p">)</span>

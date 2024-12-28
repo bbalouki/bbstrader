@@ -85,12 +85,17 @@ def _mt5_execution(
     time_frame = kwargs.get('time_frame', '15m')
     STRATEGY = kwargs.get('strategy_name')
     mtrades  = kwargs.get('max_trades')
+    check_max_trades = kwargs.get('check_max_trades', True)
     notify   = kwargs.get('notify', False)
     if notify:
         telegram  = kwargs.get('telegram', False)
         bot_token = kwargs.get('bot_token')
         chat_id   = kwargs.get('chat_id')
-    
+
+    expert_ids = kwargs.get('expert_id')
+    if expert_ids is None:
+        expert_ids = set([trade.expert_id for trade in trades_instances.values()])
+
     def update_risk(weights):
         if weights is not None:
             for symbol in symbols:
@@ -144,8 +149,14 @@ def _mt5_execution(
                 positions_orders[type] = {}
                 for symbol in symbols:
                     positions_orders[type][symbol] = None
-                    func = getattr(trades_instances[symbol], f"get_current_{type}")
-                    positions_orders[type][symbol] = func()
+                    for id in expert_ids:
+                        func = getattr(trades_instances[symbol], f"get_current_{type}")
+                        func_value = func(id=id)
+                        if func_value is not None:
+                            if positions_orders[type][symbol] is None:
+                                positions_orders[type][symbol] = func(id=id)
+                            else:
+                                positions_orders[type][symbol] += func(id=id)
             buys = positions_orders['buys']
             sells = positions_orders['sells']
             for symbol in symbols:
@@ -155,14 +166,15 @@ def _mt5_execution(
                             logger.info(
                                 f"Current {type.upper()} SYMBOL={symbol}: \
                                     {positions_orders[type][symbol]}, STRATEGY={STRATEGY}")
-            long_market = {
-                symbol: buys[symbol] is not None 
-                and len(buys[symbol]) >= max_trades[symbol] for symbol in symbols
-            }
-            short_market = {
-                symbol: sells[symbol] is not None 
-                and len(sells[symbol]) >= max_trades[symbol] for symbol in symbols
-            }
+            if check_max_trades:
+                long_market = {
+                    symbol: buys[symbol] is not None 
+                    and len(buys[symbol]) >= max_trades[symbol] for symbol in symbols
+                }
+                short_market = {
+                    symbol: sells[symbol] is not None 
+                    and len(sells[symbol]) >= max_trades[symbol] for symbol in symbols
+                }
 
         except Exception as e:
             logger.error(f"Handling Positions and Orders, {e}, STRATEGY={STRATEGY}")
@@ -186,12 +198,15 @@ def _mt5_execution(
                 riskmsg = f"Risk not allowed !!! SYMBOL={trade.symbol}, STRATEGY={STRATEGY}"
                 signal = signals[symbol]
                 if isinstance(signal, dict):
-                    signal = signal['action']
-                    price = signal['price']
+                    action = signal.get('action')
+                    price = signal.get('price')
+                    id = signal.get('id', trade.expert_id)
                     stoplimit = signal.get('stoplimit')
+                    signal = action
                 elif isinstance(signal, str):
                     price = None
                     stoplimit = None
+                    id = trade.expert_id
                 if trade.trading_time() and today in trading_days:
                     if signal is not None:
                         signal = 'BMKT' if signal == 'LONG' else signal
@@ -207,9 +222,9 @@ def _mt5_execution(
                                         if notify:
                                             _send_notification(info)
                                         if position_type in POSITIONS_TYPES:
-                                            trade.close_positions(position_type=order_type)
+                                            trade.close_positions(position_type=order_type, id=id)
                                         else:
-                                            trade.close_orders(order_type=order_type)
+                                            trade.close_orders(order_type=order_type, id=id)
                         elif signal in BUYS and not long_market[symbol]:
                             if use_trade_time:
                                 if time_intervals % trade_time == 0 or buys[symbol] is None:
@@ -217,7 +232,7 @@ def _mt5_execution(
                                     if notify:
                                         _send_notification(info)
                                     trade.open_buy_position(
-                                        action=signal, price=price, stoplimit=stoplimit, mm=mm, comment=comment)
+                                        action=signal, price=price, stoplimit=stoplimit, id=id, mm=mm, comment=comment)
                                 else:
                                     logger.info(tfmsg)
                                     check(buys[symbol], sells[symbol], symbol)
@@ -226,9 +241,11 @@ def _mt5_execution(
                                 if notify:
                                     _send_notification(info)
                                 trade.open_buy_position(
-                                    action=signal, price=price, stoplimit=stoplimit, mm=mm, comment=comment)
-                        elif signal in BUYS and long_market[symbol]:
-                            logger.info(riskmsg)
+                                    action=signal, price=price, stoplimit=stoplimit, id=id, mm=mm, comment=comment)
+                        elif signal in BUYS:
+                            if check_max_trades:
+                                if long_market[symbol]:
+                                    logger.info(riskmsg)
                             check(buys[symbol], sells[symbol], symbol)
 
                         elif signal in SELLS and not short_market[symbol]:
@@ -238,7 +255,7 @@ def _mt5_execution(
                                     if notify:
                                         _send_notification(info)
                                     trade.open_sell_position(
-                                        action=signal, price=price, stoplimit=stoplimit, mm=mm, comment=comment)
+                                        action=signal, price=price, stoplimit=stoplimit, id=id, mm=mm, comment=comment)
                                 else:
                                     logger.info(tfmsg)
                                     check(buys[symbol], sells[symbol], symbol)
@@ -247,9 +264,11 @@ def _mt5_execution(
                                 if notify:
                                     _send_notification(info)
                                 trade.open_sell_position(
-                                    action=signal, price=price, stoplimit=stoplimit, mm=mm, comment=comment)
-                        elif signal in SELLS and short_market[symbol]:
-                            logger.info(riskmsg)
+                                    action=signal, price=price, stoplimit=stoplimit, id=id, mm=mm, comment=comment)
+                        elif signal in SELLS:
+                            if check_max_trades:
+                                if short_market[symbol]:
+                                    logger.info(riskmsg)
                             check(buys[symbol], sells[symbol], symbol)
                     else:
                         check(buys[symbol], sells[symbol], symbol)
@@ -288,7 +307,8 @@ def _mt5_execution(
                 for symbol in symbols:
                     trade = trades_instances[symbol]
                     if trade.days_end() and closing:
-                        trade.close_positions(position_type='all', comment=comment)
+                        for id in expert_ids:
+                            trade.close_positions(position_type='all', id=id, comment=comment)
                         logmsg("Day")
                         trade.statistics(save=True)
                 if day_end:
@@ -312,7 +332,8 @@ def _mt5_execution(
                         logmsg("Day")
 
                     elif trade.days_end() and today == FRIDAY and closing:
-                        trade.close_positions(position_type='all', comment=comment)
+                        for id in expert_ids:
+                            trade.close_positions(position_type='all', id=id, comment=comment)
                         logmsg("Week")
                         trade.statistics(save=True)
                 if day_end and today != FRIDAY:
@@ -341,7 +362,8 @@ def _mt5_execution(
                         and today == FRIDAY
                         and num_days/len(symbols) >= 20
                     ) and closing:
-                        trade.close_positions(position_type='all', comment=comment)
+                        for id in expert_ids:
+                            trade.close_positions(position_type='all', id=id, comment=comment)
                         logmsg("Month")
                         trade.statistics(save=True)
                 if day_end and today != FRIDAY:

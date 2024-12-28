@@ -17,7 +17,7 @@ with io.open(path.join(here, 'README.md'), encoding='utf-8') as f:
 with io.open(path.join(here, 'requirements.txt'), encoding='utf-8') as f:
     REQUIREMENTS = [line.rstrip() for line in f]
 
-VERSION = '0.1.94'
+VERSION = '0.2.0'
 DESCRIPTION = 'Simplified Investment & Trading Toolkit'
 
 KEYWORDS = [
@@ -44,6 +44,8 @@ CLASSIFIERS = [
 INLCUDE = [
         "bbstrader",
         "bbstrader.btengine",
+        "bbstrader.core",
+        "bbstrader.ibkr",
         "bbstrader.metatrader",
         "bbstrader.models",
         "bbstrader.trading"
@@ -71,6 +73,7 @@ setup(
     install_requires=REQUIREMENTS,
     extras_require={
         'MT5': ['MetaTrader5'],
+        'TA': ['ta-lib'],
         # 'zipline': ['zipline'],
         # 'cerebro': ['backtrader'],
     },

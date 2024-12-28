@@ -86,6 +86,7 @@ class MT5Strategy(Strategy):
         self.tf = kwargs.get("time_frame", 'D1')
         self.logger = kwargs.get("logger")
         self._initialize_portfolio()
+        self.kwargs = kwargs
 
     @property
     def cash(self) -> float:
@@ -201,19 +202,22 @@ class MT5Strategy(Strategy):
         - ``action``: The action to take for the symbol (LONG, SHORT, EXIT, etc.)
         - ``price``: The price at which to execute the action.
         - ``stoplimit``: The stop-limit price for STOP-LIMIT orders.
+        - ``id``: The unique identifier for the strategy or order.
 
-        The dictionary can be use for pending orders (limit, stop, stop-limit) where the price is required.
+        The dictionary can be use for pending orders (limit, stop, stop-limit) where the price is required
+        or for executing orders where the each order has a unique identifier.
         """
         pass
 
-    def apply_risk_management(self, optimer, freq=252) -> Dict[str, float] | None:
+    def apply_risk_management(self, optimer, symbols=None, freq=252) -> Dict[str, float] | None:
         """
         Apply risk management rules to the strategy.
         """
         if optimer is None:
             return None
+        symbols = symbols or self.symbols
         prices = self.get_asset_values(
-            symbol_list=self.symbols, bars=self.data, mode=self.mode, 
+            symbol_list=symbols, bars=self.data, mode=self.mode, 
             window=freq, value_type='close', array=False, tf=self.tf
         )
         prices = pd.DataFrame(prices)
@@ -222,7 +226,7 @@ class MT5Strategy(Strategy):
             weights = optimized_weights(prices=prices, freq=freq, method=optimer)
             return {symbol: weight for symbol, weight in weights.items()}
         except Exception:
-            return {symbol: 0.0 for symbol in self.symbols}
+            return {symbol: 0.0 for symbol in symbols}
 
     def get_quantity(self, symbol, weight,   price=None, volume=None, maxqty=None) -> int:
         """
@@ -530,7 +534,7 @@ class MT5Strategy(Strategy):
                     asset_values[asset] = getattr(values, value_type)    
         elif mode == 'live':
             for asset in symbol_list:
-                rates = Rates(symbol=asset, time_frame=tf, count=window + 1)
+                rates = Rates(asset, timeframe=tf, count=window + 1, **self.kwargs)
                 if array:
                     values = getattr(rates, value_type).values
                     asset_values[asset] = values[~np.isnan(values)]
@@ -575,11 +579,11 @@ class MT5Strategy(Strategy):
         Returns:
             bool : True if there are open positions, False otherwise
         """
-        account = account or Account()
+        account = account or Account(**self.kwargs)
         positions = account.get_positions(symbol=symbol)
         if positions is not None:
             open_positions = [
-                pos for pos in positions if pos.type == position
+                pos.ticket for pos in positions if pos.type == position
                 and pos.magic == strategy_id
             ]
             if one_true:
@@ -600,7 +604,7 @@ class MT5Strategy(Strategy):
         Returns:
             prices : numpy array of buy or sell prices for open positions if any or an empty array.
         """
-        account = account or Account()
+        account = account or Account(**self.kwargs)
         positions = account.get_positions(symbol=symbol)
         if positions is not None:
             prices = np.array([

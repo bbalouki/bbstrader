@@ -80,16 +80,16 @@ class SMAStrategy(Strategy):
         self.symbol_list = symbol_list or self.bars.symbol_list
         self.mode = mode
 
+        self.kwargs = kwargs
         self.short_window = kwargs.get("short_window", 50)
         self.long_window = kwargs.get("long_window", 200)
         self.tf = kwargs.get("time_frame", 'D1')
         self.qty = get_quantities(
             kwargs.get('quantities', 100), self.symbol_list)
         self.sd = kwargs.get("session_duration", 23.0)
-        self.risk_models = build_hmm_models(self.symbol_list, **kwargs)
+        self.risk_models = build_hmm_models(self.symbol_list, **self.kwargs)
         self.risk_window = kwargs.get("risk_window", self.long_window)
         self.bought = self._calculate_initial_bought()
-
 
     def _calculate_initial_bought(self):
         bought = {}
@@ -151,13 +151,13 @@ class SMAStrategy(Strategy):
                         signal = SignalEvent(
                             1, s, dt, 'SHORT', quantity=self.qty[s], price=price)
                         self.bought[s] = 'SHORT'
-        signals[s] = signal
+                signals[s] = signal
         return signals
 
     def get_live_data(self):
         symbol_data = {symbol: None for symbol in self.symbol_list}
         for symbol in self.symbol_list:
-            sig_rate = Rates(symbol, self.tf, 0, self.risk_window)
+            sig_rate = Rates(symbol, self.tf, 0, self.risk_window+2, **self.kwargs)
             hmm_data = sig_rate.returns.values
             prices = sig_rate.close.values
             current_regime = self.risk_models[symbol].which_trade_allowed(hmm_data)
@@ -404,7 +404,7 @@ class KalmanFilterStrategy(Strategy):
 
         self.hmm_tiker = kwargs.get("hmm_tiker")
         self._assert_tikers()
-        self.account = Account()
+        self.account = Account(**kwargs)
         self.hmm_window = kwargs.get("hmm_window", 50)
         self.qty = kwargs.get("quantity", 100)
         self.tf = kwargs.get("time_frame", "D1")
