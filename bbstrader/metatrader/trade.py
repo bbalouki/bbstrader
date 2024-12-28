@@ -874,8 +874,9 @@ class Trade(RiskManagement):
         """
         This function checks if it's time to set the break-even level for a trading position. 
         If it is, it sets the break-even level. If the break-even level has already been set, 
-        it checks if the price has moved in a favorable direction. If it has, and the trail parameter is set to True, 
-        it updates the break-even level based on the trail_after_points and stop_trail parameters.
+        it checks if the price has moved in a favorable direction. 
+        If it has, and the trail parameter is set to True, it updates 
+        the break-even level based on the trail_after_points and stop_trail parameters.
 
         Args:
             id (int): The strategy ID or expert ID.
@@ -883,8 +884,10 @@ class Trade(RiskManagement):
             trail (bool): Whether to trail the stop loss or not.
             stop_trail (int): Number of points to trail the stop loss by.
                 It represent the distance from the current price to the stop loss.
-            trail_after_points (int): Number of points in profit from where the strategy will start to trail the stop loss.
-            be_plus_points (int): Number of points to add to the break-even level. Represents the minimum profit to secure.
+            trail_after_points (int): Number of points in profit 
+                from where the strategy will start to trail the stop loss.
+            be_plus_points (int): Number of points to add to the break-even level. 
+                Represents the minimum profit to secure.
         """
         time.sleep(0.1)
         if not mm:
@@ -1515,6 +1518,7 @@ def create_trade_instance(
         based on the importance of the symbol in the portfolio or strategy.
     """
     logger = params.get('logger', None)
+    ids = params.get('expert_id', None)
     trade_instances = {}
     if not symbols:
         raise ValueError("The 'symbols' list cannot be empty.")
@@ -1534,10 +1538,19 @@ def create_trade_instance(
             for symbol in symbols:
                 if symbol not in pchange_sl:
                     raise ValueError(f"Missing percentage change for symbol '{symbol}'.")
+    if isinstance(ids, dict):
+        for symbol in symbols:
+            if symbol not in ids:
+                raise ValueError(f"Missing expert ID for symbol '{symbol}'.")
     
     for symbol in symbols:
         try:
             params['symbol'] = symbol
+            params['expert_id'] = (
+                ids[symbol] if ids is not None and isinstance(ids, dict) else 
+                ids if ids is not None and isinstance(ids, (int, float)) else 
+                params['expert_id'] if 'expert_id' in params else None
+            )
             params['pchange_sl'] = (
                 pchange_sl[symbol] if pchange_sl is not None
                 and isinstance(pchange_sl, dict) else 

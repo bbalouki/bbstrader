@@ -20,7 +20,9 @@ from exchange_calendars import(
 __all__ = [
     'Rates', 
     'download_historical_data', 
-    'get_data_from_pos'
+    'get_data_from_pos',
+    'get_data_from_date'
+    
 ]
 
 MAX_BARS = 10_000_000
@@ -121,7 +123,6 @@ class Rates(object):
             For `session_duration` check your broker symbols details
         """
         self.symbol = symbol
-        tf = kwargs.get('time_frame')
         self.time_frame = self._validate_time_frame(timeframe)
         self.sd = session_duration
         self.start_pos = self._get_start_pos(start_pos, timeframe)
@@ -223,7 +224,6 @@ class Rates(object):
         df.columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume']
         df['Adj Close'] = df['Close']
         df = df[['Date', 'Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume']]
-        #df = df.columns.rename(str.lower).str.replace(' ', '_')
         df['Date'] = pd.to_datetime(df['Date'], unit='s', utc=utc)
         df.set_index('Date', inplace=True)
         if lower_colnames:
