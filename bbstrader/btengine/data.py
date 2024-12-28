@@ -153,12 +153,19 @@ class BaseCSVDataHandler(DataHandler):
     @property
     def symbols(self)-> List[str]:
         return self.symbol_list
+    
     @property
     def data(self)-> Dict[str, pd.DataFrame]:
         return self.symbol_data
+    
+    @property
+    def datadir(self)-> str:
+        return self.csv_dir
+    
     @property
     def labels(self)-> List[str]:
         return self.columns
+    
     @property
     def index(self)-> str | List[str]:
         return self._index
@@ -203,6 +210,7 @@ class BaseCSVDataHandler(DataHandler):
                 'adj_close' if 'adj_close' in new_names else 'close'
             ].pct_change().dropna()
             self._index = self.symbol_data[s].index.name
+            self.symbol_data[s].to_csv(os.path.join(self.csv_dir, f'{s}.csv'))
             if self.events is not None:
                 self.symbol_data[s] = self.symbol_data[s].iterrows()
 
@@ -474,7 +482,8 @@ class YFDataHandler(BaseCSVDataHandler):
             filepath = os.path.join(cache_dir, f"{symbol}.csv")
             try:
                 data = yf.download(
-                    symbol, start=self.start_date, end=self.end_date, multi_level_index=False)
+                    symbol, start=self.start_date, end=self.end_date, 
+                    multi_level_index=False, progress=False)
                 if data.empty:
                     raise ValueError(f"No data found for {symbol}")
                 data.to_csv(filepath)
@@ -634,12 +643,13 @@ class FMPDataHandler(BaseCSVDataHandler):
             api_key=self.__api_key,
             start_date=self.start_date, 
             end_date=self.end_date,
-            benchmark_ticker=None
+            benchmark_ticker=None,
+            progress_bar=False
         )
         if period in ['daily', 'weekly', 'monthly', 'quarterly', 'yearly']:
-            return toolkit.get_historical_data(period=period)
+            return toolkit.get_historical_data(period=period, progress_bar=False)
         elif period in ['1min', '5min', '15min', '30min', '1hour']:
-            return toolkit.get_intraday_data(period=period)
+            return toolkit.get_intraday_data(period=period, progress_bar=False)
         
     def _format_data(self, data: pd.DataFrame, period: str) -> pd.DataFrame:
         if data.empty or len(data) == 0:
