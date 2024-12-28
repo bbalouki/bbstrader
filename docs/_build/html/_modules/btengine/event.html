@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>btengine.event &mdash; BBSTrader 0.1.08 documentation</title>
+  <title>btengine.event &mdash; BBSTrader 0.2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=fda63d7b"></script>
+      <script src="../../_static/documentation_options.js?v=938c9ccc"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -184,14 +184,15 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-                 <span class="n">order_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;MKT&#39;</span><span class="p">,</span> <span class="s1">&#39;LMT&#39;</span><span class="p">],</span>
+                 <span class="n">order_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;MKT&#39;</span><span class="p">,</span> <span class="s1">&#39;LMT&#39;</span><span class="p">,</span> <span class="s1">&#39;STP&#39;</span><span class="p">,</span> <span class="s1">&#39;STPLMT&#39;</span><span class="p">],</span>
                  <span class="n">quantity</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span>
                  <span class="n">direction</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;BUY&#39;</span><span class="p">,</span> <span class="s1">&#39;SELL&#39;</span><span class="p">],</span>
-                 <span class="n">price</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span>
+                 <span class="n">price</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">signal</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
                  <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialises the order type, setting whether it is</span>
-<span class="sd">        a Market order (&#39;MKT&#39;) or Limit order (&#39;LMT&#39;), has</span>
+<span class="sd">        a Market order (&#39;MKT&#39;) or Limit order (&#39;LMT&#39;), or Stop order (&#39;STP&#39;).</span>
 <span class="sd">        a quantity (integral or float) and its direction (&#39;BUY&#39; or &#39;SELL&#39;).</span>
 
 <span class="sd">        Args:</span>
@@ -200,6 +201,7 @@
 <span class="sd">            quantity (int | float): Non-negative number for quantity.            </span>
 <span class="sd">            direction (str): &#39;BUY&#39; or &#39;SELL&#39; for long or short.</span>
 <span class="sd">            price (int | float): The price at which to order.</span>
+<span class="sd">            signal (str): The signal that generated the order.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="s1">&#39;ORDER&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">symbol</span> <span class="o">=</span> <span class="n">symbol</span>
@@ -207,6 +209,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">quantity</span> <span class="o">=</span> <span class="n">quantity</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">=</span> <span class="n">direction</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">price</span> <span class="o">=</span> <span class="n">price</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">signal</span> <span class="o">=</span> <span class="n">signal</span>
 
         <span class="k">def</span> <span class="nf">print_order</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
@@ -247,7 +250,8 @@
                  <span class="n">quantity</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span>
                  <span class="n">direction</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;BUY&#39;</span><span class="p">,</span> <span class="s1">&#39;SELL&#39;</span><span class="p">],</span>
                  <span class="n">fill_cost</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">commission</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+                 <span class="n">commission</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">order</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
                  <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialises the FillEvent object. Sets the symbol, exchange,</span>
@@ -266,6 +270,7 @@
 <span class="sd">            direction (str): The direction of fill `(&#39;LONG&#39;, &#39;SHORT&#39;, &#39;EXIT&#39;)`</span>
 <span class="sd">            fill_cost (int | float): Price of the shares when filled.</span>
 <span class="sd">            commission (float | None): An optional commission sent from IB.</span>
+<span class="sd">            order (str): The order that this fill is related</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="s1">&#39;FILL&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">timeindex</span> <span class="o">=</span> <span class="n">timeindex</span>
@@ -279,6 +284,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">commission</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_ib_commission</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">commission</span> <span class="o">=</span> <span class="n">commission</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="n">order</span>
 
 <div class="viewcode-block" id="FillEvent.calculate_ib_commission">
 <a class="viewcode-back" href="../../btengine.html#btengine.event.FillEvent.calculate_ib_commission">[docs]</a>

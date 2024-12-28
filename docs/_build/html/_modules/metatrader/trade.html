@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>metatrader.trade &mdash; BBSTrader 0.1.08 documentation</title>
+  <title>metatrader.trade &mdash; BBSTrader 0.2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=fda63d7b"></script>
+      <script src="../../_static/documentation_options.js?v=938c9ccc"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -211,6 +211,7 @@
 <span class="sd">            -   tp</span>
 <span class="sd">            -   be</span>
 <span class="sd">        See the RiskManagement class for more details on these parameters.</span>
+<span class="sd">        See `bbstrader.metatrader.account.check_mt5_connection()` for more details on how to connect to MT5 terminal.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Call the parent class constructor first</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
@@ -233,6 +234,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">console_log</span> <span class="o">=</span> <span class="n">console_log</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_logger</span><span class="p">(</span><span class="n">logger</span><span class="p">,</span> <span class="n">console_log</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tf</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;time_frame&quot;</span><span class="p">,</span> <span class="s1">&#39;D1&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">start_time_hour</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_time_minutes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">finishing_time_hour</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">finishing_time_minutes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">finishing</span><span class="o">.</span><span class="n">split</span><span class="p">(</span>
@@ -247,8 +249,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">break_even_points</span>  <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">trail_after_points</span> <span class="o">=</span> <span class="p">[]</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">select_symbol</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">select_symbol</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">prepare_symbol</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
@@ -269,7 +271,7 @@
     
 <div class="viewcode-block" id="Trade.initialize">
 <a class="viewcode-back" href="../../metatrader.html#metatrader.trade.Trade.initialize">[docs]</a>
-    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initializes the MetaTrader 5 (MT5) terminal for trading operations. </span>
 <span class="sd">        This method attempts to establish a connection with the MT5 terminal. </span>
@@ -282,7 +284,7 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Initializing the basics.&quot;</span><span class="p">)</span>
-            <span class="n">check_mt5_connection</span><span class="p">()</span>
+            <span class="n">check_mt5_connection</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;You are running the @</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">expert_name</span><span class="si">}</span><span class="s2"> Expert advisor,&quot;</span>
@@ -294,7 +296,7 @@
 
 <div class="viewcode-block" id="Trade.select_symbol">
 <a class="viewcode-back" href="../../metatrader.html#metatrader.trade.Trade.select_symbol">[docs]</a>
-    <span class="k">def</span> <span class="nf">select_symbol</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">select_symbol</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Selects the trading symbol in the MetaTrader 5 (MT5) terminal. </span>
 <span class="sd">        This method ensures that the specified trading </span>
@@ -306,6 +308,7 @@
 <span class="sd">            MT5TerminalError: If symbole selection fails.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
+            <span class="n">check_mt5_connection</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">Mt5</span><span class="o">.</span><span class="n">symbol_select</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
                 <span class="n">raise_mt5_error</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">INIT_MSG</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
@@ -985,18 +988,21 @@
         <span class="k">elif</span> <span class="n">account</span> <span class="ow">and</span> <span class="nb">id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># All open positions for a specific strategy or expert no matter the symbol</span>
             <span class="n">positions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_positions</span><span class="p">()</span>
-            <span class="n">positions</span> <span class="o">=</span> <span class="p">[</span><span class="n">position</span> <span class="k">for</span> <span class="n">position</span> <span class="ow">in</span> <span class="n">positions</span> <span class="k">if</span> <span class="n">position</span><span class="o">.</span><span class="n">magic</span> <span class="o">==</span> <span class="nb">id</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">positions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">positions</span> <span class="o">=</span> <span class="p">[</span><span class="n">position</span> <span class="k">for</span> <span class="n">position</span> <span class="ow">in</span> <span class="n">positions</span> <span class="k">if</span> <span class="n">position</span><span class="o">.</span><span class="n">magic</span> <span class="o">==</span> <span class="nb">id</span><span class="p">]</span>
         <span class="k">elif</span> <span class="ow">not</span> <span class="n">account</span> <span class="ow">and</span> <span class="nb">id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># All open positions for the current symbol no matter the strategy or expert</span>
             <span class="n">positions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_positions</span><span class="p">(</span><span class="n">symbol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="p">)</span>
         <span class="k">elif</span> <span class="ow">not</span> <span class="n">account</span> <span class="ow">and</span> <span class="nb">id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># All open positions for the current symbol and a specific strategy or expert</span>
             <span class="n">positions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_positions</span><span class="p">(</span><span class="n">symbol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="p">)</span>
-            <span class="n">positions</span> <span class="o">=</span> <span class="p">[</span><span class="n">position</span> <span class="k">for</span> <span class="n">position</span> <span class="ow">in</span> <span class="n">positions</span> <span class="k">if</span> <span class="n">position</span><span class="o">.</span><span class="n">magic</span> <span class="o">==</span> <span class="nb">id</span><span class="p">]</span>
-        <span class="n">profit</span> <span class="o">=</span> <span class="mf">0.0</span>
-        <span class="n">balance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_account_info</span><span class="p">()</span><span class="o">.</span><span class="n">balance</span>
-        <span class="n">target</span> <span class="o">=</span> <span class="nb">round</span><span class="p">((</span><span class="n">balance</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">)</span><span class="o">/</span><span class="mi">100</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">positions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">positions</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">positions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">positions</span> <span class="o">=</span> <span class="p">[</span><span class="n">position</span> <span class="k">for</span> <span class="n">position</span> <span class="ow">in</span> <span class="n">positions</span> <span class="k">if</span> <span class="n">position</span><span class="o">.</span><span class="n">magic</span> <span class="o">==</span> <span class="nb">id</span><span class="p">]</span>
+        
+        <span class="k">if</span> <span class="n">positions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">profit</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="n">balance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_account_info</span><span class="p">()</span><span class="o">.</span><span class="n">balance</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="nb">round</span><span class="p">((</span><span class="n">balance</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">)</span><span class="o">/</span><span class="mi">100</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">position</span> <span class="ow">in</span> <span class="n">positions</span><span class="p">:</span>
                 <span class="n">profit</span> <span class="o">+=</span> <span class="n">position</span><span class="o">.</span><span class="n">profit</span>
             <span class="n">fees</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_stats</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;average_fee&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">positions</span><span class="p">)</span>
@@ -1018,8 +1024,9 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This function checks if it&#39;s time to set the break-even level for a trading position. </span>
 <span class="sd">        If it is, it sets the break-even level. If the break-even level has already been set, </span>
-<span class="sd">        it checks if the price has moved in a favorable direction. If it has, and the trail parameter is set to True, </span>
-<span class="sd">        it updates the break-even level based on the trail_after_points and stop_trail parameters.</span>
+<span class="sd">        it checks if the price has moved in a favorable direction. </span>
+<span class="sd">        If it has, and the trail parameter is set to True, it updates </span>
+<span class="sd">        the break-even level based on the trail_after_points and stop_trail parameters.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            id (int): The strategy ID or expert ID.</span>
@@ -1027,8 +1034,10 @@
 <span class="sd">            trail (bool): Whether to trail the stop loss or not.</span>
 <span class="sd">            stop_trail (int): Number of points to trail the stop loss by.</span>
 <span class="sd">                It represent the distance from the current price to the stop loss.</span>
-<span class="sd">            trail_after_points (int): Number of points in profit from where the strategy will start to trail the stop loss.</span>
-<span class="sd">            be_plus_points (int): Number of points to add to the break-even level. Represents the minimum profit to secure.</span>
+<span class="sd">            trail_after_points (int): Number of points in profit </span>
+<span class="sd">                from where the strategy will start to trail the stop loss.</span>
+<span class="sd">            be_plus_points (int): Number of points to add to the break-even level. </span>
+<span class="sd">                Represents the minimum profit to secure.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">mm</span><span class="p">:</span>
@@ -1182,8 +1191,9 @@
                 <span class="n">result</span><span class="o">.</span><span class="n">retcode</span><span class="p">,</span> <span class="n">display</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">add_msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">e</span><span class="si">}{</span><span class="n">addtionnal</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">retcode</span> <span class="o">!=</span> <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_DONE</span><span class="p">:</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="n">trade_retcode_message</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">retcode</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Break-Even Order Request, Position: #</span><span class="si">{</span><span class="n">tiket</span><span class="si">}</span><span class="s2">, RETCODE=</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">retcode</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">msg</span><span class="si">}{</span><span class="n">addtionnal</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">retcode</span> <span class="o">!=</span> <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_NO_CHANGES</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Break-Even Order Request, Position: #</span><span class="si">{</span><span class="n">tiket</span><span class="si">}</span><span class="s2">, RETCODE=</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">retcode</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">msg</span><span class="si">}{</span><span class="n">addtionnal</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">tries</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="k">while</span> <span class="n">result</span><span class="o">.</span><span class="n">retcode</span> <span class="o">!=</span> <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_DONE</span> <span class="ow">and</span> <span class="n">tries</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">retcode</span> <span class="o">==</span> <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_NO_CHANGES</span><span class="p">:</span>
@@ -1691,6 +1701,7 @@
         <span class="n">daily_risk</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">max_risk</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">pchange_sl</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Trade</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Creates Trade instances for each symbol provided.</span>
@@ -1712,6 +1723,7 @@
 <span class="sd">        based on the importance of the symbol in the portfolio or strategy.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">logger</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;logger&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">ids</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;expert_id&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="n">trade_instances</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">symbols</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The &#39;symbols&#39; list cannot be empty.&quot;</span><span class="p">)</span>
@@ -1731,10 +1743,19 @@
             <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="n">symbols</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">symbol</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">pchange_sl</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Missing percentage change for symbol &#39;</span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2">&#39;.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ids</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="n">symbols</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">symbol</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ids</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Missing expert ID for symbol &#39;</span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2">&#39;.&quot;</span><span class="p">)</span>
     
     <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="n">symbols</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">params</span><span class="p">[</span><span class="s1">&#39;symbol&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">symbol</span>
+            <span class="n">params</span><span class="p">[</span><span class="s1">&#39;expert_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">ids</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span> <span class="k">if</span> <span class="n">ids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ids</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> 
+                <span class="n">ids</span> <span class="k">if</span> <span class="n">ids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ids</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">))</span> <span class="k">else</span> 
+                <span class="n">params</span><span class="p">[</span><span class="s1">&#39;expert_id&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;expert_id&#39;</span> <span class="ow">in</span> <span class="n">params</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="p">)</span>
             <span class="n">params</span><span class="p">[</span><span class="s1">&#39;pchange_sl&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
                 <span class="n">pchange_sl</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span> <span class="k">if</span> <span class="n">pchange_sl</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
                 <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pchange_sl</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> 

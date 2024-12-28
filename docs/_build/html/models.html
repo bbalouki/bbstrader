@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Models &mdash; BBSTrader 0.1.08 documentation</title>
+  <title>Models &mdash; BBSTrader 0.2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=fda63d7b"></script>
+      <script src="_static/documentation_options.js?v=938c9ccc"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -46,7 +46,7 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">bbstrader</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="btengine.html">Backtesting Egine</a></li>
-<li class="toctree-l2"><a class="reference internal" href="config.html">config module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="config.html">configurations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="core.html">core package</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ibkr.html">ibkr package</a></li>
 <li class="toctree-l2"><a class="reference internal" href="metatrader.html">MetaTrader5 (MT5) Trading</a></li>
@@ -57,9 +57,27 @@
 <li class="toctree-l4"><a class="reference internal" href="#models.risk.build_hmm_models"><code class="docutils literal notranslate"><span class="pre">build_hmm_models()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#module-models.factors">factors</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-models.ml">ml</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-models.optimization">optimization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-models.factors">factors</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#models.factors.search_coint_candidate_pairs"><code class="docutils literal notranslate"><span class="pre">search_coint_candidate_pairs()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-models.ml">ml</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#models.ml.LightGBModel"><code class="docutils literal notranslate"><span class="pre">LightGBModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#models.ml.MultipleTimeSeriesCV"><code class="docutils literal notranslate"><span class="pre">MultipleTimeSeriesCV</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#models.ml.OneStepTimeSeriesSplit"><code class="docutils literal notranslate"><span class="pre">OneStepTimeSeriesSplit</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-models.optimization">optimization</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#models.optimization.equal_weighted"><code class="docutils literal notranslate"><span class="pre">equal_weighted()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#models.optimization.hierarchical_risk_parity"><code class="docutils literal notranslate"><span class="pre">hierarchical_risk_parity()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#models.optimization.markowitz_weights"><code class="docutils literal notranslate"><span class="pre">markowitz_weights()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#models.optimization.optimized_weights"><code class="docutils literal notranslate"><span class="pre">optimized_weights()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-models.portfolio">portfolios</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#models.portfolio.EigenPortfolios"><code class="docutils literal notranslate"><span class="pre">EigenPortfolios</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="trading.html">Trading Execution</a></li>
@@ -344,12 +362,506 @@ the portfolio to optimize risk-reward ratio.</p>
 </section>
 <section id="module-models.factors">
 <span id="factors"></span><h2>factors<a class="headerlink" href="#module-models.factors" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="models.factors.search_coint_candidate_pairs">
+<span class="sig-prename descclassname"><span class="pre">models.factors.</span></span><span class="sig-name descname"><span class="pre">search_coint_candidate_pairs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">securities</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">candidates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">period_search</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">select</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">universe</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rolling_window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npairs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'D1'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">DataFrame</span></span></span><a class="reference internal" href="_modules/models/factors.html#search_coint_candidate_pairs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.factors.search_coint_candidate_pairs" title="Link to this definition"></a></dt>
+<dd><p>Searches for candidate pairs of securities based on cointegration analysis.</p>
+<p>This function either processes preloaded securities and candidates data
+(as pandas DataFrames) or downloads historical data from a specified
+source (e.g., Yahoo Finance, MetaTrader 5, Financial Modeling Prep, or EODHD).
+It then selects the top <cite>npairs</cite> based on cointegration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>securities</strong> (<em>pd.DataFrame</em><em> | </em><em>List</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – A DataFrame or list of tickers representing the securities for analysis.
+If using a DataFrame, it should include a MultiIndex with levels
+[‘ticker’, ‘date’].</p></li>
+<li><p><strong>candidates</strong> (<em>pd.DataFrame</em><em> | </em><em>List</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – A DataFrame or list of tickers representing the candidate securities
+for pair selection.</p></li>
+<li><p><strong>start</strong> (<em>str</em><em>, </em><em>optional</em>) – The start date for data retrieval in ‘YYYY-MM-DD’ format. Ignored
+if both <cite>securities</cite> and <cite>candidates</cite> are DataFrames.</p></li>
+<li><p><strong>end</strong> (<em>str</em><em>, </em><em>optional</em>) – The end date for data retrieval in ‘YYYY-MM-DD’ format. Ignored
+if both <cite>securities</cite> and <cite>candidates</cite> are DataFrames.</p></li>
+<li><p><strong>period_search</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, the function will perform a periodic search for cointegrated from 3 years
+to the end date by taking 2 yerars rolling window. So you need to have at least 3 years of data
+or set the <cite>window</cite> parameter to 3. Defaults to False.</p></li>
+<li><p><strong>select</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, the function will select the top cointegrated pairs based on the
+cointegration test results in form of List[dict].
+If False, the function will return all cointegrated pairs in form of DataFrame.
+This can be useful for further analysis or visualization.</p></li>
+<li><p><strong>source</strong> (<em>str</em><em>, </em><em>optional</em>) – The data source for historical data retrieval. Must be one of
+[‘yf’, ‘mt5’, ‘fmp’, ‘eodhd’]. Required if <cite>securities</cite> and
+<cite>candidates</cite> are lists of tickers.</p></li>
+<li><p><strong>universe</strong> (<em>int</em><em>, </em><em>optional</em>) – The maximum number of assets to retain for analysis. Defaults to 100.</p></li>
+<li><p><strong>window</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of years of historical data to retrieve if <cite>start</cite> and <cite>end</cite>
+are not specified. Defaults to 2 years.</p></li>
+<li><p><strong>rolling_window</strong> (<em>int</em><em>, </em><em>optional</em>) – The size of the rolling window (in days) used for asset selection.
+Defaults to None.</p></li>
+<li><p><strong>npairs</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of top cointegrated pairs to select. Defaults to 10.</p></li>
+<li><p><strong>tf</strong> (<em>str</em><em>, </em><em>optional</em>) – The timeframe for MetaTrader 5 data retrieval. Defaults to ‘D1’.</p></li>
+<li><p><strong>path</strong> (<em>str</em><em>, </em><em>optional</em>) – The path to MetaTrader 5 historical data files. Required if <cite>source=’mt5’</cite>.</p></li>
+<li><p><strong>**kwargs</strong> – Additional parameters for data retrieval (e.g., API keys, date ranges
+for specific sources), see <code class="docutils literal notranslate"><span class="pre">bbstrader.btengine.data.FMPDataHandler</span></code> or
+<code class="docutils literal notranslate"><span class="pre">bbstrader.btengine.data.EODHDataHandler</span></code> for more details.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list containing the selected top cointegrated pairs if <cite>select=True</cite>.
+pd.DataFrame: A DataFrame containing all cointegrated pairs if <cite>select=False</cite>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[dict]</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If the inputs are invalid or if the <cite>source</cite> is not one of</p></li>
+<li><p><strong>the supported sources.</strong> – </p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<dl>
+<dt>Using preloaded DataFrames:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">securities</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;securities.csv&#39;</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ticker&#39;</span><span class="p">,</span> <span class="s1">&#39;date&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">candidates</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;candidates.csv&#39;</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ticker&#39;</span><span class="p">,</span> <span class="s1">&#39;date&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pairs</span> <span class="o">=</span> <span class="n">search_candidate_pairs</span><span class="p">(</span><span class="n">securities</span><span class="o">=</span><span class="n">securities</span><span class="p">,</span> <span class="n">candidates</span><span class="o">=</span><span class="n">candidates</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+<dt>Using a data source (Yahoo Finance):</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">securities</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;SPY&#39;</span><span class="p">,</span> <span class="s1">&#39;IWM&#39;</span><span class="p">,</span> <span class="s1">&#39;XLF&#39;</span><span class="p">,</span> <span class="s1">&#39;HYG&#39;</span><span class="p">,</span> <span class="s1">&#39;XLE&#39;</span><span class="p">,</span> <span class="s1">&#39;LQD&#39;</span><span class="p">,</span> <span class="s1">&#39;GDX&#39;</span><span class="p">,</span> <span class="s1">&#39;FXI&#39;</span><span class="p">,</span> <span class="s1">&#39;EWZ&#39;</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">candidates</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;AAPL&#39;</span><span class="p">,</span> <span class="s1">&#39;AMZN&#39;</span><span class="p">,</span> <span class="s1">&#39;NVDA&#39;</span><span class="p">,</span> <span class="s1">&#39;MSFT&#39;</span><span class="p">,</span> <span class="s1">&#39;GOOGL&#39;</span><span class="p">,</span> <span class="s1">&#39;AMD&#39;</span><span class="p">,</span> <span class="s1">&#39;BAC&#39;</span><span class="p">,</span> <span class="s1">&#39;NFLX&#39;</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pairs</span> <span class="o">=</span> <span class="n">search_candidate_pairs</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">securities</span><span class="o">=</span><span class="n">securities</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">candidates</span><span class="o">=</span><span class="n">candidates</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">start</span><span class="o">=</span><span class="s1">&#39;2022-12-12&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">end</span><span class="o">=</span><span class="s1">&#39;2024-12-10&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">source</span><span class="o">=</span><span class="s1">&#39;yf&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">npairs</span><span class="o">=</span><span class="mi">10</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="p">[</span>
+<span class="gp">... </span>   <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="s1">&#39;LQD&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="s1">&#39;TMO&#39;</span><span class="p">},</span>
+<span class="gp">... </span>   <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="s1">&#39;IEF&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="s1">&#39;COP&#39;</span><span class="p">},</span>
+<span class="gp">... </span>   <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="s1">&#39;WMT&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="s1">&#39;IWM&#39;</span><span class="p">},</span>
+<span class="gp">... </span>   <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="s1">&#39;MDT&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="s1">&#39;OIH&#39;</span><span class="p">},</span>
+<span class="gp">... </span>   <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="s1">&#39;EWZ&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="s1">&#39;CMCSA&#39;</span><span class="p">},</span>
+<span class="gp">... </span>   <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="s1">&#39;VLO&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="s1">&#39;XOP&#39;</span><span class="p">},</span>
+<span class="gp">... </span>   <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="s1">&#39;SHY&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="s1">&#39;F&#39;</span><span class="p">},</span>
+<span class="gp">... </span>   <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="s1">&#39;ABT&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="s1">&#39;LQD&#39;</span><span class="p">},</span>
+<span class="gp">... </span>   <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="s1">&#39;PFE&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="s1">&#39;USO&#39;</span><span class="p">},</span>
+<span class="gp">... </span>   <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="s1">&#39;LQD&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="s1">&#39;MDT&#39;</span><span class="p">}</span>
+<span class="gp">... </span>   <span class="p">]</span>
+</pre></div>
+</div>
+</dd>
+<dt>Using MetaTrader 5:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">securities</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;EURUSD&#39;</span><span class="p">,</span> <span class="s1">&#39;GBPUSD&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">candidates</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;USDJPY&#39;</span><span class="p">,</span> <span class="s1">&#39;AUDUSD&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pairs</span> <span class="o">=</span> <span class="n">search_candidate_pairs</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">securities</span><span class="o">=</span><span class="n">securities</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">candidates</span><span class="o">=</span><span class="n">candidates</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">source</span><span class="o">=</span><span class="s1">&#39;mt5&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">tf</span><span class="o">=</span><span class="s1">&#39;H1&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">path</span><span class="o">=</span><span class="s1">&#39;/path/to/terminal64.exe&#39;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>If <cite>securities</cite> and <cite>candidates</cite> are DataFrames, the function assumes
+the data is already preprocessed and indexed by [‘ticker’, ‘date’].</p></li>
+<li><p>When using <cite>source=’fmp’</cite> or <cite>source=’eodhd’</cite>, API keys and other
+required parameters should be passed via <cite>kwargs</cite>.</p></li>
+</ul>
+</dd></dl>
+
 </section>
 <section id="module-models.ml">
 <span id="ml"></span><h2>ml<a class="headerlink" href="#module-models.ml" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.ml.LightGBModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">models.ml.</span></span><span class="sig-name descname"><span class="pre">LightGBModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datastore</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HDFStore</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'lgbdata.h5'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trainstore</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HDFStore</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'lgbtrain.h5'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outstore</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HDFStore</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'lgbout.h5'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/ml.html#LightGBModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.ml.LightGBModel" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">LightGBModel</span></code> encapsulates a complete workflow for training and evaluating
+a <code class="docutils literal notranslate"><span class="pre">LightGBM</span> <span class="pre">(Light</span> <span class="pre">Gradient</span> <span class="pre">Boosting</span> <span class="pre">Machine)</span></code> model for predicting stock returns.
+It includes data acquisition, feature engineering, model tuning, and performance
+evaluation using information <code class="docutils literal notranslate"><span class="pre">coefficient</span> <span class="pre">(IC)</span></code> and Alphalens analysis.</p>
+<section id="key-features">
+<h3>Key Features<a class="headerlink" href="#key-features" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">HDF5</span> <span class="pre">Storage</span></code>: Utilizes <code class="docutils literal notranslate"><span class="pre">pandas.HDFStore</span></code> for efficient storage and retrieval
+of large datasets, which is essential for backtesting on financial time series data.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Time-Series</span> <span class="pre">Cross-Validation</span></code>: Employs a custom cross-validation strategy that
+respects the time series nature of the data, avoiding data leakage.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Hyperparameter</span> <span class="pre">Tuning</span></code>: Includes automated hyperparameter tuning using a randomized
+grid search for optimization.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Information</span> <span class="pre">Coefficient</span> <span class="pre">(IC)</span></code>: Uses IC as a core performance metric that quantifies
+the predictive power of the model, which is a standard measure for ranking models in finance.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Alphalens</span> <span class="pre">Integration</span></code>: Provides a comprehensive framework for validating model
+performance using Alphalens, allowing for in-depth performance analysis, like backtesting
+and return decomposition.</p></li>
+</ul>
+</section>
+<section id="use-case">
+<h3>Use Case<a class="headerlink" href="#use-case" title="Link to this heading"></a></h3>
+<p>This class is designed for quantitative finance and algorithmic trading use cases where
+the goal is to build a predictive model for stock returns based on historical data and
+technical indicators. It follows a complete cycle from data acquisition to model validation
+and provides the infrastructure needed for deployment of this model in a trading strategy.</p>
+<p class="rubric">Notes</p>
+<p>The implementation is inspired by the book “Machine Learning for Algorithmic Trading”
+by Stefan Jansen.</p>
+<p class="rubric">References</p>
+<p>Stefan Jansen (2020). Machine Learning for Algorithmic Trading - Second Edition.
+Chapter 12, Boosting Your Trading Strategy.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.ml.LightGBModel.apply_alphalen_analysis">
+<span class="sig-name descname"><span class="pre">apply_alphalen_analysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">factor_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tearsheet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/ml.html#LightGBModel.apply_alphalen_analysis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.ml.LightGBModel.apply_alphalen_analysis" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.ml.LightGBModel.assert_last_date">
+<span class="sig-name descname"><span class="pre">assert_last_date</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">predictions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/ml.html#LightGBModel.assert_last_date"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.ml.LightGBModel.assert_last_date" title="Link to this definition"></a></dt>
+<dd><p>Usefull in Live Trading to ensure that the last date in the predictions
+is the previous day, so it predicts today’s returns.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.ml.LightGBModel.download_boosting_data">
+<span class="sig-name descname"><span class="pre">download_boosting_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tickers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/ml.html#LightGBModel.download_boosting_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.ml.LightGBModel.download_boosting_data" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.ml.LightGBModel.download_metadata">
+<span class="sig-name descname"><span class="pre">download_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tickers</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/ml.html#LightGBModel.download_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.ml.LightGBModel.download_metadata" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.ml.LightGBModel.evaluate">
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">remove_instore</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lookahead</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/ml.html#LightGBModel.evaluate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.ml.LightGBModel.evaluate" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.ml.LightGBModel.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/ml.html#LightGBModel.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.ml.LightGBModel.fit" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.ml.LightGBModel.format_time">
+<span class="sig-name descname"><span class="pre">format_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/ml.html#LightGBModel.format_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.ml.LightGBModel.format_time" title="Link to this definition"></a></dt>
+<dd><p>Return a formatted time string ‘HH:MM:SS
+based on a numeric time() value</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.ml.LightGBModel.get_best_predictions">
+<span class="sig-name descname"><span class="pre">get_best_predictions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lgb_daily_ic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scope_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lgb_train_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lookahead</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/ml.html#LightGBModel.get_best_predictions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.ml.LightGBModel.get_best_predictions" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.ml.LightGBModel.get_trade_prices">
+<span class="sig-name descname"><span class="pre">get_trade_prices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tickers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/ml.html#LightGBModel.get_trade_prices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.ml.LightGBModel.get_trade_prices" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.ml.LightGBModel.load_model_data">
+<span class="sig-name descname"><span class="pre">load_model_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/ml.html#LightGBModel.load_model_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.ml.LightGBModel.load_model_data" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.ml.LightGBModel.load_predictions">
+<span class="sig-name descname"><span class="pre">load_predictions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">predictions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lookahead</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/ml.html#LightGBModel.load_predictions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.ml.LightGBModel.load_predictions" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.ml.LightGBModel.make_predictions">
+<span class="sig-name descname"><span class="pre">make_predictions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lookahead</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/ml.html#LightGBModel.make_predictions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.ml.LightGBModel.make_predictions" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.ml.LightGBModel.plot_ic">
+<span class="sig-name descname"><span class="pre">plot_ic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lgb_ic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lgb_daily_ic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scope_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lgb_train_params</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/ml.html#LightGBModel.plot_ic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.ml.LightGBModel.plot_ic" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.ml.LightGBModel.plot_metrics">
+<span class="sig-name descname"><span class="pre">plot_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lgb_metrics</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lgb_daily_ic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/ml.html#LightGBModel.plot_metrics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.ml.LightGBModel.plot_metrics" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.ml.LightGBModel.prepare_boosting_data">
+<span class="sig-name descname"><span class="pre">prepare_boosting_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prices</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_years</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">7</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">universe</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/ml.html#LightGBModel.prepare_boosting_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.ml.LightGBModel.prepare_boosting_data" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.ml.LightGBModel.tickers">
+<span class="sig-name descname"><span class="pre">tickers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/ml.html#LightGBModel.tickers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.ml.LightGBModel.tickers" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.ml.MultipleTimeSeriesCV">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">models.ml.</span></span><span class="sig-name descname"><span class="pre">MultipleTimeSeriesCV</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_splits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_period_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">126</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_period_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">21</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lookahead</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'date'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shuffle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/ml.html#MultipleTimeSeriesCV"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.ml.MultipleTimeSeriesCV" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.ml.MultipleTimeSeriesCV.get_n_splits">
+<span class="sig-name descname"><span class="pre">get_n_splits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">groups</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/ml.html#MultipleTimeSeriesCV.get_n_splits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.ml.MultipleTimeSeriesCV.get_n_splits" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.ml.MultipleTimeSeriesCV.split">
+<span class="sig-name descname"><span class="pre">split</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">groups</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/ml.html#MultipleTimeSeriesCV.split"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.ml.MultipleTimeSeriesCV.split" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.ml.OneStepTimeSeriesSplit">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">models.ml.</span></span><span class="sig-name descname"><span class="pre">OneStepTimeSeriesSplit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_splits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_period_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shuffle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/ml.html#OneStepTimeSeriesSplit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.ml.OneStepTimeSeriesSplit" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.ml.OneStepTimeSeriesSplit.chunks">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">chunks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">l</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/ml.html#OneStepTimeSeriesSplit.chunks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.ml.OneStepTimeSeriesSplit.chunks" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.ml.OneStepTimeSeriesSplit.get_n_splits">
+<span class="sig-name descname"><span class="pre">get_n_splits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">groups</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/ml.html#OneStepTimeSeriesSplit.get_n_splits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.ml.OneStepTimeSeriesSplit.get_n_splits" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.ml.OneStepTimeSeriesSplit.split">
+<span class="sig-name descname"><span class="pre">split</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">groups</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/ml.html#OneStepTimeSeriesSplit.split"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.ml.OneStepTimeSeriesSplit.split" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="module-models.optimization">
 <span id="optimization"></span><h2>optimization<a class="headerlink" href="#module-models.optimization" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="models.optimization.equal_weighted">
+<span class="sig-prename descclassname"><span class="pre">models.optimization.</span></span><span class="sig-name descname"><span class="pre">equal_weighted</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">returns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">round_digits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/optimization.html#equal_weighted"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.optimization.equal_weighted" title="Link to this definition"></a></dt>
+<dd><p>Generates an equal-weighted portfolio by assigning an equal proportion to each asset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>prices</strong> (<em>pd.DataFrame</em><em>, </em><em>optional</em>) – Price data for assets, where each column represents an asset.</p></li>
+<li><p><strong>returns</strong> (<em>pd.DataFrame</em><em>, </em><em>optional</em>) – Return data for assets. One of <cite>prices</cite> or <cite>returns</cite> must be provided.</p></li>
+<li><p><strong>round_digits</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of decimal places to round each weight to (default is 5).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary with equal weights assigned to each asset, summing to 1.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If neither <cite>prices</cite> nor <cite>returns</cite> are provided.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Equal weighting is a simple allocation method that assumes equal importance across all assets,
+useful as a baseline model and when no strong views exist on asset return expectations or risk.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.optimization.hierarchical_risk_parity">
+<span class="sig-prename descclassname"><span class="pre">models.optimization.</span></span><span class="sig-name descname"><span class="pre">hierarchical_risk_parity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">returns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">252</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/optimization.html#hierarchical_risk_parity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.optimization.hierarchical_risk_parity" title="Link to this definition"></a></dt>
+<dd><p>Computes asset weights using Hierarchical Risk Parity (HRP) for risk-averse portfolio allocation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>prices</strong> (<em>pd.DataFrame</em><em>, </em><em>optional</em>) – Price data for assets; if provided, daily returns will be calculated.</p></li>
+<li><p><strong>returns</strong> (<em>pd.DataFrame</em><em>, </em><em>optional</em>) – Daily returns for assets. One of <cite>prices</cite> or <cite>returns</cite> must be provided.</p></li>
+<li><p><strong>freq</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of days to consider in calculating portfolio weights (default is 252).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Optimized asset weights using the HRP method, with asset weights summing to 1.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If neither <cite>prices</cite> nor <cite>returns</cite> are provided.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Hierarchical Risk Parity is particularly useful for portfolios with a large number of assets,
+as it mitigates issues of multicollinearity and estimation errors in covariance matrices by
+using hierarchical clustering.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.optimization.markowitz_weights">
+<span class="sig-prename descclassname"><span class="pre">models.optimization.</span></span><span class="sig-name descname"><span class="pre">markowitz_weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rfr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">252</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/optimization.html#markowitz_weights"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.optimization.markowitz_weights" title="Link to this definition"></a></dt>
+<dd><p>Calculates optimal portfolio weights using Markowitz’s mean-variance optimization (Max Sharpe Ratio) with multiple solvers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>prices</strong> (<em>pd.DataFrame</em><em>, </em><em>optional</em>) – Price data for assets, where rows represent time periods and columns represent assets.</p></li>
+<li><p><strong>freq</strong> (<em>int</em><em>, </em><em>optional</em>) – Frequency of the data, such as 252 for daily returns in a year (default is 252).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary containing the optimal asset weights for maximizing the Sharpe ratio, normalized to sum to 1.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This function attempts to maximize the Sharpe ratio by iterating through various solvers (‘SCS’, ‘ECOS’, ‘OSQP’)
+from the PyPortfolioOpt library. If a solver fails, it proceeds to the next one. If none succeed, an error message
+is printed for each solver that fails.</p>
+<p>This function is useful for portfolio with a small number of assets, as it may not scale well for large portfolios.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>Exception</strong> – If all solvers fail, each will print an exception error message during runtime.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.optimization.optimized_weights">
+<span class="sig-prename descclassname"><span class="pre">models.optimization.</span></span><span class="sig-name descname"><span class="pre">optimized_weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">returns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rfr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">252</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'equal'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/optimization.html#optimized_weights"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.optimization.optimized_weights" title="Link to this definition"></a></dt>
+<dd><p>Selects an optimization method to calculate portfolio weights based on user preference.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>prices</strong> (<em>pd.DataFrame</em><em>, </em><em>optional</em>) – Price data for assets, required for certain methods.</p></li>
+<li><p><strong>returns</strong> (<em>pd.DataFrame</em><em>, </em><em>optional</em>) – Returns data for assets, an alternative input for certain methods.</p></li>
+<li><p><strong>freq</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of days for calculating portfolio weights, such as 252 for a year’s worth of daily returns (default is 252).</p></li>
+<li><p><strong>method</strong> (<em>str</em><em>, </em><em>optional</em>) – Optimization method to use (‘markowitz’, ‘hrp’, or ‘equal’) (default is ‘markowitz’).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary containing optimized asset weights based on the chosen method.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If an unknown optimization method is specified.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This function integrates different optimization methods:
+- ‘markowitz’: mean-variance optimization with max Sharpe ratio
+- ‘hrp’: Hierarchical Risk Parity, for risk-based clustering of assets
+- ‘equal’: Equal weighting across all assets</p>
+</dd></dl>
+
+</section>
+<section id="module-models.portfolio">
+<span id="portfolios"></span><h2>portfolios<a class="headerlink" href="#module-models.portfolio" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.portfolio.EigenPortfolios">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">models.portfolio.</span></span><span class="sig-name descname"><span class="pre">EigenPortfolios</span></span><a class="reference internal" href="_modules/models/portfolio.html#EigenPortfolios"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.portfolio.EigenPortfolios" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>The <cite>EigenPortfolios</cite> class applies Principal Component Analysis (PCA) to a covariance matrix of normalized asset returns
+to derive portfolios (eigenportfolios) that capture distinct risk factors in the asset returns. Each eigenportfolio
+represents a principal component of the return covariance matrix, ordered by the magnitude of its eigenvalue. These
+portfolios capture most of the variance in asset returns and are mutually uncorrelated.</p>
+<p class="rubric">Notes</p>
+<p>The implementation is inspired by the book “Machine Learning for Algorithmic Trading” by Stefan Jansen.</p>
+<p class="rubric">References</p>
+<p>Stefan Jansen (2020). Machine Learning for Algorithmic Trading - Second Edition.
+chapter 13, Data-Driven Risk Factors and Asset Allocation with Unsupervised Learning.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.portfolio.EigenPortfolios.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">returns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_portfolios</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="_modules/models/portfolio.html#EigenPortfolios.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.portfolio.EigenPortfolios.fit" title="Link to this definition"></a></dt>
+<dd><p>Computes the eigenportfolios based on PCA of the asset returns’ covariance matrix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>returns</strong> (<em>pd.DataFrame</em>) – Historical returns of assets to be used for PCA.</p></li>
+<li><p><strong>n_portfolios</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of eigenportfolios to compute (default is 4).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame containing normalized weights for each eigenportfolio.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This method performs winsorization and normalization on returns to reduce the impact of outliers
+and achieve zero mean and unit variance. It uses the first <cite>n_portfolios</cite> principal components
+as portfolio weights.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.portfolio.EigenPortfolios.get_portfolios">
+<span class="sig-name descname"><span class="pre">get_portfolios</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="_modules/models/portfolio.html#EigenPortfolios.get_portfolios"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.portfolio.EigenPortfolios.get_portfolios" title="Link to this definition"></a></dt>
+<dd><p>Returns the computed eigenportfolios (weights of assets in each portfolio).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>DataFrame containing eigenportfolio weights for each asset.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>pd.DataFrame</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – If <cite>fit()</cite> has not been called before retrieving portfolios.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.portfolio.EigenPortfolios.optimize">
+<span class="sig-name descname"><span class="pre">optimize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">portfolio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'hrp'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">252</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/portfolio.html#EigenPortfolios.optimize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.portfolio.EigenPortfolios.optimize" title="Link to this definition"></a></dt>
+<dd><p>Optimizes the chosen eigenportfolio based on a specified optimization method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>portfolio</strong> (<em>int</em><em>, </em><em>optional</em>) – Index of the eigenportfolio to optimize (default is 1).</p></li>
+<li><p><strong>optimizer</strong> (<em>str</em><em>, </em><em>optional</em>) – Optimization method: ‘markowitz’, ‘hrp’ (Hierarchical Risk Parity), or ‘equal’ (default is ‘hrp’).</p></li>
+<li><p><strong>prices</strong> (<em>pd.DataFrame</em><em>, </em><em>optional</em>) – Asset prices used for Markowitz optimization (required if optimizer is ‘markowitz’).</p></li>
+<li><p><strong>freq</strong> (<em>int</em><em>, </em><em>optional</em>) – Frequency of returns (e.g., 252 for daily returns).</p></li>
+<li><p><strong>plot</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to plot the performance of the optimized portfolio (default is True).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary of optimized asset weights.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If an unknown optimizer is specified, or if prices are not provided when using Markowitz optimization.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The optimization method varies based on risk-return assumptions, with options for traditional Markowitz optimization,
+Hierarchical Risk Parity, or equal weighting.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.portfolio.EigenPortfolios.plot_performance">
+<span class="sig-name descname"><span class="pre">plot_performance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/portfolio.html#EigenPortfolios.plot_performance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.portfolio.EigenPortfolios.plot_performance" title="Link to this definition"></a></dt>
+<dd><p>Plots the cumulative returns of each eigenportfolio over time.</p>
+<p class="rubric">Notes</p>
+<p>This method calculates the historical cumulative performance of each eigenportfolio
+by weighting asset returns according to eigenportfolio weights.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.portfolio.EigenPortfolios.plot_weights">
+<span class="sig-name descname"><span class="pre">plot_weights</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/portfolio.html#EigenPortfolios.plot_weights"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.portfolio.EigenPortfolios.plot_weights" title="Link to this definition"></a></dt>
+<dd><p>Plots the weights of each asset in each eigenportfolio as bar charts.</p>
+<p class="rubric">Notes</p>
+<p>Each subplot represents one eigenportfolio, showing the contribution of each asset.</p>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 </section>
 

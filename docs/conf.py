@@ -20,13 +20,13 @@ class Mock(MagicMock):
         return MagicMock()
 
 # List the modules you want to mock
-MOCK_MODULES = ['MetaTrader5']
+MOCK_MODULES = ['MetaTrader5', 'ta-lib']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 project = 'BBSTrader'
 copyright = '2024, Bertin Balouki SIMYELI'
 author = 'Bertin Balouki SIMYELI'
-release = '0.1.91'
+release = '0.2.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

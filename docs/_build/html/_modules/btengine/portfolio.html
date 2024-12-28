@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>btengine.portfolio &mdash; BBSTrader 0.1.08 documentation</title>
+  <title>btengine.portfolio &mdash; BBSTrader 0.2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=fda63d7b"></script>
+      <script src="../../_static/documentation_options.js?v=938c9ccc"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -104,8 +104,6 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This  describes a `Portfolio()` object that keeps track of the positions </span>
 <span class="sd">    within a portfolio and generates orders of a fixed quantity of stock based on signals. </span>
-<span class="sd">    More sophisticated portfolio objects could include risk management and position </span>
-<span class="sd">    sizing tools (such as the `Kelly Criterion`).</span>
 
 <span class="sd">    The portfolio order management system is possibly the most complex component of </span>
 <span class="sd">    an event driven backtester. Its role is to keep track of all current market positions </span>
@@ -130,10 +128,9 @@
 <span class="sd">    value (defaulting to `100,000 USD`) and others parameter based on the `Strategy` requirement.</span>
 
 <span class="sd">    The `Portfolio` is designed to handle position sizing and current holdings, </span>
-<span class="sd">    but will carry out trading orders in a &quot;dumb&quot; manner by simply sending them directly </span>
-<span class="sd">    to the brokerage with a predetermined fixed quantity size, irrespective of cash held. </span>
-<span class="sd">    These are all unrealistic assumptions, but they help to outline how a portfolio order </span>
-<span class="sd">    management system (OMS) functions in an eventdriven fashion.</span>
+<span class="sd">    but will carry out trading orders by simply them to the brokerage with a predetermined </span>
+<span class="sd">    fixed quantity size, if the portfolio has enough cash to place the order.</span>
+
 
 <span class="sd">    The portfolio contains the `all_positions` and `current_positions` members. </span>
 <span class="sd">    The former stores a list of all previous positions recorded at the timestamp of a market data event. </span>
@@ -169,19 +166,23 @@
 <span class="sd">            initial_capital (float): The starting capital in USD.</span>
 
 <span class="sd">            kwargs (dict): Additional arguments</span>
+<span class="sd">                - `leverage`: The leverage to apply to the portfolio.</span>
 <span class="sd">                - `time_frame`: The time frame of the bars.</span>
-<span class="sd">                - `trading_hours`: The number of trading hours in a day.</span>
+<span class="sd">                - `session_duration`: The number of trading hours in a day.</span>
 <span class="sd">                - `benchmark`: The benchmark symbol to compare the portfolio.</span>
-<span class="sd">                - `strategy_name`: The name of the strategy  (the name must not include &#39;Strategy&#39; in it).    </span>
+<span class="sd">                - `output_dir`: The directory to save the backtest results.</span>
+<span class="sd">                - `strategy_name`: The name of the strategy  (the name must not include &#39;Strategy&#39; in it). </span>
+<span class="sd">                - `print_stats`: Whether to print the backtest statistics.   </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bars</span> <span class="o">=</span> <span class="n">bars</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">events</span> <span class="o">=</span> <span class="n">events</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">symbol_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bars</span><span class="o">.</span><span class="n">symbol_list</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">start_date</span> <span class="o">=</span> <span class="n">start_date</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">initial_capital</span> <span class="o">=</span> <span class="n">initial_capital</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_leverage</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;leverage&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">timeframe</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;time_frame&quot;</span><span class="p">,</span> <span class="s2">&quot;D1&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">trading_hours</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;session_duration&quot;</span><span class="p">,</span> <span class="mf">6.5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trading_hours</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;session_duration&quot;</span><span class="p">,</span> <span class="mi">23</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">benchmark</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;benchmark&#39;</span><span class="p">,</span> <span class="s1">&#39;SPY&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;output_dir&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">strategy_name</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;strategy_name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
@@ -256,6 +257,23 @@
         <span class="n">d</span><span class="p">[</span><span class="s1">&#39;Total&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_capital</span>
         <span class="k">return</span> <span class="n">d</span></div>
 
+    
+    <span class="k">def</span> <span class="nf">_get_price</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">price</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bars</span><span class="o">.</span><span class="n">get_latest_bar_value</span><span class="p">(</span>
+                <span class="n">symbol</span><span class="p">,</span> <span class="s2">&quot;adj_close&quot;</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">price</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">price</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bars</span><span class="o">.</span><span class="n">get_latest_bar_value</span><span class="p">(</span>
+                    <span class="n">symbol</span><span class="p">,</span> <span class="s2">&quot;close&quot;</span>
+                <span class="p">)</span>
+                <span class="k">return</span> <span class="n">price</span>
+            <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Bars object must have &#39;adj_close&#39; or &#39;close&#39; prices&quot;</span>
+                <span class="p">)</span>
 
 <div class="viewcode-block" id="Portfolio.update_timeindex">
 <a class="viewcode-back" href="../../btengine.html#btengine.portfolio.Portfolio.update_timeindex">[docs]</a>
@@ -287,8 +305,8 @@
         <span class="n">dh</span><span class="p">[</span><span class="s1">&#39;Total&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_holdings</span><span class="p">[</span><span class="s1">&#39;Cash&#39;</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol_list</span><span class="p">:</span>
             <span class="c1"># Approximation to the real value</span>
-            <span class="n">market_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_positions</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">*</span> \
-                <span class="bp">self</span><span class="o">.</span><span class="n">bars</span><span class="o">.</span><span class="n">get_latest_bar_value</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="s2">&quot;adj_close&quot;</span><span class="p">)</span>
+            <span class="n">price</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_price</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+            <span class="n">market_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_positions</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">*</span> <span class="n">price</span>
             <span class="n">dh</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">market_value</span>
             <span class="n">dh</span><span class="p">[</span><span class="s1">&#39;Total&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">market_value</span>
 
@@ -335,9 +353,7 @@
             <span class="n">fill_dir</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
 
         <span class="c1"># Update holdings list with new quantities</span>
-        <span class="n">price</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bars</span><span class="o">.</span><span class="n">get_latest_bar_value</span><span class="p">(</span>
-            <span class="n">fill</span><span class="o">.</span><span class="n">symbol</span><span class="p">,</span> <span class="s2">&quot;adj_close&quot;</span>
-        <span class="p">)</span>
+        <span class="n">price</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_price</span><span class="p">(</span><span class="n">fill</span><span class="o">.</span><span class="n">symbol</span><span class="p">)</span>
         <span class="n">cost</span> <span class="o">=</span> <span class="n">fill_dir</span> <span class="o">*</span> <span class="n">price</span> <span class="o">*</span> <span class="n">fill</span><span class="o">.</span><span class="n">quantity</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_holdings</span><span class="p">[</span><span class="n">fill</span><span class="o">.</span><span class="n">symbol</span><span class="p">]</span> <span class="o">+=</span> <span class="n">cost</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_holdings</span><span class="p">[</span><span class="s1">&#39;Commission&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">fill</span><span class="o">.</span><span class="n">commission</span>
@@ -357,16 +373,17 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">update_holdings_from_fill</span><span class="p">(</span><span class="n">event</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="Portfolio.generate_naive_order">
-<a class="viewcode-back" href="../../btengine.html#btengine.portfolio.Portfolio.generate_naive_order">[docs]</a>
-    <span class="k">def</span> <span class="nf">generate_naive_order</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signal</span><span class="p">:</span> <span class="n">SignalEvent</span><span class="p">):</span>
+<div class="viewcode-block" id="Portfolio.generate_order">
+<a class="viewcode-back" href="../../btengine.html#btengine.portfolio.Portfolio.generate_order">[docs]</a>
+    <span class="k">def</span> <span class="nf">generate_order</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signal</span><span class="p">:</span> <span class="n">SignalEvent</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Simply files an Order object as a constant quantity</span>
-<span class="sd">        sizing of the signal object, without risk management or</span>
-<span class="sd">        position sizing considerations.</span>
+<span class="sd">        Turns a SignalEvent into an OrderEvent.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            signal (SignalEvent): The tuple containing Signal information.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            OrderEvent: The OrderEvent to be executed.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">order</span> <span class="o">=</span> <span class="kc">None</span>
 
@@ -374,23 +391,28 @@
         <span class="n">direction</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">signal_type</span>
         <span class="n">quantity</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">quantity</span>
         <span class="n">strength</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">strength</span>
-        <span class="n">price</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">price</span>
+        <span class="n">price</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">price</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_price</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
         <span class="n">cur_quantity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_positions</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span>
+        <span class="n">mkt_quantity</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">quantity</span> <span class="o">*</span> <span class="n">strength</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">new_quantity</span> <span class="o">=</span> <span class="n">mkt_quantity</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_leverage</span>
 
-        <span class="n">order_type</span> <span class="o">=</span> <span class="s1">&#39;MKT&#39;</span>
-        <span class="n">mkt_quantity</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">quantity</span> <span class="o">*</span> <span class="n">strength</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">direction</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;LONG&#39;</span><span class="p">,</span> <span class="s1">&#39;SHORT&#39;</span><span class="p">,</span> <span class="s1">&#39;EXIT&#39;</span><span class="p">]:</span>
+            <span class="n">order_type</span> <span class="o">=</span> <span class="s1">&#39;MKT&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">order_type</span> <span class="o">=</span> <span class="n">direction</span>
 
-        <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;LONG&#39;</span> <span class="ow">and</span> <span class="n">cur_quantity</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">order</span> <span class="o">=</span> <span class="n">OrderEvent</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">order_type</span><span class="p">,</span> <span class="n">mkt_quantity</span><span class="p">,</span> <span class="s1">&#39;BUY&#39;</span><span class="p">,</span> <span class="n">price</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;SHORT&#39;</span> <span class="ow">and</span> <span class="n">cur_quantity</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">order</span> <span class="o">=</span> <span class="n">OrderEvent</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">order_type</span><span class="p">,</span> <span class="n">mkt_quantity</span><span class="p">,</span> <span class="s1">&#39;SELL&#39;</span><span class="p">,</span> <span class="n">price</span><span class="p">)</span>
+        <span class="k">if</span>  <span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;LONG&#39;</span> <span class="ow">and</span> <span class="n">new_quantity</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span> 
+            <span class="n">order</span> <span class="o">=</span> <span class="n">OrderEvent</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">order_type</span><span class="p">,</span> <span class="n">new_quantity</span><span class="p">,</span> <span class="s1">&#39;BUY&#39;</span><span class="p">,</span> <span class="n">price</span><span class="p">,</span> <span class="n">direction</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;SHORT&#39;</span> <span class="ow">and</span> <span class="n">new_quantity</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">order</span> <span class="o">=</span> <span class="n">OrderEvent</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">order_type</span><span class="p">,</span> <span class="n">new_quantity</span><span class="p">,</span> <span class="s1">&#39;SELL&#39;</span><span class="p">,</span> <span class="n">price</span><span class="p">,</span> <span class="n">direction</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;EXIT&#39;</span> <span class="ow">and</span> <span class="n">cur_quantity</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">order</span> <span class="o">=</span> <span class="n">OrderEvent</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">order_type</span><span class="p">,</span> <span class="nb">abs</span><span class="p">(</span><span class="n">cur_quantity</span><span class="p">),</span> <span class="s1">&#39;SELL&#39;</span><span class="p">,</span> <span class="n">price</span><span class="p">)</span>
+            <span class="n">order</span> <span class="o">=</span> <span class="n">OrderEvent</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">order_type</span><span class="p">,</span> <span class="nb">abs</span><span class="p">(</span><span class="n">cur_quantity</span><span class="p">),</span> <span class="s1">&#39;SELL&#39;</span><span class="p">,</span> <span class="n">price</span><span class="p">,</span> <span class="n">direction</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;EXIT&#39;</span> <span class="ow">and</span> <span class="n">cur_quantity</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">order</span> <span class="o">=</span> <span class="n">OrderEvent</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">order_type</span><span class="p">,</span> <span class="nb">abs</span><span class="p">(</span><span class="n">cur_quantity</span><span class="p">),</span> <span class="s1">&#39;BUY&#39;</span><span class="p">,</span> <span class="n">price</span><span class="p">)</span>
+            <span class="n">order</span> <span class="o">=</span> <span class="n">OrderEvent</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">order_type</span><span class="p">,</span> <span class="nb">abs</span><span class="p">(</span><span class="n">cur_quantity</span><span class="p">),</span> <span class="s1">&#39;BUY&#39;</span><span class="p">,</span> <span class="n">price</span><span class="p">,</span> <span class="n">direction</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">order</span></div>
+
 
 
 <div class="viewcode-block" id="Portfolio.update_signal">
@@ -401,7 +423,7 @@
 <span class="sd">        based on the portfolio logic.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;SIGNAL&#39;</span><span class="p">:</span>
-            <span class="n">order_event</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_naive_order</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+            <span class="n">order_event</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_order</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">order_event</span><span class="p">)</span></div>
 
 

@@ -1,8 +1,5 @@
 ibkr package
-============
-
-Module contents
----------------
+=============
 
 .. automodule:: ibkr
    :members:

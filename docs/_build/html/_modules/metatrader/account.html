@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>metatrader.account &mdash; BBSTrader 0.1.08 documentation</title>
+  <title>metatrader.account &mdash; BBSTrader 0.2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=fda63d7b"></script>
+      <script src="../../_static/documentation_options.js?v=938c9ccc"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -196,9 +196,57 @@
     <span class="s1">&#39;XSWX&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;Switzerland.*\(SWX\)&quot;</span>
 <span class="p">}</span>
 
-<span class="k">def</span> <span class="nf">check_mt5_connection</span><span class="p">():</span>
+<span class="k">def</span> <span class="nf">check_mt5_connection</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Initialize the connection to the MetaTrader 5 terminal.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        path (str, optional): The path to the MetaTrader 5 terminal executable file. </span>
+<span class="sd">            Defaults to None (e.g., &quot;C:\\Program Files\\MetaTrader 5\\terminal64.exe&quot;).</span>
+<span class="sd">        login (int, optional): The login ID of the trading account. Defaults to None.</span>
+<span class="sd">        password (str, optional): The password of the trading account. Defaults to None.</span>
+<span class="sd">        server (str, optional): The name of the trade server to which the client terminal is connected. </span>
+<span class="sd">            Defaults to None.</span>
+<span class="sd">        timeout (int, optional): Connection timeout in milliseconds. Defaults to 60_000.</span>
+<span class="sd">        portable (bool, optional): If True, the portable mode of the terminal is used. </span>
+<span class="sd">            Defaults to False (See https://www.metatrader5.com/en/terminal/help/start_advanced/start#portable).</span>
+<span class="sd">    </span>
+<span class="sd">    Notes:</span>
+<span class="sd">        If you want to lunch multiple terminal instances:</span>
+<span class="sd">        - Follow these instructions to lunch each terminal in portable mode first:</span>
+<span class="sd">            https://www.metatrader5.com/en/terminal/help/start_advanced/start#configuration_file</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">path</span>     <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;path&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">login</span>    <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;login&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">password</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;password&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">server</span>   <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;server&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">timeout</span>  <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;timeout&#39;</span><span class="p">,</span> <span class="mi">60_000</span><span class="p">)</span>
+    <span class="n">portable</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;portable&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span><span class="n">login</span> <span class="ow">or</span> <span class="n">password</span> <span class="ow">or</span> <span class="n">server</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;You must provide a path to the terminal executable file&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;when providing login, password or server&quot;</span>
+        <span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">init</span> <span class="o">=</span> <span class="n">mt5</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="n">login</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> 
+                <span class="n">password</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> 
+                <span class="n">server</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="p">):</span>
+                <span class="n">init</span> <span class="o">=</span> <span class="n">mt5</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span>
+                    <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span>
+                    <span class="n">login</span><span class="o">=</span><span class="n">login</span><span class="p">,</span>
+                    <span class="n">password</span><span class="o">=</span><span class="n">password</span><span class="p">,</span>
+                    <span class="n">server</span><span class="o">=</span><span class="n">server</span><span class="p">,</span>
+                    <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
+                    <span class="n">portable</span><span class="o">=</span><span class="n">portable</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">init</span> <span class="o">=</span> <span class="n">mt5</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">init</span> <span class="o">=</span> <span class="n">mt5</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">init</span><span class="p">:</span>
             <span class="n">raise_mt5_error</span><span class="p">(</span><span class="n">INIT_MSG</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
@@ -208,9 +256,9 @@
 <div class="viewcode-block" id="Broker">
 <a class="viewcode-back" href="../../metatrader.html#metatrader.account.Broker">[docs]</a>
 <span class="k">class</span> <span class="nc">Broker</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">check_mt5_connection</span><span class="p">()</span>
+            <span class="n">check_mt5_connection</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">mt5</span><span class="o">.</span><span class="n">account_info</span><span class="p">()</span><span class="o">.</span><span class="n">company</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span>
@@ -233,8 +281,8 @@
 <div class="viewcode-block" id="AdmiralMarktsGroup">
 <a class="viewcode-back" href="../../metatrader.html#metatrader.account.AdmiralMarktsGroup">[docs]</a>
 <span class="k">class</span> <span class="nc">AdmiralMarktsGroup</span><span class="p">(</span><span class="n">Broker</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;Admirals Group AS&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;Admirals Group AS&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">timezone</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -245,8 +293,8 @@
 <div class="viewcode-block" id="JustGlobalMarkets">
 <a class="viewcode-back" href="../../metatrader.html#metatrader.account.JustGlobalMarkets">[docs]</a>
 <span class="k">class</span> <span class="nc">JustGlobalMarkets</span><span class="p">(</span><span class="n">Broker</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;Just Global Markets Ltd.&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;Just Global Markets Ltd.&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">timezone</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -257,8 +305,8 @@
 <div class="viewcode-block" id="FTMO">
 <a class="viewcode-back" href="../../metatrader.html#metatrader.account.FTMO">[docs]</a>
 <span class="k">class</span> <span class="nc">FTMO</span><span class="p">(</span><span class="n">Broker</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;FTMO S.R.O.&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;FTMO S.R.O.&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">timezone</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -315,8 +363,14 @@
 <span class="sd">        &gt;&gt;&gt; trade_history = account.get_trade_history(from_date, to_date)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">check_mt5_connection</span><span class="p">()</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the Account class.</span>
+
+<span class="sd">        See `bbstrader.metatrader.account.check_mt5_connection()` for more details on how to connect to MT5 terminal.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">check_mt5_connection</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_check_brokers</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_check_brokers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -796,7 +850,7 @@
                 <span class="s2">&quot;minors&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\b(Minors?)\b&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;exotics&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\b(Exotics?)\b&quot;</span><span class="p">,</span>
             <span class="p">}</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_symbols_by_category</span><span class="p">(</span><span class="s1">&#39;forex&#39;</span><span class="p">,</span> <span class="n">category</span><span class="p">,</span> <span class="n">fx_categories</span><span class="p">)</span></div>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_symbols_by_category</span><span class="p">(</span><span class="s1">&#39;FX&#39;</span><span class="p">,</span> <span class="n">category</span><span class="p">,</span> <span class="n">fx_categories</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Account.get_stocks_from_country">
