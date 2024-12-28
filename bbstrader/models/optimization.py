@@ -17,19 +17,19 @@ def markowitz_weights(prices=None, rfr=0.0, freq=252):
     """
     Calculates optimal portfolio weights using Markowitz's mean-variance optimization (Max Sharpe Ratio) with multiple solvers.
 
-    Parameters:
+    Parameters
     ----------
     prices : pd.DataFrame, optional
         Price data for assets, where rows represent time periods and columns represent assets.
     freq : int, optional
         Frequency of the data, such as 252 for daily returns in a year (default is 252).
 
-    Returns:
+    Returns
     -------
     dict
         Dictionary containing the optimal asset weights for maximizing the Sharpe ratio, normalized to sum to 1.
 
-    Notes:
+    Notes
     -----
     This function attempts to maximize the Sharpe ratio by iterating through various solvers ('SCS', 'ECOS', 'OSQP') 
     from the PyPortfolioOpt library. If a solver fails, it proceeds to the next one. If none succeed, an error message 
@@ -37,7 +37,7 @@ def markowitz_weights(prices=None, rfr=0.0, freq=252):
 
     This function is useful for portfolio with a small number of assets, as it may not scale well for large portfolios.
     
-    Raises:
+    Raises
     ------
     Exception
         If all solvers fail, each will print an exception error message during runtime.
@@ -61,7 +61,7 @@ def hierarchical_risk_parity(prices=None, returns=None, freq=252):
     """
     Computes asset weights using Hierarchical Risk Parity (HRP) for risk-averse portfolio allocation.
 
-    Parameters:
+    Parameters
     ----------
     prices : pd.DataFrame, optional
         Price data for assets; if provided, daily returns will be calculated.
@@ -70,17 +70,17 @@ def hierarchical_risk_parity(prices=None, returns=None, freq=252):
     freq : int, optional
         Number of days to consider in calculating portfolio weights (default is 252).
 
-    Returns:
+    Returns
     -------
     dict
         Optimized asset weights using the HRP method, with asset weights summing to 1.
 
-    Raises:
+    Raises
     ------
     ValueError
         If neither `prices` nor `returns` are provided.
 
-    Notes:
+    Notes
     -----
     Hierarchical Risk Parity is particularly useful for portfolios with a large number of assets, 
     as it mitigates issues of multicollinearity and estimation errors in covariance matrices by 
@@ -101,7 +101,7 @@ def equal_weighted(prices=None, returns=None, round_digits=5):
     """
     Generates an equal-weighted portfolio by assigning an equal proportion to each asset.
 
-    Parameters:
+    Parameters
     ----------
     prices : pd.DataFrame, optional
         Price data for assets, where each column represents an asset.
@@ -110,21 +110,22 @@ def equal_weighted(prices=None, returns=None, round_digits=5):
     round_digits : int, optional
         Number of decimal places to round each weight to (default is 5).
 
-    Returns:
+    Returns
     -------
     dict
         Dictionary with equal weights assigned to each asset, summing to 1.
 
-    Raises:
+    Raises
     ------
     ValueError
         If neither `prices` nor `returns` are provided.
 
-    Notes:
+    Notes
     -----
     Equal weighting is a simple allocation method that assumes equal importance across all assets, 
     useful as a baseline model and when no strong views exist on asset return expectations or risk.
     """
+
     if returns is None and prices is None:
         raise ValueError("Either prices or returns must be provided")
     if returns is None:
@@ -139,7 +140,7 @@ def optimized_weights(prices=None, returns=None, rfr=0.0, freq=252, method='equa
     """
     Selects an optimization method to calculate portfolio weights based on user preference.
 
-    Parameters:
+    Parameters
     ----------
     prices : pd.DataFrame, optional
         Price data for assets, required for certain methods.
@@ -150,17 +151,17 @@ def optimized_weights(prices=None, returns=None, rfr=0.0, freq=252, method='equa
     method : str, optional
         Optimization method to use ('markowitz', 'hrp', or 'equal') (default is 'markowitz').
 
-    Returns:
+    Returns
     -------
     dict
         Dictionary containing optimized asset weights based on the chosen method.
 
-    Raises:
+    Raises
     ------
     ValueError
         If an unknown optimization method is specified.
 
-    Notes:
+    Notes
     -----
     This function integrates different optimization methods:
     - 'markowitz': mean-variance optimization with max Sharpe ratio
