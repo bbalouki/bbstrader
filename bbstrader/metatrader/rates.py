@@ -1,28 +1,21 @@
-import pandas as pd
-import MetaTrader5 as Mt5
 from datetime import datetime
-from typing import Union, Optional
-from bbstrader.metatrader.utils import (
-    raise_mt5_error, 
-    TimeFrame, 
-    TIMEFRAMES
-)
-from bbstrader.metatrader.account import Account
-from bbstrader.metatrader.account import AMG_EXCHANGES
-from bbstrader.metatrader.account import check_mt5_connection
-from pandas.tseries.offsets import CustomBusinessDay
+from typing import Optional, Union
+
+import MetaTrader5 as Mt5
+import pandas as pd
+from exchange_calendars import get_calendar, get_calendar_names
 from pandas.tseries.holiday import USFederalHolidayCalendar
-from exchange_calendars import(
-    get_calendar,
-    get_calendar_names
-)
+from pandas.tseries.offsets import CustomBusinessDay
+
+from bbstrader.metatrader.account import AMG_EXCHANGES, Account, check_mt5_connection
+from bbstrader.metatrader.utils import TIMEFRAMES, TimeFrame, raise_mt5_error
 
 __all__ = [
-    'Rates', 
-    'download_historical_data', 
+    'Rates',
+    'download_historical_data',
     'get_data_from_pos',
     'get_data_from_date'
-    
+
 ]
 
 MAX_BARS = 10_000_000
@@ -42,20 +35,20 @@ IDX_CALENDARS = {
 }
 
 COMD_CALENDARS = {
-    "Energies"      : "us_futures",
-    "Metals"        : "us_futures",
-    "Agricultures"  : "CBOT",
-    "Bonds": {"USD" : "CBOT", "EUR": "EUREX"},
+    "Energies": "us_futures",
+    "Metals": "us_futures",
+    "Agricultures": "CBOT",
+    "Bonds": {"USD": "CBOT", "EUR": "EUREX"},
 }
 
 CALENDARS = {
-    "FX"    : "us_futures",
-    "STK"   : AMG_EXCHANGES,
-    "ETF"   : AMG_EXCHANGES,
-    "IDX"   : IDX_CALENDARS,
-    "COMD"  : COMD_CALENDARS,
+    "FX": "us_futures",
+    "STK": AMG_EXCHANGES,
+    "ETF": AMG_EXCHANGES,
+    "IDX": IDX_CALENDARS,
+    "COMD": COMD_CALENDARS,
     "CRYPTO": "24/7",
-    "FUT"   : None,
+    "FUT": None,
 }
 
 SESSION_TIMEFRAMES = [
@@ -80,7 +73,7 @@ class Rates(object):
         is set to a value that is greater than the number of bars you want to retrieve
         or just set it to Unlimited.
         In your MT5 terminal, go to `Tools` -> `Options` -> `Charts` -> `Max bars in chart`.
-        
+
         2. The `open, high, low, close, adjclose, returns,
         volume` properties returns data in  Broker's timezone by default.
 
@@ -99,7 +92,7 @@ class Rates(object):
         self,
         symbol: str,
         timeframe: TimeFrame = 'D1',
-        start_pos: Union[int , str] = 0,
+        start_pos: Union[int, str] = 0,
         count: Optional[int] = MAX_BARS,
         session_duration: Optional[float] = None,
         **kwargs
@@ -133,7 +126,7 @@ class Rates(object):
 
     def _mt5_initialized(self, **kwargs):
         check_mt5_connection(**kwargs)
-    
+
     def _get_start_pos(self, index, time_frame):
         if isinstance(index, int):
             start_pos = index
@@ -183,9 +176,9 @@ class Rates(object):
         return TIMEFRAMES[time_frame]
 
     def _fetch_data(
-        self, 
+        self,
         start: Union[int, datetime, pd.Timestamp],
-        count: Union[int, datetime, pd.Timestamp], 
+        count: Union[int, datetime, pd.Timestamp],
         lower_colnames=False, utc=False,
     ) -> Union[pd.DataFrame, None]:
         """Fetches data from MT5 and returns a DataFrame or None."""
@@ -194,17 +187,17 @@ class Rates(object):
                 rates = Mt5.copy_rates_from_pos(
                     self.symbol, self.time_frame, start, count
                 )
-            elif ( 
-                isinstance(start, (datetime, pd.Timestamp)) and 
+            elif (
+                isinstance(start, (datetime, pd.Timestamp)) and
                 isinstance(count, int)
-                ):
+            ):
                 rates = Mt5.copy_rates_from(
                     self.symbol, self.time_frame, start, count
                 )
             elif (
-                isinstance(start, (datetime, pd.Timestamp)) and 
+                isinstance(start, (datetime, pd.Timestamp)) and
                 isinstance(count, (datetime, pd.Timestamp))
-                ):
+            ):
                 rates = Mt5.copy_rates_range(
                     self.symbol, self.time_frame, start, count
                 )
@@ -216,7 +209,7 @@ class Rates(object):
         except Exception as e:
             raise_mt5_error(e)
 
-    def _format_dataframe(self, df: pd.DataFrame, 
+    def _format_dataframe(self, df: pd.DataFrame,
                           lower_colnames=False, utc=False) -> pd.DataFrame:
         """Formats the raw MT5 data into a standardized DataFrame."""
         df = df.copy()
@@ -246,19 +239,23 @@ class Rates(object):
                             calendar = get_calendar(exchange, side='right')
                             break
             elif symbol_type == 'IDX':
-                calendar = get_calendar(CALENDARS[symbol_type][currencies['mc']], side='right')
+                calendar = get_calendar(
+                    CALENDARS[symbol_type][currencies['mc']], side='right')
             elif symbol_type == 'COMD':
                 for commodity in CALENDARS[symbol_type]:
                     if commodity in s_info.path:
-                        calendar = get_calendar(CALENDARS[symbol_type][commodity], side='right')
+                        calendar = get_calendar(
+                            CALENDARS[symbol_type][commodity], side='right')
             elif symbol_type == 'FUT':
                 if 'Index' in s_info.path:
-                    calendar = get_calendar(CALENDARS['IDX'][currencies['mc']], side='right')
+                    calendar = get_calendar(
+                        CALENDARS['IDX'][currencies['mc']], side='right')
                 else:
                     for commodity, cal in COMD_CALENDARS.items():
                         if self.symbol in self.__account.get_future_symbols(category=commodity):
                             if commodity == 'Bonds':
-                                calendar = get_calendar(cal[currencies['mc']], side='right')
+                                calendar = get_calendar(
+                                    cal[currencies['mc']], side='right')
                             else:
                                 calendar = get_calendar(cal, side='right')
             else:
@@ -274,7 +271,7 @@ class Rates(object):
                 index_name = df.index.name
                 if fill_na:
                     if isinstance(fill_na, bool):
-                        method =  'nearest'
+                        method = 'nearest'
                     if isinstance(fill_na, str):
                         method = fill_na
                     df = df.reindex(valid_sessions, method=method)
@@ -284,15 +281,15 @@ class Rates(object):
             else:
                 df = df[df.index.isin(valid_sessions)]
         return df
-    
+
     def _check_filter(self, filter, utc):
         if filter and self.time_frame not in SESSION_TIMEFRAMES and not utc:
             utc = True
         elif filter and self.time_frame in SESSION_TIMEFRAMES and utc:
             utc = False
         return utc
-    
-    def get_rates_from_pos(self, filter=False, fill_na=False, 
+
+    def get_rates_from_pos(self, filter=False, fill_na=False,
                            lower_colnames=False, utc=False
                            ) -> Union[pd.DataFrame, None]:
         """
@@ -311,7 +308,7 @@ class Rates(object):
         Returns:
             Union[pd.DataFrame, None]: A DataFrame containing historical
             data if successful, otherwise None.
-        
+
         Raises:
             ValueError: If `start_pos` or `count` is not provided during
                 initialization.
@@ -332,8 +329,8 @@ class Rates(object):
         if filter:
             return self._filter_data(df, fill_na=fill_na)
         return df
-    
-    def get_rates_from(self, date_from: datetime | pd.Timestamp, count: int=MAX_BARS,
+
+    def get_rates_from(self, date_from: datetime | pd.Timestamp, count: int = MAX_BARS,
                        filter=False, fill_na=False, lower_colnames=False, utc=False) -> Union[pd.DataFrame, None]:
         """
         Retrieves historical data within a specified date range.
@@ -341,9 +338,9 @@ class Rates(object):
         Args:
             date_from : Starting date for data retrieval.
                 The data will be retrieved from this date going to the past.
-            
+
             count : Number of bars to retrieve.
-            
+
             filter : See `Rates.get_historical_data` for more details.
             fill_na : See `Rates.get_historical_data` for more details.
             lower_colnames : If True, the column names will be converted to lowercase.
@@ -355,7 +352,8 @@ class Rates(object):
             data if successful, otherwise None.
         """
         utc = self._check_filter(filter, utc)
-        df = self._fetch_data(date_from, count, lower_colnames=lower_colnames, utc=utc)
+        df = self._fetch_data(
+            date_from, count, lower_colnames=lower_colnames, utc=utc)
         if df is None:
             return None
         if filter:
@@ -365,15 +363,15 @@ class Rates(object):
     @property
     def open(self):
         return self.__data['Open']
-        
+
     @property
     def high(self):
         return self.__data['High']
-    
+
     @property
     def low(self):
         return self.__data['Low']
-    
+
     @property
     def close(self):
         return self.__data['Close']
@@ -381,7 +379,7 @@ class Rates(object):
     @property
     def adjclose(self):
         return self.__data['Adj Close']
-    
+
     @property
     def returns(self):
         """
@@ -396,10 +394,10 @@ class Rates(object):
         and `not percentage change`. If you need the percentage change, multiply these values by 100.
         """
         data = self.__data.copy()
-        data['Returns'] =  data['Adj Close'].pct_change()
+        data['Returns'] = data['Adj Close'].pct_change()
         data = data.dropna()
         return data['Returns']
-    
+
     @property
     def volume(self):
         return self.__data['Volume']
@@ -419,17 +417,17 @@ class Rates(object):
 
         Args:
             date_from : Starting date for data retrieval.
-            
+
             date_to : Ending date for data retrieval.
                 Defaults to the current time.
-            
+
             utc : If True, the data will be in UTC timezone.
                 Defaults to False.
-            
+
             filter : If True, the data will be filtered based
                 on the trading sessions for the symbol.
                 This is use when we want to use the data for backtesting using Zipline.
-            
+
             fill_na : If True, the data will be filled with the nearest value.
                 This is use only when `filter` is True and time frame is "1m" or "D1",
                 this is because we use ``calendar.minutes_in_range`` or ``calendar.sessions_in_range``
@@ -438,24 +436,24 @@ class Rates(object):
                 because the data from MT5 will have approximately the same number of rows as the
                 number of trading days or minute in the exchange calendar, so we can fill the missing
                 data with the nearest value.
-                
+
                 But for other time frames, the data will be reindexed with the exchange calendar
                 because the data from MT5 will have more rows than the number of trading days or minute
                 in the exchange calendar. So we only take the data that is in the range of the exchange
                 calendar sessions or minutes.
-            
+
             lower_colnames : If True, the column names will be converted to lowercase.
-            
+
             save_csv : File path to save the data as a CSV.
                 If None, the data won't be saved.
 
         Returns:
             Union[pd.DataFrame, None]: A DataFrame containing historical data
                 if successful, otherwise None.
-        
+
         Raises:
             ValueError: If the starting date is greater than the ending date.
-        
+
         Notes:
             The `filter` for this method can be use only for Admira Markets Group (AMG) symbols.
             The Datetime for this method is in Local timezone by default.
@@ -470,13 +468,15 @@ class Rates(object):
         if df is None:
             return None
         if filter:
-            df = self._filter_data(df, date_from=date_from, date_to=date_to, fill_na=fill_na)
+            df = self._filter_data(
+                df, date_from=date_from, date_to=date_to, fill_na=fill_na)
         if save_csv:
             df.to_csv(f"{self.symbol}.csv")
         return df
 
-def download_historical_data(symbol, timeframe, date_from, 
-                             date_to=pd.Timestamp.now(),lower_colnames=True, 
+
+def download_historical_data(symbol, timeframe, date_from,
+                             date_to=pd.Timestamp.now(), lower_colnames=True,
                              utc=False, filter=False, fill_na=False, save_csv=False, **kwargs):
     """Download historical data from MetaTrader 5 terminal.
     See `Rates.get_historical_data` for more details.
@@ -492,19 +492,22 @@ def download_historical_data(symbol, timeframe, date_from,
     )
     return data
 
-def get_data_from_pos(symbol, timeframe, start_pos=0, fill_na=False, 
+
+def get_data_from_pos(symbol, timeframe, start_pos=0, fill_na=False,
                       count=MAX_BARS, lower_colnames=False, utc=False, filter=False,
-                        session_duration=23.0, **kwargs):
+                      session_duration=23.0, **kwargs):
     """Get historical data from a specific position.
     See `Rates.get_rates_from_pos` for more details.
     """
-    rates = Rates(symbol, timeframe, start_pos, count, session_duration, **kwargs)
+    rates = Rates(symbol, timeframe, start_pos,
+                  count, session_duration, **kwargs)
     data = rates.get_rates_from_pos(filter=filter, fill_na=fill_na,
                                     lower_colnames=lower_colnames, utc=utc)
     return data
 
-def get_data_from_date(symbol, timeframe, date_from, count=MAX_BARS, fill_na=False, 
-                  lower_colnames=False, utc=False, filter=False, **kwargs):
+
+def get_data_from_date(symbol, timeframe, date_from, count=MAX_BARS, fill_na=False,
+                       lower_colnames=False, utc=False, filter=False, **kwargs):
     """Get historical data from a specific date.
     See `Rates.get_rates_from` for more details.
     """

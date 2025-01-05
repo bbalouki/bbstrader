@@ -1,47 +1,37 @@
-import re
 import os
-import pandas as pd
+import re
 import urllib.request
 from datetime import datetime
+from typing import Any, Dict, List, Literal, Optional, Tuple, Union
+
 import MetaTrader5 as mt5
+import pandas as pd
+from currency_converter import SINGLE_DAY_ECB_URL, CurrencyConverter
 from dotenv import load_dotenv
-from currency_converter import (
-    SINGLE_DAY_ECB_URL, 
-    CurrencyConverter
-)
+
 from bbstrader.metatrader.utils import (
-    raise_mt5_error, 
-    AccountInfo, 
-    TerminalInfo, 
+    AccountInfo,
     InvalidBroker,
-    SymbolInfo, 
-    TickInfo, 
-    TradeRequest, 
     OrderCheckResult,
-    OrderSentResult, 
-    TradePosition, 
-    TradeOrder, 
+    OrderSentResult,
+    SymbolInfo,
+    TerminalInfo,
+    TickInfo,
     TradeDeal,
-)
-from typing import (
-    Tuple, 
-    Union, 
-    List, 
-    Dict, 
-    Any, 
-    Optional, 
-    Literal,
-    overload
+    TradeOrder,
+    TradePosition,
+    TradeRequest,
+    raise_mt5_error,
 )
 
 load_dotenv()
 
 __all__ = [
-    "Account", 
-    "Broker", 
-    "AdmiralMarktsGroup", 
-    "JustGlobalMarkets", 
-    "FTMO", 
+    "Account",
+    "Broker",
+    "AdmiralMarktsGroup",
+    "JustGlobalMarkets",
+    "FTMO",
 ]
 
 __BROKERS__ = {
@@ -58,9 +48,10 @@ BROKERS_TIMEZONES = {
 
 _ADMIRAL_MARKETS_URL_ = os.getenv("ADMIRAL_MARKETS_URL")
 _ADMIRAL_MARKETS_PRODUCTS_ = ["Stocks", "ETFs",
-                            "Indices", "Commodities", "Futures", "Forex"]
+                              "Indices", "Commodities", "Futures", "Forex"]
 _JUST_MARKETS_URL_ = os.getenv("JUST_MARKETS_URL")
-_JUST_MARKETS_PRODUCTS_ = ["Stocks", "Crypto", "indices", "Commodities", "Forex"]
+_JUST_MARKETS_PRODUCTS_ = ["Stocks", "Crypto",
+                           "indices", "Commodities", "Forex"]
 _FTMO_URL_ = os.getenv("FTMO_URL")
 
 INIT_MSG = (
@@ -125,6 +116,7 @@ AMG_EXCHANGES = {
     'XSWX': r"Switzerland.*\(SWX\)"
 }
 
+
 def check_mt5_connection(**kwargs):
     """
     Initialize the connection to the MetaTrader 5 terminal.
@@ -139,29 +131,29 @@ def check_mt5_connection(**kwargs):
         timeout (int, optional): Connection timeout in milliseconds. Defaults to 60_000.
         portable (bool, optional): If True, the portable mode of the terminal is used. 
             Defaults to False (See https://www.metatrader5.com/en/terminal/help/start_advanced/start#portable).
-    
+
     Notes:
         If you want to lunch multiple terminal instances:
         - Follow these instructions to lunch each terminal in portable mode first:
             https://www.metatrader5.com/en/terminal/help/start_advanced/start#configuration_file
     """
-    path     = kwargs.get('path', None)
-    login    = kwargs.get('login', None)
+    path = kwargs.get('path', None)
+    login = kwargs.get('login', None)
     password = kwargs.get('password', None)
-    server   = kwargs.get('server', None)
-    timeout  = kwargs.get('timeout', 60_000)
+    server = kwargs.get('server', None)
+    timeout = kwargs.get('timeout', 60_000)
     portable = kwargs.get('portable', False)
 
     if path is None and (login or password or server):
         raise ValueError(
-            f"You must provide a path to the terminal executable file"
-            f"when providing login, password or server"
+            "You must provide a path to the terminal executable file"
+            "when providing login, password or server"
         )
     try:
         if path is not None:
             if (
-                login is not None and 
-                password is not None and 
+                login is not None and
+                password is not None and
                 server is not None
             ):
                 init = mt5.initialize(
@@ -183,23 +175,23 @@ def check_mt5_connection(**kwargs):
 
 
 class Broker(object):
-    def __init__(self, name: str=None, **kwargs):
+    def __init__(self, name: str = None, **kwargs):
         if name is None:
             check_mt5_connection(**kwargs)
             self._name = mt5.account_info().company
         else:
             self._name = name
-    
+
     @property
     def name(self):
         return self._name
-    
+
     def __str__(self):
         return self.name
-    
+
     def __eq__(self, orther) -> bool:
         return self.name == orther.name
-    
+
     def __ne__(self, orther) -> bool:
         return self.name != orther.name
 
@@ -207,7 +199,7 @@ class Broker(object):
 class AdmiralMarktsGroup(Broker):
     def __init__(self, **kwargs):
         super().__init__("Admirals Group AS", **kwargs)
-    
+
     @property
     def timezone(self) -> str:
         return BROKERS_TIMEZONES['AMG']
@@ -225,11 +217,11 @@ class JustGlobalMarkets(Broker):
 class FTMO(Broker):
     def __init__(self, **kwargs):
         super().__init__("FTMO S.R.O.", **kwargs)
-    
+
     @property
     def timezone(self) -> str:
         return BROKERS_TIMEZONES['FTMO']
-    
+
 
 class AMP(Broker):
     ...
@@ -299,58 +291,58 @@ class Account(object):
                 f"For {supported['FTMO'].name}, See [{ftmo_url}]\n"
             )
             raise InvalidBroker(message=msg)
-        
+
     @property
     def broker(self) -> Broker:
         return Broker(self.get_terminal_info().company)
-    
+
     @property
     def timezone(self) -> str:
         for broker in BROKERS.values():
             if broker == self.broker:
                 return broker.timezone
-    
+
     @property
-    def name(self)-> str:
+    def name(self) -> str:
         return self.get_account_info().name
-    
+
     @property
-    def number(self)-> int:
+    def number(self) -> int:
         return self.get_account_info().login
-    
+
     @property
-    def server(self)-> str:
+    def server(self) -> str:
         """The name of the trade server to which the client terminal is connected.
         (e.g., 'AdmiralsGroup-Demo')
         """
         return self.get_account_info().server
-    
+
     @property
     def balance(self) -> float:
         return self.get_account_info().balance
-    
+
     @property
     def leverage(self) -> int:
         return self.get_account_info().leverage
-    
+
     @property
     def equity(self) -> float:
         return self.get_account_info().equity
-    
+
     @property
     def currency(self) -> str:
         return self.get_account_info().currency
-    
+
     @property
     def language(self) -> str:
         """The language of the terminal interface."""
         return self.get_terminal_info().language
-    
+
     @property
     def maxbars(self) -> int:
         """The maximal bars count on the chart."""
         return self.get_terminal_info().maxbars
-  
+
     def get_account_info(
         self,
         account:  Optional[int] = None,
@@ -364,11 +356,11 @@ class Account(object):
         Args:
             account (int, optinal) : MT5 Trading account number.
             password (str, optinal): MT5 Trading account password.
-            
+
             server (str, optinal): MT5 Trading account server 
                 [Brokers or terminal server ["demo", "real"]]
                 If no server is set, the last used server is applied automaticall
-            
+
             timeout (int, optinal):
                  Connection timeout in milliseconds. Optional named parameter. 
                  If not specified, the value of 60 000 (60 seconds) is applied. 
@@ -516,7 +508,7 @@ class Account(object):
         os.remove(filename)
         supported = c.currencies
         if (from_c not in supported
-            or to_c not in supported
+                or to_c not in supported
             ):
             rate = qty
         else:
@@ -674,7 +666,7 @@ class Account(object):
         Returns:
             Literal["STK", "ETF", "IDX", "FX", "COMD", "FUT", "CRYPTO", "unknown"]: 
             The type of the financial instrument, one of the following:
-            
+
             - `STK`: For Stocks (e.g., `GOOGL`)
             - `ETF`: For ETFs (e.g., `QQQ`)
             - `IDX`: For Indices (e.g., `SP500`)
@@ -682,7 +674,7 @@ class Account(object):
             - `COMD`: For Commodities (e.g., `CRUDOIL`, `GOLD`)
             - `FUT` : For Futures (e.g., `USTNote_U4`)
             - `CRYPTO`: For Cryptocurrencies (e.g., `BTC`, `ETH`)
-            
+
             Returns `unknown` if the type cannot be determined.
         """
 
@@ -778,17 +770,19 @@ class Account(object):
             This mthods works primarly with Admirals Group AS products,
             For other brokers use `get_symbols()` or this method will use it by default.
         """
-        
+
         if self.broker != AdmiralMarktsGroup():
             stocks = self.get_symbols(symbol_type='STK')
             return stocks
         else:
             country_map = _COUNTRY_MAP_
-            stocks =  self._get_symbols_by_category('STK', country_code, country_map)
+            stocks = self._get_symbols_by_category(
+                'STK', country_code, country_map)
             if etf:
-                etfs = self._get_symbols_by_category('ETF', country_code, country_map)
-                return stocks + etfs  
-            return stocks   
+                etfs = self._get_symbols_by_category(
+                    'ETF', country_code, country_map)
+                return stocks + etfs
+            return stocks
 
     def get_stocks_from_exchange(self, exchange_code: str = 'XNYS', etf=True) -> List[str]:
         """
@@ -834,9 +828,11 @@ class Account(object):
             return stocks
         else:
             exchange_map = AMG_EXCHANGES
-            stocks = self._get_symbols_by_category('STK', exchange_code, exchange_map)
+            stocks = self._get_symbols_by_category(
+                'STK', exchange_code, exchange_map)
             if etf:
-                etfs = self._get_symbols_by_category('ETF', exchange_code, exchange_map)
+                etfs = self._get_symbols_by_category(
+                    'ETF', exchange_code, exchange_map)
                 return stocks + etfs
             return stocks
 
@@ -861,15 +857,15 @@ class Account(object):
         """
         category = category.lower()
         if self.broker != AdmiralMarktsGroup():
-             return self.get_symbols(symbol_type='FUT')
+            return self.get_symbols(symbol_type='FUT')
         elif category in ['all', 'index']:
             categories = {
                 "all": r"\b(Futures?)\b",
-                "index": r"\b(Index)\b", 
+                "index": r"\b(Index)\b",
             }
             return self._get_symbols_by_category('FUT', category, categories)
         else:
-            metals =  []
+            metals = []
             energies = []
             agricultures = []
             bonds = []
@@ -916,7 +912,7 @@ class Account(object):
 
         Raises:
             MT5TerminalError: A specific exception based on the error code.
-        
+
         Notes:
             The `time` property is converted to a `datetime` object using Broker server time.
         """
@@ -962,7 +958,7 @@ class Account(object):
 
         Raises:
             MT5TerminalError: A specific exception based on the error code.
-        
+
         Notes:
             The `time` property is converted to a `datetime` object using Broker server time.
         """
@@ -988,10 +984,10 @@ class Account(object):
         """
         self._show_info(self.get_tick_info, "tick", symbol=symbol)
 
-    def calculate_margin(self, 
-                         action: Literal['buy', 'sell'], 
-                         symbol: str, 
-                         lot: float, 
+    def calculate_margin(self,
+                         action: Literal['buy', 'sell'],
+                         symbol: str,
+                         lot: float,
                          price: float) -> float:
         """
         Calculate margin required for an order.
@@ -1004,7 +1000,7 @@ class Account(object):
 
         Returns:
             float: The margin required for the order.
-        
+
         Raises:
             MT5TerminalError: A specific exception based on the error code.
         """
@@ -1020,7 +1016,7 @@ class Account(object):
         except Exception as e:
             raise_mt5_error(e)
 
-    def check_order(self, 
+    def check_order(self,
                     request: Dict[str, Any]) -> OrderCheckResult:
         """
         Check funds sufficiency for performing a required trading operation.
@@ -1031,7 +1027,7 @@ class Account(object):
         Returns:
             OrderCheckResult: 
             The check result as the `OrderCheckResult` structure.
-            
+
             The `request` field in the returned structure contains the trading request passed to `check_order()`.
 
         Raises:
@@ -1052,7 +1048,7 @@ class Account(object):
             raise_mt5_error(e)
 
     def send_order(self,
-                request: Dict[str, Any]) -> OrderSentResult:
+                   request: Dict[str, Any]) -> OrderSentResult:
         """
         Send a request to perform a trading operation from the terminal to the trade server.
 
@@ -1062,7 +1058,7 @@ class Account(object):
         Returns:
             OrderSentResult:
             The execution result as the `OrderSentResult` structure.
-            
+
             The `request` field in the returned structure contains the trading request passed to `send_order()`.
 
         Raises:
@@ -1078,11 +1074,11 @@ class Account(object):
             raise_mt5_error(e)
 
     def get_positions(self,
-                    symbol: Optional[str] = None,
-                    group: Optional[str] = None,
-                    ticket: Optional[int] = None,
-                    to_df: bool = False
-                    ) -> Union[pd.DataFrame, Tuple[TradePosition], None]:
+                      symbol: Optional[str] = None,
+                      group: Optional[str] = None,
+                      ticket: Optional[int] = None,
+                      to_df: bool = False
+                      ) -> Union[pd.DataFrame, Tuple[TradePosition], None]:
         """
         Get open positions with the ability to filter by symbol or ticket. 
         There are four call options:
@@ -1116,16 +1112,16 @@ class Account(object):
 
         Notes:
             The method allows receiving all open positions within a specified period.
-            
+
             The `group` parameter may contain several comma-separated conditions.
-            
+
             A condition can be set as a mask using '*'.
-            
+
             The logical negation symbol '!' can be used for exclusion.
-            
+
             All conditions are applied sequentially, which means conditions for inclusion 
             in a group should be specified first, followed by an exclusion condition.
-            
+
             For example, `group="*, !EUR"` means that deals for all symbols should be selected first, 
             and those containing "EUR" in symbol names should be excluded afterward.
         """
@@ -1171,11 +1167,11 @@ class Account(object):
         with the ability to filter by `ticket` or `position`.
 
         You can call this method in the following ways:
-        
+
         - Call with a `time interval`. Returns all deals falling within the specified interval.
-        
+
         - Call specifying the `order ticket`. Returns all deals having the specified `order ticket` in the `DEAL_ORDER` property.
-        
+
         - Call specifying the `position ticket`. Returns all deals having the specified `position ticket` in the `DEAL_POSITION_ID` property.
 
         Args:
@@ -1207,16 +1203,16 @@ class Account(object):
 
         Notes:
             The method allows receiving all history orders within a specified period.
-            
+
             The `group` parameter may contain several comma-separated conditions.
-        
+
             A condition can be set as a mask using '*'.
-            
+
             The logical negation symbol '!' can be used for exclusion.
-            
+
             All conditions are applied sequentially, which means conditions for inclusion 
             in a group should be specified first, followed by an exclusion condition.
-            
+
             For example, `group="*, !EUR"` means that deals for all symbols should be selected first 
             and those containing "EUR" in symbol names should be excluded afterward.
 
@@ -1265,11 +1261,11 @@ class Account(object):
             return tuple(position_deals)
 
     def get_orders(self,
-                symbol: Optional[str] = None,
-                group: Optional[str] = None,
-                ticket: Optional[int] = None,
-                to_df: bool = False
-                ) -> Union[pd.DataFrame, Tuple[TradeOrder], None]:
+                   symbol: Optional[str] = None,
+                   group: Optional[str] = None,
+                   ticket: Optional[int] = None,
+                   to_df: bool = False
+                   ) -> Union[pd.DataFrame, Tuple[TradeOrder], None]:
         """
         Get active orders with the ability to filter by symbol or ticket.
         There are four call options:
@@ -1353,11 +1349,11 @@ class Account(object):
         with the ability to filter by `ticket` or `position`.
 
         You can call this method in the following ways:
-        
+
         - Call with a `time interval`. Returns all deals falling within the specified interval.
-        
+
         - Call specifying the `order ticket`. Returns all deals having the specified `order ticket` in the `DEAL_ORDER` property.
-        
+
         - Call specifying the `position ticket`. Returns all deals having the specified `position ticket` in the `DEAL_POSITION_ID` property.
 
         Args:
@@ -1389,16 +1385,16 @@ class Account(object):
 
         Notes:
             The method allows receiving all history orders within a specified period.
-            
+
             The `group` parameter may contain several comma-separated conditions.
-        
+
             A condition can be set as a mask using '*'.
-            
+
             The logical negation symbol '!' can be used for exclusion.
-            
+
             All conditions are applied sequentially, which means conditions for inclusion 
             in a group should be specified first, followed by an exclusion condition.
-            
+
             For example, `group="*, !EUR"` means that deals for all symbols should be selected first 
             and those containing "EUR" in symbol names should be excluded afterward.
 

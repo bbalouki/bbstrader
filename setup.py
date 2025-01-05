@@ -1,9 +1,8 @@
-import sys
-import os
 import io
+import sys
 from os import path
-from setuptools import setup
 
+from setuptools import setup
 
 if sys.version_info < (3, 10):
     sys.exit("Only Python 3.10 and greater is supported")
@@ -42,14 +41,14 @@ CLASSIFIERS = [
 ]
 
 INLCUDE = [
-        "bbstrader",
-        "bbstrader.btengine",
-        "bbstrader.core",
-        "bbstrader.ibkr",
-        "bbstrader.metatrader",
-        "bbstrader.models",
-        "bbstrader.trading"
-    ]
+    "bbstrader",
+    "bbstrader.btengine",
+    "bbstrader.core",
+    "bbstrader.ibkr",
+    "bbstrader.metatrader",
+    "bbstrader.models",
+    "bbstrader.trading"
+]
 EXCLUDE = ["config.py", "tests", "docs"]
 
 # Setting up

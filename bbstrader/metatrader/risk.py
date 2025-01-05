@@ -1,25 +1,13 @@
 import random
-import re
-import numpy as np
-from scipy.stats import norm
 from datetime import datetime
+from typing import Any, Dict, Optional, Union
+
 import MetaTrader5 as Mt5
+from scipy.stats import norm
+
 from bbstrader.metatrader.account import Account
 from bbstrader.metatrader.rates import Rates
-from bbstrader.metatrader.utils import (
-    TIMEFRAMES, 
-    raise_mt5_error, 
-    TimeFrame
-)
-from typing import (
-    List, 
-    Dict, 
-    Optional, 
-    Literal, 
-    Union, 
-    Any
-)
-
+from bbstrader.metatrader.utils import TIMEFRAMES, TimeFrame
 
 _COMMD_SUPPORTED_ = [
     "GOLD", "XAUEUR", "SILVER", "BRENT", "CRUDOIL", "WTI",  "UKOIL",
@@ -35,6 +23,7 @@ _ADMIRAL_MARKETS_FUTURES_ = [
 ]
 
 __all__ = ['RiskManagement']
+
 
 class RiskManagement(Account):
     """
@@ -118,7 +107,7 @@ class RiskManagement(Account):
             tp (int, optional): Take Profit in points, Must be a positive number.
             be (int, optional): Break Even in points, Must be a positive number.
             rr (float, optional): Risk reward ratio, Must be a positive number. Defaults to 1.5.
-        
+
         See `bbstrader.metatrader.account.check_mt5_connection()` for more details on how to connect to MT5 terminal.
         """
         super().__init__(**kwargs)
@@ -137,7 +126,8 @@ class RiskManagement(Account):
         if time_frame not in TIMEFRAMES:
             raise ValueError("Unsupported time frame {}".format(time_frame))
         if var_time_frame not in TIMEFRAMES:
-            raise ValueError("Unsupported time frame {}".format(var_time_frame))
+            raise ValueError(
+                "Unsupported time frame {}".format(var_time_frame))
 
         self.kwargs = kwargs
         self.symbol = symbol
@@ -167,15 +157,15 @@ class RiskManagement(Account):
     @dailydd.setter
     def dailydd(self, value: float):
         self.daily_dd = value
-    
+
     @property
     def maxrisk(self) -> float:
         return self.max_risk
-    
+
     @maxrisk.setter
     def maxrisk(self, value: float):
         self.max_risk = value
-    
+
     def _convert_time_frame(self, tf: str) -> int:
         """Convert time frame to minutes"""
         if tf == 'D1':
@@ -236,7 +226,7 @@ class RiskManagement(Account):
             decimal_index = value_str.index('.')
             num_digits = len(value_str) - decimal_index - 1
             return num_digits
-        
+
         elif value_str == '1.0':
             return 0
         else:
@@ -280,7 +270,7 @@ class RiskManagement(Account):
         """
         minutes = self.get_minutes()
         tf_int = self._convert_time_frame(self._tf)
-        interval = round((minutes / tf_int)  * 252)
+        interval = round((minutes / tf_int) * 252)
 
         rate = Rates(self.symbol, self._tf, 0, interval, **self.kwargs)
         returns = rate.returns*100
@@ -334,7 +324,7 @@ class RiskManagement(Account):
         """
         minutes = self.get_minutes()
         tf_int = self._convert_time_frame(tf)
-        interval = round((minutes / tf_int)  * 252)
+        interval = round((minutes / tf_int) * 252)
 
         rate = Rates(self.symbol, tf, 0, interval, **self.kwargs)
         returns = rate.returns*100
@@ -418,15 +408,13 @@ class RiskManagement(Account):
 
         Returns:
             Dict[str, Union[int, float, Any]]: A dictionary containing the following keys:
-            
+
             - `'currency_risk'`: Dollar amount risk on a single trade.
             - `'trade_loss'`: Loss value per tick in dollars.
             - `'trade_profit'`: Profit value per tick in dollars.
             - `'volume'`: Contract size multiplied by the average price.
             - `'lot'`: Lot size per trade.
         """
-
-        account_info = self.get_account_info()
         s_info = self.symbol_info
 
         laverage = self.get_leverage(self.account_leverage)
@@ -435,9 +423,9 @@ class RiskManagement(Account):
         av_price = (s_info.bid + s_info.ask)/2
         trade_risk = self.get_trade_risk()
         symbol_type = self.get_symbol_type(self.symbol)
-        FX    = symbol_type == 'FX'
-        COMD  = symbol_type == 'COMD'
-        FUT   = symbol_type == 'FUT'
+        FX = symbol_type == 'FX'
+        COMD = symbol_type == 'COMD'
+        FUT = symbol_type == 'FUT'
         CRYPTO = symbol_type == 'CRYPTO'
         if COMD:
             supported = _COMMD_SUPPORTED_
@@ -483,16 +471,15 @@ class RiskManagement(Account):
                 tick_value_loss = tick_value_loss / contract_size
                 tick_value_profit = tick_value_profit / contract_size
             if (tick_value == 0
-                    or tick_value_loss == 0
-                    or tick_value_profit == 0
-                ):
+                        or tick_value_loss == 0
+                        or tick_value_profit == 0
+                    ):
                 raise ValueError(
                     f"""The Tick Values for {self.symbol} is 0.0
                     We can not procced with currency risk calculation  
                     Please check your Broker trade conditions
                     and symbol specifications for {self.symbol}"""
                 )
-            point = float(s_info.point)
 
             # Case where the stop loss is given
             if self.sl is not None:
@@ -580,7 +567,6 @@ class RiskManagement(Account):
         """
         trade_loss = currency_risk/sl
         trade_profit = (currency_risk*self.rr)/(sl*self.rr)
-        laverage = self.get_account_info().leverage
         av_price = (self.symbol_info.bid + self.symbol_info.ask)/2
         _lot = round(trade_loss/(size*loss), 2)
         lot = self._check_lot(_lot)
@@ -652,7 +638,7 @@ class RiskManagement(Account):
             margin = Mt5.order_calc_margin(
                 action, self.symbol, volume_min, av_price
             )
-            if margin == None:
+            if margin is None:
                 return AL
             try:
                 leverage = (

@@ -1,14 +1,18 @@
 import pickle
+from abc import ABCMeta, abstractmethod
+from datetime import datetime
+from typing import Dict, Optional
+
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from datetime import datetime
 from hmmlearn.hmm import GaussianHMM
-from abc import ABCMeta, abstractmethod
-from matplotlib import cm, pyplot as plt
-from matplotlib.dates import YearLocator, MonthLocator
-from typing import Optional, Dict
+from matplotlib import cm
+from matplotlib import pyplot as plt
+from matplotlib.dates import MonthLocator, YearLocator
+
 from bbstrader.metatrader.rates import Rates
+
 sns.set_theme()
 
 __all__ = [
@@ -311,7 +315,7 @@ class HMMRiskManager(RiskModel):
         """
         df = data_frame.copy()
         if 'Returns' or 'returns' not in df.columns:
-            if 'Close'  in df.columns:
+            if 'Close' in df.columns:
                 df['Returns'] = df['Close'].pct_change()
             elif 'Adj Close' in df.columns:
                 df['Returns'] = df['Adj Close'].pct_change()
@@ -358,12 +362,13 @@ class HMMRiskManager(RiskModel):
             ax.grid(True)
         plt.show()
 
+
 def build_hmm_models(symbol_list=None, **kwargs
                      ) -> Dict[str, HMMRiskManager]:
     mt5_data = kwargs.get("use_mt5_data", False)
     data = kwargs.get("hmm_data")
     tf = kwargs.get("time_frame", 'D1')
-    hmm_end =  kwargs.get("hmm_end", 0)
+    hmm_end = kwargs.get("hmm_end", 0)
     sd = kwargs.get("session_duration", 23.0)
     hmm_tickers = kwargs.get("hmm_tickers")
     if hmm_tickers is not None:
@@ -385,7 +390,8 @@ def build_hmm_models(symbol_list=None, **kwargs
                 hmm_models[symbol] = hmm
     if mt5_data:
         for symbol in symbols:
-            rates = Rates(symbol, timeframe=tf, start_pos=hmm_end, session_duration=sd, **kwargs)
+            rates = Rates(symbol, timeframe=tf, start_pos=hmm_end,
+                          session_duration=sd, **kwargs)
             data = rates.get_rates_from_pos()
             assert data is not None, f"No data for {symbol}"
             hmm = HMMRiskManager(

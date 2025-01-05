@@ -1,11 +1,9 @@
-import pandas as pd
-import numpy as np
 from financetoolkit import Toolkit
-
 
 __all__ = [
     'FMP',
 ]
+
 
 class FMP(Toolkit):
     """
@@ -15,7 +13,8 @@ class FMP(Toolkit):
     See `financetoolkit` for more details.
 
     """
-    def __init__(self, api_key: str ='', symbols: str | list = 'AAPL'):
+
+    def __init__(self, api_key: str = '', symbols: str | list = 'AAPL'):
         super().__init__(tickers=symbols, api_key=api_key)
 
 

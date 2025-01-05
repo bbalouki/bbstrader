@@ -1,35 +1,37 @@
-from pathlib import Path
-import sys, os
+import os
+import warnings
+from datetime import datetime
+from itertools import product
+from time import time
+
+import lightgbm as lgb
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 import seaborn as sns
 import talib
-from time import time
-from tqdm import tqdm
-from talib import RSI, BBANDS, MACD, ATR
 import yfinance as yf
-from scipy.stats import spearmanr
-from itertools import product
-import lightgbm as lgb
-from collections import defaultdict
-from alphalens.tears import (create_summary_tear_sheet,
-                             create_full_tear_sheet)
-from alphalens import plotting
 from alphalens import performance as perf
-from alphalens.utils import get_clean_factor_and_forward_returns,  rate_of_return, std_conversion
-from sklearn.preprocessing import StandardScaler
-from sklearn.preprocessing import LabelEncoder
+from alphalens import plotting
+from alphalens.tears import create_full_tear_sheet, create_summary_tear_sheet
+from alphalens.utils import (
+    get_clean_factor_and_forward_returns,
+    rate_of_return,
+    std_conversion,
+)
+from scipy.stats import spearmanr
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from talib import ATR, BBANDS, MACD, RSI
 
-import warnings
 warnings.filterwarnings('ignore')
 
 
 __all__ = [
-    'OneStepTimeSeriesSplit', 
-    'MultipleTimeSeriesCV', 
+    'OneStepTimeSeriesSplit',
+    'MultipleTimeSeriesCV',
     'LightGBModel'
 ]
+
 
 class OneStepTimeSeriesSplit:
     __author__ = "Stefan Jansen"
@@ -42,7 +44,7 @@ class OneStepTimeSeriesSplit:
         self.shuffle = shuffle
 
     @staticmethod
-    def chunks(l, n):
+    def chunks(l, n):  # noqa: E741
         for i in range(0, len(l), n):
             yield l[i:i + n]
 
@@ -63,7 +65,7 @@ class OneStepTimeSeriesSplit:
 
     def get_n_splits(self, X, y, groups=None):
         return self.n_splits
-    
+
 
 class MultipleTimeSeriesCV:
     __author__ = "Stefan Jansen"
@@ -80,7 +82,7 @@ class MultipleTimeSeriesCV:
                  lookahead=None,
                  date_idx='date',
                  shuffle=False):
-        
+
         self.n_splits = n_splits
         self.lookahead = lookahead
         self.test_length = test_period_length
@@ -113,7 +115,7 @@ class MultipleTimeSeriesCV:
 
     def get_n_splits(self, X, y, groups=None):
         return self.n_splits
-    
+
 
 class LightGBModel(object):
     """
@@ -158,12 +160,12 @@ class LightGBModel(object):
     Chapter 12, Boosting Your Trading Strategy.
     """
 
-    def __init__(self, 
-                 data: pd.DataFrame=None,
-                 datastore: pd.HDFStore='lgbdata.h5', 
-                 trainstore: pd.HDFStore='lgbtrain.h5',
-                 outstore: pd.HDFStore='lgbout.h5'
-        ):
+    def __init__(self,
+                 data: pd.DataFrame = None,
+                 datastore: pd.HDFStore = 'lgbdata.h5',
+                 trainstore: pd.HDFStore = 'lgbtrain.h5',
+                 outstore: pd.HDFStore = 'lgbout.h5'
+                 ):
         """
         Args:
             data (pd.DataFrame): The input data for the model. It should be a DataFrame with a MultiIndex containing
@@ -183,42 +185,48 @@ class LightGBModel(object):
         return pd.DataFrame({'bb_high': high, 'bb_low': low}, index=close.index)
 
     def _compute_atr(self, stock_data):
-        df = ATR(stock_data.high, stock_data.low, 
-                stock_data.close, timeperiod=14)
+        df = ATR(stock_data.high, stock_data.low,
+                 stock_data.close, timeperiod=14)
         return df.sub(df.mean()).div(df.std())
-    
+
     def _compute_macd(self, close):
         macd = MACD(close)[0]
         return (macd - np.mean(macd))/np.std(macd)
-    
+
     def _add_technical_indicators(self, prices: pd.DataFrame):
         prices = prices.copy()
-        prices['rsi'] = prices.groupby(level='symbol').close.apply(lambda x: RSI(x).reset_index(level=0, drop=True))
-        bb = prices.groupby(level=0).close.apply(self._compute_bb).reset_index(level=1, drop=True)
+        prices['rsi'] = prices.groupby(level='symbol').close.apply(
+            lambda x: RSI(x).reset_index(level=0, drop=True))
+        bb = prices.groupby(level=0).close.apply(
+            self._compute_bb).reset_index(level=1, drop=True)
         prices = prices.join(bb)
-        prices['bb_high'] = prices.bb_high.sub(prices.close).div(prices.bb_high).apply(np.log1p)
-        prices['bb_low'] = prices.close.sub(prices.bb_low).div(prices.close).apply(np.log1p)
-        prices['NATR'] = prices.groupby(level='symbol', 
-                                    group_keys=False).apply(lambda x: 
-                                                            talib.NATR(x.high, x.low, x.close))
-        
+        prices['bb_high'] = prices.bb_high.sub(
+            prices.close).div(prices.bb_high).apply(np.log1p)
+        prices['bb_low'] = prices.close.sub(
+            prices.bb_low).div(prices.close).apply(np.log1p)
+        prices['NATR'] = prices.groupby(level='symbol',
+                                        group_keys=False).apply(lambda x:
+                                                                talib.NATR(x.high, x.low, x.close))
+
         prices['ATR'] = (prices.groupby('symbol', group_keys=False)
-                    .apply(self._compute_atr))
-        prices['PPO'] = prices.groupby(level='symbol').close.apply(lambda x: talib.PPO(x).reset_index(level=0, drop=True))
+                         .apply(self._compute_atr))
+        prices['PPO'] = prices.groupby(level='symbol').close.apply(
+            lambda x: talib.PPO(x).reset_index(level=0, drop=True))
         prices['MACD'] = (prices
-                    .groupby('symbol', group_keys=False)
-                    .close
-                    .apply(self._compute_macd))
+                          .groupby('symbol', group_keys=False)
+                          .close
+                          .apply(self._compute_macd))
         return prices
-    
+
     def download_boosting_data(self, tickers, start, end=None):
         data = []
         for ticker in tickers:
             try:
-                prices = yf.download(ticker, start=start, end=end, progress=False, multi_level_index=False)
+                prices = yf.download(
+                    ticker, start=start, end=end, progress=False, multi_level_index=False)
                 prices['symbol'] = ticker
                 data.append(prices)
-            except:
+            except:  # noqa: E722
                 continue
         data = pd.concat(data)
         data = (data
@@ -228,49 +236,50 @@ class LightGBModel(object):
                 .sort_index()
                 .dropna())
         return data
-    
+
     def download_metadata(self, tickers):
-        
+
         def clean_text_column(series: pd.Series) -> pd.Series:
             return (
                 series.str.lower()
-                .str.replace('-', '', regex=False)  # use regex=False for literal string replacements
+                # use regex=False for literal string replacements
+                .str.replace('-', '', regex=False)
                 .str.replace('&', 'and', regex=False)
                 .str.replace(' ', '_', regex=False)
                 .str.replace('__', '_', regex=False)
             )
-        
+
         metadata = ['industry', 'sector', 'exchange', 'symbol',
-                    'heldPercentInsiders', 'heldPercentInstitutions', 
+                    'heldPercentInsiders', 'heldPercentInstitutions',
                     'overallRisk', 'shortRatio', 'dividendYield', 'beta',
                     'regularMarketVolume', 'averageVolume', 'averageVolume10days',
-                    'bid', 'ask', 'bidSize', 'askSize','marketCap']
-        
+                    'bid', 'ask', 'bidSize', 'askSize', 'marketCap']
+
         columns = {
-            'industry'               : 'industry',
-            'sector'                 : 'sector',
-            'exchange'               : 'exchange',
-            'symbol'                 : 'symbol',
-            'heldPercentInsiders'    : 'insiders',
+            'industry': 'industry',
+            'sector': 'sector',
+            'exchange': 'exchange',
+            'symbol': 'symbol',
+            'heldPercentInsiders': 'insiders',
             'heldPercentInstitutions': 'institutions',
-            'overallRisk'            : 'risk',
-            'shortRatio'             : 'short_ratio',
-            'dividendYield'          : 'dyield',
-            'beta'                   : 'beta',
-            'regularMarketVolume'    : 'regvolume',
-            'averageVolume'          : 'avgvolume',
-            'averageVolume10days'    : 'avgvolume10',
-            'bid'                    : 'bid',
-            'ask'                    : 'ask',
-            'bidSize'                : 'bidsize',
-            'askSize'                : 'asksize',
-            'marketCap'              : 'marketcap'
+            'overallRisk': 'risk',
+            'shortRatio': 'short_ratio',
+            'dividendYield': 'dyield',
+            'beta': 'beta',
+            'regularMarketVolume': 'regvolume',
+            'averageVolume': 'avgvolume',
+            'averageVolume10days': 'avgvolume10',
+            'bid': 'bid',
+            'ask': 'ask',
+            'bidSize': 'bidsize',
+            'askSize': 'asksize',
+            'marketCap': 'marketcap'
         }
         data = []
         for symbol in tickers:
             try:
                 symbol_info = yf.Ticker(symbol).info
-            except:
+            except:  # noqa: E722
                 continue
             infos = {}
             for info in metadata:
@@ -284,8 +293,8 @@ class LightGBModel(object):
         metadata = metadata.set_index('symbol')
         return metadata
 
-    def _select_nlargest_liquidity_stocks(self, df: pd.DataFrame, n: int, 
-                                        volume_features, bid_ask_features, market_cap_feature):
+    def _select_nlargest_liquidity_stocks(self, df: pd.DataFrame, n: int,
+                                          volume_features, bid_ask_features, market_cap_feature):
         df = df.copy()
         scaler = StandardScaler()
 
@@ -305,46 +314,46 @@ class LightGBModel(object):
 
         # Calculate the liquidity score by combining the normalized features
         df['liquidity_score'] = (weights['volume'] * df[volume_features].mean(axis=1) +
-                                weights['bid_ask_spread'] * df['bid_ask_spread'] +
-                                weights['marketCap'] * df[market_cap_feature[0]])
+                                 weights['bid_ask_spread'] * df['bid_ask_spread'] +
+                                 weights['marketCap'] * df[market_cap_feature[0]])
         df_sorted = df.sort_values(by='liquidity_score', ascending=False)
 
         return df_sorted.nlargest(n, 'liquidity_score').index
-    
+
     def _encode_metadata(self, df: pd.DataFrame):
         df = df.copy()
         # Binning each numerical feature into categories
         df['insiders'] = pd.qcut(
-            df['insiders'], q=4, 
+            df['insiders'], q=4,
             labels=['Very Low', 'Low', 'High', 'Very High']
         )
         df['institutions'] = pd.qcut(
-            df['institutions'], q=4, 
+            df['institutions'], q=4,
             labels=['Very Low', 'Low', 'High', 'Very High']
         )
         df['risk'] = pd.cut(
-            df['risk'], bins=[-float('inf'), 3, 5, 7, float('inf')], 
+            df['risk'], bins=[-float('inf'), 3, 5, 7, float('inf')],
             labels=['Low', 'Medium', 'High', 'Very High']
         )
         df['short_ratio'] = pd.qcut(
-            df['short_ratio'], q=4, 
+            df['short_ratio'], q=4,
             labels=['Very Low', 'Low', 'High', 'Very High']
         )
         df['dyield'] = pd.cut(
-            df['dyield'], 
+            df['dyield'],
             bins=[-float('inf'), 0.002, 0.005, 0.01, float('inf')],
-              labels=['Very Low', 'Low', 'High', 'Very High']
+            labels=['Very Low', 'Low', 'High', 'Very High']
         )
         df['beta'] = pd.cut(
-            df['beta'], 
-            bins=[-float('inf'), 0.8, 1.0, 1.2, float('inf')], 
+            df['beta'],
+            bins=[-float('inf'), 0.8, 1.0, 1.2, float('inf')],
             labels=['Low', 'Moderate', 'High', 'Very High']
         )
 
         # Encode binned features
         binned_features = [
-            'insiders', 'institutions', 
-            'risk', 'short_ratio', 'dyield', 
+            'insiders', 'institutions',
+            'risk', 'short_ratio', 'dyield',
             'beta', 'sector', 'industry', 'exchange',
         ]
         label_encoders = {}
@@ -355,10 +364,10 @@ class LightGBModel(object):
             label_encoders[col] = le
         return df, label_encoders
 
-    def prepare_boosting_data(self, 
-                              prices: pd.DataFrame, 
-                              metadata: pd.DataFrame = None, 
-                              min_years=7, 
+    def prepare_boosting_data(self,
+                              prices: pd.DataFrame,
+                              metadata: pd.DataFrame = None,
+                              min_years=7,
                               universe=500
                               ):
         if metadata is None:
@@ -389,10 +398,11 @@ class LightGBModel(object):
         prices = prices[~prices.index.duplicated()]
 
         # Align price and meta data
-        metadata = metadata[~metadata.index.duplicated() & metadata.sector.notnull()]
+        metadata = metadata[~metadata.index.duplicated() &
+                            metadata.sector.notnull()]
         metadata.sector = metadata.sector.str.lower().str.replace(' ', '_')
         shared = (prices.index.get_level_values('symbol').unique()
-                .intersection(metadata.index))
+                  .intersection(metadata.index))
         metadata = metadata.loc[shared, :]
         prices = prices.loc[idx[shared, :], :]
 
@@ -415,16 +425,16 @@ class LightGBModel(object):
         prices['dollar_vol'] = prices[['close', 'volume']].prod(1).div(1e3)
         # compute dollar volume to determine universe
         dollar_vol_ma = (prices
-                        .dollar_vol
-                        .unstack('symbol')
-                        .rolling(window=21, min_periods=1)  # 1 trading month
-                        .mean())
+                         .dollar_vol
+                         .unstack('symbol')
+                         .rolling(window=21, min_periods=1)  # 1 trading month
+                         .mean())
 
         # Rank stocks by moving average
         prices['dollar_vol_rank'] = (dollar_vol_ma
-                                    .rank(axis=1, ascending=False)
-                                    .stack('symbol')
-                                    .swaplevel())
+                                     .rank(axis=1, ascending=False)
+                                     .stack('symbol')
+                                     .swaplevel())
         # Add some Basic Factors
         prices = self._add_technical_indicators(prices)
         # Combine Price and Meta Data
@@ -438,12 +448,12 @@ class LightGBModel(object):
         for t in T:
             # Reset the index to apply qcut by date without grouping errors
             prices[f'r{t:02}dec'] = (prices.reset_index(level='date')
-                                    .groupby('date')[f'r{t:02}']
-                                    .apply(lambda x: pd.qcut(x,
-                                                            q=10,
-                                                            labels=False,
-                                                            duplicates='drop'))
-                                    .values)
+                                     .groupby('date')[f'r{t:02}']
+                                     .apply(lambda x: pd.qcut(x,
+                                                              q=10,
+                                                              labels=False,
+                                                              duplicates='drop'))
+                                     .values)
         # Daily sector return deciles
         for t in T:
             prices[f'r{t:02}q_sector'] = (
@@ -461,50 +471,52 @@ class LightGBModel(object):
                 level='symbol')[f'r{t:02}'].shift(-t)
 
         # Remove outliers
-        outliers = prices[prices.r01 > 1].index.get_level_values('symbol').unique()
+        outliers = prices[prices.r01 > 1].index.get_level_values(
+            'symbol').unique()
         prices = prices.drop(outliers, level='symbol')
         # Create time and sector dummy variables
         prices['year'] = prices.index.get_level_values('date').year
         prices['month'] = prices.index.get_level_values('date').month
         prices['weekday'] = prices.index.get_level_values('date').weekday
         # Store Model Data
-        prices = prices.drop(['open', 'close', 'low', 'high', 'volume'], axis=1)
+        prices = prices.drop(
+            ['open', 'close', 'low', 'high', 'volume'], axis=1)
         if 'adj_close' in prices.columns:
             prices = prices.drop('adj_close', axis=1)
-        prices.reset_index().dropna().to_hdf(self.datastore, 'model_data')
-        return prices.dropna()
+        prices.reset_index().to_hdf(self.datastore, 'model_data')
+        return prices.sort_index()
 
     def tickers(self):
         return pd.read_hdf(self.outstore, 'lgb/tickers').tolist()
-    
-    def load_model_data(self):
-        return pd.read_hdf(self.datastore, 'model_data').set_index(['symbol', 'date']).sort_index()
-        
-    def format_time(self, t):
 
+    def load_model_data(self, key='model_data'):
+        return pd.read_hdf(self.datastore, key=key).set_index(['symbol', 'date']).sort_index()
+
+    def format_time(self, t):
         """Return a formatted time string 'HH:MM:SS
         based on a numeric time() value"""
         m, s = divmod(t, 60)
         h, m = divmod(m, 60)
         return f'{h:0>2.0f}:{m:0>2.0f}:{s:0>2.0f}'
-    
+
     def fit(self, data: pd.DataFrame, verbose=True):
         def get_fi(model):
             """Return normalized feature importance as pd.Series"""
             fi = model.feature_importance(importance_type='gain')
             return (pd.Series(fi / fi.sum(),
-                        index=model.feature_name()))
-        
+                              index=model.feature_name()))
+
         def ic_lgbm(preds, train_data):
             """Custom IC eval metric for lightgbm"""
             is_higher_better = True
             return 'ic', spearmanr(preds, train_data.get_label())[0], is_higher_better
+        data = data.dropna()
         # Hyperparameter options
         YEAR = 252
         base_params = dict(boosting='gbdt',
-                    objective='regression',
-                    verbose=-1)
-        
+                           objective='regression',
+                           verbose=-1)
+
         # constraints on structure (depth) of each tree
         max_depths = [2, 3, 5, 7]
         num_leaves_opts = [2 ** i for i in max_depths]
@@ -517,12 +529,12 @@ class LightGBModel(object):
         feature_fraction_opts = [.3, .6, .95]
 
         param_names = ['learning_rate', 'num_leaves',
-                'feature_fraction', 'min_data_in_leaf']
-        
+                       'feature_fraction', 'min_data_in_leaf']
+
         cv_params = list(product(learning_rate_ops,
-                            num_leaves_opts,
-                            feature_fraction_opts,
-                            min_data_in_leaf_opts))
+                                 num_leaves_opts,
+                                 feature_fraction_opts,
+                                 min_data_in_leaf_opts))
         n_params = len(cv_params)
         print(f'# Parameters: {n_params}')
 
@@ -532,15 +544,15 @@ class LightGBModel(object):
         test_lengths = [63]
         test_params = list(product(lookaheads, train_lengths, test_lengths))
         n = len(test_params)
-        test_param_sample = np.random.choice(list(range(n)), size=int(n), replace=False)
+        test_param_sample = np.random.choice(
+            list(range(n)), size=int(n), replace=False)
         test_params = [test_params[i] for i in test_param_sample]
         print('Train configs:', len(test_params))
 
-        ### Categorical Variables
+        # Categorical Variables
         categoricals = ['year', 'weekday', 'month']
         for feature in categoricals:
             data[feature] = pd.factorize(data[feature], sort=True)[0]
-        
 
         # ### Run Cross-Validation
         labels = sorted(data.filter(like='fwd').columns)
@@ -550,64 +562,64 @@ class LightGBModel(object):
         num_boost_round = num_iterations[-1]
 
         metric_cols = (param_names + ['t', 'daily_ic_mean', 'daily_ic_mean_n',
-                                'daily_ic_median', 'daily_ic_median_n'] +
-                [str(n) for n in num_iterations])
-        
+                                      'daily_ic_median', 'daily_ic_median_n'] +
+                       [str(n) for n in num_iterations])
+
         for lookahead, train_length, test_length in test_params:
             # randomized grid search
             cvp = np.random.choice(list(range(n_params)),
-                                size=int(n_params / 2),
-                                replace=False)
+                                   size=int(n_params / 2),
+                                   replace=False)
             cv_params_ = [cv_params[i] for i in cvp]
 
             # set up cross-validation
             n_splits = int(2 * YEAR / test_length)
             if verbose:
                 print(f'Lookahead: {lookahead:2.0f} | '
-                    f'Train: {train_length:3.0f} | '
-                    f'Test: {test_length:2.0f} | '
-                    f'Params: {len(cv_params_):3.0f} | '
-                    f'Train configs: {len(test_params)}')
+                      f'Train: {train_length:3.0f} | '
+                      f'Test: {test_length:2.0f} | '
+                      f'Params: {len(cv_params_):3.0f} | '
+                      f'Train configs: {len(test_params)}')
 
             # time-series cross-validation
             cv = MultipleTimeSeriesCV(n_splits=n_splits,
-                                    lookahead=lookahead,
-                                    test_period_length=test_length,
-                                    train_period_length=train_length)
+                                      lookahead=lookahead,
+                                      test_period_length=test_length,
+                                      train_period_length=train_length)
 
             label = label_dict[lookahead]
             outcome_data = data.loc[:, features + [label]].dropna()
-            
+
             # binary dataset
             lgb_data = lgb.Dataset(data=outcome_data.drop(label, axis=1),
-                                label=outcome_data[label],
-                                categorical_feature=categoricals,
-                                free_raw_data=False)
+                                   label=outcome_data[label],
+                                   categorical_feature=categoricals,
+                                   free_raw_data=False)
             T = 0
-            predictions, metrics, feature_importance, daily_ic = [], [], [], []
-            
+            predictions, metrics = [], []
+
             # iterate over (shuffled) hyperparameter combinations
             for p, param_vals in enumerate(cv_params_):
-                key = f'{lookahead}/{train_length}/{test_length}/' + '/'.join([str(p) for p in param_vals])
+                key = f'{lookahead}/{train_length}/{test_length}/' + \
+                    '/'.join([str(p) for p in param_vals])
                 params = dict(zip(param_names, param_vals))
                 params.update(base_params)
 
                 start = time()
-                cv_preds, nrounds = [], []
-                ic_cv = defaultdict(list)
-                
+                cv_preds = []
+
                 # iterate over folds
                 for i, (train_idx, test_idx) in enumerate(cv.split(X=outcome_data)):
-                    
+
                     # select train subset
                     lgb_train = lgb_data.subset(used_indices=train_idx.tolist(),
-                                            params=params).construct()
-                    
+                                                params=params).construct()
+
                     # train model for num_boost_round
                     model = lgb.train(params=params,
-                                    train_set=lgb_train,
-                                    num_boost_round=num_boost_round,
-                                    )
+                                      train_set=lgb_train,
+                                      num_boost_round=num_boost_round,
+                                      )
                     # log feature importance
                     if i == 0:
                         fi = get_fi(model).to_frame()
@@ -618,32 +630,36 @@ class LightGBModel(object):
                     test_set = outcome_data.iloc[test_idx, :]
                     X_test = test_set.loc[:, model.feature_name()]
                     y_test = test_set.loc[:, label]
-                    y_pred = {str(n): model.predict(X_test, num_iteration=n) for n in num_iterations}
-                    
+                    y_pred = {str(n): model.predict(X_test, num_iteration=n)
+                              for n in num_iterations}
+
                     # record predictions for each fold
-                    cv_preds.append(y_test.to_frame('y_test').assign(**y_pred).assign(i=i))
-                
+                    cv_preds.append(y_test.to_frame(
+                        'y_test').assign(**y_pred).assign(i=i))
+
                 # combine fold results
                 cv_preds = pd.concat(cv_preds).assign(**params)
                 predictions.append(cv_preds)
-                
+
                 # compute IC per day
                 by_day = cv_preds.groupby(level='date')
                 ic_by_day = pd.concat([by_day.apply(lambda x: spearmanr(x.y_test, x[str(n)])[0]).to_frame(n)
-                                    for n in num_iterations], axis=1)
+                                       for n in num_iterations], axis=1)
                 daily_ic_mean = ic_by_day.mean()
                 daily_ic_mean_n = daily_ic_mean.idxmax()
                 daily_ic_median = ic_by_day.median()
                 daily_ic_median_n = daily_ic_median.idxmax()
-                
+
                 # compute IC across all predictions
-                ic = [spearmanr(cv_preds.y_test, cv_preds[str(n)])[0] for n in num_iterations]
+                ic = [spearmanr(cv_preds.y_test, cv_preds[str(n)])[0]
+                      for n in num_iterations]
                 t = time() - start
                 T += t
-                
+
                 # collect metrics
                 metrics = pd.Series(list(param_vals) +
-                                    [t, daily_ic_mean.max(), daily_ic_mean_n, daily_ic_median.max(), daily_ic_median_n] + ic,
+                                    [t, daily_ic_mean.max(), daily_ic_mean_n,
+                                     daily_ic_median.max(), daily_ic_median_n] + ic,
                                     index=metric_cols)
                 if verbose:
                     msg = f'\t{p:3.0f} | {self.format_time(T)} ({t:3.0f}) | {params["learning_rate"]:5.2f} | '
@@ -653,14 +669,16 @@ class LightGBModel(object):
 
                 # persist results for given CV run and hyperparameter combination
                 metrics.to_hdf(self.trainstore, 'metrics/' + key)
-                ic_by_day.assign(**params).to_hdf(self.trainstore, 'daily_ic/' + key)
+                ic_by_day.assign(
+                    **params).to_hdf(self.trainstore, 'daily_ic/' + key)
                 fi.T.describe().T.assign(**params).to_hdf(self.trainstore, 'fi/' + key)
-                cv_preds.to_hdf(self.trainstore, 'predictions/' + key, append=True)
+                cv_preds.to_hdf(self.trainstore,
+                                'predictions/' + key, append=True)
 
     def _get_lgb_metrics(self, scope_params, lgb_train_params, daily_ic_metrics):
         with pd.HDFStore(self.trainstore) as store:
             for i, key in enumerate(
-                [k[1:] for k in store.keys() if k[1:].startswith('metrics')]):
+                    [k[1:] for k in store.keys() if k[1:].startswith('metrics')]):
                 _, t, train_length, test_length = key.split('/')[:4]
                 attrs = {
                     'lookahead': t,
@@ -675,10 +693,10 @@ class LightGBModel(object):
                     lgb_metrics[i] = pd.Series(s)
 
         id_vars = scope_params + lgb_train_params + daily_ic_metrics
-        lgb_metrics = pd.melt(lgb_metrics.T.drop('t', axis=1), 
-                        id_vars=id_vars, 
-                        value_name='ic', 
-                        var_name='boost_rounds').dropna().apply(pd.to_numeric)
+        lgb_metrics = pd.melt(lgb_metrics.T.drop('t', axis=1),
+                              id_vars=id_vars,
+                              value_name='ic',
+                              var_name='boost_rounds').dropna().apply(pd.to_numeric)
         return lgb_metrics
 
     def _get_lgb_ic(self, int_cols, scope_params, lgb_train_params, id_vars):
@@ -689,22 +707,23 @@ class LightGBModel(object):
                 _, t, train_length, test_length = key.split('/')[:4]
                 if key.startswith('daily_ic'):
                     df = (store[key]
-                        .drop(['boosting', 'objective', 'verbose'], axis=1)
-                        .assign(lookahead=t, 
-                                train_length=train_length, 
-                                test_length=test_length))
+                          .drop(['boosting', 'objective', 'verbose'], axis=1)
+                          .assign(lookahead=t,
+                                  train_length=train_length,
+                                  test_length=test_length))
                     lgb_ic.append(df)
             lgb_ic = pd.concat(lgb_ic).reset_index()
-        lgb_ic = pd.melt(lgb_ic, 
-                        id_vars=id_vars, 
-                        value_name='ic', 
-                        var_name='boost_rounds').dropna()
+        lgb_ic = pd.melt(lgb_ic,
+                         id_vars=id_vars,
+                         value_name='ic',
+                         var_name='boost_rounds').dropna()
         lgb_ic.loc[:, int_cols] = lgb_ic.loc[:, int_cols].astype(int)
         return lgb_ic
 
     def _get_lgb_params(self, data, scope_params, lgb_train_params, t=5, best=0):
         param_cols = scope_params[1:] + lgb_train_params + ['boost_rounds']
-        df = data[data.lookahead==t].sort_values('ic', ascending=False).iloc[best]
+        df = data[data.lookahead == t].sort_values(
+            'ic', ascending=False).iloc[best]
         return df.loc[param_cols]
 
     def _get_lgb_key(self, t, p):
@@ -713,12 +732,12 @@ class LightGBModel(object):
 
     def _select_ic(self, params, ic_data, lookahead):
         return ic_data.loc[(ic_data.lookahead == lookahead) &
-                        (ic_data.train_length == params.train_length) &
-                        (ic_data.test_length == params.test_length) &
-                        (ic_data.learning_rate == params.learning_rate) &
-                        (ic_data.num_leaves == params.num_leaves) &
-                        (ic_data.feature_fraction == params.feature_fraction) &
-                        (ic_data.boost_rounds == params.boost_rounds), ['date', 'ic']].set_index('date')
+                           (ic_data.train_length == params.train_length) &
+                           (ic_data.test_length == params.test_length) &
+                           (ic_data.learning_rate == params.learning_rate) &
+                           (ic_data.num_leaves == params.num_leaves) &
+                           (ic_data.feature_fraction == params.feature_fraction) &
+                           (ic_data.boost_rounds == params.boost_rounds), ['date', 'ic']].set_index('date')
 
     def get_trade_prices(self, tickers, start, end):
         idx = pd.IndexSlice
@@ -736,73 +755,77 @@ class LightGBModel(object):
         fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(20, 5))
         axes = axes.flatten()
         for i, t in enumerate([1, 21]):
-            params = self._get_lgb_params(lgb_daily_ic, scope_params, lgb_train_params, t=t,best=0)                            
+            params = self._get_lgb_params(
+                lgb_daily_ic, scope_params, lgb_train_params, t=t, best=0)
             data = self._select_ic(params, lgb_ic, lookahead=t).sort_index()
             rolling = data.rolling(63).ic.mean().dropna()
             avg = data.ic.mean()
             med = data.ic.median()
-            rolling.plot(ax=axes[i], title=f'Horizon: {t} Day(s) | IC: Mean={avg*100:.2f}   Median={med*100:.2f}')
+            rolling.plot(
+                ax=axes[i], title=f'Horizon: {t} Day(s) | IC: Mean={avg*100:.2f}   Median={med*100:.2f}')
             axes[i].axhline(avg, c='darkred', lw=1)
             axes[i].axhline(0, ls='--', c='k', lw=1)
 
         fig.suptitle('3-Month Rolling Information Coefficient', fontsize=16)
         fig.tight_layout()
-        fig.subplots_adjust(top=0.92);
+        fig.subplots_adjust(top=0.92)
 
     def plot_metrics(self, lgb_metrics, lgb_daily_ic, t=1):
-        ### Visualization
-        sns.jointplot(x=lgb_metrics.daily_ic_mean,y=lgb_metrics.ic);
+        # Visualization
+        sns.jointplot(x=lgb_metrics.daily_ic_mean, y=lgb_metrics.ic)
 
-        g = sns.catplot(x='lookahead', y='ic',
+        sns.catplot(x='lookahead', y='ic',
                     col='train_length', row='test_length',
                     data=lgb_metrics,
-                    kind='box');
-        g=sns.catplot(x='boost_rounds',
+                    kind='box')
+        sns.catplot(x='boost_rounds',
                     y='ic',
                     col='train_length',
                     row='test_length',
                     data=lgb_daily_ic[lgb_daily_ic.lookahead == t],
-                    kind='box');
+                    kind='box')
 
     def get_best_predictions(self, lgb_daily_ic, scope_params, lgb_train_params, lookahead=1, topn=10):
         for best in range(topn):
-            best_params = self._get_lgb_params(lgb_daily_ic, scope_params, lgb_train_params, t=lookahead, best=best)
+            best_params = self._get_lgb_params(
+                lgb_daily_ic, scope_params, lgb_train_params, t=lookahead, best=best)
             key = self._get_lgb_key(lookahead, best_params)
             rounds = str(int(best_params.boost_rounds))
             if best == 0:
-                best_predictions = pd.read_hdf(self.trainstore, 'predictions/' + key)
+                best_predictions = pd.read_hdf(
+                    self.trainstore, 'predictions/' + key)
                 best_predictions = best_predictions[rounds].to_frame(best)
             else:
-                best_predictions[best] = pd.read_hdf(self.trainstore, 'predictions/' + key)[rounds]
+                best_predictions[best] = pd.read_hdf(
+                    self.trainstore, 'predictions/' + key)[rounds]
         best_predictions = best_predictions.sort_index()
-        best_predictions.reset_index().to_hdf(self.outstore, f'lgb/train/{lookahead:02}')
+        best_predictions.reset_index().to_hdf(
+            self.outstore, f'lgb/train/{lookahead:02}')
         return best_predictions
 
     def apply_alphalen_analysis(self, factor_data, tearsheet=True, verbose=True):
-        #### Compute Alphalens metrics
+        # Compute Alphalens metrics
         mean_quant_ret_bydate, std_quant_daily = perf.mean_return_by_quantile(
-        factor_data,
-        by_date=True,
-        by_group=False,
-        demeaned=True,
-        group_adjust=False,
+            factor_data,
+            by_date=True,
+            by_group=False,
+            demeaned=True,
+            group_adjust=False,
         )
         factor_returns = perf.factor_returns(factor_data)
         mean_quant_ret, std_quantile = perf.mean_return_by_quantile(factor_data,
-                                                                by_group=False,
-                                                                demeaned=True)
-
-
+                                                                    by_group=False,
+                                                                    demeaned=True)
 
         mean_quant_rateret = mean_quant_ret.apply(rate_of_return, axis=0,
-                                            base_period=mean_quant_ret.columns[0])
-        
+                                                  base_period=mean_quant_ret.columns[0])
+
         mean_quant_ret_bydate, std_quant_daily = perf.mean_return_by_quantile(
-        factor_data,
-        by_date=True,
-        by_group=False,
-        demeaned=True,
-        group_adjust=False,
+            factor_data,
+            by_date=True,
+            by_group=False,
+            demeaned=True,
+            group_adjust=False,
         )
 
         mean_quant_rateret_bydate = mean_quant_ret_bydate.apply(
@@ -823,123 +846,146 @@ class LightGBModel(object):
             std_err=compstd_quant_daily,
         )
         if verbose:
-            print(mean_ret_spread_quant.mean().mul(10000).to_frame('Mean Period Wise Spread (bps)').join(alpha_beta.T).T)
+            print(mean_ret_spread_quant.mean().mul(10000).to_frame(
+                'Mean Period Wise Spread (bps)').join(alpha_beta.T).T)
 
         fig, axes = plt.subplots(ncols=3, figsize=(18, 4))
-
 
         plotting.plot_quantile_returns_bar(mean_quant_rateret, ax=axes[0])
         plt.setp(axes[0].xaxis.get_majorticklabels(), rotation=0)
         axes[0].set_xlabel('Quantile')
 
         plotting.plot_cumulative_returns_by_quantile(mean_quant_ret_bydate['1D'],
-                                                    freq=pd.tseries.offsets.BDay(),
-                                                    period='1D',
-                                                    ax=axes[1])
+                                                     freq=pd.tseries.offsets.BDay(),
+                                                     period='1D',
+                                                     ax=axes[1])
         axes[1].set_title('Cumulative Return by Quantile (1D Period)')
 
         title = "Cumulative Return - Factor-Weighted Long/Short PF (1D Period)"
         plotting.plot_cumulative_returns(factor_returns['1D'],
-                                        period='1D',
-                                        freq=pd.tseries.offsets.BDay(),
-                                        title=title,
-                                        ax=axes[2])
+                                         period='1D',
+                                         freq=pd.tseries.offsets.BDay(),
+                                         title=title,
+                                         ax=axes[2])
 
         fig.suptitle('Alphalens - Validation Set Performance', fontsize=14)
         fig.tight_layout()
-        fig.subplots_adjust(top=.85);
+        fig.subplots_adjust(top=.85)
 
-        #### Summary Tearsheet
+        # Summary Tearsheet
         create_summary_tear_sheet(factor_data)
         create_full_tear_sheet(factor_data)
 
-    def evaluate(self, remove_instore=False, lookahead=1):
+    def evaluate(self, remove_instore=False, lookahead=1, verbose=True):
         scope_params = ['lookahead', 'train_length', 'test_length']
-        daily_ic_metrics = ['daily_ic_mean', 'daily_ic_mean_n', 'daily_ic_median', 'daily_ic_median_n']
-        lgb_train_params = ['learning_rate', 'num_leaves', 'feature_fraction', 'min_data_in_leaf']
+        daily_ic_metrics = ['daily_ic_mean', 'daily_ic_mean_n',
+                            'daily_ic_median', 'daily_ic_median_n']
+        lgb_train_params = ['learning_rate', 'num_leaves',
+                            'feature_fraction', 'min_data_in_leaf']
 
-        lgb_metrics = self._get_lgb_metrics(scope_params, lgb_train_params, daily_ic_metrics)
-        #### Summary Metrics by Fold
+        lgb_metrics = self._get_lgb_metrics(
+            scope_params, lgb_train_params, daily_ic_metrics)
+        # Summary Metrics by Fold
         lgb_metrics.to_hdf(self.outstore, 'lgb/metrics')
-        
-        #### Information Coefficient by Day
+
+        # Information Coefficient by Day
         int_cols = ['lookahead', 'train_length', 'test_length', 'boost_rounds']
         id_vars = ['date'] + scope_params + lgb_train_params
-        lgb_ic = self._get_lgb_ic(int_cols, scope_params, lgb_train_params, id_vars)
+        lgb_ic = self._get_lgb_ic(
+            int_cols, scope_params, lgb_train_params, id_vars)
         lgb_ic.to_hdf(self.outstore, 'lgb/ic')
-        lgb_daily_ic = lgb_ic.groupby(id_vars[1:] + ['boost_rounds']).ic.mean().to_frame('ic').reset_index()
+        lgb_daily_ic = lgb_ic.groupby(
+            id_vars[1:] + ['boost_rounds']).ic.mean().to_frame('ic').reset_index()
         lgb_daily_ic.to_hdf(self.outstore, 'lgb/daily_ic')
 
-        ## Cross-validation Result: Best Hyperparameters
-        group_cols = scope_params + lgb_train_params + ['boost_rounds']
-        print(lgb_daily_ic.groupby('lookahead', group_keys=False).apply(lambda x: x.nlargest(3, 'ic')))
-        lgb_metrics.groupby('lookahead', group_keys=False).apply(lambda x: x.nlargest(3, 'ic'))
+        # Cross-validation Result: Best Hyperparameters
+        if verbose:
+            print(lgb_daily_ic.groupby('lookahead', group_keys=False).apply(
+                lambda x: x.nlargest(3, 'ic')))
+        lgb_metrics.groupby('lookahead', group_keys=False).apply(
+            lambda x: x.nlargest(3, 'ic'))
         lgb_metrics.groupby('lookahead', group_keys=False
                             ).apply(lambda x: x.nlargest(3, 'ic')).to_hdf(self.outstore, 'lgb/best_model')
-        print(lgb_metrics.groupby('lookahead', group_keys=False).apply(lambda x: x.nlargest(3, 'daily_ic_mean')))
+        if verbose:
+            print(lgb_metrics.groupby('lookahead', group_keys=False).apply(
+                lambda x: x.nlargest(3, 'daily_ic_mean')))
 
-        ### Visualization
-        self.plot_metrics(lgb_metrics, lgb_daily_ic, t=1)
+        # Visualization
+        if verbose:
+            self.plot_metrics(lgb_metrics, lgb_daily_ic, t=lookahead)
 
-        ## AlphaLens Analysis - Validation Performance
+        # AlphaLens Analysis - Validation Performance
         lgb_daily_ic = pd.read_hdf(self.outstore, 'lgb/daily_ic')
-        best_params = self._get_lgb_params(lgb_daily_ic, scope_params, lgb_train_params, t=5, best=0)
+        best_params = self._get_lgb_params(
+            lgb_daily_ic, scope_params, lgb_train_params, t=lookahead, best=0)
         best_params.to_hdf(self.outstore, 'lgb/best_params')
 
-        self.plot_ic(lgb_ic, lgb_daily_ic, scope_params, lgb_train_params)
+        if verbose:
+            self.plot_ic(lgb_ic, lgb_daily_ic, scope_params, lgb_train_params)
 
-        #### Get Predictions for Validation Period
-        best_predictions = self.get_best_predictions(lgb_daily_ic, scope_params, lgb_train_params, 
-                                                    lookahead=lookahead, topn=10)
-        test_tickers = best_predictions.index.get_level_values('symbol').unique()
+        # Get Predictions for Validation Period
+        best_predictions = self.get_best_predictions(lgb_daily_ic, scope_params, lgb_train_params,
+                                                     lookahead=lookahead, topn=10)
+        test_tickers = best_predictions.index.get_level_values(
+            'symbol').unique()
         start = best_predictions.index.get_level_values('date').min()
         end = best_predictions.index.get_level_values('date').max()
         trade_prices = self.get_trade_prices(test_tickers, start, end)
-        trade_prices.to_hdf(self.outstore, 'trade_prices/model_selection')
         pd.Series(test_tickers).to_hdf(self.outstore, 'lgb/tickers')
-        #We average the top five models and provide the corresponding prices to Alphalens, in order to compute the mean period-wise 
-        #return earned on an equal-weighted portfolio invested in the daily factor quintiles for various holding periods:
-        factor = best_predictions.iloc[:, :5].mean(1).dropna().tz_convert ('UTC', level='date').swaplevel()
-        ### #### Create AlphaLens Inputs
-        factor_data = get_clean_factor_and_forward_returns(factor=factor,
-                                                    prices=trade_prices,
-                                                    quantiles=5,
-                                                    periods=(1, 5, 10, 21),
-                                                    max_loss=1)
-        self.apply_alphalen_analysis(factor_data, tearsheet=True, verbose=True)
+        # We average the top five models and provide the corresponding prices to Alphalens, 
+        # in order to compute the mean period-wise
+        # return earned on an equal-weighted portfolio invested in the daily factor quintiles 
+        # for various holding periods:
+        factor = best_predictions.iloc[:, :5].mean(
+            1).dropna().tz_convert('UTC', level='date').swaplevel()
+        # Create AlphaLens Inputs
+        if verbose:
+            factor_data = get_clean_factor_and_forward_returns(factor=factor,
+                                                               prices=trade_prices,
+                                                               quantiles=5,
+                                                               periods=(
+                                                                   1, 5, 10, 21),
+                                                               max_loss=1)
+            self.apply_alphalen_analysis(
+                factor_data, tearsheet=True, verbose=True)
         # Delete the temporary files
         if remove_instore:
             os.remove(self.trainstore)
-        
-    def make_predictions(self, data: pd.DataFrame, lookahead=1, verbose=True):
+
+    def make_predictions(self, data: pd.DataFrame, mode='test', lookahead=1, verbose=True):
+        data = data.copy()
         YEAR = 252
-        idx = pd.IndexSlice
         scope_params = ['lookahead', 'train_length', 'test_length']
-        daily_ic_metrics = ['daily_ic_mean', 'daily_ic_mean_n', 'daily_ic_median', 'daily_ic_median_n']
-        lgb_train_params = ['learning_rate', 'num_leaves', 'feature_fraction', 'min_data_in_leaf']
+        lgb_train_params = ['learning_rate', 'num_leaves',
+                            'feature_fraction', 'min_data_in_leaf']
 
         base_params = dict(boosting='gbdt',
-                    objective='regression',
-                    verbose=-1)
+                           objective='regression',
+                           verbose=-1)
 
-        categoricals = ['year', 'month', 'sector', 'weekday']
-        data =  data.sort_index()
+        categoricals = ['year', 'month', 'weekday']
         labels = sorted(data.filter(like='_fwd').columns)
         features = data.columns.difference(labels).tolist()
         label = f'r{lookahead:02}_fwd'
         for feature in categoricals:
             data[feature] = pd.factorize(data[feature], sort=True)[0]
-        
+
+        if mode == 'test':
+            data = data.dropna().sort_index()
+        elif mode == 'live':
+            data[labels] = data[labels].fillna(0)
+            data = data.sort_index().dropna()
+
         lgb_data = lgb.Dataset(data=data[features],
-                        label=data[label],
-                        categorical_feature=categoricals,
-                        free_raw_data=False)
-        ### Generate predictions
-        lgb_ic = pd.read_hdf(self.outstore, 'lgb/ic')
+                               label=data[label],
+                               categorical_feature=categoricals,
+                               free_raw_data=False)
+        # Generate predictions
         lgb_daily_ic = pd.read_hdf(self.outstore, 'lgb/daily_ic')
 
         for position in range(10):
-            params = self._get_lgb_params(lgb_daily_ic, scope_params, lgb_train_params, t=lookahead, best=position)
+            params = self._get_lgb_params(
+                lgb_daily_ic, scope_params, lgb_train_params, t=lookahead, best=position)
 
             params = params.to_dict()
 
@@ -949,27 +995,27 @@ class LightGBModel(object):
             test_length = int(params.pop('test_length'))
             num_boost_round = int(params.pop('boost_rounds'))
             params.update(base_params)
-
-            print(f'\nPosition: {position:02}')
+            if verbose:
+                print(f'\nPosition: {position:02}')
 
             # 1-year out-of-sample period
             n_splits = int(YEAR / test_length)
             cv = MultipleTimeSeriesCV(n_splits=n_splits,
-                                    test_period_length=test_length,
-                                    lookahead=lookahead,
-                                    train_period_length=train_length)
+                                      test_period_length=test_length,
+                                      lookahead=lookahead,
+                                      train_period_length=train_length)
 
             predictions = []
-            start = time()
             for i, (train_idx, test_idx) in enumerate(cv.split(X=data), 1):
-                print(i, end=' ', flush=True)
+                if verbose:
+                    print(i, end=' ', flush=True)
                 lgb_train = lgb_data.subset(used_indices=train_idx.tolist(),
                                             params=params).construct()
 
                 model = lgb.train(params=params,
-                                train_set=lgb_train,
-                                num_boost_round=num_boost_round,
-                                )
+                                  train_set=lgb_train,
+                                  num_boost_round=num_boost_round,
+                                  )
 
                 test_set = data.iloc[test_idx, :]
                 y_test = test_set.loc[:, label].to_frame('y_test')
@@ -992,29 +1038,32 @@ class LightGBModel(object):
                     lambda x: spearmanr(x.y_test, x[position])[0])
         if verbose:
             print(ic_by_day.describe())
-        test_predictions.reset_index().to_hdf(self.outstore, f'lgb/test/{lookahead:02}')
+        test_predictions.reset_index().to_hdf(
+            self.outstore, f'lgb/test/{lookahead:02}')
         return test_predictions
 
     def load_predictions(self, predictions=None, lookahead=1):
         if predictions is None:
             predictions = pd.concat([
-                pd.read_hdf(self.outstore, f'lgb/train/{lookahead:02}'), 
-                pd.read_hdf(self.outstore, f'lgb/test/{lookahead:02}').drop('y_test', axis=1)
+                pd.read_hdf(self.outstore, f'lgb/train/{lookahead:02}'),
+                pd.read_hdf(self.outstore,
+                            f'lgb/test/{lookahead:02}').drop('y_test', axis=1)
             ])
             predictions = predictions.set_index(['symbol', 'date'])
 
         predictions = (predictions.loc[~predictions.index.duplicated()]
-                    .iloc[:, :10]
-                    .mean(1)
-                    .sort_index()
-                    .dropna()
-                    .to_frame('prediction'))
-        tickers = predictions.index.get_level_values('symbol').unique().tolist()
+                       .iloc[:, :10]
+                       .mean(1)
+                       .sort_index()
+                       .dropna()
+                       .to_frame('prediction'))
+        tickers = predictions.index.get_level_values(
+            'symbol').unique().tolist()
         return (predictions
                 .unstack('symbol')
                 .prediction
-                .tz_convert ('UTC')), tickers
-    
+                .tz_convert('UTC')), tickers
+
     def assert_last_date(self, predictions: pd.DataFrame):
         """
         Usefull in Live Trading to ensure that the last date in the predictions
@@ -1023,4 +1072,21 @@ class LightGBModel(object):
         last_date = predictions.index.get_level_values('date').max()
         if last_date.tzinfo is None:
             last_date = last_date.tz_localize('UTC')
-        assert last_date == (pd.Timestamp.now(tz='UTC') - pd.Timedelta(days=1)).normalize()
+        try:
+            if datetime.now().strftime('%A') == 'Monday':
+                assert last_date == (pd.Timestamp.now(
+                    tz='UTC') - pd.Timedelta(days=3)).normalize()
+            else:
+                assert (
+                    last_date == (pd.Timestamp.now(tz='UTC')
+                                  - pd.Timedelta(days=1)).normalize()
+                    or last_date == (pd.Timestamp.now(tz='UTC')).normalize()
+                )
+            return True
+        except AssertionError:
+            return False
+
+    def clean_stores(self, *stores):
+        for store in stores:
+            if os.path.exists(store):
+                os.remove(store)

@@ -1,12 +1,12 @@
+import warnings
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import quantstats as qs
 import seaborn as sns
 import yfinance as yf
-from scipy.stats import mstats
-import matplotlib.pyplot as plt
-from matplotlib.ticker import MaxNLocator
-import quantstats as qs
-import warnings
+
 warnings.filterwarnings("ignore")
 
 sns.set_theme()
@@ -37,6 +37,8 @@ def create_sharpe_ratio(returns, periods=252) -> float:
     return qs.stats.sharpe(returns, periods=periods)
 
 # Define a function to calculate the Sortino Ratio
+
+
 def create_sortino_ratio(returns, periods=252) -> float:
     """
     Create the Sortino ratio for the strategy, based on a
@@ -215,7 +217,7 @@ def plot_returns_and_dd(df: pd.DataFrame, benchmark: str, title):
     plt.show()
 
 
-def plot_monthly_yearly_returns(df:pd.DataFrame, title):
+def plot_monthly_yearly_returns(df: pd.DataFrame, title):
     """
     Plot the monthly and yearly returns of the strategy.
 
@@ -295,6 +297,7 @@ def plot_monthly_yearly_returns(df:pd.DataFrame, title):
     # Show the plot
     plt.show()
 
+
 def show_qs_stats(returns, benchmark, strategy_name, save_dir=None):
     """
     Generate the full quantstats report for the strategy.
@@ -317,4 +320,5 @@ def show_qs_stats(returns, benchmark, strategy_name, save_dir=None):
 
     # Generate the full report with a benchmark
     qs.reports.full(returns, mode='full', benchmark=benchmark)
-    qs.reports.html(returns, benchmark=benchmark, output=save_dir, title=strategy_name)
+    qs.reports.html(returns, benchmark=benchmark,
+                    output=save_dir, title=strategy_name)

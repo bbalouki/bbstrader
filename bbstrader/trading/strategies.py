@@ -2,28 +2,27 @@
 Strategies module for trading strategies backtesting and execution.
 """
 
+from datetime import datetime
+from queue import Queue
+from typing import Dict, List, Literal, Optional, Union
+
 import numpy as np
 import pandas as pd
-from queue import Queue
 import yfinance as yf
-from datetime import datetime
-from bbstrader.metatrader.rates import Rates
-from bbstrader.metatrader.account import Account
-from bbstrader.btengine.event import SignalEvent
-from bbstrader.btengine.data import DataHandler
-from bbstrader.models.risk import HMMRiskManager
-from bbstrader.models.risk import build_hmm_models
+
 from bbstrader.btengine.backtest import BacktestEngine
+from bbstrader.btengine.data import DataHandler, MT5DataHandler, YFDataHandler
+from bbstrader.btengine.event import SignalEvent
+from bbstrader.btengine.execution import MT5ExecutionHandler, SimExecutionHandler
 from bbstrader.btengine.strategy import Strategy
-from bbstrader.btengine.strategy import MT5Strategy
-from bbstrader.btengine.execution import *
-from bbstrader.btengine.data import *
-from bbstrader.tseries import KalmanFilterModel, ArimaGarchModel
-from typing import Union, Optional, Literal, Dict, List
+from bbstrader.metatrader.account import Account
+from bbstrader.metatrader.rates import Rates
+from bbstrader.models.risk import build_hmm_models
+from bbstrader.tseries import ArimaGarchModel, KalmanFilterModel
 
 __all__ = [
-    'SMAStrategy', 
-    'ArimaGarchStrategy', 
+    'SMAStrategy',
+    'ArimaGarchStrategy',
     'KalmanFilterStrategy',
     'StockIndexSTBOTrading',
     'test_strategy',
@@ -36,7 +35,7 @@ def get_quantities(quantities, symbol_list):
         return quantities
     elif isinstance(quantities, int):
         return {symbol: quantities for symbol in symbol_list}
-    
+
 
 class SMAStrategy(Strategy):
     """
@@ -56,9 +55,9 @@ class SMAStrategy(Strategy):
     """
 
     def __init__(
-        self, bars: DataHandler = None, 
+        self, bars: DataHandler = None,
         events: Queue = None,
-        symbol_list: List[str] = None, 
+        symbol_list: List[str] = None,
         mode: Literal['backtest', 'live'] = 'backtest',
         **kwargs
     ):
@@ -100,7 +99,6 @@ class SMAStrategy(Strategy):
     def get_backtest_data(self):
         symbol_data = {symbol: None for symbol in self.symbol_list}
         for s in self.symbol_list:
-            latest_bars = self.bars.get_latest_bars(s, N=self.long_window)
             bar_date = self.bars.get_latest_bar_datetime(s)
             bars = self.bars.get_latest_bars_values(
                 s, "adj_close", N=self.long_window
@@ -157,17 +155,20 @@ class SMAStrategy(Strategy):
     def get_live_data(self):
         symbol_data = {symbol: None for symbol in self.symbol_list}
         for symbol in self.symbol_list:
-            sig_rate = Rates(symbol, self.tf, 0, self.risk_window+2, **self.kwargs)
+            sig_rate = Rates(symbol, self.tf, 0,
+                             self.risk_window+2, **self.kwargs)
             hmm_data = sig_rate.returns.values
             prices = sig_rate.close.values
-            current_regime = self.risk_models[symbol].which_trade_allowed(hmm_data)
-            assert len(prices) >= self.long_window and len(hmm_data) >= self.risk_window
+            current_regime = self.risk_models[symbol].which_trade_allowed(
+                hmm_data)
+            assert len(prices) >= self.long_window and len(
+                hmm_data) >= self.risk_window
             short_sma = np.mean(prices[-self.short_window:])
             long_sma = np.mean(prices[-self.long_window:])
             short_sma, long_sma, current_regime
             symbol_data[symbol] = (short_sma, long_sma, current_regime)
         return symbol_data
-    
+
     def create_live_signals(self):
         signals = {symbol: None for symbol in self.symbol_list}
         symbol_data = self.get_live_data()
@@ -182,7 +183,7 @@ class SMAStrategy(Strategy):
                     signal = 'SHORT'
             signals[symbol] = signal
         return signals
-    
+
     def calculate_signals(self, event=None):
         if self.mode == 'backtest' and event is not None:
             if event.type == 'MARKET':
@@ -204,9 +205,9 @@ class ArimaGarchStrategy(Strategy):
     Features
     ========
     - **ARIMA-GARCH Model**: Utilizes ARIMA for time series forecasting and GARCH for volatility forecasting, aimed at predicting market movements.
-    
+
     - **HMM Risk Management**: Employs a Hidden Markov Model to manage risks, determining safe trading regimes.
-    
+
     - **Event-Driven Backtesting**: Capable of simulating real-time trading conditions by processing market data and signals sequentially.
 
     - **Live Trading**: Supports real-time trading by generating signals based on live ARIMA-GARCH predictions and HMM risk management.
@@ -218,15 +219,15 @@ class ArimaGarchStrategy(Strategy):
     - `get_live_data()`: Retrieves live data for real-time trading.
     - `create_live_signals()`: Generates trading signals based on live ARIMA-GARCH predictions and HMM risk management.
     - `calculate_signals()`: Determines the trading signals based on the mode of operation (backtest or live).
-      
+
     """
 
-    def __init__(self, 
-                 bars: DataHandler = None, 
+    def __init__(self,
+                 bars: DataHandler = None,
                  events: Queue = None,
                  symbol_list: List[str] = None,
                  mode: Literal['backtest', 'live'] = 'backtest',
-                **kwargs):
+                 **kwargs):
         """
         Args:
             `bars`: A data handler object that provides market data.
@@ -242,8 +243,8 @@ class ArimaGarchStrategy(Strategy):
         self.events = events
         self.symbol_list = symbol_list or self.bars.symbol_list
         self.mode = mode
-        
-        self.qty =  get_quantities(
+
+        self.qty = get_quantities(
             kwargs.get('quantities', 100), self.symbol_list)
         self.arima_window = kwargs.get('arima_window', 252)
         self.tf = kwargs.get('time_frame', 'D1')
@@ -251,9 +252,9 @@ class ArimaGarchStrategy(Strategy):
         self.risk_window = kwargs.get("hmm_window", 50)
         self.risk_models = build_hmm_models(self.symbol_list, **kwargs)
         self.arima_models = self._build_arch_models(**kwargs)
-        
-        self.long_market = {s : False for s in self.symbol_list}
-        self.short_market = {s : False for s in self.symbol_list}
+
+        self.long_market = {s: False for s in self.symbol_list}
+        self.short_market = {s: False for s in self.symbol_list}
 
     def _build_arch_models(self, **kwargs) -> Dict[str, ArimaGarchModel]:
         arch_models = {symbol: None for symbol in self.symbol_list}
@@ -263,11 +264,11 @@ class ArimaGarchStrategy(Strategy):
                 data = rates.get_rates_from_pos()
                 assert data is not None, f"No data for {symbol}"
             except AssertionError:
-                data =  yf.download(symbol, start=kwargs.get('yf_start'))
+                data = yf.download(symbol, start=kwargs.get('yf_start'))
             arch = ArimaGarchModel(symbol, data, k=self.arima_window)
             arch_models[symbol] = arch
         return arch_models
-    
+
     def get_backtest_data(self):
         symbol_data = {symbol: None for symbol in self.symbol_list}
         for symbol in self.symbol_list:
@@ -335,12 +336,13 @@ class ArimaGarchStrategy(Strategy):
         for symbol in self.symbol_list:
             arch_data = Rates(symbol, self.tf, 0, self.arima_window)
             rates = arch_data.get_rates_from_pos()
-            arch_returns = self.arima_models[symbol].load_and_prepare_data(rates)
+            arch_returns = self.arima_models[symbol].load_and_prepare_data(
+                rates)
             window_data = arch_returns['diff_log_return'].iloc[-self.arima_window:]
             hmm_returns = arch_data.returns.values[-self.risk_window:]
             symbol_data[symbol] = (window_data, hmm_returns)
         return symbol_data
-    
+
     def create_live_signals(self):
         signals = {symbol: None for symbol in self.symbol_list}
         data = self.get_live_data()
@@ -348,8 +350,10 @@ class ArimaGarchStrategy(Strategy):
             symbol_data = data[symbol]
             if symbol_data is not None:
                 window_data, hmm_returns = symbol_data
-                prediction = self.arima_models[symbol].get_prediction(window_data)
-                regime = self.risk_models[symbol].which_trade_allowed(hmm_returns)
+                prediction = self.arima_models[symbol].get_prediction(
+                    window_data)
+                regime = self.risk_models[symbol].which_trade_allowed(
+                    hmm_returns)
                 if regime == "LONG":
                     if prediction > 0:
                         signals[symbol] = "LONG"
@@ -357,7 +361,7 @@ class ArimaGarchStrategy(Strategy):
                     if prediction < 0:
                         signals[symbol] = "SHORT"
         return signals
-    
+
     def calculate_signals(self, event=None):
         if self.mode == 'backtest' and event is not None:
             if event.type == 'MARKET':
@@ -369,7 +373,7 @@ class ArimaGarchStrategy(Strategy):
             return self.create_live_signals()
 
 
-class KalmanFilterStrategy(Strategy):   
+class KalmanFilterStrategy(Strategy):
     """
     The `KalmanFilterStrategy` class implements a backtesting framework for a 
     [pairs trading](https://en.wikipedia.org/wiki/Pairs_trade) strategy using 
@@ -378,12 +382,12 @@ class KalmanFilterStrategy(Strategy):
     including initialization parameters, main functions, and an example of how to run a backtest. 
     """
 
-    def __init__(self, 
-                 bars: DataHandler = None, 
+    def __init__(self,
+                 bars: DataHandler = None,
                  events: Queue = None,
                  symbol_list: List[str] = None,
                  mode: Literal['backtest', 'live'] = 'backtest',
-                **kwargs):
+                 **kwargs):
         """
         Args:
             `bars`: `DataHandler` for market data handling.
@@ -424,7 +428,7 @@ class KalmanFilterStrategy(Strategy):
         if self.hmm_tiker is None:
             raise ValueError(
                 "You need to provide a ticker used by the HMM for risk management")
-        
+
     def calculate_btxy(self, etqt, regime, dt):
         # Make sure there is no position open
         if etqt is None:
@@ -499,7 +503,7 @@ class KalmanFilterStrategy(Strategy):
             signals[self.tickers[0]] = x_signal
             signals[self.tickers[1]] = y_signal
         return signals
-    
+
     def calculate_backtest_signals(self):
         p0, p1 = self.tickers[0], self.tickers[1]
         dt = self.bars.get_latest_bar_datetime(p0)
@@ -543,7 +547,7 @@ class KalmanFilterStrategy(Strategy):
                 self.calculate_backtest_signals()
         elif self.mode == 'live':
             return self.calculate_live_signals()
-        
+
 
 class StockIndexSTBOTrading(Strategy):
     """
@@ -554,12 +558,13 @@ class StockIndexSTBOTrading(Strategy):
     to recover. It operates in two modes: backtest and live, and it is particularly 
     tailored to index trading.
     """
-    def __init__(self, 
-                 bars: DataHandler = None, 
+
+    def __init__(self,
+                 bars: DataHandler = None,
                  events: Queue = None,
                  symbol_list: List[str] = None,
                  mode: Literal['backtest', 'live'] = 'backtest',
-                **kwargs):
+                 **kwargs):
         """
         Args:
             `bars`: `DataHandler` for market data handling.
@@ -599,7 +604,7 @@ class StockIndexSTBOTrading(Strategy):
         self.last_price = {index: None for index in symbols}
         self.heightest_price = {index: None for index in symbols}
         self.lowerst_price = {index: None for index in symbols}
-        
+
         if self.mode == 'backtest':
             self.qty = get_quantities(quantities, symbols)
             self.num_buys = {index: 0 for index in symbols}
@@ -644,7 +649,7 @@ class StockIndexSTBOTrading(Strategy):
                             current_price, avg_price) >= (self.expeted_return[index]):
                         signals[index] = 'EXIT'
                 self.logger.info(
-                    f"SYMBOL={index} - Hp={self.heightest_price[index]} - " 
+                    f"SYMBOL={index} - Hp={self.heightest_price[index]} - "
                     f"Lp={self.lowerst_price[index]} - Cp={current_price} - %chg={round(down_change, 2)}"
                 )
         return signals
@@ -672,8 +677,8 @@ class StockIndexSTBOTrading(Strategy):
                 current_price, self.heightest_price[index])
 
             if (down_change <= - (self.expeted_return[index]/self.rr)
-                and self.num_buys[index] <= self.max_trades[index]):
-                signal = SignalEvent(100, index, dt, 'LONG', 
+                    and self.num_buys[index] <= self.max_trades[index]):
+                signal = SignalEvent(100, index, dt, 'LONG',
                                      quantity=self.qty[index], price=current_price)
                 self.events.put(signal)
                 self.num_buys[index] += 1
@@ -685,7 +690,8 @@ class StockIndexSTBOTrading(Strategy):
                 qty = self.qty[index] * self.num_buys[index]
                 if self._calculate_pct_change(
                         current_price, av_price) >= (self.expeted_return[index]):
-                    signal = SignalEvent(100, index, dt, 'EXIT', quantity=qty, price=current_price)
+                    signal = SignalEvent(
+                        100, index, dt, 'EXIT', quantity=qty, price=current_price)
                     self.events.put(signal)
                     self.num_buys[index] = 0
                     self.buy_prices[index] = []
@@ -709,11 +715,12 @@ def _run_backtest(
     engine = BacktestEngine(
         symbol_list, capital, 0.0, datetime.strptime(
             kwargs['yf_start'], "%Y-%m-%d"),
-        kwargs.get("data_handler", YFDataHandler), 
-        kwargs.get("exc_handler", SimExecutionHandler), 
+        kwargs.get("data_handler", YFDataHandler),
+        kwargs.get("exc_handler", SimExecutionHandler),
         kwargs.pop('backtester_class'), **kwargs
     )
     engine.simulate_trading()
+
 
 def _run_arch_backtest(
         capital: float = 100000.0,
@@ -729,6 +736,7 @@ def _run_arch_backtest(
         "data_handler": YFDataHandler,
     }
     _run_backtest("ARIMA+GARCH & HMM", capital, ["^GSPC"], kwargs)
+
 
 def _run_kf_backtest(
     capital: float = 100000.0,
@@ -748,23 +756,25 @@ def _run_kf_backtest(
     }
     _run_backtest("Kalman Filter & HMM", capital, symbol_list, kwargs)
 
+
 def _run_sma_backtest(
     capital: float = 100000.0,
     quantity: int = 1
-):  
-    spx_data = yf.download("^GSPC",start="1990-01-01", end="2009-12-31")
+):
+    spx_data = yf.download("^GSPC", start="1990-01-01", end="2009-12-31")
     kwargs = {
         "quantities": quantity,
         "hmm_end":  "2009-12-31",
         "yf_start": "2010-01-04",
         "hmm_data": spx_data,
-        "mt5_start": datetime(2010,1,1),
-        "mt5_end": datetime(2023,1,1),
+        "mt5_start": datetime(2010, 1, 1),
+        "mt5_end": datetime(2023, 1, 1),
         "backtester_class": SMAStrategy,
         "data_handler": MT5DataHandler,
         "exc_handler": MT5ExecutionHandler
     }
     _run_backtest("SMA & HMM", capital, ["[SP500]"], kwargs)
+
 
 def _run_sistbo_backtest(
     capital: float = 100000.0,
@@ -789,7 +799,9 @@ def _run_sistbo_backtest(
         "data_handler": MT5DataHandler,
         "exc_handler": MT5ExecutionHandler
     }
-    _run_backtest("Stock Index Short Term Buy Only ", capital, symbol_list, kwargs)
+    _run_backtest("Stock Index Short Term Buy Only ",
+                  capital, symbol_list, kwargs)
+
 
 _BACKTESTS = {
     'sma': _run_sma_backtest,
@@ -798,8 +810,9 @@ _BACKTESTS = {
     'sistbo': _run_sistbo_backtest
 }
 
+
 def test_strategy(strategy: Literal['sma', 'klf', 'arch', 'sistbo'] = 'sma',
-                quantity: Optional[int] = 100):
+                  quantity: Optional[int] = 100):
     """
     Executes a backtest of the specified strategy
 

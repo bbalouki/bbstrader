@@ -1,13 +1,12 @@
 import logging
-from typing import List
 from pathlib import Path
-from datetime import datetime
-
+from typing import List
 
 ADMIRAL_PATH = "C:\\Program Files\\Admirals Group MT5 Terminal\\terminal64.exe"
-FTMO_PATH    = "C:\\Program Files\\FTMO MetaTrader 5\\terminal64.exe"
+FTMO_PATH = "C:\\Program Files\\FTMO MetaTrader 5\\terminal64.exe"
 
-def get_config_dir(name: str=".bbstrader") -> Path:
+
+def get_config_dir(name: str = ".bbstrader") -> Path:
     """
     Get the path to the configuration directory.
 
@@ -21,6 +20,7 @@ def get_config_dir(name: str=".bbstrader") -> Path:
     if not home_dir.exists():
         home_dir.mkdir()
     return home_dir
+
 
 BBSTRADER_DIR = get_config_dir()
 
@@ -47,7 +47,7 @@ class LogLevelFilter(logging.Filter):
             True if the record's level is in the allowed levels, False otherwise.
         """
         return record.levelno in self.levels
-    
+
 
 class CustomFormatter(logging.Formatter):
     def formatTime(self, record, datefmt=None):
@@ -61,7 +61,7 @@ class CustomLogger(logging.Logger):
     def __init__(self, name, level=logging.NOTSET):
         super().__init__(name, level)
 
-    def _log(self, level, msg, args, exc_info=None, 
+    def _log(self, level, msg, args, exc_info=None,
              extra=None, stack_info=False, stacklevel=1, custom_time=None):
         if extra is None:
             extra = {}
@@ -77,13 +77,15 @@ class CustomLogger(logging.Logger):
         self._log(logging.DEBUG, msg, args, custom_time=custom_time, **kwargs)
 
     def warning(self, msg, *args, custom_time=None, **kwargs):
-        self._log(logging.WARNING, msg, args, custom_time=custom_time, **kwargs)
+        self._log(logging.WARNING, msg, args,
+                  custom_time=custom_time, **kwargs)
 
     def error(self, msg, *args, custom_time=None, **kwargs):
         self._log(logging.ERROR, msg, args, custom_time=custom_time, **kwargs)
 
     def critical(self, msg, *args, custom_time=None, **kwargs):
-        self._log(logging.CRITICAL, msg, args, custom_time=custom_time, **kwargs)
+        self._log(logging.CRITICAL, msg, args,
+                  custom_time=custom_time, **kwargs)
 
 
 def config_logger(log_file: str, console_log=True):

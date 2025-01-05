@@ -1,22 +1,21 @@
-import pprint
 import queue
 import time
-import yfinance as yf
-from queue import Queue
 from datetime import datetime
-from bbstrader.btengine.data import *
-from bbstrader.btengine.execution import *
-from bbstrader.btengine.portfolio import Portfolio
-from bbstrader.btengine.event import SignalEvent
-from bbstrader.btengine.strategy import Strategy
-from typing import Literal, Optional, List
+from typing import List, Literal, Optional
+
 from tabulate import tabulate
+
+from bbstrader.btengine.data import DataHandler
+from bbstrader.btengine.execution import ExecutionHandler, SimExecutionHandler
+from bbstrader.btengine.portfolio import Portfolio
+from bbstrader.btengine.strategy import Strategy
 
 __all__ = [
     "Backtest",
     "BacktestEngine",
     "run_backtest"
 ]
+
 
 class Backtest(object):
     """
@@ -60,6 +59,7 @@ class Backtest(object):
 
 class BacktestEngine(Backtest):
     __doc__ = Backtest.__doc__
+
     def __init__(
         self,
         symbol_list: List[str],
@@ -141,7 +141,7 @@ class BacktestEngine(Backtest):
         while True:
             i += 1
             value = self.portfolio.all_holdings[-1]['Total']
-            if self.data_handler.continue_backtest == True:
+            if self.data_handler.continue_backtest is True:
                 # Update the market bars
                 self.data_handler.update_bars()
                 self.strategy.check_pending_orders()
@@ -152,7 +152,8 @@ class BacktestEngine(Backtest):
                 self.strategy.cash = value
             else:
                 print("\n[======= BACKTEST COMPLETED =======]")
-                print(f"END DATE: {self.data_handler.get_latest_bar_datetime(self.symbol_list[0])}")
+                print(
+                    f"END DATE: {self.data_handler.get_latest_bar_datetime(self.symbol_list[0])}")
                 print(f"TOTAL BARS: {i} ")
                 print(f"PORFOLIO VALUE: {round(value, 2)}")
                 break
@@ -198,7 +199,8 @@ class BacktestEngine(Backtest):
         stat2['Orders'] = self.orders
         stat2['Fills'] = self.fills
         stats.extend(stat2.items())
-        tab_stats = tabulate(stats, headers=["Metric", "Value"], tablefmt="outline")
+        tab_stats = tabulate(
+            stats, headers=["Metric", "Value"], tablefmt="outline")
         print(tab_stats, "\n")
         if self.stats_file:
             with open(self.stats_file, 'a') as f:
@@ -211,16 +213,16 @@ class BacktestEngine(Backtest):
             print("\n[======= PORTFOLIO SUMMARY =======]")
             print(
                 tabulate(
-                    self.portfolio.equity_curve.tail(10), 
-                    headers="keys", 
-                    tablefmt="outline"), 
-                    "\n"
-                )
-    
+                    self.portfolio.equity_curve.tail(10),
+                    headers="keys",
+                    tablefmt="outline"),
+                "\n"
+            )
+
     def simulate_trading(self):
         """
         Simulates the backtest and outputs portfolio performance.
-        
+
         Returns:
             pd.DataFrame: The portfilio values over time (capital, equity, returns etc.)
         """
@@ -244,9 +246,9 @@ def run_backtest(
 
     Args:
         symbol_list (List[str]): List of symbol strings for the assets to be backtested.
-        
+
         start_date (datetime): Start date of the backtest.
-        
+
         data_handler (DataHandler): An instance of the `DataHandler` class, responsible for managing 
             and processing market data. Available options include `CSVDataHandler`, 
             `MT5DataHandler`, and `YFDataHandler`. Ensure that the `DataHandler` 
@@ -275,7 +277,7 @@ def run_backtest(
 
         **kwargs: Additional parameters passed to the `Backtest` instance, which may include strategy-specific,
             data handler, portfolio, or execution handler options.
-        
+
     Returns:
         pd.DataFrame: The portfolio values over time (capital, equities, returns etc.).
 
@@ -326,10 +328,12 @@ def run_backtest(
     return portfolio
 
 
-class CerebroEngine:...
+class CerebroEngine:
+    ...
 
 
-class ZiplineEngine:...
+class ZiplineEngine:
+    ...
 
 
 def run_backtest_with(engine: Literal["bbstrader", "cerebro", "zipline"], **kwargs):
@@ -347,8 +351,8 @@ def run_backtest_with(engine: Literal["bbstrader", "cerebro", "zipline"], **kwar
             **kwargs
         )
     elif engine == "cerebro":
-        #TODO: 
+        # TODO:
         pass
     elif engine == "zipline":
-        #TODO: 
+        # TODO:
         pass

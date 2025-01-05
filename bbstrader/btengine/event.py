@@ -135,7 +135,8 @@ class OrderEvent(Event):
             """
             print(
                 "Order: Symbol=%s, Type=%s, Quantity=%s, Direction=%s, Price=%s" %
-                (self.symbol, self.order_type, self.quantity, self.direction, self.price)
+                (self.symbol, self.order_type,
+                 self.quantity, self.direction, self.price)
             )
 
 
