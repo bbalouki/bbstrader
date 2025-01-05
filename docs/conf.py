@@ -20,7 +20,7 @@ class Mock(MagicMock):
         return MagicMock()
 
 # List the modules you want to mock
-MOCK_MODULES = ['MetaTrader5', 'ta-lib']
+MOCK_MODULES = ['MetaTrader5', 'talib']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 project = 'BBSTrader'
