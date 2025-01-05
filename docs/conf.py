@@ -13,18 +13,17 @@ from unittest.mock import MagicMock
 os.system('pip install ..')
 sys.path.insert(0, os.path.abspath('../bbstrader'))
 
-# Mock the MetaTrader5 module
 class Mock(MagicMock):
     @classmethod
     def __getattr__(cls, name):
         return MagicMock()
 
-# List the modules you want to mock
+# List the mock modules to avoid import errors
 MOCK_MODULES = ['MetaTrader5', 'talib']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 project = 'BBSTrader'
-copyright = '2024, Bertin Balouki SIMYELI'
+copyright = '2023 - 2025, Bertin Balouki SIMYELI'
 author = 'Bertin Balouki SIMYELI'
 release = '0.2.0'
 

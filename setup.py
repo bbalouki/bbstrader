@@ -49,7 +49,7 @@ INLCUDE = [
     "bbstrader.models",
     "bbstrader.trading"
 ]
-EXCLUDE = ["config.py", "tests", "docs"]
+EXCLUDE = ["tests", "docs"]
 
 # Setting up
 setup(
