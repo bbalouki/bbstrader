@@ -1,8 +1,8 @@
-from datetime import datetime
-from queue import Queue
 from abc import ABCMeta, abstractmethod
-from bbstrader.btengine.event import FillEvent, OrderEvent
+from queue import Queue
+
 from bbstrader.btengine.data import DataHandler
+from bbstrader.btengine.event import FillEvent, OrderEvent
 from bbstrader.metatrader.account import Account
 
 __all__ = [
@@ -10,6 +10,7 @@ __all__ = [
     "SimExecutionHandler",
     "MT5ExecutionHandler"
 ]
+
 
 class ExecutionHandler(metaclass=ABCMeta):
     """
@@ -84,7 +85,7 @@ class SimExecutionHandler(ExecutionHandler):
             self.events.put(fill_event)
             self.logger.info(
                 f"{event.direction} ORDER FILLED: SYMBOL={event.symbol}, "
-                f"QUANTITY={event.quantity}, PRICE @{event.price} EXCHANGE={fill_event.exchange}", 
+                f"QUANTITY={event.quantity}, PRICE @{event.price} EXCHANGE={fill_event.exchange}",
                 custom_time=fill_event.timeindex
             )
 
@@ -93,16 +94,16 @@ class MT5ExecutionHandler(ExecutionHandler):
     """
     The main role of `MT5ExecutionHandler` class is to estimate the execution fees 
     for different asset classes on the MT5 terminal. 
-    
+
     Generally we have four types of fees when we execute trades using the MT5 terminal 
     (commissions, swap, spread and other fees). But most of these fees depend on the specifications 
     of each instrument and the duration of the transaction for the swap for example. 
-    
+
     Calculating the exact fees for each instrument would be a bit complex because our Backtest engine 
     and the Portfolio class do not take into account the duration of each trade to apply the appropriate 
     rate for the swap for example. So we have to use only the model of calculating the commissions 
     for each asset class and each instrument.
-    
+
     The second thing that must be taken into account on MT5 is the type of account offered by the broker. 
     Brokers have different account categories each with its specifications for each asset class and each instrument. 
     Again considering all these conditions would make our class very complex. So we took the `Raw Spread` 
@@ -113,6 +114,7 @@ class MT5ExecutionHandler(ExecutionHandler):
     NOTE:
         This class only works with `bbstrader.metatrader.data.MT5DataHandler` class.
     """
+
     def __init__(self, events: Queue, data: DataHandler, **kwargs):
         """
         Initialises the handler, setting the event queues up internally.
@@ -134,8 +136,8 @@ class MT5ExecutionHandler(ExecutionHandler):
         if contract_size == 1:
             lot = quantity
         if symbol_type in [
-            'COMD', 'FUT', 'CRYPTO'] and contract_size > 1:
-            lot = quantity  / contract_size
+                'COMD', 'FUT', 'CRYPTO'] and contract_size > 1:
+            lot = quantity / contract_size
         if symbol_type == 'FX':
             lot = (quantity*price / contract_size)
         return self._check_lot(symbol, lot)
@@ -147,7 +149,7 @@ class MT5ExecutionHandler(ExecutionHandler):
         elif lot > symbol_info.volume_max:
             return symbol_info.volume_max
         return round(lot, 2)
-    
+
     def _estimate_total_fees(self, symbol, lot, qty, price):
         symbol_type = self.__account.get_symbol_type(symbol)
         if symbol_type in ['STK', 'ETF']:
@@ -164,16 +166,16 @@ class MT5ExecutionHandler(ExecutionHandler):
             return self._estimate_crypto_commission()
         else:
             return 0.0
-            
+
     def _estimate_stock_commission(self, symbol, qty, price):
         # https://admiralmarkets.com/start-trading/contract-specifications?regulator=jsc
         min_com = 1.0
         min_aud = 8.0
         min_dkk = 30.0
         min_nok = min_sek = 10.0
-        us_com = 0.02 # per chare
-        ger_fr_uk_cm = 0.001 # percent
-        eu_asia_cm = 0.0015 # percent
+        us_com = 0.02  # per chare
+        ger_fr_uk_cm = 0.001  # percent
+        eu_asia_cm = 0.0015  # percent
         if (
             symbol in self.__account.get_stocks_from_country('USA')
             or self.__account.get_symbol_type(symbol) == 'ETF'
@@ -214,7 +216,7 @@ class MT5ExecutionHandler(ExecutionHandler):
 
     def _estimate_crypto_commission(self):
         return 0.0
-    
+
     def execute_order(self, event: OrderEvent):
         """
         Executes an Order event by converting it into a Fill event.

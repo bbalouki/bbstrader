@@ -1,19 +1,21 @@
-import pandas as pd
-import numpy as np
-import yfinance as yf
 from datetime import datetime
+from typing import Dict, List
+
+import pandas as pd
+import yfinance as yf
+
+from bbstrader.btengine.data import EODHDataHandler, FMPDataHandler
 from bbstrader.metatrader.rates import download_historical_data
-from bbstrader.btengine.data import FMPDataHandler, EODHDataHandler
-from typing import List, Dict, Literal, Union
 from bbstrader.tseries import (
     find_cointegrated_pairs,
-    select_candidate_pairs,
     select_assets,
+    select_candidate_pairs,
 )
 
 __all__ = [
     "search_coint_candidate_pairs",
 ]
+
 
 def search_coint_candidate_pairs(
         securities: pd.DataFrame | List[str] = None,
@@ -193,13 +195,14 @@ def search_coint_candidate_pairs(
             )
         top_pairs = []
         p_start = pd.Timestamp(end) - pd.DateOffset(years=1)
-        periods = pd.date_range(start=p_start, end=pd.Timestamp(end), freq='BQE')
+        periods = pd.date_range(
+            start=p_start, end=pd.Timestamp(end), freq='BQE')
         npairs = max(round(npairs/2), 1)
         for period in periods:
             s_start = period - pd.DateOffset(years=2) + pd.DateOffset(days=1)
             print(f"Searching for pairs in period: {s_start} - {period}")
             pairs = find_cointegrated_pairs(
-                securities, candidates, n=npairs, start=str(s_start), stop=str(period), coint=True)      
+                securities, candidates, n=npairs, start=str(s_start), stop=str(period), coint=True)
             pairs['period'] = period
             top_pairs.append(pairs)
         top_pairs = pd.concat(top_pairs)
@@ -207,7 +210,7 @@ def search_coint_candidate_pairs(
             raise ValueError(
                 "No pairs found in the specified period."
                 "Please adjust the date range or increase the number of pairs."
-                )
+            )
         return top_pairs.head(npairs*2)
 
     def _process_asset_data(securities, candidates, universe, rolling_window):
@@ -217,11 +220,11 @@ def search_coint_candidate_pairs(
         candidates = select_assets(
             candidates, n=universe, rolling_window=rolling_window)
         return securities, candidates
-    
+
     if (securities is not None and candidates is not None
             and isinstance(securities, pd.DataFrame)
             and isinstance(candidates, pd.DataFrame)
-            ):
+        ):
         if isinstance(securities.index, pd.MultiIndex) and isinstance(candidates.index, pd.MultiIndex):
             securities, candidates = _process_asset_data(
                 securities, candidates, universe, rolling_window)
@@ -259,9 +262,11 @@ def search_coint_candidate_pairs(
         securities_data, candidates_data = _process_asset_data(
             securities_data, candidates_data, universe, rolling_window)
         if period_search:
-            top_pairs = _period_search(start, end, securities_data, candidates_data).head(npairs)
+            top_pairs = _period_search(
+                start, end, securities_data, candidates_data).head(npairs)
         else:
-            top_pairs = find_cointegrated_pairs(securities_data, candidates_data, n=npairs, coint=True)
+            top_pairs = find_cointegrated_pairs(
+                securities_data, candidates_data, n=npairs, coint=True)
         if select:
             return select_candidate_pairs(top_pairs, period=True if period_search else False)
         else:

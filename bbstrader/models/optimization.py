@@ -1,17 +1,16 @@
-import numpy as np
-import pandas as pd
-from pypfopt import risk_models
-from pypfopt import expected_returns
-from pypfopt.efficient_frontier import EfficientFrontier
-from pypfopt.hierarchical_portfolio import HRPOpt
 import warnings
 
+from pypfopt import expected_returns, risk_models
+from pypfopt.efficient_frontier import EfficientFrontier
+from pypfopt.hierarchical_portfolio import HRPOpt
+
 __all__ = [
-    'markowitz_weights', 
-    'hierarchical_risk_parity', 
-    'equal_weighted', 
+    'markowitz_weights',
+    'hierarchical_risk_parity',
+    'equal_weighted',
     'optimized_weights'
 ]
+
 
 def markowitz_weights(prices=None, rfr=0.0, freq=252):
     """
@@ -36,7 +35,7 @@ def markowitz_weights(prices=None, rfr=0.0, freq=252):
     is printed for each solver that fails.
 
     This function is useful for portfolio with a small number of assets, as it may not scale well for large portfolios.
-    
+
     Raises
     ------
     Exception
@@ -47,15 +46,16 @@ def markowitz_weights(prices=None, rfr=0.0, freq=252):
 
     # Try different solvers to maximize Sharpe ratio
     for solver in ['SCS', 'ECOS', 'OSQP']:
-        ef = EfficientFrontier(expected_returns=returns, 
-                               cov_matrix=cov, 
+        ef = EfficientFrontier(expected_returns=returns,
+                               cov_matrix=cov,
                                weight_bounds=(0, 1),
                                solver=solver)
         try:
-            weights = ef.max_sharpe(risk_free_rate=rfr)
+            ef.max_sharpe(risk_free_rate=rfr)
             return ef.clean_weights()
         except Exception as e:
             print(f"Solver {solver} failed with error: {e}")
+
 
 def hierarchical_risk_parity(prices=None, returns=None, freq=252):
     """
@@ -97,6 +97,7 @@ def hierarchical_risk_parity(prices=None, returns=None, freq=252):
     hrp = HRPOpt(returns=returns.iloc[-freq:])
     return hrp.optimize()
 
+
 def equal_weighted(prices=None, returns=None, round_digits=5):
     """
     Generates an equal-weighted portfolio by assigning an equal proportion to each asset.
@@ -135,6 +136,7 @@ def equal_weighted(prices=None, returns=None, round_digits=5):
         n = len(returns.columns)
         columns = returns.columns
     return {col: round(1/n, round_digits) for col in columns}
+
 
 def optimized_weights(prices=None, returns=None, rfr=0.0, freq=252, method='equal'):
     """

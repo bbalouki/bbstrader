@@ -1,26 +1,21 @@
-import pandas as pd
-from queue import Queue
-from pathlib import Path
 from datetime import datetime
-from bbstrader.btengine.event import (
-    OrderEvent, 
-    FillEvent, 
-    MarketEvent, 
-    SignalEvent
-)
-from bbstrader.btengine.data import DataHandler
-from bbstrader.btengine.performance import (
-    create_drawdowns, 
-    create_sharpe_ratio, 
-    create_sortino_ratio, 
-    plot_performance, 
-    show_qs_stats, 
-    plot_returns_and_dd, 
-    plot_monthly_yearly_returns
-)
-from bbstrader.config import BBSTRADER_DIR
+from pathlib import Path
+from queue import Queue
+
+import pandas as pd
 import quantstats as qs
 
+from bbstrader.btengine.data import DataHandler
+from bbstrader.btengine.event import FillEvent, MarketEvent, OrderEvent, SignalEvent
+from bbstrader.btengine.performance import (
+    create_drawdowns,
+    create_sharpe_ratio,
+    create_sortino_ratio,
+    plot_monthly_yearly_returns,
+    plot_performance,
+    plot_returns_and_dd,
+    show_qs_stats,
+)
 
 __all__ = [
     'Portfolio',
@@ -175,7 +170,7 @@ class Portfolio(object):
         d['Commission'] = 0.0
         d['Total'] = self.initial_capital
         return d
-    
+
     def _get_price(self, symbol: str) -> float:
         try:
             price = self.bars.get_latest_bar_value(
@@ -190,7 +185,7 @@ class Portfolio(object):
                 return price
             except AttributeError:
                 raise AttributeError(
-                    f"Bars object must have 'adj_close' or 'close' prices"
+                    "Bars object must have 'adj_close' or 'close' prices"
                 )
 
     def update_timeindex(self, event: MarketEvent):
@@ -285,7 +280,7 @@ class Portfolio(object):
 
         Args:
             signal (SignalEvent): The tuple containing Signal information.
-        
+
         Returns:
             OrderEvent: The OrderEvent to be executed.
         """
@@ -305,18 +300,21 @@ class Portfolio(object):
         else:
             order_type = direction
 
-        if  direction == 'LONG' and new_quantity > 0: 
-            order = OrderEvent(symbol, order_type, new_quantity, 'BUY', price, direction)
+        if direction == 'LONG' and new_quantity > 0:
+            order = OrderEvent(symbol, order_type,
+                               new_quantity, 'BUY', price, direction)
         if direction == 'SHORT' and new_quantity > 0:
-            order = OrderEvent(symbol, order_type, new_quantity, 'SELL', price, direction)
+            order = OrderEvent(symbol, order_type,
+                               new_quantity, 'SELL', price, direction)
 
         if direction == 'EXIT' and cur_quantity > 0:
-            order = OrderEvent(symbol, order_type, abs(cur_quantity), 'SELL', price, direction)
+            order = OrderEvent(symbol, order_type, abs(
+                cur_quantity), 'SELL', price, direction)
         if direction == 'EXIT' and cur_quantity < 0:
-            order = OrderEvent(symbol, order_type, abs(cur_quantity), 'BUY', price, direction)
+            order = OrderEvent(symbol, order_type, abs(
+                cur_quantity), 'BUY', price, direction)
 
         return order
-
 
     def update_signal(self, event: SignalEvent):
         """
@@ -369,19 +367,20 @@ class Portfolio(object):
         else:
             results_dir = Path('.backtests') / strategy_name
         results_dir.mkdir(parents=True, exist_ok=True)
-        
-        csv_file =  f"{strategy_name}_{now}_equities.csv"
+
+        csv_file = f"{strategy_name}_{now}_equities.csv"
         png_file = f'{strategy_name}_{now}_returns_heatmap.png'
         html_file = f"{strategy_name}_{now}_report.html"
         self.equity_curve.to_csv(results_dir / csv_file)
-        
+
         if self.print_stats:
             plot_performance(self.equity_curve, self.strategy_name)
-            plot_returns_and_dd(self.equity_curve, self.benchmark, self.strategy_name)
-            qs.plots.monthly_heatmap(returns, savefig=f"{results_dir}/{png_file}")
+            plot_returns_and_dd(self.equity_curve,
+                                self.benchmark, self.strategy_name)
+            qs.plots.monthly_heatmap(
+                returns, savefig=f"{results_dir}/{png_file}")
             plot_monthly_yearly_returns(self.equity_curve, self.strategy_name)
-            show_qs_stats(returns, self.benchmark, self.strategy_name, 
-                        save_dir=f"{results_dir}/{html_file}")
+            show_qs_stats(returns, self.benchmark, self.strategy_name,
+                          save_dir=f"{results_dir}/{html_file}")
 
         return stats
-

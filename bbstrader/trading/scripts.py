@@ -1,9 +1,11 @@
 import asyncio
-from telegram import Bot
+
 from notifypy import Notify
+from telegram import Bot
 from telegram.error import TelegramError
 
 __all__ = ['send_telegram_message', 'send_notification', 'send_message']
+
 
 async def send_telegram_message(token, chat_id, text=''):
     """
@@ -23,6 +25,7 @@ async def send_telegram_message(token, chat_id, text=''):
     except TelegramError as e:
         print(f"Error sending message: {e}")
 
+
 def send_notification(title, message=''):
     """
     Send a desktop notification
@@ -35,9 +38,10 @@ def send_notification(title, message=''):
     notification.title = title
     notification.message = message
     notification.send()
-    
-def send_message(title='SIGNAL', message='New signal', 
-                notify_me=False, telegram=False, token=None, chat_id=None):
+
+
+def send_message(title='SIGNAL', message='New signal',
+                 notify_me=False, telegram=False, token=None, chat_id=None):
     """
     Send a message to the user
 

@@ -1,25 +1,22 @@
+import string
 from abc import ABCMeta, abstractmethod
-import pytz
-import pandas as pd
-import numpy as np
-from queue import Queue
 from datetime import datetime
-from bbstrader.config import config_logger
-from bbstrader.btengine.event import SignalEvent
-from bbstrader.btengine.event import FillEvent
+from queue import Queue
+from typing import Dict, List, Literal, Union
+
+import numpy as np
+import pandas as pd
+import pytz
+
 from bbstrader.btengine.data import DataHandler
-from bbstrader.metatrader.account import Account
+from bbstrader.btengine.event import FillEvent, SignalEvent
+from bbstrader.metatrader.account import Account, AdmiralMarktsGroup
 from bbstrader.metatrader.rates import Rates
-from typing import (
-    Dict,
-    Union,
-    Any,
-    List,
-    Literal
-)
 from bbstrader.models.optimization import optimized_weights
+from bbstrader.core.utils import TradeSignal
 
 __all__ = ['Strategy', 'MT5Strategy']
+
 
 class Strategy(metaclass=ABCMeta):
     """
@@ -44,13 +41,15 @@ class Strategy(metaclass=ABCMeta):
     """
 
     @abstractmethod
-    def calculate_signals(self, *args, **kwargs) -> Any:
+    def calculate_signals(self, *args, **kwargs) -> List[TradeSignal]:
         raise NotImplementedError(
             "Should implement calculate_signals()"
         )
+
     def check_pending_orders(self, *args, **kwargs): ...
     def get_update_from_portfolio(self, *args, **kwargs): ...
     def update_trades_from_fill(self, *args, **kwargs): ...
+    def perform_period_end_checks(self, *args, **kwargs): ...
 
 
 class MT5Strategy(Strategy):
@@ -61,8 +60,8 @@ class MT5Strategy(Strategy):
     for live trading and `MT5BacktestEngine` objects for backtesting.
     """
 
-    def __init__(self, events: Queue=None, symbol_list: List[str]=None,
-                 bars: DataHandler=None, mode: str=None, **kwargs):
+    def __init__(self, events: Queue = None, symbol_list: List[str] = None,
+                 bars: DataHandler = None, mode: str = None, **kwargs):
         """
         Initialize the `MT5Strategy` object.
 
@@ -82,16 +81,18 @@ class MT5Strategy(Strategy):
         self.mode = mode
         self._porfolio_value = None
         self.risk_budget = self._check_risk_budget(**kwargs)
-        self.max_trades = kwargs.get("max_trades", {s: 1 for s in self.symbols})
+        self.max_trades = kwargs.get(
+            "max_trades", {s: 1 for s in self.symbols})
         self.tf = kwargs.get("time_frame", 'D1')
         self.logger = kwargs.get("logger")
-        self._initialize_portfolio()
+        if self.mode == 'backtest':
+            self._initialize_portfolio()
         self.kwargs = kwargs
 
     @property
     def cash(self) -> float:
         return self._porfolio_value
-    
+
     @cash.setter
     def cash(self, value):
         self._porfolio_value = value
@@ -99,28 +100,30 @@ class MT5Strategy(Strategy):
     @property
     def orders(self) -> Dict[str, Dict[str, List[SignalEvent]]]:
         return self._orders
-    
+
     @property
     def trades(self) -> Dict[str, Dict[str, int]]:
         return self._trades
 
     @property
-    def positions(self) -> Dict[str, Dict[str, int|float]]:
+    def positions(self) -> Dict[str, Dict[str, int | float]]:
         return self._positions
-    
+
     @property
     def holdings(self) -> Dict[str,  float]:
         return self._holdings
-    
+
     def _check_risk_budget(self, **kwargs):
         weights = kwargs.get('risk_weights')
         if weights is not None and isinstance(weights, dict):
             for asset in self.symbols:
                 if asset not in weights:
-                    raise ValueError(f"Risk budget for asset {asset} is missing.")
+                    raise ValueError(
+                        f"Risk budget for asset {asset} is missing.")
             total_risk = sum(weights.values())
             if not np.isclose(total_risk, 1.0):
-                raise ValueError(f'Risk budget weights must sum to 1. got {total_risk}')
+                raise ValueError(
+                    f'Risk budget weights must sum to 1. got {total_risk}')
             return weights
         elif isinstance(weights, str):
             return weights
@@ -141,7 +144,7 @@ class MT5Strategy(Strategy):
             for order in orders:
                 self._orders[symbol][order] = []
         self._holdings = {s: 0.0 for s in self.symbols}
-        
+
     def get_update_from_portfolio(self, positions, holdings):
         """
         Update the positions and holdings for the strategy from the portfolio.
@@ -164,7 +167,7 @@ class MT5Strategy(Strategy):
                     self._positions[symbol]['SHORT'] = 0
             if symbol in holdings:
                 self._holdings[symbol] = holdings[symbol]
-    
+
     def update_trades_from_fill(self, event: FillEvent):
         """
         This method updates the trades for the strategy based on the fill event.
@@ -178,34 +181,25 @@ class MT5Strategy(Strategy):
             elif event.order == 'EXIT' and event.direction == 'SELL':
                 self._trades[event.symbol]['LONG'] = 0
 
-    def calculate_signals(self, *args, **kwargs
-                          ) -> Dict[str, Union[str, dict, None]] | None:
+    def calculate_signals(self, *args, **kwargs) -> List[TradeSignal]:
         """
         Provides the mechanisms to calculate signals for the strategy.
-        This methods should return a dictionary of symbols and their respective signals.
-        The returned signals should be either string or dictionary objects.
+        This methods should return a list of signals for the strategy.
 
-        If a string is used, it should be:
-        - ``LONG`` , ``BMKT``, ``BLMT``, ``BSTP``, ``BSTPLMT`` for a long signal (market, limit, stop, stop-limit).
-        - ``SHORT``, ``SMKT``, ``SLMT``, ``SSTP``, ``SSTPLMT`` for a short signal (market, limit, stop, stop-limit).
-        - ``EXIT``, ``EXIT_LONG``, ``EXIT_LONG_STOP``, ``EXIT_LONG_LIMIT``, ``EXIT_LONG_STOP_LIMIT`` for an exit signal (long).
-        - ``EXIT_SHORT``, ``EXIT_SHORT_STOP``, ``EXIT_SHORT_LIMIT``, ``EXIT_SHORT_STOP_LIMIT`` for an exit signal (short).
-        - ``EXIT_ALL_ORDERS`` for cancelling all orders.
-        - ``EXIT_ALL_POSITIONS`` for exiting all positions.
-        - ``EXIT_PROFITABLES`` for exiting all profitable positions.
-        - ``EXIT_LOSINGS`` for exiting all losing positions.
-
-        The signals could also be ``EXIT_STOP``, ``EXIT_LIMIT``, ``EXIT_STOP_LIMIT`` for exiting a position.
-
-        If a dictionary is used, it should be:
-        for each symbol, a dictionary with the following keys
-        - ``action``: The action to take for the symbol (LONG, SHORT, EXIT, etc.)
-        - ``price``: The price at which to execute the action.
-        - ``stoplimit``: The stop-limit price for STOP-LIMIT orders.
+        Each signal must be a ``TradeSignal`` object with the following attributes:
+        - ``action``: The order to execute on the symbol (LONG, SHORT, EXIT, etc.), see `bbstrader.core.utils.TradeAction`.
+        - ``price``: The price at which to execute the action, used for pending orders.
+        - ``stoplimit``: The stop-limit price for STOP-LIMIT orders, used for pending stop limit orders.
         - ``id``: The unique identifier for the strategy or order.
+        """
+        pass
 
-        The dictionary can be use for pending orders (limit, stop, stop-limit) where the price is required
-        or for executing orders where the each order has a unique identifier.
+    def perform_period_end_checks(self, *args, **kwargs):
+        """
+        Some strategies may require additional checks at the end of the period,
+        such as closing all positions or orders or tracking the performance of the strategy etc.
+
+        This method is called at the end of the period to perform such checks.
         """
         pass
 
@@ -217,13 +211,14 @@ class MT5Strategy(Strategy):
             return None
         symbols = symbols or self.symbols
         prices = self.get_asset_values(
-            symbol_list=symbols, bars=self.data, mode=self.mode, 
+            symbol_list=symbols, bars=self.data, mode=self.mode,
             window=freq, value_type='close', array=False, tf=self.tf
         )
         prices = pd.DataFrame(prices)
         prices = prices.dropna(axis=0, how='any')
         try:
-            weights = optimized_weights(prices=prices, freq=freq, method=optimer)
+            weights = optimized_weights(
+                prices=prices, freq=freq, method=optimer)
             return {symbol: weight for symbol, weight in weights.items()}
         except Exception:
             return {symbol: 0.0 for symbol in symbols}
@@ -241,17 +236,17 @@ class MT5Strategy(Strategy):
             qty : The quantity to buy or sell for the symbol.
         """
         if (self._porfolio_value is None or weight == 0 or
-            self._porfolio_value == 0 or np.isnan(self._porfolio_value)):
+                self._porfolio_value == 0 or np.isnan(self._porfolio_value)):
             return 0
         if volume is None:
             volume = round(self._porfolio_value * weight)
         if price is None:
             price = self.data.get_latest_bar_value(symbol, 'close')
         if (price is None or not isinstance(price, (int, float, np.number))
-            or volume is None or not isinstance(volume, (int, float, np.number)) 
+            or volume is None or not isinstance(volume, (int, float, np.number))
             or np.isnan(float(price))
             or np.isnan(float(volume))
-        ):
+            ):
             if weight != 0:
                 return 1
             return 0
@@ -260,7 +255,7 @@ class MT5Strategy(Strategy):
         if maxqty is not None:
             qty = min(qty, maxqty)
         return max(round(qty, 2), 0)
-    
+
     def get_quantities(self, quantities: Union[None, dict, int]) -> dict:
         """
         Get the quantities to buy or sell for the symbols in the strategy.
@@ -275,7 +270,7 @@ class MT5Strategy(Strategy):
             return quantities
         elif isinstance(quantities, int):
             return {symbol: quantities for symbol in self.symbols}
-    
+
     def _send_order(self, id,  symbol: str, signal: str, strength: float, price: float,
                     quantity: int, dtime: datetime | pd.Timestamp):
 
@@ -294,8 +289,8 @@ class MT5Strategy(Strategy):
             self.logger.info(
                 f"{signal} ORDER EXECUTED: SYMBOL={symbol}, QUANTITY={quantity}, PRICE @{price}", custom_time=dtime)
 
-    def buy_mkt(self, id: int, symbol: str, price: float, quantity: int, 
-            strength: float=1.0, dtime: datetime | pd.Timestamp=None):
+    def buy_mkt(self, id: int, symbol: str, price: float, quantity: int,
+                strength: float = 1.0, dtime: datetime | pd.Timestamp = None):
         """
         Open a long position
 
@@ -309,7 +304,8 @@ class MT5Strategy(Strategy):
 
         See `bbstrader.btengine.event.SignalEvent` for more details on arguments.
         """
-        self._send_order(id, symbol, 'SHORT', strength,  price, quantity, dtime)
+        self._send_order(id, symbol, 'SHORT', strength,
+                         price, quantity, dtime)
 
     def close_positions(self, id, symbol, price, quantity, strength=1.0, dtime=None):
         """
@@ -375,8 +371,8 @@ class MT5Strategy(Strategy):
                             quantity=quantity, strength=strength, price=price)
         self._orders[symbol]['SLMT'].append(order)
 
-    def buy_stop_limit(self, id: int, symbol: str, price: float, stoplimit: float, 
-                       quantity: int, strength: float=1.0, dtime: datetime | pd.Timestamp = None):
+    def buy_stop_limit(self, id: int, symbol: str, price: float, stoplimit: float,
+                       quantity: int, strength: float = 1.0, dtime: datetime | pd.Timestamp = None):
         """
         Open a pending order to buy at a stop-limit price
 
@@ -416,52 +412,57 @@ class MT5Strategy(Strategy):
         """
         for symbol in self.symbols:
             dtime = self.data.get_latest_bar_datetime(symbol)
-            logmsg = lambda order, type: self.logger.info(
+
+            def logmsg(order, type): return self.logger.info(
                 f"{type} ORDER EXECUTED: SYMBOL={symbol}, QUANTITY={order.quantity}, "
                 f"PRICE @ {order.price}", custom_time=dtime)
             for order in self._orders[symbol]['BLMT'].copy():
                 if self.data.get_latest_bar_value(symbol, 'close') <= order.price:
                     self.buy_mkt(order.strategy_id, symbol,
-                             order.price, order.quantity, dtime)
+                                 order.price, order.quantity, dtime)
                     try:
                         self._orders[symbol]['BLMT'].remove(order)
                         assert order not in self._orders[symbol]['BLMT']
                         logmsg(order, 'BUY LIMIT')
                     except AssertionError:
-                        self._orders[symbol]['BLMT'] = [o for o in self._orders[symbol]['BLMT'] if o != order]
+                        self._orders[symbol]['BLMT'] = [
+                            o for o in self._orders[symbol]['BLMT'] if o != order]
                         logmsg(order, 'BUY LIMIT')
             for order in self._orders[symbol]['SLMT'].copy():
                 if self.data.get_latest_bar_value(symbol, 'close') >= order.price:
                     self.sell_mkt(order.strategy_id, symbol,
-                              order.price, order.quantity, dtime)
+                                  order.price, order.quantity, dtime)
                     try:
                         self._orders[symbol]['SLMT'].remove(order)
                         assert order not in self._orders[symbol]['SLMT']
                         logmsg(order, 'SELL LIMIT')
                     except AssertionError:
-                        self._orders[symbol]['SLMT'] = [o for o in self._orders[symbol]['SLMT'] if o != order]
+                        self._orders[symbol]['SLMT'] = [
+                            o for o in self._orders[symbol]['SLMT'] if o != order]
                         logmsg(order, 'SELL LIMIT')
             for order in self._orders[symbol]['BSTP'].copy():
                 if self.data.get_latest_bar_value(symbol, 'close') >= order.price:
                     self.buy_mkt(order.strategy_id, symbol,
-                             order.price, order.quantity, dtime)
+                                 order.price, order.quantity, dtime)
                     try:
                         self._orders[symbol]['BSTP'].remove(order)
                         assert order not in self._orders[symbol]['BSTP']
                         logmsg(order, 'BUY STOP')
                     except AssertionError:
-                        self._orders[symbol]['BSTP'] = [o for o in self._orders[symbol]['BSTP'] if o != order]
+                        self._orders[symbol]['BSTP'] = [
+                            o for o in self._orders[symbol]['BSTP'] if o != order]
                         logmsg(order, 'BUY STOP')
             for order in self._orders[symbol]['SSTP'].copy():
                 if self.data.get_latest_bar_value(symbol, 'close') <= order.price:
                     self.sell_mkt(order.strategy_id, symbol,
-                              order.price, order.quantity, dtime)
+                                  order.price, order.quantity, dtime)
                     try:
                         self._orders[symbol]['SSTP'].remove(order)
                         assert order not in self._orders[symbol]['SSTP']
                         logmsg(order, 'SELL STOP')
                     except AssertionError:
-                        self._orders[symbol]['SSTP'] = [o for o in self._orders[symbol]['SSTP'] if o != order]
+                        self._orders[symbol]['SSTP'] = [
+                            o for o in self._orders[symbol]['SSTP'] if o != order]
                         logmsg(order, 'SELL STOP')
             for order in self._orders[symbol]['BSTPLMT'].copy():
                 if self.data.get_latest_bar_value(symbol, 'close') >= order.price:
@@ -472,7 +473,8 @@ class MT5Strategy(Strategy):
                         assert order not in self._orders[symbol]['BSTPLMT']
                         logmsg(order, 'BUY STOP LIMIT')
                     except AssertionError:
-                        self._orders[symbol]['BSTPLMT'] = [o for o in self._orders[symbol]['BSTPLMT'] if o != order]
+                        self._orders[symbol]['BSTPLMT'] = [
+                            o for o in self._orders[symbol]['BSTPLMT'] if o != order]
                         logmsg(order, 'BUY STOP LIMIT')
             for order in self._orders[symbol]['SSTPLMT'].copy():
                 if self.data.get_latest_bar_value(symbol, 'close') <= order.price:
@@ -483,21 +485,23 @@ class MT5Strategy(Strategy):
                         assert order not in self._orders[symbol]['SSTPLMT']
                         logmsg(order, 'SELL STOP LIMIT')
                     except AssertionError:
-                        self._orders[symbol]['SSTPLMT'] = [o for o in self._orders[symbol]['SSTPLMT'] if o != order]
+                        self._orders[symbol]['SSTPLMT'] = [
+                            o for o in self._orders[symbol]['SSTPLMT'] if o != order]
                         logmsg(order, 'SELL STOP LIMIT')
 
-    def calculate_pct_change(self, current_price, lh_price):
+    @staticmethod
+    def calculate_pct_change(current_price, lh_price):
         return ((current_price - lh_price) / lh_price) * 100
-    
+
     def get_asset_values(self,
-                          symbol_list: List[str],
-                          window: int,
-                          value_type: str = 'returns',
-                          array: bool = True,
-                          bars: DataHandler = None,
-                          mode: Literal['backtest', 'live'] = 'backtest',
-                          tf: str = 'D1'
-                          ) -> Dict[str, np.ndarray | pd.Series] | None:
+                         symbol_list: List[str],
+                         window: int,
+                         value_type: str = 'returns',
+                         array: bool = True,
+                         bars: DataHandler = None,
+                         mode: Literal['backtest', 'live'] = 'backtest',
+                         tf: str = 'D1'
+                         ) -> Dict[str, np.ndarray | pd.Series] | None:
         """
         Get the historical OHLCV value or returns or custum value 
         based on the DataHandker of the assets in the symbol list.
@@ -513,7 +517,7 @@ class MT5Strategy(Strategy):
 
         Returns:
             asset_values : Historical values of the assets in the symbol list.
-        
+
         Note:
             In Live mode, the `bbstrader.metatrader.rates.Rates` class is used to get the historical data
             so the value_type must be 'returns', 'open', 'high', 'low', 'close', 'adjclose', 'volume'.
@@ -531,10 +535,11 @@ class MT5Strategy(Strategy):
                     asset_values[asset] = values[~np.isnan(values)]
                 else:
                     values = bars.get_latest_bars(asset, N=window)
-                    asset_values[asset] = getattr(values, value_type)    
+                    asset_values[asset] = getattr(values, value_type)
         elif mode == 'live':
             for asset in symbol_list:
-                rates = Rates(asset, timeframe=tf, count=window + 1, **self.kwargs)
+                rates = Rates(asset, timeframe=tf,
+                              count=window + 1, **self.kwargs)
                 if array:
                     values = getattr(rates, value_type).values
                     asset_values[asset] = values[~np.isnan(values)]
@@ -546,7 +551,8 @@ class MT5Strategy(Strategy):
         else:
             return None
 
-    def is_signal_time(self, period_count, signal_inverval) -> bool:
+    @staticmethod
+    def is_signal_time(period_count, signal_inverval) -> bool:
         """
         Check if we can generate a signal based on the current period count.
         We use the signal interval as a form of periodicity or rebalancing period.
@@ -614,10 +620,12 @@ class MT5Strategy(Strategy):
             return prices
         return np.array([])
 
-    def get_current_dt(self, time_zone: str = 'US/Eastern') -> datetime:
+    @staticmethod
+    def get_current_dt(time_zone: str = 'US/Eastern') -> datetime:
         return datetime.now(pytz.timezone(time_zone))
 
-    def convert_time_zone(self, dt: datetime | int | pd.Timestamp,
+    @staticmethod
+    def convert_time_zone(dt: datetime | int | pd.Timestamp,
                           from_tz: str = 'UTC',
                           to_tz: str = 'US/Eastern'
                           ) -> pd.Timestamp:
@@ -644,6 +652,19 @@ class MT5Strategy(Strategy):
 
         dt_to = dt.tz_convert(pytz.timezone(to_tz))
         return dt_to
+
+    @staticmethod
+    def get_mt5_equivalent(symbols, type='STK', path: str = None) -> List[str]:
+        account = Account(path=path)
+        mt5_symbols = account.get_symbols(symbol_type=type)
+        mt5_equivalent = []
+        if account.broker == AdmiralMarktsGroup():
+            for s in mt5_symbols:
+                _s = s[1:] if s[0] in string.punctuation else s
+                for symbol in symbols:
+                    if _s.split('.')[0] == symbol or _s.split('_')[0] == symbol:
+                        mt5_equivalent.append(s)
+        return mt5_equivalent
 
 
 class TWSStrategy(Strategy):

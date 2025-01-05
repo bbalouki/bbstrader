@@ -1,9 +1,8 @@
 from datetime import datetime
-import MetaTrader5 as MT5
-import logging
-from typing import List, NamedTuple, Optional
 from enum import Enum
+from typing import NamedTuple, Optional
 
+import MetaTrader5 as MT5
 
 __all__ = [
     "TIMEFRAMES",
@@ -421,6 +420,7 @@ class TradeDeal(NamedTuple):
 
 class InvalidBroker(Exception):
     """Exception raised for invalid broker errors."""
+
     def __init__(self, message="Invalid broker."):
         super().__init__(message)
 
