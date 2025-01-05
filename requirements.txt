@@ -25,5 +25,6 @@ python-telegram-bot
 pyportfolioopt
 eodhd
 financetoolkit
+tables
 lightgbm
 alphalens-reloaded
