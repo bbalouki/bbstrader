@@ -35,12 +35,16 @@ __BROKERS__ = {
     "AMG": "Admirals Group AS",
     "JGM": "Just Global Markets Ltd.",
     "FTMO": "FTMO S.R.O.",
+    "XCB": "4xCube Limited",
+    "TML": "Trinota Markets (Global) Limited"
 }
 
 BROKERS_TIMEZONES = {
     "AMG": "Europe/Helsinki",
     "JGM": "Europe/Helsinki",
     "FTMO": "Europe/Helsinki",
+    "XCB": "Europe/Helsinki",
+    "TML": "Europe/Helsinki",
 }
 
 _ADMIRAL_MARKETS_URL_ = (
@@ -48,6 +52,8 @@ _ADMIRAL_MARKETS_URL_ = (
 )
 _JUST_MARKETS_URL_ = "https://one.justmarkets.link/a/tufvj0xugm/registration/trader"
 _FTMO_URL_ = "https://trader.ftmo.com/?affiliates=JGmeuQqepAZLMcdOEQRp"
+_XCB_URL_ = ""
+_TML_URL_ = ""
 _ADMIRAL_MARKETS_PRODUCTS_ = [
     "Stocks",
     "ETFs",
@@ -66,20 +72,23 @@ INIT_MSG = (
     f"* If you want to trade {', '.join(_ADMIRAL_MARKETS_PRODUCTS_)}, See [{_ADMIRAL_MARKETS_URL_}]\n"
     f"* If you want to trade {', '.join(_JUST_MARKETS_PRODUCTS_)}, See [{_JUST_MARKETS_URL_}]\n"
     f"* If you are looking for a prop firm, See [{_FTMO_URL_}]\n"
+    f"* You can also look at 4xCube Limited [{_XCB_URL_}] \n and Trinota Markets (Global) Limited [{_TML_URL_}]\n"
 )
 
 amg_url = _ADMIRAL_MARKETS_URL_
 jgm_url = _JUST_MARKETS_URL_
 ftmo_url = _FTMO_URL_
+xcb_url = _XCB_URL_
+tml_url = _TML_URL_
 
 _SYMBOLS_TYPE_ = {
     "STK": r"\b(Stocks?|Equities?|Shares?)\b",
     "ETF": r"\b(ETFs?)\b",
-    "IDX": r"\b(?:Indices?|Cash)\b(?!.*\\(?:UKOIL|USOIL))",
+    "IDX": r"\b(?:Indices?|Cash|Index)\b(?!.*\\(?:UKOIL|USOIL))",
     "FX": r"\b(Forex|Exotics?)\b",
-    "COMD": r"\b(Metals?|Agricultures?|Energies?|OIL|USOIL|UKOIL)\b",
+    "COMD": r"\b(Metals?|Agricultures?|Energies?|OIL|Oil|USOIL|UKOIL)\b",
     "FUT": r"\b(Futures?)\b",
-    "CRYPTO": r"\b(Cryptos?)\b",
+    "CRYPTO": r"\b(Cryptos?|Cryptocurrencies|Cryptocurrency)\b",
 }
 
 _COUNTRY_MAP_ = {
@@ -223,14 +232,32 @@ class FTMO(Broker):
     def timezone(self) -> str:
         return BROKERS_TIMEZONES["FTMO"]
 
+class XCubeLimited(Broker):
+    def __init__(self, **kwargs):
+        super().__init__("4xCube Limited", **kwargs)
+
+    @property
+    def timezone(self) -> str:
+        return BROKERS_TIMEZONES["XCB"]
+    
+class TrinotaMarkets(Broker):
+    def __init__(self, **kwargs):
+        super().__init__("Trinota Markets (Global) Limited", **kwargs)
+
+    @property
+    def timezone(self) -> str:
+        return BROKERS_TIMEZONES["TML"]
+
 
 class AMP(Broker): ...
 
 
 BROKERS: Dict[str, Broker] = {
+    "FTMO": FTMO(),
     "AMG": AdmiralMarktsGroup(),
     "JGM": JustGlobalMarkets(),
-    "FTMO": FTMO(),
+    "XCB": XCubeLimited(),
+    "TML": TrinotaMarkets(),
 }
 
 
@@ -289,6 +316,8 @@ class Account(object):
                 f"For {supported['AMG'].name}, See [{amg_url}]\n"
                 f"For {supported['JGM'].name}, See [{jgm_url}]\n"
                 f"For {supported['FTMO'].name}, See [{ftmo_url}]\n"
+                f"For {supported['XCB'].name}, See [{xcb_url}]\n"
+                f"For {supported['TML'].name}, See [{tml_url}]\n"
             )
             raise InvalidBroker(message=msg)
 

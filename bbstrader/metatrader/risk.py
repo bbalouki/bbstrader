@@ -457,7 +457,15 @@ class RiskManagement(Account):
         CRYPTO = symbol_type == "CRYPTO"
         if COMD:
             supported = _COMMD_SUPPORTED_
-            if self.symbol.split(".")[0] not in supported:
+            if "." in self.symbol:
+                symbol = self.symbol.split(".")[0]
+            elif self.symbol.endswith("xx"):
+                symbol = self.symbol[:-2]
+            elif self.symbol.endswith('-'):
+                symbol = self.symbol[:-1]
+            else:
+                symbol = self.symbol
+            if symbol in supported:
                 raise ValueError(
                     f"Currency risk calculation for '{self.symbol}' is not a currently supported. \n"
                     f"Supported commodity symbols are: {', '.join(supported)}"
