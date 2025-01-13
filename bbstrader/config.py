@@ -51,7 +51,7 @@ class LogLevelFilter(logging.Filter):
 
 class CustomFormatter(logging.Formatter):
     def formatTime(self, record, datefmt=None):
-        if hasattr(record, 'custom_time'):
+        if hasattr(record, "custom_time"):
             # Use the custom time if provided
             record.created = record.custom_time.timestamp()
         return super().formatTime(record, datefmt)
@@ -61,13 +61,22 @@ class CustomLogger(logging.Logger):
     def __init__(self, name, level=logging.NOTSET):
         super().__init__(name, level)
 
-    def _log(self, level, msg, args, exc_info=None,
-             extra=None, stack_info=False, stacklevel=1, custom_time=None):
+    def _log(
+        self,
+        level,
+        msg,
+        args,
+        exc_info=None,
+        extra=None,
+        stack_info=False,
+        stacklevel=1,
+        custom_time=None,
+    ):
         if extra is None:
             extra = {}
         # Add custom_time to the extra dictionary if provided
         if custom_time:
-            extra['custom_time'] = custom_time
+            extra["custom_time"] = custom_time
         super()._log(level, msg, args, exc_info, extra, stack_info, stacklevel)
 
     def info(self, msg, *args, custom_time=None, **kwargs):
@@ -77,19 +86,16 @@ class CustomLogger(logging.Logger):
         self._log(logging.DEBUG, msg, args, custom_time=custom_time, **kwargs)
 
     def warning(self, msg, *args, custom_time=None, **kwargs):
-        self._log(logging.WARNING, msg, args,
-                  custom_time=custom_time, **kwargs)
+        self._log(logging.WARNING, msg, args, custom_time=custom_time, **kwargs)
 
     def error(self, msg, *args, custom_time=None, **kwargs):
         self._log(logging.ERROR, msg, args, custom_time=custom_time, **kwargs)
 
     def critical(self, msg, *args, custom_time=None, **kwargs):
-        self._log(logging.CRITICAL, msg, args,
-                  custom_time=custom_time, **kwargs)
+        self._log(logging.CRITICAL, msg, args, custom_time=custom_time, **kwargs)
 
 
 def config_logger(log_file: str, console_log=True):
-
     # Use the CustomLogger
     logging.setLoggerClass(CustomLogger)
     logger = logging.getLogger(__name__)
@@ -101,7 +107,8 @@ def config_logger(log_file: str, console_log=True):
 
     # Custom formatter
     formatter = CustomFormatter(
-        '%(asctime)s - %(levelname)s: %(message)s', datefmt="%Y-%m-%d %H:%M:%S")
+        "%(asctime)s - %(levelname)s: %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+    )
     file_handler.setFormatter(formatter)
 
     # Add the handler to the logger

@@ -5,11 +5,7 @@ from bbstrader.btengine.data import DataHandler
 from bbstrader.btengine.event import FillEvent, OrderEvent
 from bbstrader.metatrader.account import Account
 
-__all__ = [
-    "ExecutionHandler",
-    "SimExecutionHandler",
-    "MT5ExecutionHandler"
-]
+__all__ = ["ExecutionHandler", "SimExecutionHandler", "MT5ExecutionHandler"]
 
 
 class ExecutionHandler(metaclass=ABCMeta):
@@ -24,9 +20,9 @@ class ExecutionHandler(metaclass=ABCMeta):
     strategies to be backtested in a very similar manner to the
     live trading engine.
 
-    The ExecutionHandler described here is exceedingly simple, 
-    since it fills all orders at the current market price. 
-    This is highly unrealistic, for other markets thant ``CFDs`` 
+    The ExecutionHandler described here is exceedingly simple,
+    since it fills all orders at the current market price.
+    This is highly unrealistic, for other markets thant ``CFDs``
     but serves as a good baseline for improvement.
     """
 
@@ -39,9 +35,7 @@ class ExecutionHandler(metaclass=ABCMeta):
         Args:
             event (OrderEvent): Contains an Event object with order information.
         """
-        raise NotImplementedError(
-            "Should implement execute_order()"
-        )
+        raise NotImplementedError("Should implement execute_order()")
 
 
 class SimExecutionHandler(ExecutionHandler):
@@ -75,40 +69,45 @@ class SimExecutionHandler(ExecutionHandler):
         Args:
             event (OrderEvent): Contains an Event object with order information.
         """
-        if event.type == 'ORDER':
+        if event.type == "ORDER":
             dtime = self.bardata.get_latest_bar_datetime(event.symbol)
             fill_event = FillEvent(
-                timeindex=dtime, symbol=event.symbol,
-                exchange='ARCA', quantity=event.quantity, direction=event.direction,
-                fill_cost=None, commission=None, order=event.signal
+                timeindex=dtime,
+                symbol=event.symbol,
+                exchange="ARCA",
+                quantity=event.quantity,
+                direction=event.direction,
+                fill_cost=None,
+                commission=None,
+                order=event.signal,
             )
             self.events.put(fill_event)
             self.logger.info(
                 f"{event.direction} ORDER FILLED: SYMBOL={event.symbol}, "
                 f"QUANTITY={event.quantity}, PRICE @{event.price} EXCHANGE={fill_event.exchange}",
-                custom_time=fill_event.timeindex
+                custom_time=fill_event.timeindex,
             )
 
 
 class MT5ExecutionHandler(ExecutionHandler):
     """
-    The main role of `MT5ExecutionHandler` class is to estimate the execution fees 
-    for different asset classes on the MT5 terminal. 
+    The main role of `MT5ExecutionHandler` class is to estimate the execution fees
+    for different asset classes on the MT5 terminal.
 
-    Generally we have four types of fees when we execute trades using the MT5 terminal 
-    (commissions, swap, spread and other fees). But most of these fees depend on the specifications 
-    of each instrument and the duration of the transaction for the swap for example. 
+    Generally we have four types of fees when we execute trades using the MT5 terminal
+    (commissions, swap, spread and other fees). But most of these fees depend on the specifications
+    of each instrument and the duration of the transaction for the swap for example.
 
-    Calculating the exact fees for each instrument would be a bit complex because our Backtest engine 
-    and the Portfolio class do not take into account the duration of each trade to apply the appropriate 
-    rate for the swap for example. So we have to use only the model of calculating the commissions 
+    Calculating the exact fees for each instrument would be a bit complex because our Backtest engine
+    and the Portfolio class do not take into account the duration of each trade to apply the appropriate
+    rate for the swap for example. So we have to use only the model of calculating the commissions
     for each asset class and each instrument.
 
-    The second thing that must be taken into account on MT5 is the type of account offered by the broker. 
-    Brokers have different account categories each with its specifications for each asset class and each instrument. 
-    Again considering all these conditions would make our class very complex. So we took the `Raw Spread` 
-    account fee calculation model from [Just Market](https://one.justmarkets.link/a/tufvj0xugm/registration/trader) 
-    for indicies, forex, commodities and crypto. We used the [Admiral Market](https://cabinet.a-partnership.com/visit/?bta=35537&brand=admiralmarkets) 
+    The second thing that must be taken into account on MT5 is the type of account offered by the broker.
+    Brokers have different account categories each with its specifications for each asset class and each instrument.
+    Again considering all these conditions would make our class very complex. So we took the `Raw Spread`
+    account fee calculation model from [Just Market](https://one.justmarkets.link/a/tufvj0xugm/registration/trader)
+    for indicies, forex, commodities and crypto. We used the [Admiral Market](https://cabinet.a-partnership.com/visit/?bta=35537&brand=admiralmarkets)
     account fee calculation model from `Trade.MT5` account type for stocks and ETFs.
 
     NOTE:
@@ -132,14 +131,13 @@ class MT5ExecutionHandler(ExecutionHandler):
         symbol_info = self.__account.get_symbol_info(symbol)
         contract_size = symbol_info.trade_contract_size
 
-        lot = (quantity*price) / (contract_size * price)
+        lot = (quantity * price) / (contract_size * price)
         if contract_size == 1:
             lot = quantity
-        if symbol_type in [
-                'COMD', 'FUT', 'CRYPTO'] and contract_size > 1:
+        if symbol_type in ["COMD", "FUT", "CRYPTO"] and contract_size > 1:
             lot = quantity / contract_size
-        if symbol_type == 'FX':
-            lot = (quantity*price / contract_size)
+        if symbol_type == "FX":
+            lot = quantity * price / contract_size
         return self._check_lot(symbol, lot)
 
     def _check_lot(self, symbol, lot):
@@ -152,17 +150,17 @@ class MT5ExecutionHandler(ExecutionHandler):
 
     def _estimate_total_fees(self, symbol, lot, qty, price):
         symbol_type = self.__account.get_symbol_type(symbol)
-        if symbol_type in ['STK', 'ETF']:
+        if symbol_type in ["STK", "ETF"]:
             return self._estimate_stock_commission(symbol, qty, price)
-        elif symbol_type == 'FX':
+        elif symbol_type == "FX":
             return self._estimate_forex_commission(lot)
-        elif symbol_type == 'COMD':
+        elif symbol_type == "COMD":
             return self._estimate_commodity_commission(lot)
-        elif symbol_type == 'IDX':
+        elif symbol_type == "IDX":
             return self._estimate_index_commission(lot)
-        elif symbol_type == 'FUT':
+        elif symbol_type == "FUT":
             return self._estimate_futures_commission()
-        elif symbol_type == 'CRYPTO':
+        elif symbol_type == "CRYPTO":
             return self._estimate_crypto_commission()
         else:
             return 0.0
@@ -177,30 +175,30 @@ class MT5ExecutionHandler(ExecutionHandler):
         ger_fr_uk_cm = 0.001  # percent
         eu_asia_cm = 0.0015  # percent
         if (
-            symbol in self.__account.get_stocks_from_country('USA')
-            or self.__account.get_symbol_type(symbol) == 'ETF'
-            and self.__account.get_currency_rates(symbol)['mc'] == 'USD'
+            symbol in self.__account.get_stocks_from_country("USA")
+            or self.__account.get_symbol_type(symbol) == "ETF"
+            and self.__account.get_currency_rates(symbol)["mc"] == "USD"
         ):
             return max(min_com, qty * us_com)
         elif (
-            symbol in self.__account.get_stocks_from_country('GBR')
-            or symbol in self.__account.get_stocks_from_country('FRA')
-            or symbol in self.__account.get_stocks_from_country('DEU')
-            or self.__account.get_symbol_type(symbol) == 'ETF'
-            and self.__account.get_currency_rates(symbol)['mc'] in ['GBP', 'EUR']
+            symbol in self.__account.get_stocks_from_country("GBR")
+            or symbol in self.__account.get_stocks_from_country("FRA")
+            or symbol in self.__account.get_stocks_from_country("DEU")
+            or self.__account.get_symbol_type(symbol) == "ETF"
+            and self.__account.get_currency_rates(symbol)["mc"] in ["GBP", "EUR"]
         ):
-            return max(min_com, qty*price*ger_fr_uk_cm)
+            return max(min_com, qty * price * ger_fr_uk_cm)
         else:
-            if self.__account.get_currency_rates(symbol)['mc'] == 'AUD':
-                return max(min_aud, qty*price*eu_asia_cm)
-            elif self.__account.get_currency_rates(symbol)['mc'] == 'DKK':
-                return max(min_dkk, qty*price*eu_asia_cm)
-            elif self.__account.get_currency_rates(symbol)['mc'] == 'NOK':
-                return max(min_nok, qty*price*eu_asia_cm)
-            elif self.__account.get_currency_rates(symbol)['mc'] == 'SEK':
-                return max(min_sek, qty*price*eu_asia_cm)
+            if self.__account.get_currency_rates(symbol)["mc"] == "AUD":
+                return max(min_aud, qty * price * eu_asia_cm)
+            elif self.__account.get_currency_rates(symbol)["mc"] == "DKK":
+                return max(min_dkk, qty * price * eu_asia_cm)
+            elif self.__account.get_currency_rates(symbol)["mc"] == "NOK":
+                return max(min_nok, qty * price * eu_asia_cm)
+            elif self.__account.get_currency_rates(symbol)["mc"] == "SEK":
+                return max(min_sek, qty * price * eu_asia_cm)
             else:
-                return max(min_com, qty*price*eu_asia_cm)
+                return max(min_com, qty * price * eu_asia_cm)
 
     def _estimate_forex_commission(self, lot):
         return 3.0 * lot
@@ -224,7 +222,7 @@ class MT5ExecutionHandler(ExecutionHandler):
         Args:
             event (OrderEvent): Contains an Event object with order information.
         """
-        if event.type == 'ORDER':
+        if event.type == "ORDER":
             symbol = event.symbol
             direction = event.direction
             quantity = event.quantity
@@ -233,16 +231,21 @@ class MT5ExecutionHandler(ExecutionHandler):
             fees = self._estimate_total_fees(symbol, lot, quantity, price)
             dtime = self.bardata.get_latest_bar_datetime(symbol)
             fill_event = FillEvent(
-                timeindex=dtime, symbol=symbol,
-                exchange='MT5', quantity=quantity, direction=direction,
-                fill_cost=None, commission=fees, order=event.signal
+                timeindex=dtime,
+                symbol=symbol,
+                exchange="MT5",
+                quantity=quantity,
+                direction=direction,
+                fill_cost=None,
+                commission=fees,
+                order=event.signal,
             )
             self.events.put(fill_event)
             self.logger.info(
                 f"{direction} ORDER FILLED: SYMBOL={symbol}, QUANTITY={quantity}, "
-                f"PRICE @{price} EXCHANGE={fill_event.exchange}", custom_time=fill_event.timeindex
+                f"PRICE @{price} EXCHANGE={fill_event.exchange}",
+                custom_time=fill_event.timeindex,
             )
 
 
-class IBExecutionHandler(ExecutionHandler):
-    ...
+class IBExecutionHandler(ExecutionHandler): ...

@@ -37,27 +37,27 @@ __all__ = [
 # TIMEFRAME is an enumeration with possible chart period values
 # See https://www.mql5.com/en/docs/python_metatrader5/mt5copyratesfrom_py#timeframe
 TIMEFRAMES = {
-    '1m':  MT5.TIMEFRAME_M1,
-    '2m':  MT5.TIMEFRAME_M2,
-    '3m':  MT5.TIMEFRAME_M3,
-    '4m':  MT5.TIMEFRAME_M4,
-    '5m':  MT5.TIMEFRAME_M5,
-    '6m':  MT5.TIMEFRAME_M6,
-    '10m': MT5.TIMEFRAME_M10,
-    '12m': MT5.TIMEFRAME_M12,
-    '15m': MT5.TIMEFRAME_M15,
-    '20m': MT5.TIMEFRAME_M20,
-    '30m': MT5.TIMEFRAME_M30,
-    '1h':  MT5.TIMEFRAME_H1,
-    '2h':  MT5.TIMEFRAME_H2,
-    '3h':  MT5.TIMEFRAME_H3,
-    '4h':  MT5.TIMEFRAME_H4,
-    '6h':  MT5.TIMEFRAME_H6,
-    '8h':  MT5.TIMEFRAME_H8,
-    '12h': MT5.TIMEFRAME_H12,
-    'D1':  MT5.TIMEFRAME_D1,
-    'W1':  MT5.TIMEFRAME_W1,
-    'MN1': MT5.TIMEFRAME_MN1
+    "1m": MT5.TIMEFRAME_M1,
+    "2m": MT5.TIMEFRAME_M2,
+    "3m": MT5.TIMEFRAME_M3,
+    "4m": MT5.TIMEFRAME_M4,
+    "5m": MT5.TIMEFRAME_M5,
+    "6m": MT5.TIMEFRAME_M6,
+    "10m": MT5.TIMEFRAME_M10,
+    "12m": MT5.TIMEFRAME_M12,
+    "15m": MT5.TIMEFRAME_M15,
+    "20m": MT5.TIMEFRAME_M20,
+    "30m": MT5.TIMEFRAME_M30,
+    "1h": MT5.TIMEFRAME_H1,
+    "2h": MT5.TIMEFRAME_H2,
+    "3h": MT5.TIMEFRAME_H3,
+    "4h": MT5.TIMEFRAME_H4,
+    "6h": MT5.TIMEFRAME_H6,
+    "8h": MT5.TIMEFRAME_H8,
+    "12h": MT5.TIMEFRAME_H12,
+    "D1": MT5.TIMEFRAME_D1,
+    "W1": MT5.TIMEFRAME_W1,
+    "MN1": MT5.TIMEFRAME_MN1,
 }
 
 
@@ -65,6 +65,7 @@ class TimeFrame(Enum):
     """
     Rrepresent a time frame object
     """
+
     M1 = "1m"
     M2 = "2m"
     M3 = "3m"
@@ -93,6 +94,7 @@ class TerminalInfo(NamedTuple):
     Represents general information about the trading terminal.
     See https://www.mql5.com/en/docs/constants/environment_state/terminalstatus
     """
+
     community_account: bool
     community_connection: bool
     connected: bool
@@ -122,6 +124,7 @@ class AccountInfo(NamedTuple):
     Represents information about a trading account.
     See https://www.mql5.com/en/docs/constants/environment_state/accountinformation
     """
+
     login: int
     trade_mode: int
     leverage: int
@@ -157,6 +160,7 @@ class SymbolInfo(NamedTuple):
     Represents detailed information about a financial instrument.
     See https://www.mql5.com/en/docs/constants/environment_state/marketinfoconstants
     """
+
     custom: bool
     chart_mode: int
     select: bool
@@ -267,6 +271,7 @@ class TickInfo(NamedTuple):
     * flags:    Tick flags
     * volume_real:  Volume for the current Last price with greater accuracy
     """
+
     time: datetime
     bid: float
     ask: float
@@ -282,6 +287,7 @@ class TradeRequest(NamedTuple):
     Represents a Trade Request Structure
     See https://www.mql5.com/en/docs/constants/structures/mqltraderequest
     """
+
     action: int
     magic: int
     order: int
@@ -306,6 +312,7 @@ class OrderCheckResult(NamedTuple):
     The Structure of Results of a Trade Request Check
     See https://www.mql5.com/en/docs/constants/structures/mqltradecheckresult
     """
+
     retcode: int
     balance: float
     equity: float
@@ -319,9 +326,10 @@ class OrderCheckResult(NamedTuple):
 
 class OrderSentResult(NamedTuple):
     """
-    The Structure of a Trade Request Result 
+    The Structure of a Trade Request Result
     See https://www.mql5.com/en/docs/constants/structures/mqltraderesult
     """
+
     retcode: int
     deal: int
     order: int
@@ -340,6 +348,7 @@ class TradeOrder(NamedTuple):
     Represents a trade order.
     See https://www.mql5.com/en/docs/constants/tradingconstants/orderproperties
     """
+
     ticket: int
     time_setup: int
     time_setup_msc: int
@@ -368,10 +377,11 @@ class TradeOrder(NamedTuple):
 
 class TradePosition(NamedTuple):
     """
-    Represents a trade position with attributes like ticket, open/close prices, 
+    Represents a trade position with attributes like ticket, open/close prices,
     volume, profit, and other trading details.
     See https://www.mql5.com/en/docs/constants/tradingconstants/positionproperties
     """
+
     ticket: int
     time: int
     time_msc: int
@@ -398,6 +408,7 @@ class TradeDeal(NamedTuple):
     Represents a trade deal execution.
     See https://www.mql5.com/en/docs/constants/tradingconstants/dealproperties
     """
+
     ticket: int
     order: int
     time: int
@@ -491,6 +502,7 @@ class AutoTradingDisabled(MT5TerminalError):
 
 class InternalFailError(MT5TerminalError):
     """Base exception class for internal IPC errors."""
+
     pass
 
 
@@ -590,13 +602,15 @@ _TRADE_RETCODE_MESSAGES_ = {
     10027: "Autotrading disabled by client terminal",
     10028: "Request locked for processing",
     10029: "Order or position frozen",
-    10030: "Invalid order filling type: see" + " "+_ORDER_FILLING_TYPE_,
+    10030: "Invalid order filling type: see" + " " + _ORDER_FILLING_TYPE_,
     10031: "No connection with the trade server",
     10032: "Operation allowed only for live accounts",
     10033: "The number of pending orders has reached the limit",
     10034: "Order/position volume limit for the symbol reached",
     10035: "Incorrect or prohibited order type: see" + " " + _ORDER_TYPE_,
-    10036: "Position with the specified ID has already been closed: see"+" "+_POSITION_IDENTIFIER_,
+    10036: "Position with the specified ID has already been closed: see"
+    + " "
+    + _POSITION_IDENTIFIER_,
     10038: "Close volume exceeds the current position volume",
     10039: "A close order already exists for this position",
     10040: "Maximum number of open positions reached",
@@ -605,11 +619,11 @@ _TRADE_RETCODE_MESSAGES_ = {
     10043: "Only short positions are allowed",
     10044: "Only position closing is allowed",
     10045: "Position closing allowed only by FIFO rule: see" + " " + _FIFO_RULE_,
-    10046: "Opposite positions on this symbol are disabled"
+    10046: "Opposite positions on this symbol are disabled",
 }
 
 
-def trade_retcode_message(code, display=False, add_msg=''):
+def trade_retcode_message(code, display=False, add_msg=""):
     """
     Retrieves a user-friendly message corresponding to a given trade return code.
 

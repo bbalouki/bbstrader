@@ -32,7 +32,7 @@ class TradeAction(Enum):
     EXIT_PROFITABLES = "EXIT_PROFITABLES"
     EXIT_LOSINGS = "EXIT_LOSINGS"
     EXIT_ALL_POSITIONS = "EXIT_ALL_POSITIONS"
-    EXIT_ALL_LONGS = "EXIT_ALL_LONGS"
+    EXIT_ALL_ORDERS = "EXIT_ALL_ORDERS"
 
     def __str__(self):
         return self.value

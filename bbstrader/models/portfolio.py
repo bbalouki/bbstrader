@@ -10,16 +10,14 @@ from bbstrader.models.optimization import (
     markowitz_weights,
 )
 
-__all__ = [
-    'EigenPortfolios'
-]
+__all__ = ["EigenPortfolios"]
 
 
 class EigenPortfolios(object):
     """
-    The `EigenPortfolios` class applies Principal Component Analysis (PCA) to a covariance matrix of normalized asset returns 
-    to derive portfolios (eigenportfolios) that capture distinct risk factors in the asset returns. Each eigenportfolio 
-    represents a principal component of the return covariance matrix, ordered by the magnitude of its eigenvalue. These 
+    The `EigenPortfolios` class applies Principal Component Analysis (PCA) to a covariance matrix of normalized asset returns
+    to derive portfolios (eigenportfolios) that capture distinct risk factors in the asset returns. Each eigenportfolio
+    represents a principal component of the return covariance matrix, ordered by the magnitude of its eigenvalue. These
     portfolios capture most of the variance in asset returns and are mutually uncorrelated.
 
     Notes
@@ -75,19 +73,18 @@ class EigenPortfolios(object):
 
         Notes
         -----
-        This method performs winsorization and normalization on returns to reduce the impact of outliers 
-        and achieve zero mean and unit variance. It uses the first `n_portfolios` principal components 
+        This method performs winsorization and normalization on returns to reduce the impact of outliers
+        and achieve zero mean and unit variance. It uses the first `n_portfolios` principal components
         as portfolio weights.
         """
         # Winsorize and normalize the returns
-        normed_returns = scale(returns
-                               .clip(lower=returns.quantile(q=.025),
-                                     upper=returns.quantile(q=.975),
-                                     axis=1)
-                               .apply(lambda x: x.sub(x.mean()).div(x.std())))
-        returns = returns.dropna(thresh=int(
-            normed_returns.shape[0] * .95), axis=1)
-        returns = returns.dropna(thresh=int(normed_returns.shape[1] * .95))
+        normed_returns = scale(
+            returns.clip(
+                lower=returns.quantile(q=0.025), upper=returns.quantile(q=0.975), axis=1
+            ).apply(lambda x: x.sub(x.mean()).div(x.std()))
+        )
+        returns = returns.dropna(thresh=int(normed_returns.shape[0] * 0.95), axis=1)
+        returns = returns.dropna(thresh=int(normed_returns.shape[1] * 0.95))
 
         cov = returns.cov()
         cov.columns = cov.columns.astype(str)
@@ -95,11 +92,10 @@ class EigenPortfolios(object):
         pca.fit(cov)
 
         top_portfolios = pd.DataFrame(
-            pca.components_[:n_portfolios], columns=cov.columns)
-        eigen_portfolios = top_portfolios.div(
-            top_portfolios.sum(axis=1), axis=0)
-        eigen_portfolios.index = [
-            f"Portfolio {i}" for i in range(1, n_portfolios + 1)]
+            pca.components_[:n_portfolios], columns=cov.columns
+        )
+        eigen_portfolios = top_portfolios.div(top_portfolios.sum(axis=1), axis=0)
+        eigen_portfolios.index = [f"Portfolio {i}" for i in range(1, n_portfolios + 1)]
         self._portfolios = eigen_portfolios
         self.returns = returns
         self.n_portfolios = n_portfolios
@@ -117,13 +113,12 @@ class EigenPortfolios(object):
         n_cols = 2
         n_rows = (self.n_portfolios + 1) // n_cols
         figsize = (n_cols * 10, n_rows * 5)
-        axes = eigen_portfolios.T.plot.bar(subplots=True,
-                                           layout=(n_rows, n_cols),
-                                           figsize=figsize,
-                                           legend=False)
+        axes = eigen_portfolios.T.plot.bar(
+            subplots=True, layout=(n_rows, n_cols), figsize=figsize, legend=False
+        )
         for ax in axes.flatten():
-            ax.set_ylabel('Portfolio Weight')
-            ax.set_xlabel('')
+            ax.set_ylabel("Portfolio Weight")
+            ax.set_xlabel("")
 
         sns.despine()
         plt.tight_layout()
@@ -135,7 +130,7 @@ class EigenPortfolios(object):
 
         Notes
         -----
-        This method calculates the historical cumulative performance of each eigenportfolio 
+        This method calculates the historical cumulative performance of each eigenportfolio
         by weighting asset returns according to eigenportfolio weights.
         """
         eigen_portfolios = self.get_portfolios()
@@ -144,28 +139,34 @@ class EigenPortfolios(object):
         n_cols = 2
         n_rows = (self.n_portfolios + 1 + n_cols - 1) // n_cols
         figsize = (n_cols * 10, n_rows * 5)
-        fig, axes = plt.subplots(nrows=n_rows, ncols=n_cols,
-                                 figsize=figsize, sharex=True)
+        fig, axes = plt.subplots(
+            nrows=n_rows, ncols=n_cols, figsize=figsize, sharex=True
+        )
         axes = axes.flatten()
-        returns.mean(1).add(1).cumprod().sub(
-            1).plot(title='The Market', ax=axes[0])
+        returns.mean(1).add(1).cumprod().sub(1).plot(title="The Market", ax=axes[0])
 
         for i in range(self.n_portfolios):
-            rc = returns.mul(eigen_portfolios.iloc[i]).sum(
-                1).add(1).cumprod().sub(1)
-            rc.plot(title=f'Portfolio {i+1}', ax=axes[i + 1], lw=1, rot=0)
+            rc = returns.mul(eigen_portfolios.iloc[i]).sum(1).add(1).cumprod().sub(1)
+            rc.plot(title=f"Portfolio {i+1}", ax=axes[i + 1], lw=1, rot=0)
 
         for j in range(self.n_portfolios + 1, len(axes)):
             fig.delaxes(axes[j])
 
         for i in range(self.n_portfolios + 1):
-            axes[i].set_xlabel('')
+            axes[i].set_xlabel("")
 
         sns.despine()
         fig.tight_layout()
         plt.show()
 
-    def optimize(self, portfolio: int = 1, optimizer: str = 'hrp', prices=None, freq=252, plot=True):
+    def optimize(
+        self,
+        portfolio: int = 1,
+        optimizer: str = "hrp",
+        prices=None,
+        freq=252,
+        plot=True,
+    ):
         """
         Optimizes the chosen eigenportfolio based on a specified optimization method.
 
@@ -200,16 +201,15 @@ class EigenPortfolios(object):
         portfolio = self.get_portfolios().iloc[portfolio - 1]
         returns = self.returns.loc[:, portfolio.index]
         returns = returns.loc[:, ~returns.columns.duplicated()]
-        returns = returns.loc[~returns.index.duplicated(keep='first')]
-        if optimizer == 'markowitz':
+        returns = returns.loc[~returns.index.duplicated(keep="first")]
+        if optimizer == "markowitz":
             if prices is None:
-                raise ValueError(
-                    "prices must be provided for markowitz optimization")
+                raise ValueError("prices must be provided for markowitz optimization")
             prices = prices.loc[:, returns.columns]
             weights = markowitz_weights(prices=prices, freq=freq)
-        elif optimizer == 'hrp':
+        elif optimizer == "hrp":
             weights = hierarchical_risk_parity(returns=returns, freq=freq)
-        elif optimizer == 'equal':
+        elif optimizer == "equal":
             weights = equal_weighted(returns=returns)
         else:
             raise ValueError(f"Unknown optimizer: {optimizer}")
@@ -217,7 +217,7 @@ class EigenPortfolios(object):
             # plot the optimized potfolio performance
             returns = returns.filter(weights.keys())
             rc = returns.mul(weights).sum(1).add(1).cumprod().sub(1)
-            rc.plot(title=f'Optimized {portfolio.name}', lw=1, rot=0)
+            rc.plot(title=f"Optimized {portfolio.name}", lw=1, rot=0)
             sns.despine()
             plt.show()
         return weights
