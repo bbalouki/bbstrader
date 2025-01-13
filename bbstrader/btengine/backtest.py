@@ -10,50 +10,47 @@ from bbstrader.btengine.execution import ExecutionHandler, SimExecutionHandler
 from bbstrader.btengine.portfolio import Portfolio
 from bbstrader.btengine.strategy import Strategy
 
-__all__ = [
-    "Backtest",
-    "BacktestEngine",
-    "run_backtest"
-]
+__all__ = ["Backtest", "BacktestEngine", "run_backtest"]
 
 
 class Backtest(object):
     """
-    The `Backtest()` object encapsulates the event-handling logic and essentially 
+    The `Backtest()` object encapsulates the event-handling logic and essentially
     ties together all of the other classes.
 
-    The Backtest object is designed to carry out a nested while-loop event-driven system 
-    in order to handle the events placed on the `Event` Queue object. 
-    The outer while-loop is known as the "heartbeat loop" and decides the temporal resolution of 
-    the backtesting system. In a live environment this value will be a positive number, 
-    such as 600 seconds (every ten minutes). Thus the market data and positions 
+    The Backtest object is designed to carry out a nested while-loop event-driven system
+    in order to handle the events placed on the `Event` Queue object.
+    The outer while-loop is known as the "heartbeat loop" and decides the temporal resolution of
+    the backtesting system. In a live environment this value will be a positive number,
+    such as 600 seconds (every ten minutes). Thus the market data and positions
     will only be updated on this timeframe.
 
-    For the backtester described here the "heartbeat" can be set to zero, 
-    irrespective of the strategy frequency, since the data is already available by virtue of 
-    the fact it is historical! We can run the backtest at whatever speed we like, 
-    since the event-driven system is agnostic to when the data became available, 
-    so long as it has an associated timestamp. 
+    For the backtester described here the "heartbeat" can be set to zero,
+    irrespective of the strategy frequency, since the data is already available by virtue of
+    the fact it is historical! We can run the backtest at whatever speed we like,
+    since the event-driven system is agnostic to when the data became available,
+    so long as it has an associated timestamp.
 
-    The inner while-loop actually processes the signals and sends them to the correct 
-    component depending upon the event type. Thus the Event Queue is continually being 
+    The inner while-loop actually processes the signals and sends them to the correct
+    component depending upon the event type. Thus the Event Queue is continually being
     populated and depopulated with events. This is what it means for a system to be event-driven.
 
-    The initialisation of the Backtest object requires the full `symbol list` of traded symbols, 
-    the `initial capital`, the `heartbeat` time in milliseconds, the `start datetime` stamp 
+    The initialisation of the Backtest object requires the full `symbol list` of traded symbols,
+    the `initial capital`, the `heartbeat` time in milliseconds, the `start datetime` stamp
     of the backtest as well as the `DataHandler`, `ExecutionHandler`, `Strategy` objects
     and additionnal `kwargs` based on the `ExecutionHandler`, the `DataHandler`, and the `Strategy` used.
 
     A Queue is used to hold the events. The signals, orders and fills are counted.
-    For a `MarketEvent`, the `Strategy` object is told to recalculate new signals, 
-    while the `Portfolio` object is told to reindex the time. If a `SignalEvent` 
-    object is received the `Portfolio` is told to handle the new signal and convert it into a 
-    set of `OrderEvents`, if appropriate. If an `OrderEvent` is received the `ExecutionHandler` 
-    is sent the order to be transmitted to the broker (if in a real trading setting). 
-    Finally, if a `FillEvent` is received, the Portfolio will update itself to be aware of 
+    For a `MarketEvent`, the `Strategy` object is told to recalculate new signals,
+    while the `Portfolio` object is told to reindex the time. If a `SignalEvent`
+    object is received the `Portfolio` is told to handle the new signal and convert it into a
+    set of `OrderEvents`, if appropriate. If an `OrderEvent` is received the `ExecutionHandler`
+    is sent the order to be transmitted to the broker (if in a real trading setting).
+    Finally, if a `FillEvent` is received, the Portfolio will update itself to be aware of
     the new positions.
 
     """
+
     pass
 
 
@@ -70,7 +67,7 @@ class BacktestEngine(Backtest):
         execution_handler: ExecutionHandler,
         strategy: Strategy,
         /,
-        **kwargs
+        **kwargs,
     ):
         """
         Initialises the backtest.
@@ -83,7 +80,7 @@ class BacktestEngine(Backtest):
             data_handler (DataHandler) : Handles the market data feed.
             execution_handler (ExecutionHandler) : Handles the orders/fills for trades.
             strategy (Strategy): Generates signals based on market data.
-            kwargs : Additional parameters based on the `ExecutionHandler`, 
+            kwargs : Additional parameters based on the `ExecutionHandler`,
                 the `DataHandler`, the `Strategy` used and the `Portfolio`.
                 - show_equity (bool): Show the equity curve of the portfolio.
                 - stats_file (str): File to save the summary stats.
@@ -128,10 +125,12 @@ class BacktestEngine(Backtest):
             self.data_handler,
             self.events,
             self.start_date,
-            self.initial_capital, **self.kwargs
+            self.initial_capital,
+            **self.kwargs,
         )
         self.execution_handler: ExecutionHandler = self.eh_cls(
-            self.events, self.data_handler,  **self.kwargs)
+            self.events, self.data_handler, **self.kwargs
+        )
 
     def _run_backtest(self):
         """
@@ -140,20 +139,20 @@ class BacktestEngine(Backtest):
         i = 0
         while True:
             i += 1
-            value = self.portfolio.all_holdings[-1]['Total']
+            value = self.portfolio.all_holdings[-1]["Total"]
             if self.data_handler.continue_backtest is True:
                 # Update the market bars
                 self.data_handler.update_bars()
                 self.strategy.check_pending_orders()
                 self.strategy.get_update_from_portfolio(
-                    self.portfolio.current_positions,
-                    self.portfolio.current_holdings
+                    self.portfolio.current_positions, self.portfolio.current_holdings
                 )
                 self.strategy.cash = value
             else:
                 print("\n[======= BACKTEST COMPLETED =======]")
                 print(
-                    f"END DATE: {self.data_handler.get_latest_bar_datetime(self.symbol_list[0])}")
+                    f"END DATE: {self.data_handler.get_latest_bar_datetime(self.symbol_list[0])}"
+                )
                 print(f"TOTAL BARS: {i} ")
                 print(f"PORFOLIO VALUE: {round(value, 2)}")
                 break
@@ -166,19 +165,19 @@ class BacktestEngine(Backtest):
                     break
                 else:
                     if event is not None:
-                        if event.type == 'MARKET':
+                        if event.type == "MARKET":
                             self.strategy.calculate_signals(event)
                             self.portfolio.update_timeindex(event)
 
-                        elif event.type == 'SIGNAL':
+                        elif event.type == "SIGNAL":
                             self.signals += 1
                             self.portfolio.update_signal(event)
 
-                        elif event.type == 'ORDER':
+                        elif event.type == "ORDER":
                             self.orders += 1
                             self.execution_handler.execute_order(event)
 
-                        elif event.type == 'FILL':
+                        elif event.type == "FILL":
                             self.fills += 1
                             self.portfolio.update_fill(event)
                             self.strategy.update_trades_from_fill(event)
@@ -195,15 +194,14 @@ class BacktestEngine(Backtest):
         stats = self.portfolio.output_summary_stats()
         print("[======= Summary Stats =======]")
         stat2 = {}
-        stat2['Signals'] = self.signals
-        stat2['Orders'] = self.orders
-        stat2['Fills'] = self.fills
+        stat2["Signals"] = self.signals
+        stat2["Orders"] = self.orders
+        stat2["Fills"] = self.fills
         stats.extend(stat2.items())
-        tab_stats = tabulate(
-            stats, headers=["Metric", "Value"], tablefmt="outline")
+        tab_stats = tabulate(stats, headers=["Metric", "Value"], tablefmt="outline")
         print(tab_stats, "\n")
         if self.stats_file:
-            with open(self.stats_file, 'a') as f:
+            with open(self.stats_file, "a") as f:
                 f.write("\n[======= Summary Stats =======]\n")
                 f.write(tab_stats)
                 f.write("\n")
@@ -215,8 +213,9 @@ class BacktestEngine(Backtest):
                 tabulate(
                     self.portfolio.equity_curve.tail(10),
                     headers="keys",
-                    tablefmt="outline"),
-                "\n"
+                    tablefmt="outline",
+                ),
+                "\n",
             )
 
     def simulate_trading(self):
@@ -239,7 +238,7 @@ def run_backtest(
     exc_handler: Optional[ExecutionHandler] = None,
     initial_capital: float = 100000.0,
     heartbeat: float = 0.0,
-    **kwargs
+    **kwargs,
 ):
     """
     Runs a backtest simulation based on a `DataHandler`, `Strategy`, and `ExecutionHandler`.
@@ -249,9 +248,9 @@ def run_backtest(
 
         start_date (datetime): Start date of the backtest.
 
-        data_handler (DataHandler): An instance of the `DataHandler` class, responsible for managing 
-            and processing market data. Available options include `CSVDataHandler`, 
-            `MT5DataHandler`, and `YFDataHandler`. Ensure that the `DataHandler` 
+        data_handler (DataHandler): An instance of the `DataHandler` class, responsible for managing
+            and processing market data. Available options include `CSVDataHandler`,
+            `MT5DataHandler`, and `YFDataHandler`. Ensure that the `DataHandler`
             instance is initialized before passing it to the function.
 
         strategy (Strategy): The trading strategy to be employed during the backtest.
@@ -264,15 +263,15 @@ def run_backtest(
             Additional parameters specific to the strategy should be passed in `**kwargs`.
             The strategy class must implement a `calculate_signals` method to generate `SignalEvent`.
 
-        exc_handler (ExecutionHandler, optional): The execution handler for managing order executions. 
+        exc_handler (ExecutionHandler, optional): The execution handler for managing order executions.
             If not provided, a `SimulatedExecutionHandler` will be used by default. This handler must
             implement an `execute_order` method to process `OrderEvent` in the `Backtest` class.
 
-        initial_capital (float, optional): The initial capital for the portfolio in the backtest. 
+        initial_capital (float, optional): The initial capital for the portfolio in the backtest.
             Default is 100,000.
 
-        heartbeat (float, optional): Time delay (in seconds) between iterations of the event-driven 
-            backtest loop. Default is 0.0, allowing the backtest to run as fast as possible. This could 
+        heartbeat (float, optional): Time delay (in seconds) between iterations of the event-driven
+            backtest loop. Default is 0.0, allowing the backtest to run as fast as possible. This could
             also be used as a time frame in live trading (e.g., 1m, 5m, 15m) with a live `DataHandler`.
 
         **kwargs: Additional parameters passed to the `Backtest` instance, which may include strategy-specific,
@@ -293,7 +292,7 @@ def run_backtest(
         >>> from bbstrader.datahandlers import MT5DataHandler
         >>> from bbstrader.execution import MT5ExecutionHandler
         >>> from datetime import datetime
-        >>> 
+        >>>
         >>> logger = config_logger('index_trade.log', console_log=True)
         >>> symbol_list = ['[SP500]', 'GERMANY40', '[DJI30]', '[NQ100]']
         >>> start = datetime(2010, 6, 1, 2, 0, 0)
@@ -321,24 +320,27 @@ def run_backtest(
     else:
         execution_handler = exc_handler
     engine = BacktestEngine(
-        symbol_list, initial_capital, heartbeat, start_date,
-        data_handler, execution_handler, strategy, **kwargs
+        symbol_list,
+        initial_capital,
+        heartbeat,
+        start_date,
+        data_handler,
+        execution_handler,
+        strategy,
+        **kwargs,
     )
     portfolio = engine.simulate_trading()
     return portfolio
 
 
-class CerebroEngine:
-    ...
+class CerebroEngine: ...
 
 
-class ZiplineEngine:
-    ...
+class ZiplineEngine: ...
 
 
 def run_backtest_with(engine: Literal["bbstrader", "cerebro", "zipline"], **kwargs):
-    """
-    """
+    """ """
     if engine == "bbstrader":
         return run_backtest(
             symbol_list=kwargs.get("symbol_list"),
@@ -348,7 +350,7 @@ def run_backtest_with(engine: Literal["bbstrader", "cerebro", "zipline"], **kwar
             exc_handler=kwargs.get("exc_handler"),
             initial_capital=kwargs.get("initial_capital", 100000.0),
             heartbeat=kwargs.get("heartbeat", 0.0),
-            **kwargs
+            **kwargs,
         )
     elif engine == "cerebro":
         # TODO:

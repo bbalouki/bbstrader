@@ -1,11 +1,12 @@
 """
-The `tseries` module is a designed for conducting 
-advanced time series analysis in financial markets. 
-It leverages statistical models and algorithms to perform 
-tasks such as cointegration testing, volatility modeling, 
-and filter-based estimation to assist in trading strategy development, 
+The `tseries` module is a designed for conducting
+advanced time series analysis in financial markets.
+It leverages statistical models and algorithms to perform
+tasks such as cointegration testing, volatility modeling,
+and filter-based estimation to assist in trading strategy development,
 market analysis, and financial data exploration.
 """
+
 import pprint
 import warnings
 from itertools import combinations
@@ -74,26 +75,26 @@ def load_and_prepare_data(df: pd.DataFrame):
     Prepares financial time series data for analysis.
 
     This function takes a pandas DataFrame containing financial data,
-    calculates logarithmic returns, and the first difference 
-    of these logarithmic returns. It handles missing values 
+    calculates logarithmic returns, and the first difference
+    of these logarithmic returns. It handles missing values
     by filling them with zeros.
 
     Args:
-        df (pd.DataFrame): DataFrame containing at least 
+        df (pd.DataFrame): DataFrame containing at least
             a `Close` column with closing prices of a financial asset.
 
     Returns:
-        pd.DataFrame: DataFrame with additional 
-            columns for logarithmic returns (`log_return`) 
-            and the first difference of logarithmic returns (`diff_log_return`), 
+        pd.DataFrame: DataFrame with additional
+            columns for logarithmic returns (`log_return`)
+            and the first difference of logarithmic returns (`diff_log_return`),
             with `NaN` values filled with `0`.
     """
     # Load data
     data = df.copy()
     # Calculate logarithmic returns
-    data['log_return'] = np.log(data['Close'] / data['Close'].shift(1))
+    data["log_return"] = np.log(data["Close"] / data["Close"].shift(1))
     # Differencing if necessary
-    data['diff_log_return'] = data['log_return'].diff()
+    data["diff_log_return"] = data["log_return"].diff()
     # Drop NaN values
     data.fillna(0, inplace=True)
     return data
@@ -101,12 +102,12 @@ def load_and_prepare_data(df: pd.DataFrame):
 
 def fit_best_arima(window_data: Union[pd.Series, np.ndarray]):
     """
-    Identifies and fits the best `ARIMA` model 
+    Identifies and fits the best `ARIMA` model
     based on the Akaike Information Criterion `(AIC)`.
 
-    Iterates through different combinations of `p` and `q` 
+    Iterates through different combinations of `p` and `q`
     parameters (within specified ranges) for the ARIMA model,
-    fits them to the provided data, and selects the combination 
+    fits them to the provided data, and selects the combination
     with the lowest `AIC` value.
 
     Args:
@@ -128,18 +129,19 @@ def fit_best_arima(window_data: Union[pd.Series, np.ndarray]):
         max_p=6,
         max_q=6,
         seasonal=False,
-        stepwise=True
+        stepwise=True,
     )
     final_order = model.order
     from arch.utility.exceptions import ConvergenceWarning as ArchWarning
     from statsmodels.tools.sm_exceptions import ConvergenceWarning as StatsWarning
+
     with warnings.catch_warnings():
-        warnings.filterwarnings(
-            "ignore", category=StatsWarning, module='statsmodels')
-        warnings.filterwarnings("ignore", category=ArchWarning, module='arch')
+        warnings.filterwarnings("ignore", category=StatsWarning, module="statsmodels")
+        warnings.filterwarnings("ignore", category=ArchWarning, module="arch")
         try:
             best_arima_model = ARIMA(
-                window_data + 1e-5, order=final_order, missing='drop').fit()
+                window_data + 1e-5, order=final_order, missing="drop"
+            ).fit()
             return best_arima_model
         except np.linalg.LinAlgError:
             # Catch specific linear algebra errors
@@ -151,20 +153,20 @@ def fit_best_arima(window_data: Union[pd.Series, np.ndarray]):
             return None
 
 
-def fit_garch(window_data:  Union[pd.Series, np.ndarray]):
+def fit_garch(window_data: Union[pd.Series, np.ndarray]):
     """
-    Fits an `ARIMA` model to the data to get residuals, 
+    Fits an `ARIMA` model to the data to get residuals,
     then fits a `GARCH(1,1)` model on these residuals.
 
-    Utilizes the residuals from the best `ARIMA` model fit to 
+    Utilizes the residuals from the best `ARIMA` model fit to
     then model volatility using a `GARCH(1,1)` model.
 
     Args:
-        window_data (pd.Series or np.ndarray): 
+        window_data (pd.Series or np.ndarray):
             Time series data for which to fit the `ARIMA` and `GARCH` models.
 
     Returns:
-        tuple: A tuple containing the `ARIMA` result 
+        tuple: A tuple containing the `ARIMA` result
             object and the `GARCH` result object.
     """
     arima_result = fit_best_arima(window_data)
@@ -173,7 +175,7 @@ def fit_garch(window_data:  Union[pd.Series, np.ndarray]):
     resid = np.asarray(arima_result.resid)
     resid = resid[~(np.isnan(resid) | np.isinf(resid))]
     garch_model = arch_model(resid, p=1, q=1, rescale=False)
-    garch_result = garch_model.fit(disp='off')
+    garch_result = garch_model.fit(disp="off")
     return arima_result, garch_result
 
 
@@ -181,7 +183,7 @@ def predict_next_return(arima_result, garch_result):
     """
     Predicts the next return value using fitted `ARIMA` and `GARCH` models.
 
-    Combines the next period forecast from the `ARIMA` model 
+    Combines the next period forecast from the `ARIMA` model
     with the next period volatility forecast from the `GARCH` model
     to predict the next return value.
 
@@ -208,16 +210,16 @@ def predict_next_return(arima_result, garch_result):
     return pred + next_volatility
 
 
-def get_prediction(window_data:  Union[pd.Series, np.ndarray]):
+def get_prediction(window_data: Union[pd.Series, np.ndarray]):
     """
     Orchestrator function to get the next period's return prediction.
 
-    This function ties together the process of fitting 
+    This function ties together the process of fitting
     both `ARIMA` and `GARCH` models on the provided data
     and then predicting the next period's return using these models.
 
     Args:
-        window_data (Union[pd.Series , np.ndarray]): 
+        window_data (Union[pd.Series , np.ndarray]):
             Time series data to fit the models and predict the next return.
 
     Returns
@@ -228,12 +230,12 @@ def get_prediction(window_data:  Union[pd.Series, np.ndarray]):
     return prediction
 
 
-class ArimaGarchModel():
+class ArimaGarchModel:
     """
     This class implements a time serie model
-    that combines `ARIMA (AutoRegressive Integrated Moving Average)` 
+    that combines `ARIMA (AutoRegressive Integrated Moving Average)`
     and `GARCH (Generalized Autoregressive Conditional Heteroskedasticity)` models
-    to predict future returns based on historical price data. 
+    to predict future returns based on historical price data.
 
     The model is implemented in the following steps:
     1. Data Preparation: Load and prepare the historical price data.
@@ -273,14 +275,14 @@ class ArimaGarchModel():
     # Step 1: Data Preparation
     def load_and_prepare_data(self, df):
         """
-        Prepares the dataset by calculating logarithmic returns 
+        Prepares the dataset by calculating logarithmic returns
             and differencing if necessary.
 
         Args:
             df (pd.DataFrame): `The raw dataset containing at least the 'Close' prices`.
 
         Returns:
-            pd.DataFrame: The dataset with additional columns 
+            pd.DataFrame: The dataset with additional columns
                 for log returns and differenced log returns.
         """
         return load_and_prepare_data(df)
@@ -288,7 +290,7 @@ class ArimaGarchModel():
     # Step 2: Modeling (ARIMA + GARCH)
     def fit_best_arima(self, window_data):
         """
-        Fits the ARIMA model to the provided window of data, 
+        Fits the ARIMA model to the provided window of data,
             selecting the best model based on AIC.
 
         Args:
@@ -313,37 +315,36 @@ class ArimaGarchModel():
 
     def show_arima_garch_results(self, window_data, acf=True, test_resid=True):
         """
-        Displays the ARIMA and GARCH model results, including plotting 
+        Displays the ARIMA and GARCH model results, including plotting
         ACF of residuals and conducting , Box-Pierce and Ljung-Box tests.
 
         Args:
             window_data (np.array): The dataset for a specific window period.
             acf (bool, optional): If True, plot the ACF of residuals. Defaults to True.
 
-            test_resid (bool, optional): 
+            test_resid (bool, optional):
                 If True, conduct Box-Pierce and Ljung-Box tests on residuals. Defaults to True.
         """
         arima_result = self.fit_best_arima(window_data)
         resid = np.asarray(arima_result.resid)
         resid = resid[~(np.isnan(resid) | np.isinf(resid))]
         garch_model = arch_model(resid, p=1, q=1, rescale=False)
-        garch_result = garch_model.fit(disp='off')
+        garch_result = garch_model.fit(disp="off")
         residuals = garch_result.resid
 
         # TODO : Plot the ACF of the residuals
         if acf:
             fig = plt.figure(figsize=(12, 8))
             # Plot the ACF of ARIMA residuals
-            ax1 = fig.add_subplot(211, ylabel='ACF')
-            plot_acf(resid, alpha=0.05, ax=ax1, title='ACF of ARIMA Residuals')
-            ax1.set_xlabel('Lags')
+            ax1 = fig.add_subplot(211, ylabel="ACF")
+            plot_acf(resid, alpha=0.05, ax=ax1, title="ACF of ARIMA Residuals")
+            ax1.set_xlabel("Lags")
             ax1.grid(True)
 
             # Plot the ACF of GARCH residuals on the same axes
-            ax2 = fig.add_subplot(212, ylabel='ACF')
-            plot_acf(residuals, alpha=0.05, ax=ax2,
-                     title='ACF of GARCH  Residuals')
-            ax2.set_xlabel('Lags')
+            ax2 = fig.add_subplot(212, ylabel="ACF")
+            plot_acf(residuals, alpha=0.05, ax=ax2, title="ACF of GARCH  Residuals")
+            ax2.set_xlabel("Lags")
             ax2.grid(True)
 
             # Plot the figure
@@ -360,7 +361,7 @@ class ArimaGarchModel():
     # Step 3: Prediction
     def predict_next_return(self, arima_result, garch_result):
         """
-        Predicts the next return using the ARIMA model 
+        Predicts the next return using the ARIMA model
             and the next volatility using the GARCH model.
 
         Args:
@@ -407,7 +408,7 @@ class ArimaGarchModel():
 
     def execute_trading_strategy(self, predictions):
         """
-        Executes the trading strategy based on a list 
+        Executes the trading strategy based on a list
         of predictions, determining positions to take.
 
         Args:
@@ -439,14 +440,15 @@ class ArimaGarchModel():
         window_size = self.k
         for i in range(window_size, len(data)):
             print(
-                f"Processing window {i - window_size + 1}/{len(data) - window_size}...")
-            window_data = data['diff_log_return'].iloc[i-window_size:i]
+                f"Processing window {i - window_size + 1}/{len(data) - window_size}..."
+            )
+            window_data = data["diff_log_return"].iloc[i - window_size : i]
             next_return = self.get_prediction(window_data)
             yield next_return
 
     def backtest_strategy(self):
         """
-        Performs a backtest of the strategy over 
+        Performs a backtest of the strategy over
         the entire dataset, plotting cumulative returns.
         """
         data = self.data
@@ -454,26 +456,27 @@ class ArimaGarchModel():
         print(
             f"Starting backtesting for {self.symbol}\n"
             f"Window size {window_size}.\n"
-            f"Total iterations: {len(data) - window_size}.\n")
+            f"Total iterations: {len(data) - window_size}.\n"
+        )
         predictions_generator = self.generate_predictions()
 
         positions = self.execute_trading_strategy(predictions_generator)
 
-        strategy_returns = np.array(
-            positions[:-1]) * data['log_return'].iloc[window_size+1:].values
-        buy_and_hold = data['log_return'].iloc[window_size+1:].values
+        strategy_returns = (
+            np.array(positions[:-1]) * data["log_return"].iloc[window_size + 1 :].values
+        )
+        buy_and_hold = data["log_return"].iloc[window_size + 1 :].values
         buy_and_hold_returns = np.cumsum(buy_and_hold)
         cumulative_returns = np.cumsum(strategy_returns)
-        dates = data.index[window_size+1:]
-        self.plot_cumulative_returns(
-            cumulative_returns, buy_and_hold_returns, dates)
+        dates = data.index[window_size + 1 :]
+        self.plot_cumulative_returns(cumulative_returns, buy_and_hold_returns, dates)
 
         print("\nBacktesting completed !!")
 
     # Function to plot the cumulative returns
     def plot_cumulative_returns(self, strategy_returns, buy_and_hold_returns, dates):
         """
-        Plots the cumulative returns of the ARIMA+GARCH strategy against 
+        Plots the cumulative returns of the ARIMA+GARCH strategy against
             a buy-and-hold strategy.
 
         Args:
@@ -482,11 +485,11 @@ class ArimaGarchModel():
             dates (pd.Index): The dates corresponding to the returns.
         """
         plt.figure(figsize=(14, 7))
-        plt.plot(dates, strategy_returns, label='ARIMA+GARCH ', color='blue')
-        plt.plot(dates, buy_and_hold_returns, label='Buy & Hold', color='red')
-        plt.xlabel('Time')
-        plt.ylabel('Cumulative Returns')
-        plt.title(f'ARIMA+GARCH Strategy vs. Buy & Hold on ({self.symbol})')
+        plt.plot(dates, strategy_returns, label="ARIMA+GARCH ", color="blue")
+        plt.plot(dates, buy_and_hold_returns, label="Buy & Hold", color="red")
+        plt.xlabel("Time")
+        plt.ylabel("Cumulative Returns")
+        plt.title(f"ARIMA+GARCH Strategy vs. Buy & Hold on ({self.symbol})")
         plt.legend()
         plt.grid(True)
         plt.show()
@@ -497,11 +500,11 @@ class ArimaGarchModel():
 # *********************************************
 def get_corr(tickers: Union[List[str], Tuple[str, ...]], start: str, end: str) -> None:
     """
-    Calculates and prints the correlation matrix of the adjusted closing prices 
+    Calculates and prints the correlation matrix of the adjusted closing prices
     for a given list of stock tickers within a specified date range.
 
     Args:
-        tickers (Union[List[str] , Tuple[str, ...]]): 
+        tickers (Union[List[str] , Tuple[str, ...]]):
         A list or tuple of valid stock tickers (e.g., ['AAPL', 'MSFT', 'GOOG']).
         start (str): The start date for the historical data in 'YYYY-MM-DD' format.
         end (str): The end date for the historical data in 'YYYY-MM-DD' format.
@@ -511,8 +514,9 @@ def get_corr(tickers: Union[List[str], Tuple[str, ...]], start: str, end: str) -
     >>> get_corr(['AAPL', 'MSFT', 'GOOG'], '2023-01-01', '2023-12-31')
     """
     # Download historical data
-    data = yf.download(tickers, start=start, end=end,
-                       multi_level_index=False)['Adj Close']
+    data = yf.download(tickers, start=start, end=end, multi_level_index=False)[
+        "Adj Close"
+    ]
 
     # Calculate correlation matrix
     correlation_matrix = data.corr()
@@ -527,8 +531,8 @@ def plot_price_series(df: pd.DataFrame, ts1: str, ts2: str):
     the specified date range.
 
     Args:
-        df (pd.DataFrame): 
-            The DataFrame containing prices for each series 
+        df (pd.DataFrame):
+            The DataFrame containing prices for each series
         ts1 (str): The first time series column name
         ts2 (str): The second time series column name
     """
@@ -537,9 +541,9 @@ def plot_price_series(df: pd.DataFrame, ts1: str, ts2: str):
     ax.plot(df.index, df[ts2], label=ts2)
 
     fig.autofmt_xdate()
-    plt.xlabel('Month/Year')
-    plt.ylabel('Price ($)')
-    plt.title(f'{ts1} and {ts2} Daily Prices ')
+    plt.xlabel("Month/Year")
+    plt.ylabel("Price ($)")
+    plt.title(f"{ts1} and {ts2} Daily Prices ")
     plt.legend()
     plt.show()
 
@@ -551,20 +555,24 @@ def plot_scatter_series(df: pd.DataFrame, ts1: str, ts2: str):
 
     Args:
         df (pd.DataFrame):
-            The DataFrame containing prices for each series 
+            The DataFrame containing prices for each series
         ts1 (str): The first time series column name
         ts2 (str): The second time series column name
     """
-    plt.xlabel(f'{ts1} Price ($)')
-    plt.ylabel(f'{ts2} Price ($)')
-    plt.title(f'{ts1} and {ts2} Price Scatterplot')
+    plt.xlabel(f"{ts1} Price ($)")
+    plt.ylabel(f"{ts2} Price ($)")
+    plt.title(f"{ts1} and {ts2} Price Scatterplot")
     plt.scatter(df[ts1], df[ts2])
 
     # Plot the regression line
-    plt.plot(df[ts1], results.fittedvalues,
-             linestyle='--', color='red', linewidth=2,
-             label='Regression Line'
-             )
+    plt.plot(
+        df[ts1],
+        results.fittedvalues,
+        linestyle="--",
+        color="red",
+        linewidth=2,
+        label="Regression Line",
+    )
     plt.legend()
     plt.show()
 
@@ -575,31 +583,33 @@ def plot_residuals(df: pd.DataFrame):
     time series.
 
     Args:
-        df (pd.DataFrame): 
-            The DataFrame containing prices for each series 
+        df (pd.DataFrame):
+            The DataFrame containing prices for each series
     """
     fig, ax = plt.subplots()
     ax.plot(df.index, df["res"], label="Residuals")
 
     fig.autofmt_xdate()
-    plt.xlabel('Month/Year')
-    plt.ylabel('Price ($)')
-    plt.title('Residual Plot')
+    plt.xlabel("Month/Year")
+    plt.ylabel("Price ($)")
+    plt.title("Residual Plot")
     plt.legend()
     plt.show()
 
 
-def run_cadf_test(pair: Union[List[str], Tuple[str, ...]], start: str, end: str) -> None:
+def run_cadf_test(
+    pair: Union[List[str], Tuple[str, ...]], start: str, end: str
+) -> None:
     """
-    Performs the Cointegration Augmented Dickey-Fuller (CADF) test on a pair of stock tickers 
+    Performs the Cointegration Augmented Dickey-Fuller (CADF) test on a pair of stock tickers
     over a specified date range to check for cointegration.
 
     The function downloads historical adjusted closing prices for the specified pair of stock tickers,
-    calculates the optimal hedge ratio (beta) using Ordinary Least Squares (OLS) regression, plots the 
+    calculates the optimal hedge ratio (beta) using Ordinary Least Squares (OLS) regression, plots the
     time series and their residuals, and finally performs the CADF test on the residuals.
 
     Args:
-        pair (List[str] or Tuple[str, ...]): 
+        pair (List[str] or Tuple[str, ...]):
             A list or tuple containing two valid stock tickers (e.g., ['AAPL', 'MSFT']).
         start (str): The start date for the historical data in 'YYYY-MM-DD' format.
         end (str): The end date for the historical data in 'YYYY-MM-DD' format.
@@ -609,7 +619,7 @@ def run_cadf_test(pair: Union[List[str], Tuple[str, ...]], start: str, end: str)
         >>> run_cadf_test(['AAPL', 'MSFT'], '2023-01-01', '2023-12-31')
         >>> Regression Metrics:
         >>> Optimal Hedge Ratio (Beta): 2.2485845594120333
-        >>> Result Parmas: 
+        >>> Result Parmas:
 
         >>> const   -74.418034
         >>> AAPL      2.248585
@@ -656,10 +666,8 @@ def run_cadf_test(pair: Union[List[str], Tuple[str, ...]], start: str, end: str)
     """
     # Download historical data for required stocks
     p0, p1 = pair[0], pair[1]
-    _p0 = yf.download(p0, start=start, end=end,
-                      progress=False, multi_level_index=False)
-    _p1 = yf.download(p1, start=start, end=end,
-                      progress=False, multi_level_index=False)
+    _p0 = yf.download(p0, start=start, end=end, progress=False, multi_level_index=False)
+    _p1 = yf.download(p1, start=start, end=end, progress=False, multi_level_index=False)
     df = pd.DataFrame(index=_p0.index)
     df[p0] = _p0["Adj Close"]
     df[p1] = _p1["Adj Close"]
@@ -688,14 +696,14 @@ def run_cadf_test(pair: Union[List[str], Tuple[str, ...]], start: str, end: str)
     # Display regression metrics
     print("\nRegression Metrics:")
     print(f"Optimal Hedge Ratio (Beta): {beta_hr}")
-    print('Result Parmas: \n')
+    print("Result Parmas: \n")
     print(results.params)
     print("\nRegression Summary:")
     print(results.summary())
 
     # Calculate and output the CADF test on the residuals
     print("\nCointegration TEST Results:")
-    cadf = ts.adfuller(df["res"], autolag='AIC')
+    cadf = ts.adfuller(df["res"], autolag="AIC")
     pprint.pprint(cadf)
 
 
@@ -715,18 +723,19 @@ def _hurst(ts):
     # Return the Hurst exponent from the polyfit output
     return poly[0] * 2.0
 
+
 # Function to calculate Hurst Exponent
 
 
 def hurst(time_series):
-    H, c, data_range = compute_Hc(time_series, kind='price', simplified=True)
+    H, c, data_range = compute_Hc(time_series, kind="price", simplified=True)
     return H
 
 
 def run_hurst_test(symbol: str, start: str, end: str):
     """
     Calculates and prints the Hurst Exponent for a given stock's adjusted closing prices
-    within a specified date range, and for three generated series (Geometric Brownian Motion, 
+    within a specified date range, and for three generated series (Geometric Brownian Motion,
     Mean-Reverting, and Trending).
 
     The Hurst Exponent is used to determine the long-term memory of a time series.
@@ -741,13 +750,14 @@ def run_hurst_test(symbol: str, start: str, end: str):
 
     >>> run_hurst_test('AAPL', '2023-01-01', '2023-12-31')
     """
-    data = yf.download(symbol, start=start, end=end,
-                       progress=False, multi_level_index=False)
+    data = yf.download(
+        symbol, start=start, end=end, progress=False, multi_level_index=False
+    )
 
     # Create a Geometric Brownian Motion, Mean-Reverting, and Trending Series
-    gbm = np.log(np.cumsum(np.random.randn(100000))+1000)
-    mr = np.log(np.random.randn(100000)+1000)
-    tr = np.log(np.cumsum(np.random.randn(100000)+1)+1000)
+    gbm = np.log(np.cumsum(np.random.randn(100000)) + 1000)
+    mr = np.log(np.random.randn(100000) + 1000)
+    tr = np.log(np.cumsum(np.random.randn(100000) + 1) + 1000)
 
     # Output the Hurst Exponent for each of the series
     print(f"\nHurst(GBM):  {_hurst(gbm)}")
@@ -759,8 +769,12 @@ def run_hurst_test(symbol: str, start: str, end: str):
 def test_cointegration(ticker1, ticker2, start, end):
     # Download historical data
     stock_data_pair = yf.download(
-        [ticker1, ticker2], start=start, end=end, progress=False, multi_level_index=False
-    )['Adj Close'].dropna()
+        [ticker1, ticker2],
+        start=start,
+        end=end,
+        progress=False,
+        multi_level_index=False,
+    )["Adj Close"].dropna()
 
     # Perform Johansen cointegration test
     result = coint_johansen(stock_data_pair, det_order=0, k_ar_diff=1)
@@ -812,19 +826,21 @@ def draw_date_coloured_scatterplot(etfs, prices):
     changing relationship between the sets of prices
     """
     plen = len(prices)
-    colour_map = plt.cm.get_cmap('YlOrRd')
+    colour_map = plt.cm.get_cmap("YlOrRd")
     colours = np.linspace(0.1, 1, plen)
 
     scatterplot = plt.scatter(
-        prices[etfs[0]], prices[etfs[1]],
-        s=30, c=colours, cmap=colour_map,
-        edgecolor='k', alpha=0.8
+        prices[etfs[0]],
+        prices[etfs[1]],
+        s=30,
+        c=colours,
+        cmap=colour_map,
+        edgecolor="k",
+        alpha=0.8,
     )
 
     colourbar = plt.colorbar(scatterplot)
-    colourbar.ax.set_yticklabels(
-        [str(p.date()) for p in prices[::plen//9].index]
-    )
+    colourbar.ax.set_yticklabels([str(p.date()) for p in prices[:: plen // 9].index])
 
     plt.xlabel(prices.columns[0])
     plt.ylabel(prices.columns[1])
@@ -842,11 +858,11 @@ def calc_slope_intercept_kalman(etfs, prices):
 
     kf = KalmanFilter(dim_x=2, dim_z=1)
     kf.x = np.zeros((2, 1))  # Initial state
-    kf.P = np.ones((2, 2)) * 1000.  # Initial covariance,
+    kf.P = np.ones((2, 2)) * 1000.0  # Initial covariance,
     # large to represent high uncertainty
     kf.F = np.eye(2)  # State transition matrix
     kf.Q = trans_cov  # Process noise covariance
-    kf.R = 1.  # Scalar measurement noise covariance
+    kf.R = 1.0  # Scalar measurement noise covariance
 
     state_means, state_covs = [], []
     for time, z in enumerate(prices[etfs[1]].values):
@@ -869,23 +885,25 @@ def draw_slope_intercept_changes(prices, state_means):
     """
     print(f"First Slops : {state_means[0, 0]}")
     print(f"First intercept : {state_means[0, 1]}")
-    pd.DataFrame({
-        'slope': state_means[:, 0].flatten(),
-        'intercept': state_means[:, 1].flatten()
-    }, index=prices.index
+    pd.DataFrame(
+        {
+            "slope": state_means[:, 0].flatten(),
+            "intercept": state_means[:, 1].flatten(),
+        },
+        index=prices.index,
     ).plot(subplots=True)
     plt.show()
 
 
 def run_kalman_filter(
-        etfs: Union[List[str], Tuple[str, ...]],
-        start: str, end: str) -> None:
+    etfs: Union[List[str], Tuple[str, ...]], start: str, end: str
+) -> None:
     """
     Applies a Kalman filter to a pair of assets adjusted closing prices within a specified date range
     to estimate the slope and intercept over time.
 
     The function downloads historical adjusted closing prices for the specified pair of assets,
-    visualizes their price relationship, calculates the Kalman filter estimates for the slope and 
+    visualizes their price relationship, calculates the Kalman filter estimates for the slope and
     intercept, and visualizes the changes in these estimates over time.
 
     Args:
@@ -899,10 +917,8 @@ def run_kalman_filter(
 
     >>> run_kalman_filter(['SPY', 'QQQ'], '2023-01-01', '2023-12-31')
     """
-    etf_df1 = yf.download(etfs[0], start, end,
-                          progress=False, multi_level_index=False)
-    etf_df2 = yf.download(etfs[1], start, end,
-                          progress=False, multi_level_index=False)
+    etf_df1 = yf.download(etfs[0], start, end, progress=False, multi_level_index=False)
+    etf_df2 = yf.download(etfs[1], start, end, progress=False, multi_level_index=False)
 
     prices = pd.DataFrame(index=etf_df1.index)
     prices[etfs[0]] = etf_df1["Adj Close"]
@@ -913,12 +929,12 @@ def run_kalman_filter(
     draw_slope_intercept_changes(prices, state_means)
 
 
-class KalmanFilterModel():
+class KalmanFilterModel:
     """
-    Implements a Kalman Filter model a recursive algorithm used for estimating 
-    the state of a linear dynamic system from a series of noisy measurements. 
-    It's designed to process market data, estimate dynamic parameters such as 
-    the slope and intercept of price relationships, 
+    Implements a Kalman Filter model a recursive algorithm used for estimating
+    the state of a linear dynamic system from a series of noisy measurements.
+    It's designed to process market data, estimate dynamic parameters such as
+    the slope and intercept of price relationships,
     forecast error and standard deviation of the predictions
 
     You can learn more here https://en.wikipedia.org/wiki/Kalman_filter
@@ -929,7 +945,7 @@ class KalmanFilterModel():
         Initializes the Kalman Filter strategy.
 
         Args:
-            tickers : 
+            tickers :
             A list or tuple of ticker symbols representing financial instruments.
 
             kwargs : Keyword arguments for additional parameters,
@@ -943,14 +959,14 @@ class KalmanFilterModel():
         self.P = np.zeros((2, 2))
         self.delta = kwargs.get("delta", 1e-4)
         self.vt = kwargs.get("vt", 1e-3)
-        self.wt = self.delta/(1-self.delta) * np.eye(2)
+        self.wt = self.delta / (1 - self.delta) * np.eye(2)
         self.latest_prices = np.array([-1.0, -1.0])
         self.kf = self._init_kalman()
 
     def _init_kalman(self):
         """
-        Initializes and returns a Kalman Filter configured 
-        for the trading strategy. The filter is set up with initial 
+        Initializes and returns a Kalman Filter configured
+        for the trading strategy. The filter is set up with initial
         state and covariance, state transition matrix, process noise
         and measurement noise covariances.
         """
@@ -959,7 +975,7 @@ class KalmanFilterModel():
         kf.P = self.P  # Initial covariance
         kf.F = np.eye(2)  # State transition matrix
         kf.Q = self.wt  # Process noise covariance
-        kf.R = 1.  # Scalar measurement noise covariance
+        kf.R = 1.0  # Scalar measurement noise covariance
 
         return kf
 
@@ -967,9 +983,9 @@ class KalmanFilterModel():
 
     def calc_slope_intercep(self, prices: Array) -> Tuple:
         """
-        Calculates and returns the slope and intercept 
-        of the relationship between the provided prices using the Kalman Filter. 
-        This method updates the filter with the latest price and returns 
+        Calculates and returns the slope and intercept
+        of the relationship between the provided prices using the Kalman Filter.
+        This method updates the filter with the latest price and returns
         the estimated slope and intercept.
 
         Args:
@@ -1044,39 +1060,37 @@ class KalmanFilterModel():
         else:
             return None
 
+
 # ******************************************
 #         ORNSTEIN UHLENBECK PROCESS       *
 # ******************************************
 
 
-class OrnsteinUhlenbeck():
+class OrnsteinUhlenbeck:
     """
-    The Ornstein-Uhlenbeck process is a mathematical model 
-    used to describe the behavior of a mean-reverting stochastic process. 
-    We use it  to model the price dynamics of an asset that tends 
+    The Ornstein-Uhlenbeck process is a mathematical model
+    used to describe the behavior of a mean-reverting stochastic process.
+    We use it  to model the price dynamics of an asset that tends
     to revert to a long-term mean.
 
-    We Estimate the drift (θ), volatility (σ), and long-term mean (μ) 
-    based on historical price data; then we Simulate the OU process 
+    We Estimate the drift (θ), volatility (σ), and long-term mean (μ)
+    based on historical price data; then we Simulate the OU process
     using the estimated parameters.
 
     https://en.wikipedia.org/wiki/Ornstein%E2%80%93Uhlenbeck_process
     """
 
-    def __init__(
-        self, prices: np.ndarray,
-        returns: bool = True, timeframe: str = "D1"
-    ):
+    def __init__(self, prices: np.ndarray, returns: bool = True, timeframe: str = "D1"):
         """
         Initializes the OrnsteinUhlenbeck instance.
 
         Args:
             prices (np.ndarray) : Historical close prices.
 
-            retrurns (bool) : Use it to indicate weither 
+            retrurns (bool) : Use it to indicate weither
                 you want  to simulate the returns or your raw data
 
-            timeframe (str) : The time  frame for the Historical prices 
+            timeframe (str) : The time  frame for the Historical prices
                 (1m, 5m, 15m, 30m, 1h, 4h, D1)
         """
         self.prices = prices
@@ -1087,13 +1101,13 @@ class OrnsteinUhlenbeck():
             self.returns = self.prices
 
         time_frame_mapping = {
-            '1m':  1 / (24 * 60),    # 1 minute intervals
-            '5m':  5 / (24 * 60),    # 5 minute intervals
-            '15m': 15 / (24 * 60),   # 15 minute intervals
-            '30m': 30 / (24 * 60),   # 30 minute intervals
-            '1h':  1 / 24,           # 1 hour intervals
-            '4h':  4 / 24,           # 4 hour intervals
-            'D1':  1,                # Daily intervals
+            "1m": 1 / (24 * 60),  # 1 minute intervals
+            "5m": 5 / (24 * 60),  # 5 minute intervals
+            "15m": 15 / (24 * 60),  # 15 minute intervals
+            "30m": 30 / (24 * 60),  # 30 minute intervals
+            "1h": 1 / 24,  # 1 hour intervals
+            "4h": 4 / 24,  # 4 hour intervals
+            "D1": 1,  # Daily intervals
         }
         if timeframe not in time_frame_mapping:
             raise ValueError("Unsupported time frame")
@@ -1103,9 +1117,9 @@ class OrnsteinUhlenbeck():
         self.mu_hat = params[0]  # Mean (μ)
         self.theta_hat = params[1]  # Drift (θ)
         self.sigma_hat = params[2]  # Volatility (σ)
-        print(f'Estimated μ: {self.mu_hat}')
-        print(f'Estimated θ: {self.theta_hat}')
-        print(f'Estimated σ: {self.sigma_hat}')
+        print(f"Estimated μ: {self.mu_hat}")
+        print(f"Estimated θ: {self.theta_hat}")
+        print(f"Estimated σ: {self.sigma_hat}")
 
     def ornstein_uhlenbeck(self, mu, theta, sigma, dt, X0, n):
         """
@@ -1127,7 +1141,7 @@ class OrnsteinUhlenbeck():
         for t in range(1, n):
             dW = np.random.normal(loc=0, scale=np.sqrt(dt))
             # O-U process differential equation
-            x[t] = x[t-1] + (theta * (mu - x[t-1]) * dt) + (sigma * dW)
+            x[t] = x[t - 1] + (theta * (mu - x[t - 1]) * dt) + (sigma * dW)
             # dW is a Wiener process
             # (theta * (mu - x[t-1]) * dt) represents the mean-reverting tendency
             # (sigma * dW) represents the random volatility
@@ -1135,22 +1149,20 @@ class OrnsteinUhlenbeck():
 
     def estimate_parameters(self):
         """
-        Estimates the mean-reverting parameters (μ, θ, σ) 
+        Estimates the mean-reverting parameters (μ, θ, σ)
         using the negative log-likelihood.
 
         Returns:
             Tuple: Estimated μ, θ, and σ.
         """
         initial_guess = [0, 0.1, np.std(self.returns)]
-        result = minimize(
-            self._neg_log_likelihood, initial_guess, args=(self.returns,)
-        )
+        result = minimize(self._neg_log_likelihood, initial_guess, args=(self.returns,))
         mu, theta, sigma = result.x
         return mu, theta, sigma
 
     def _neg_log_likelihood(self, params, returns):
         """
-        Calculates the negative 
+        Calculates the negative
             log-likelihood for parameter estimation.
 
         Args:
@@ -1163,13 +1175,11 @@ class OrnsteinUhlenbeck():
         mu, theta, sigma = params
         dt = self.tf
         n = len(returns)
-        ou_simulated = self.ornstein_uhlenbeck(
-            mu, theta, sigma, dt, 0, n + 1
+        ou_simulated = self.ornstein_uhlenbeck(mu, theta, sigma, dt, 0, n + 1)
+        residuals = ou_simulated[1 : n + 1] - returns
+        neg_ll = 0.5 * np.sum(residuals**2) / sigma**2 + 0.5 * n * np.log(
+            2 * np.pi * sigma**2
         )
-        residuals = ou_simulated[1:n + 1] - returns
-        neg_ll = 0.5 * np.sum(
-            residuals**2
-        ) / sigma**2 + 0.5 * n * np.log(2 * np.pi * sigma**2)
         return neg_ll
 
     def simulate_process(self, returns=None, n=100, p=None):
@@ -1192,35 +1202,32 @@ class OrnsteinUhlenbeck():
             T = len(returns)
         dt = self.tf
 
-        dW_matrix = np.random.normal(
-            loc=0, scale=np.sqrt(dt), size=(n, T)
-        )
+        dW_matrix = np.random.normal(loc=0, scale=np.sqrt(dt), size=(n, T))
         simulations_matrix = np.zeros((n, T))
         simulations_matrix[:, 0] = returns[-1]
 
         for t in range(1, T):
             simulations_matrix[:, t] = (
-                simulations_matrix[:, t-1] +
-                self.theta_hat * (
-                    self.mu_hat - simulations_matrix[:, t-1]) * dt +
-                self.sigma_hat * dW_matrix[:, t]
+                simulations_matrix[:, t - 1]
+                + self.theta_hat * (self.mu_hat - simulations_matrix[:, t - 1]) * dt
+                + self.sigma_hat * dW_matrix[:, t]
             )
         return simulations_matrix
 
 
-def remove_correlated_assets(df: pd.DataFrame, cutoff=.99):
+def remove_correlated_assets(df: pd.DataFrame, cutoff=0.99):
     """
-    Removes highly correlated assets from a DataFrame based on a specified correlation cutoff threshold. 
+    Removes highly correlated assets from a DataFrame based on a specified correlation cutoff threshold.
     This is useful in financial data analysis to reduce redundancy and multicollinearity in portfolios or datasets.
 
     Args:
-        df (pd.DataFrame): A DataFrame where each column represents an asset 
+        df (pd.DataFrame): A DataFrame where each column represents an asset
             and rows represent observations (e.g., time-series data).
-        cutoff (float, optional, default=0.99): The correlation threshold. 
+        cutoff (float, optional, default=0.99): The correlation threshold.
             Columns with absolute correlation greater than this value will be considered for removal.
 
     Returns:
-        pd.DataFrame: A DataFrame with less correlated assets. 
+        pd.DataFrame: A DataFrame with less correlated assets.
             The columns that are highly correlated (above the cutoff) are removed.
 
     References
@@ -1255,8 +1262,8 @@ def remove_correlated_assets(df: pd.DataFrame, cutoff=.99):
 
 def check_stationarity(df: pd.DataFrame):
     """
-    Tests the stationarity of time-series data for each asset in the DataFrame 
-    using the Augmented Dickey-Fuller (ADF) test. Stationarity is a key property 
+    Tests the stationarity of time-series data for each asset in the DataFrame
+    using the Augmented Dickey-Fuller (ADF) test. Stationarity is a key property
     in time-series analysis, and non-stationary data can affect model performance.
 
     Args:
@@ -1282,19 +1289,19 @@ def check_stationarity(df: pd.DataFrame):
     """
     results = []
     for ticker, prices in df.items():
-        results.append([ticker, adfuller(prices, regression='ct')[1]])
-    return pd.DataFrame(results, columns=['ticker', 'adf']).sort_values('adf')
+        results.append([ticker, adfuller(prices, regression="ct")[1]])
+    return pd.DataFrame(results, columns=["ticker", "adf"]).sort_values("adf")
 
 
-def remove_stationary_assets(df: pd.DataFrame, pval=.05):
+def remove_stationary_assets(df: pd.DataFrame, pval=0.05):
     """
-    Filters out stationary assets from the DataFrame based on the p-value obtained 
-    from the Augmented Dickey-Fuller test. 
+    Filters out stationary assets from the DataFrame based on the p-value obtained
+    from the Augmented Dickey-Fuller test.
     Useful for focusing only on non-stationary time-series data.
 
     Args:
         df (pd.DataFrame): A DataFrame where each column represents a time series of an asset.
-        pval (float, optional, default=0.05): The significance level to determine stationarity. 
+        pval (float, optional, default=0.05): The significance level to determine stationarity.
             Columns with an ADF test p-value below this threshold are considered stationary and removed.
 
     Returns:
@@ -1314,7 +1321,7 @@ def remove_stationary_assets(df: pd.DataFrame, pval=.05):
     >>> df = remove_stationary_assets(df)
     """
     test_result = check_stationarity(df)
-    stationary = test_result.loc[test_result.adf <= pval, 'ticker'].tolist()
+    stationary = test_result.loc[test_result.adf <= pval, "ticker"].tolist()
     return df.drop(stationary, axis=1).sort_index()
 
 
@@ -1338,49 +1345,48 @@ def select_assets(df: pd.DataFrame, n=100, start=None, end=None, rolling_window=
     ----------
     Stefan Jansen (2020). Machine Learning for Algorithmic Trading - Second Edition.
     chapter 9, Time-Series Models for Volatility Forecasts and Statistical Arbitrage.
-        """
-    required_columns = {'close', 'volume'}
+    """
+    required_columns = {"close", "volume"}
     if not required_columns.issubset(df.columns):
         raise ValueError(
-            f"Input DataFrame must contain {required_columns}, but got {df.columns.tolist()}.")
+            f"Input DataFrame must contain {required_columns}, but got {df.columns.tolist()}."
+        )
 
-    if not isinstance(df.index, pd.MultiIndex) or 'ticker' not in df.index.names or 'date' not in df.index.names:
-        raise ValueError(
-            "Index must be a MultiIndex with levels ['ticker', 'date'].")
+    if (
+        not isinstance(df.index, pd.MultiIndex)
+        or "ticker" not in df.index.names
+        or "date" not in df.index.names
+    ):
+        raise ValueError("Index must be a MultiIndex with levels ['ticker', 'date'].")
 
     df = df.copy()
     idx = pd.IndexSlice
-    start = start or df.index.get_level_values('date').min()
-    end = end or df.index.get_level_values('date').max()
-    df = (df
-          .loc[lambda df: ~df.index.duplicated()]
-          .sort_index()
-          .loc[idx[:, f'{start}':f'{end}'], :]
-          .assign(dv=lambda df: df.close.mul(df.volume)))
+    start = start or df.index.get_level_values("date").min()
+    end = end or df.index.get_level_values("date").max()
+    df = (
+        df.loc[lambda df: ~df.index.duplicated()]
+        .sort_index()
+        .loc[idx[:, f"{start}" : f"{end}"], :]
+        .assign(dv=lambda df: df.close.mul(df.volume))
+    )
 
     if rolling_window is None:
-        most_traded = (df.groupby(level='ticker')
-                       .dv.mean()
-                       .nlargest(n=n).index)
+        most_traded = df.groupby(level="ticker").dv.mean().nlargest(n=n).index
     else:
         # Calculate the rolling average of dollar volume
-        df['dv_rolling_avg'] = (
+        df["dv_rolling_avg"] = (
             df.groupby(level=0)
-            .dv
-            .rolling(window=rolling_window, min_periods=1)
+            .dv.rolling(window=rolling_window, min_periods=1)
             .mean()
             .reset_index(level=0, drop=True)
         )
-        most_traded = (
-            df.groupby(level=0)['dv_rolling_avg']
-            .mean()
-            .nlargest(n=n)
-            .index
-        )
-    df = (df.loc[idx[most_traded, :], 'close']
-          .unstack('ticker')
-          .ffill(limit=5)
-          .dropna(axis=1))
+        most_traded = df.groupby(level=0)["dv_rolling_avg"].mean().nlargest(n=n).index
+    df = (
+        df.loc[idx[most_traded, :], "close"]
+        .unstack("ticker")
+        .ffill(limit=5)
+        .dropna(axis=1)
+    )
     df = remove_correlated_assets(df)
     df = remove_stationary_assets(df)
     return df.sort_index()
@@ -1388,14 +1394,14 @@ def select_assets(df: pd.DataFrame, n=100, start=None, end=None, rolling_window=
 
 def compute_pair_metrics(security: pd.Series, candidates: pd.DataFrame):
     """
-    Calculates statistical and econometric metrics for a target security and a set of candidate securities. 
-    These metrics are useful in financial modeling and pairs trading strategies, 
+    Calculates statistical and econometric metrics for a target security and a set of candidate securities.
+    These metrics are useful in financial modeling and pairs trading strategies,
     providing information about drift, volatility, correlation, and cointegration.
 
     Args:
-        security (pd.Series): A time-series of the target security's prices. 
+        security (pd.Series): A time-series of the target security's prices.
             The name of the Series should correspond to the security's identifier (e.g., ticker symbol).
-        candidates (pd.DataFrame): A DataFrame where each column represents a time-series of prices 
+        candidates (pd.DataFrame): A DataFrame where each column represents a time-series of prices
             for candidate securities to be evaluated against the target security.
 
     Returns:
@@ -1423,64 +1429,67 @@ def compute_pair_metrics(security: pd.Series, candidates: pd.DataFrame):
     X[:, 1] = np.arange(1, n + 1)
 
     # compute drift
-    drift = ((np.linalg.inv(X.T @ X) @ X.T @ spreads).iloc[1]
-             .to_frame('drift'))
+    drift = (np.linalg.inv(X.T @ X) @ X.T @ spreads).iloc[1].to_frame("drift")
 
     # compute volatility
-    vol = spreads.std().to_frame('vol')
+    vol = spreads.std().to_frame("vol")
 
     # returns correlation
-    corr_ret = (candidates.pct_change()
-                .corrwith(security.pct_change())
-                .to_frame('corr_ret'))
+    corr_ret = (
+        candidates.pct_change().corrwith(security.pct_change()).to_frame("corr_ret")
+    )
 
     # normalized price series correlation
-    corr = candidates.corrwith(security).to_frame('corr')
+    corr = candidates.corrwith(security).to_frame("corr")
     metrics = drift.join(vol).join(corr).join(corr_ret).assign(n=n)
 
     tests = []
     # run cointegration tests
     for candidate, prices in tqdm(candidates.items()):
-        df = pd.DataFrame({'s1': security, 's2': prices})
+        df = pd.DataFrame({"s1": security, "s2": prices})
         var = VAR(df.values)
         lags = var.select_order()  # select VAR order
-        k_ar_diff = lags.selected_orders['aic']
+        k_ar_diff = lags.selected_orders["aic"]
         # Johansen Test with constant Term and estd. lag order
         cj0 = coint_johansen(df, det_order=0, k_ar_diff=k_ar_diff)
         # Engle-Granger Tests
-        t1, p1 = coint(security, prices, trend='c')[:2]
-        t2, p2 = coint(prices, security, trend='c')[:2]
-        tests.append([ticker, candidate, t1, p1, t2, p2,
-                      k_ar_diff, *cj0.lr1])
-    columns = ['s1', 's2', 't1', 'p1', 't2',
-               'p2', 'k_ar_diff', 'trace0', 'trace1']
-    tests = pd.DataFrame(tests, columns=columns).set_index('s2')
+        t1, p1 = coint(security, prices, trend="c")[:2]
+        t2, p2 = coint(prices, security, trend="c")[:2]
+        tests.append([ticker, candidate, t1, p1, t2, p2, k_ar_diff, *cj0.lr1])
+    columns = ["s1", "s2", "t1", "p1", "t2", "p2", "k_ar_diff", "trace0", "trace1"]
+    tests = pd.DataFrame(tests, columns=columns).set_index("s2")
     return metrics.join(tests)
 
 
 __CRITICAL_VALUES = {
-    0: {.9: 13.4294, .95: 15.4943, .99: 19.9349},
-    1: {.9: 2.7055, .95: 3.8415, .99: 6.6349}
+    0: {0.9: 13.4294, 0.95: 15.4943, 0.99: 19.9349},
+    1: {0.9: 2.7055, 0.95: 3.8415, 0.99: 6.6349},
 }
 
 
-def find_cointegrated_pairs(securities: pd.DataFrame, candidates: pd.DataFrame,
-                            n=None, start=None, stop=None, coint=False):
+def find_cointegrated_pairs(
+    securities: pd.DataFrame,
+    candidates: pd.DataFrame,
+    n=None,
+    start=None,
+    stop=None,
+    coint=False,
+):
     """
-    Identifies cointegrated pairs between a target set of securities and candidate securities 
-    based on econometric tests. The function evaluates statistical relationships, 
-    such as cointegration and Engle-Granger significance, to determine pairs suitable 
+    Identifies cointegrated pairs between a target set of securities and candidate securities
+    based on econometric tests. The function evaluates statistical relationships,
+    such as cointegration and Engle-Granger significance, to determine pairs suitable
     for financial strategies like pairs trading.
 
     Args:
-        securities (`pd.DataFrame`): A DataFrame where each column represents the time-series 
+        securities (`pd.DataFrame`): A DataFrame where each column represents the time-series
             prices of target securities to evaluate.
-        candidates (`pd.DataFrame`): A DataFrame where each column represents the time-series 
+        candidates (`pd.DataFrame`): A DataFrame where each column represents the time-series
             prices of candidate securities to compare against the target securities.
         n (`int`, optional): The number of top pairs to return. If `None`, returns all pairs.
-        start (`str`, optional): Start date for slicing the data (e.g., 'YYYY-MM-DD'). 
+        start (`str`, optional): Start date for slicing the data (e.g., 'YYYY-MM-DD').
         stop (`str`, optional): End date for slicing the data (e.g., 'YYYY-MM-DD').
-        coint (`bool`, optional, default=False): 
+        coint (`bool`, optional, default=False):
             - If `True`, filters for pairs identified as cointegrated.
             - If `False`, returns all evaluated pairs.
 
@@ -1528,66 +1537,71 @@ def find_cointegrated_pairs(securities: pd.DataFrame, candidates: pd.DataFrame,
     >>>    | Security1| Candidate1| -3.5 | 0.01  | 1       | 1      | 1     |
     >>>    | Security2| Candidate2| -2.9 | 0.04  | 1       | 1      | 1     |
     """
-    trace0_cv = __CRITICAL_VALUES[0][.95]  # critical value for 0 cointegration relationships
+    trace0_cv = __CRITICAL_VALUES[0][
+        0.95
+    ]  # critical value for 0 cointegration relationships
     # critical value for 1 cointegration relationship
-    trace1_cv = __CRITICAL_VALUES[1][.95]
+    trace1_cv = __CRITICAL_VALUES[1][0.95]
     spreads = []
     if start is not None and stop is not None:
-        securities = securities.loc[str(start): str(stop), :]
-        candidates = candidates.loc[str(start): str(stop), :]
+        securities = securities.loc[str(start) : str(stop), :]
+        candidates = candidates.loc[str(start) : str(stop), :]
     for i, (ticker, prices) in enumerate(securities.items(), 1):
         try:
             df = compute_pair_metrics(prices, candidates)
-            spreads.append(df.set_index('s1', append=True))
+            spreads.append(df.set_index("s1", append=True))
         except np.linalg.LinAlgError:
             continue
     spreads = pd.concat(spreads)
-    spreads.index.names = ['s2', 's1']
+    spreads.index.names = ["s2", "s1"]
     spreads = spreads.swaplevel()
-    spreads['t'] = spreads[['t1', 't2']].min(axis=1)
-    spreads['p'] = spreads[['p1', 'p2']].min(axis=1)
-    spreads['joh_sig'] = ((spreads.trace0 > trace0_cv) &
-                          (spreads.trace1 > trace1_cv)).astype(int)
-    spreads['eg_sig'] = (spreads.p < .05).astype(int)
-    spreads['s1_dep'] = spreads.p1 < spreads.p2
-    spreads['coint'] = (spreads.joh_sig & spreads.eg_sig).astype(int)
+    spreads["t"] = spreads[["t1", "t2"]].min(axis=1)
+    spreads["p"] = spreads[["p1", "p2"]].min(axis=1)
+    spreads["joh_sig"] = (
+        (spreads.trace0 > trace0_cv) & (spreads.trace1 > trace1_cv)
+    ).astype(int)
+    spreads["eg_sig"] = (spreads.p < 0.05).astype(int)
+    spreads["s1_dep"] = spreads.p1 < spreads.p2
+    spreads["coint"] = (spreads.joh_sig & spreads.eg_sig).astype(int)
     # select top n pairs
     if coint:
         if n is not None:
-            top_pairs = (spreads.query('coint == 1')
-                         .sort_values('t', ascending=False)
-                         .head(n))
+            top_pairs = (
+                spreads.query("coint == 1").sort_values("t", ascending=False).head(n)
+            )
         else:
-            top_pairs = (spreads.query('coint == 1')
-                         .sort_values('t', ascending=False))
+            top_pairs = spreads.query("coint == 1").sort_values("t", ascending=False)
     else:
         if n is not None:
-            top_pairs = (spreads
-                         .sort_values('t', ascending=False)
-                         .head(n))
+            top_pairs = spreads.sort_values("t", ascending=False).head(n)
         else:
-            top_pairs = (spreads
-                         .sort_values('t', ascending=False))
+            top_pairs = spreads.sort_values("t", ascending=False)
     return top_pairs
 
 
-def analyze_cointegrated_pairs(spreads: pd.DataFrame, plot_coint=True, crosstab=False,
-                               heuristics=False, log_reg=False, decis_tree=False):
+def analyze_cointegrated_pairs(
+    spreads: pd.DataFrame,
+    plot_coint=True,
+    crosstab=False,
+    heuristics=False,
+    log_reg=False,
+    decis_tree=False,
+):
     """
     Analyzes cointegrated pairs by visualizing, summarizing, and applying predictive models.
 
     Args:
         spreads (pd.DataFrame):
-            A DataFrame containing cointegration metrics and characteristics. 
+            A DataFrame containing cointegration metrics and characteristics.
             Required columns: 'coint', 't', 'trace0', 'trace1', 'drift', 'vol', 'corr', 'corr_ret', 'eg_sig', 'joh_sig'.
         plot_coint (bool, optional):
             If True, generates scatterplots and boxplots to visualize cointegration characteristics.
         cosstab (bool, optional):
             If True, displays crosstabulations of Engle-Granger and Johansen test significance.
         heuristics (bool, optional):
-            If True, prints descriptive statistics for drift, volatility, and correlation grouped by cointegration status. 
+            If True, prints descriptive statistics for drift, volatility, and correlation grouped by cointegration status.
         log_reg (bool, optional):
-            If True, fits a logistic regression model to predict cointegration and evaluates its performance. 
+            If True, fits a logistic regression model to predict cointegration and evaluates its performance.
         decis_tree (bool, optional):
             If True, fits a decision tree model to predict cointegration and evaluates its performance.
 
@@ -1614,51 +1628,57 @@ def analyze_cointegrated_pairs(spreads: pd.DataFrame, plot_coint=True, crosstab=
     >>>    analyze_cointegrated_pairs(pairs, plot_coint=True, cosstab=True, heuristics=True, log_reg=True, decis_tree=True
     """
     if plot_coint:
-        trace0_cv = __CRITICAL_VALUES[0][.95]
+        trace0_cv = __CRITICAL_VALUES[0][0.95]
         spreads = spreads.reset_index()
-        sns.scatterplot(x=np.log1p(spreads.t.abs()),
-                        y=np.log1p(spreads.trace1),
-                        hue='coint', data=spreads[spreads.trace0 > trace0_cv])
+        sns.scatterplot(
+            x=np.log1p(spreads.t.abs()),
+            y=np.log1p(spreads.trace1),
+            hue="coint",
+            data=spreads[spreads.trace0 > trace0_cv],
+        )
         fig, axes = plt.subplots(ncols=4, figsize=(20, 5))
-        for i, heuristic in enumerate(['drift', 'vol', 'corr', 'corr_ret']):
-            sns.boxplot(x='coint', y=heuristic, data=spreads, ax=axes[i])
+        for i, heuristic in enumerate(["drift", "vol", "corr", "corr_ret"]):
+            sns.boxplot(x="coint", y=heuristic, data=spreads, ax=axes[i])
         fig.tight_layout()
 
     if heuristics:
         spreads = spreads.reset_index()
-        h = spreads.groupby(spreads.coint)[
-            ['drift', 'vol', 'corr']].describe().stack(level=0).swaplevel().sort_index()
+        h = (
+            spreads.groupby(spreads.coint)[["drift", "vol", "corr"]]
+            .describe()
+            .stack(level=0)
+            .swaplevel()
+            .sort_index()
+        )
         print(h)
 
     if log_reg:
         y = spreads.coint
-        X = spreads[['drift', 'vol', 'corr', 'corr_ret']]
-        log_reg = LogisticRegressionCV(Cs=np.logspace(-10, 10, 21),
-                                       class_weight='balanced',
-                                       scoring='roc_auc')
+        X = spreads[["drift", "vol", "corr", "corr_ret"]]
+        log_reg = LogisticRegressionCV(
+            Cs=np.logspace(-10, 10, 21), class_weight="balanced", scoring="roc_auc"
+        )
         log_reg.fit(X=X, y=y)
         Cs = log_reg.Cs_
         scores = pd.DataFrame(log_reg.scores_[True], columns=Cs).mean()
         scores.plot(logx=True)
-        res = f'C:{np.log10(scores.idxmax()):.2f}, AUC: {scores.max():.2%}'
+        res = f"C:{np.log10(scores.idxmax()):.2f}, AUC: {scores.max():.2%}"
         print(res)
         print(log_reg.coef_)
 
     if decis_tree:
-        model = DecisionTreeClassifier(class_weight='balanced')
-        decision_tree = GridSearchCV(model,
-                                     param_grid={
-                                         'max_depth': list(range(1, 10))},
-                                     cv=5,
-                                     scoring='roc_auc')
+        model = DecisionTreeClassifier(class_weight="balanced")
+        decision_tree = GridSearchCV(
+            model, param_grid={"max_depth": list(range(1, 10))}, cv=5, scoring="roc_auc"
+        )
         y = spreads.coint
-        X = spreads[['drift', 'vol', 'corr', 'corr_ret']]
+        X = spreads[["drift", "vol", "corr", "corr_ret"]]
         decision_tree.fit(X, y)
         res = f'{decision_tree.best_score_:.2%}, Depth: {decision_tree.best_params_["max_depth"]}'
         print(res)
 
     if crosstab:
-        pd.set_option('display.float_format', lambda x: f'{x:.2%}')
+        pd.set_option("display.float_format", lambda x: f"{x:.2%}")
         print(pd.crosstab(spreads.eg_sig, spreads.joh_sig))
         print(pd.crosstab(spreads.eg_sig, spreads.joh_sig, normalize=True))
 
@@ -1683,15 +1703,17 @@ def select_candidate_pairs(pairs: pd.DataFrame, period=False):
     Stefan Jansen (2020). Machine Learning for Algorithmic Trading - Second Edition.
     chapter 9, Time-Series Models for Volatility Forecasts and Statistical Arbitrage.
     """
-    candidates = pairs.query('coint == 1').copy()
+    candidates = pairs.query("coint == 1").copy()
     candidates = candidates.reset_index()
-    candidates['y'] = candidates.apply(
-        lambda x: x['s1'] if x.s1_dep else x['s2'], axis=1)
-    candidates['x'] = candidates.apply(
-        lambda x: x['s2'] if x.s1_dep else x['s1'], axis=1)
+    candidates["y"] = candidates.apply(
+        lambda x: x["s1"] if x.s1_dep else x["s2"], axis=1
+    )
+    candidates["x"] = candidates.apply(
+        lambda x: x["s2"] if x.s1_dep else x["s1"], axis=1
+    )
     if period:
-        return candidates[['x', 'y', 'period']].to_dict(orient='records')
-    return candidates[['x', 'y']].to_dict(orient='records')
+        return candidates[["x", "y", "period"]].to_dict(orient="records")
+    return candidates[["x", "y"]].to_dict(orient="records")
 
 
 def KFSmoother(prices: pd.Series | np.ndarray) -> pd.Series | np.ndarray:
@@ -1704,7 +1726,7 @@ def KFSmoother(prices: pd.Series | np.ndarray) -> pd.Series | np.ndarray:
 
     Returns:
         pd.Series or np.ndarray
-            The smoothed time series data. If the input is a pandas Series, the output will also be a pandas Series with the same index. 
+            The smoothed time series data. If the input is a pandas Series, the output will also be a pandas Series with the same index.
             If the input is a numpy array, the output will be a numpy array.
 
     References
@@ -1728,15 +1750,14 @@ def KFSmoother(prices: pd.Series | np.ndarray) -> pd.Series | np.ndarray:
 
     """
     if not isinstance(prices, (np.ndarray, pd.Series)):
-        raise ValueError(
-            "Input must be either a numpy array or a pandas Series.")
+        raise ValueError("Input must be either a numpy array or a pandas Series.")
     kf = PyKalmanFilter(
         transition_matrices=np.eye(1),
         observation_matrices=np.eye(1),
         initial_state_mean=0,
         initial_state_covariance=1,
         observation_covariance=1,
-        transition_covariance=0.05
+        transition_covariance=0.05,
     )
     if isinstance(prices, pd.Series):
         state_means, _ = kf.filter(prices.values)
@@ -1767,23 +1788,26 @@ def KFHedgeRatio(x: pd.Series | np.ndarray, y: pd.Series | np.ndarray) -> np.nda
     Stefan Jansen (2020). Machine Learning for Algorithmic Trading - Second Edition.
     chapter 9, Time-Series Models for Volatility Forecasts and Statistical Arbitrage.
     """
-    if (not isinstance(x, (np.ndarray, pd.Series))
-            or not isinstance(y, (np.ndarray, pd.Series))):
+    if not isinstance(x, (np.ndarray, pd.Series)) or not isinstance(
+        y, (np.ndarray, pd.Series)
+    ):
         raise ValueError(
-            "Both x and y must be either a numpy array or a pandas Series.")
+            "Both x and y must be either a numpy array or a pandas Series."
+        )
 
     delta = 1e-3
     trans_cov = delta / (1 - delta) * np.eye(2)
     obs_mat = np.expand_dims(np.vstack([[x], [np.ones(len(x))]]).T, axis=1)
 
     kf = PyKalmanFilter(
-        n_dim_obs=1, n_dim_state=2,
+        n_dim_obs=1,
+        n_dim_state=2,
         initial_state_mean=[0, 0],
         initial_state_covariance=np.ones((2, 2)),
         transition_matrices=np.eye(2),
         observation_matrices=obs_mat,
         observation_covariance=2,
-        transition_covariance=trans_cov
+        transition_covariance=trans_cov,
     )
     y = y.values if isinstance(y, pd.Series) else y
     state_means, _ = kf.filter(y)

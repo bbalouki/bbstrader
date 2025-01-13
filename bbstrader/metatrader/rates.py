@@ -11,11 +11,10 @@ from bbstrader.metatrader.account import AMG_EXCHANGES, Account, check_mt5_conne
 from bbstrader.metatrader.utils import TIMEFRAMES, TimeFrame, raise_mt5_error
 
 __all__ = [
-    'Rates',
-    'download_historical_data',
-    'get_data_from_pos',
-    'get_data_from_date'
-
+    "Rates",
+    "download_historical_data",
+    "get_data_from_pos",
+    "get_data_from_date",
 ]
 
 MAX_BARS = 10_000_000
@@ -55,7 +54,7 @@ SESSION_TIMEFRAMES = [
     Mt5.TIMEFRAME_D1,
     Mt5.TIMEFRAME_W1,
     Mt5.TIMEFRAME_H12,
-    Mt5.TIMEFRAME_MN1
+    Mt5.TIMEFRAME_MN1,
 ]
 
 
@@ -91,11 +90,11 @@ class Rates(object):
     def __init__(
         self,
         symbol: str,
-        timeframe: TimeFrame = 'D1',
+        timeframe: TimeFrame = "D1",
         start_pos: Union[int, str] = 0,
         count: Optional[int] = MAX_BARS,
         session_duration: Optional[float] = None,
-        **kwargs
+        **kwargs,
     ):
         """
         Initializes a new Rates instance.
@@ -131,39 +130,57 @@ class Rates(object):
         if isinstance(index, int):
             start_pos = index
         elif isinstance(index, str):
-            assert self.sd is not None, \
-                ValueError("Please provide the session_duration in hour")
+            assert self.sd is not None, ValueError(
+                "Please provide the session_duration in hour"
+            )
             start_pos = self._get_pos_index(index, time_frame, self.sd)
         return start_pos
 
     def _get_pos_index(self, start_date, time_frame, sd):
         # Create a custom business day calendar
-        us_business_day = CustomBusinessDay(
-            calendar=USFederalHolidayCalendar())
+        us_business_day = CustomBusinessDay(calendar=USFederalHolidayCalendar())
 
         start_date = pd.to_datetime(start_date)
         end_date = pd.to_datetime(datetime.now())
 
         # Generate a range of business days
         trading_days = pd.date_range(
-            start=start_date, end=end_date, freq=us_business_day)
+            start=start_date, end=end_date, freq=us_business_day
+        )
 
         # Calculate the number of trading days
         trading_days = len(trading_days)
         td = trading_days
         time_frame_mapping = {}
-        for minutes in [1, 2, 3, 4, 5, 6, 10, 12, 15, 20,
-                        30, 60, 120, 180, 240, 360, 480, 720]:
+        for minutes in [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            10,
+            12,
+            15,
+            20,
+            30,
+            60,
+            120,
+            180,
+            240,
+            360,
+            480,
+            720,
+        ]:
             key = f"{minutes//60}h" if minutes >= 60 else f"{minutes}m"
             time_frame_mapping[key] = int(td * (60 / minutes) * sd)
-        time_frame_mapping['D1'] = int(td)
+        time_frame_mapping["D1"] = int(td)
 
         if time_frame not in time_frame_mapping:
             pv = list(time_frame_mapping.keys())
-            raise ValueError(
-                f"Unsupported time frame, Possible Values are {pv}")
+            raise ValueError(f"Unsupported time frame, Possible Values are {pv}")
 
-        index = time_frame_mapping.get(time_frame, 0)-1
+        index = time_frame_mapping.get(time_frame, 0) - 1
         return max(index, 0)
 
     def _validate_time_frame(self, time_frame: str) -> int:
@@ -179,7 +196,8 @@ class Rates(object):
         self,
         start: Union[int, datetime, pd.Timestamp],
         count: Union[int, datetime, pd.Timestamp],
-        lower_colnames=False, utc=False,
+        lower_colnames=False,
+        utc=False,
     ) -> Union[pd.DataFrame, None]:
         """Fetches data from MT5 and returns a DataFrame or None."""
         try:
@@ -187,20 +205,12 @@ class Rates(object):
                 rates = Mt5.copy_rates_from_pos(
                     self.symbol, self.time_frame, start, count
                 )
-            elif (
-                isinstance(start, (datetime, pd.Timestamp)) and
-                isinstance(count, int)
+            elif isinstance(start, (datetime, pd.Timestamp)) and isinstance(count, int):
+                rates = Mt5.copy_rates_from(self.symbol, self.time_frame, start, count)
+            elif isinstance(start, (datetime, pd.Timestamp)) and isinstance(
+                count, (datetime, pd.Timestamp)
             ):
-                rates = Mt5.copy_rates_from(
-                    self.symbol, self.time_frame, start, count
-                )
-            elif (
-                isinstance(start, (datetime, pd.Timestamp)) and
-                isinstance(count, (datetime, pd.Timestamp))
-            ):
-                rates = Mt5.copy_rates_range(
-                    self.symbol, self.time_frame, start, count
-                )
+                rates = Mt5.copy_rates_range(self.symbol, self.time_frame, start, count)
             if rates is None:
                 return None
 
@@ -209,57 +219,67 @@ class Rates(object):
         except Exception as e:
             raise_mt5_error(e)
 
-    def _format_dataframe(self, df: pd.DataFrame,
-                          lower_colnames=False, utc=False) -> pd.DataFrame:
+    def _format_dataframe(
+        self, df: pd.DataFrame, lower_colnames=False, utc=False
+    ) -> pd.DataFrame:
         """Formats the raw MT5 data into a standardized DataFrame."""
         df = df.copy()
-        df = df[['time', 'open', 'high', 'low', 'close', 'tick_volume']]
-        df.columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume']
-        df['Adj Close'] = df['Close']
-        df = df[['Date', 'Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume']]
-        df['Date'] = pd.to_datetime(df['Date'], unit='s', utc=utc)
-        df.set_index('Date', inplace=True)
+        df = df[["time", "open", "high", "low", "close", "tick_volume"]]
+        df.columns = ["Date", "Open", "High", "Low", "Close", "Volume"]
+        df["Adj Close"] = df["Close"]
+        df = df[["Date", "Open", "High", "Low", "Close", "Adj Close", "Volume"]]
+        df["Date"] = pd.to_datetime(df["Date"], unit="s", utc=utc)
+        df.set_index("Date", inplace=True)
         if lower_colnames:
-            df.columns = df.columns.str.lower().str.replace(' ', '_')
-            df.index.name = df.index.name.lower().replace(' ', '_')
+            df.columns = df.columns.str.lower().str.replace(" ", "_")
+            df.index.name = df.index.name.lower().replace(" ", "_")
         return df
 
-    def _filter_data(self, df: pd.DataFrame, date_from=None, date_to=None, fill_na=False) -> pd.DataFrame:
+    def _filter_data(
+        self, df: pd.DataFrame, date_from=None, date_to=None, fill_na=False
+    ) -> pd.DataFrame:
         df = df.copy()
         symbol_type = self.__account.get_symbol_type(self.symbol)
         currencies = self.__account.get_currency_rates(self.symbol)
         s_info = self.__account.get_symbol_info(self.symbol)
         if symbol_type in CALENDARS:
-            if symbol_type == 'STK' or symbol_type == 'ETF':
+            if symbol_type == "STK" or symbol_type == "ETF":
                 for exchange in CALENDARS[symbol_type]:
                     if exchange in get_calendar_names():
                         symbols = self.__account.get_stocks_from_exchange(
-                            exchange_code=exchange)
+                            exchange_code=exchange
+                        )
                         if self.symbol in symbols:
-                            calendar = get_calendar(exchange, side='right')
+                            calendar = get_calendar(exchange, side="right")
                             break
-            elif symbol_type == 'IDX':
+            elif symbol_type == "IDX":
                 calendar = get_calendar(
-                    CALENDARS[symbol_type][currencies['mc']], side='right')
-            elif symbol_type == 'COMD':
+                    CALENDARS[symbol_type][currencies["mc"]], side="right"
+                )
+            elif symbol_type == "COMD":
                 for commodity in CALENDARS[symbol_type]:
                     if commodity in s_info.path:
                         calendar = get_calendar(
-                            CALENDARS[symbol_type][commodity], side='right')
-            elif symbol_type == 'FUT':
-                if 'Index' in s_info.path:
+                            CALENDARS[symbol_type][commodity], side="right"
+                        )
+            elif symbol_type == "FUT":
+                if "Index" in s_info.path:
                     calendar = get_calendar(
-                        CALENDARS['IDX'][currencies['mc']], side='right')
+                        CALENDARS["IDX"][currencies["mc"]], side="right"
+                    )
                 else:
                     for commodity, cal in COMD_CALENDARS.items():
-                        if self.symbol in self.__account.get_future_symbols(category=commodity):
-                            if commodity == 'Bonds':
+                        if self.symbol in self.__account.get_future_symbols(
+                            category=commodity
+                        ):
+                            if commodity == "Bonds":
                                 calendar = get_calendar(
-                                    cal[currencies['mc']], side='right')
+                                    cal[currencies["mc"]], side="right"
+                                )
                             else:
-                                calendar = get_calendar(cal, side='right')
+                                calendar = get_calendar(cal, side="right")
             else:
-                calendar = get_calendar(CALENDARS[symbol_type], side='right')
+                calendar = get_calendar(CALENDARS[symbol_type], side="right")
             date_from = date_from or df.index[0]
             date_to = date_to or df.index[-1]
             if self.time_frame in SESSION_TIMEFRAMES:
@@ -271,7 +291,7 @@ class Rates(object):
                 index_name = df.index.name
                 if fill_na:
                     if isinstance(fill_na, bool):
-                        method = 'nearest'
+                        method = "nearest"
                     if isinstance(fill_na, str):
                         method = fill_na
                     df = df.reindex(valid_sessions, method=method)
@@ -289,9 +309,9 @@ class Rates(object):
             utc = False
         return utc
 
-    def get_rates_from_pos(self, filter=False, fill_na=False,
-                           lower_colnames=False, utc=False
-                           ) -> Union[pd.DataFrame, None]:
+    def get_rates_from_pos(
+        self, filter=False, fill_na=False, lower_colnames=False, utc=False
+    ) -> Union[pd.DataFrame, None]:
         """
         Retrieves historical data starting from a specific position.
 
@@ -322,16 +342,24 @@ class Rates(object):
                 "when calling 'get_rates_from_pos'."
             )
         utc = self._check_filter(filter, utc)
-        df = self._fetch_data(self.start_pos, self.count,
-                              lower_colnames=lower_colnames, utc=utc)
+        df = self._fetch_data(
+            self.start_pos, self.count, lower_colnames=lower_colnames, utc=utc
+        )
         if df is None:
             return None
         if filter:
             return self._filter_data(df, fill_na=fill_na)
         return df
 
-    def get_rates_from(self, date_from: datetime | pd.Timestamp, count: int = MAX_BARS,
-                       filter=False, fill_na=False, lower_colnames=False, utc=False) -> Union[pd.DataFrame, None]:
+    def get_rates_from(
+        self,
+        date_from: datetime | pd.Timestamp,
+        count: int = MAX_BARS,
+        filter=False,
+        fill_na=False,
+        lower_colnames=False,
+        utc=False,
+    ) -> Union[pd.DataFrame, None]:
         """
         Retrieves historical data within a specified date range.
 
@@ -352,8 +380,7 @@ class Rates(object):
             data if successful, otherwise None.
         """
         utc = self._check_filter(filter, utc)
-        df = self._fetch_data(
-            date_from, count, lower_colnames=lower_colnames, utc=utc)
+        df = self._fetch_data(date_from, count, lower_colnames=lower_colnames, utc=utc)
         if df is None:
             return None
         if filter:
@@ -362,45 +389,45 @@ class Rates(object):
 
     @property
     def open(self):
-        return self.__data['Open']
+        return self.__data["Open"]
 
     @property
     def high(self):
-        return self.__data['High']
+        return self.__data["High"]
 
     @property
     def low(self):
-        return self.__data['Low']
+        return self.__data["Low"]
 
     @property
     def close(self):
-        return self.__data['Close']
+        return self.__data["Close"]
 
     @property
     def adjclose(self):
-        return self.__data['Adj Close']
+        return self.__data["Adj Close"]
 
     @property
     def returns(self):
         """
         Fractional change between the current and a prior element.
 
-        Computes the fractional change from the immediately previous row by default. 
+        Computes the fractional change from the immediately previous row by default.
         This is useful in comparing the fraction of change in a time series of elements.
 
         Note
         ----
-        It calculates fractional change (also known as `per unit change or relative change`) 
+        It calculates fractional change (also known as `per unit change or relative change`)
         and `not percentage change`. If you need the percentage change, multiply these values by 100.
         """
         data = self.__data.copy()
-        data['Returns'] = data['Adj Close'].pct_change()
+        data["Returns"] = data["Adj Close"].pct_change()
         data = data.dropna()
-        return data['Returns']
+        return data["Returns"]
 
     @property
     def volume(self):
-        return self.__data['Volume']
+        return self.__data["Volume"]
 
     def get_historical_data(
         self,
@@ -463,21 +490,32 @@ class Rates(object):
             All COMD symbols are filtered based on the exchange calendar of the commodity.
         """
         utc = self._check_filter(filter, utc)
-        df = self._fetch_data(date_from, date_to,
-                              lower_colnames=lower_colnames, utc=utc)
+        df = self._fetch_data(
+            date_from, date_to, lower_colnames=lower_colnames, utc=utc
+        )
         if df is None:
             return None
         if filter:
             df = self._filter_data(
-                df, date_from=date_from, date_to=date_to, fill_na=fill_na)
+                df, date_from=date_from, date_to=date_to, fill_na=fill_na
+            )
         if save_csv:
             df.to_csv(f"{self.symbol}.csv")
         return df
 
 
-def download_historical_data(symbol, timeframe, date_from,
-                             date_to=pd.Timestamp.now(), lower_colnames=True,
-                             utc=False, filter=False, fill_na=False, save_csv=False, **kwargs):
+def download_historical_data(
+    symbol,
+    timeframe,
+    date_from,
+    date_to=pd.Timestamp.now(),
+    lower_colnames=True,
+    utc=False,
+    filter=False,
+    fill_na=False,
+    save_csv=False,
+    **kwargs,
+):
     """Download historical data from MetaTrader 5 terminal.
     See `Rates.get_historical_data` for more details.
     """
@@ -488,30 +526,54 @@ def download_historical_data(symbol, timeframe, date_from,
         save_csv=save_csv,
         utc=utc,
         filter=filter,
-        lower_colnames=lower_colnames
+        lower_colnames=lower_colnames,
     )
     return data
 
 
-def get_data_from_pos(symbol, timeframe, start_pos=0, fill_na=False,
-                      count=MAX_BARS, lower_colnames=False, utc=False, filter=False,
-                      session_duration=23.0, **kwargs):
+def get_data_from_pos(
+    symbol,
+    timeframe,
+    start_pos=0,
+    fill_na=False,
+    count=MAX_BARS,
+    lower_colnames=False,
+    utc=False,
+    filter=False,
+    session_duration=23.0,
+    **kwargs,
+):
     """Get historical data from a specific position.
     See `Rates.get_rates_from_pos` for more details.
     """
-    rates = Rates(symbol, timeframe, start_pos,
-                  count, session_duration, **kwargs)
-    data = rates.get_rates_from_pos(filter=filter, fill_na=fill_na,
-                                    lower_colnames=lower_colnames, utc=utc)
+    rates = Rates(symbol, timeframe, start_pos, count, session_duration, **kwargs)
+    data = rates.get_rates_from_pos(
+        filter=filter, fill_na=fill_na, lower_colnames=lower_colnames, utc=utc
+    )
     return data
 
 
-def get_data_from_date(symbol, timeframe, date_from, count=MAX_BARS, fill_na=False,
-                       lower_colnames=False, utc=False, filter=False, **kwargs):
+def get_data_from_date(
+    symbol,
+    timeframe,
+    date_from,
+    count=MAX_BARS,
+    fill_na=False,
+    lower_colnames=False,
+    utc=False,
+    filter=False,
+    **kwargs,
+):
     """Get historical data from a specific date.
     See `Rates.get_rates_from` for more details.
     """
     rates = Rates(symbol, timeframe, **kwargs)
-    data = rates.get_rates_from(date_from, count, filter=filter, fill_na=fill_na,
-                                lower_colnames=lower_colnames, utc=utc)
+    data = rates.get_rates_from(
+        date_from,
+        count,
+        filter=filter,
+        fill_na=fill_na,
+        lower_colnames=lower_colnames,
+        utc=utc,
+    )
     return data
