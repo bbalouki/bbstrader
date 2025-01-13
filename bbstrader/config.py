@@ -2,8 +2,17 @@ import logging
 from pathlib import Path
 from typing import List
 
-ADMIRAL_PATH = "C:\\Program Files\\Admirals Group MT5 Terminal\\terminal64.exe"
+AMG_PATH = "C:\\Program Files\\Admirals Group MT5 Terminal\\terminal64.exe"
 FTMO_PATH = "C:\\Program Files\\FTMO MetaTrader 5\\terminal64.exe"
+XCB_PATH = "C:\\Program Files\\4xCube MT5 Terminal\\terminal64.exe"
+TML_PATH = "C:\\Program Files\\Trinota Markets MetaTrader 5 Terminal\\terminal64.exe"
+
+BROKERS_PATHS = {
+    "AMG": AMG_PATH,
+    "FTMO": FTMO_PATH,
+    "XCB": XCB_PATH,
+    "TML": TML_PATH,
+}
 
 
 def get_config_dir(name: str = ".bbstrader") -> Path:
