@@ -1,5 +1,4 @@
 .env
-.vscode
 build
 test.py
 __pycache__
