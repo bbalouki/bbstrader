@@ -10,22 +10,39 @@ if sys.version_info < (3, 10):
 here = path.abspath(path.dirname(__file__))
 
 # Get the long description from the README file
-with io.open(path.join(here, 'README.md'), encoding='utf-8') as f:
+with io.open(path.join(here, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
-with io.open(path.join(here, 'requirements.txt'), encoding='utf-8') as f:
+with io.open(path.join(here, "requirements.txt"), encoding="utf-8") as f:
     REQUIREMENTS = [line.rstrip() for line in f]
 
-VERSION = '0.2.0'
-DESCRIPTION = 'Simplified Investment & Trading Toolkit'
+VERSION = "0.2.02"
+DESCRIPTION = "Simplified Investment & Trading Toolkit"
 
 KEYWORDS = [
-    "Finance", "Toolkit", "Financial", "Analysis",
-    "Fundamental", "Quantitative", "Database",
-    "Equities", "Currencies", "Economics", "ETFs",
-    "Funds", "Indices", "Moneymarkets", "Commodities",
-    "Futures", "CFDs", "Derivatives", "Trading", "Investing",
-    "Portfolio", "Optimization", "Performance"
+    "Finance",
+    "Toolkit",
+    "Financial",
+    "Analysis",
+    "Fundamental",
+    "Quantitative",
+    "Database",
+    "Equities",
+    "Currencies",
+    "Economics",
+    "ETFs",
+    "Funds",
+    "Indices",
+    "Moneymarkets",
+    "Commodities",
+    "Futures",
+    "CFDs",
+    "Derivatives",
+    "Trading",
+    "Investing",
+    "Portfolio",
+    "Optimization",
+    "Performance",
 ]
 
 CLASSIFIERS = [
@@ -47,7 +64,7 @@ INLCUDE = [
     "bbstrader.ibkr",
     "bbstrader.metatrader",
     "bbstrader.models",
-    "bbstrader.trading"
+    "bbstrader.trading",
 ]
 EXCLUDE = ["tests", "docs"]
 
@@ -55,24 +72,24 @@ EXCLUDE = ["tests", "docs"]
 setup(
     name="bbstrader",
     version=VERSION,
-    author='Bertin Balouki SIMYELI',
-    url='https://github.com/bbalouki/bbstrader',
-    download_url='https://pypi.org/project/bbstrader/',
+    author="Bertin Balouki SIMYELI",
+    url="https://github.com/bbalouki/bbstrader",
+    download_url="https://pypi.org/project/bbstrader/",
     project_urls={
         "Documentation": "https://bbstrader.readthedocs.io/en/latest/",
         "Source Code": "https://github.com/bbalouki/bbstrader",
     },
-    license='The MIT License (MIT)',
-    author_email='<bertin@bbstrader.com>',
-    maintainer='Bertin Balouki SIMYELI',
+    license="The MIT License (MIT)",
+    author_email="<bertin@bbstrader.com>",
+    maintainer="Bertin Balouki SIMYELI",
     description=DESCRIPTION,
     long_description=long_description,
     long_description_content_type="text/markdown",
     packages=INLCUDE,
     install_requires=REQUIREMENTS,
     extras_require={
-        'MT5': ['MetaTrader5'],
-        'TA': ['ta-lib'],
+        "MT5": ["MetaTrader5"],
+        "TA": ["ta-lib"],
         # 'zipline': ['zipline'],
         # 'cerebro': ['backtrader'],
     },
