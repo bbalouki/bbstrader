@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import talib
+
 import yfinance as yf
 from alphalens import performance as perf
 from alphalens import plotting
@@ -21,7 +21,7 @@ from alphalens.utils import (
 )
 from scipy.stats import spearmanr
 from sklearn.preprocessing import LabelEncoder, StandardScaler
-from talib import ATR, BBANDS, MACD, RSI
+import pandas_ta as ta
 
 warnings.filterwarnings("ignore")
 
@@ -180,50 +180,57 @@ class LightGBModel(object):
         self.trainstore = trainstore
         self.outstore = outstore
         if data is not None:
-            data.reset_index().to_hdf(self.datastore, "model_data")
+            data.reset_index().to_hdf(path_or_buf=self.datastore, key="model_data")
 
     def _compute_bb(self, close):
-        high, mid, low = BBANDS(close, timeperiod=20)
-        return pd.DataFrame({"bb_high": high, "bb_low": low}, index=close.index)
+        # Compute Bollinger Bands using pandas_ta
+        bb = ta.bbands(close, length=20)
+        return pd.DataFrame(
+            {"bb_high": bb["BBU_20_2.0"], "bb_low": bb["BBL_20_2.0"]}, index=close.index
+        )
 
     def _compute_atr(self, stock_data):
-        df = ATR(stock_data.high, stock_data.low, stock_data.close, timeperiod=14)
-        return df.sub(df.mean()).div(df.std())
+        # Compute ATR using pandas_ta
+        atr = ta.atr(stock_data.high, stock_data.low, stock_data.close, length=14)
+        return (atr - atr.mean()) / atr.std()
 
     def _compute_macd(self, close):
-        macd = MACD(close)[0]
-        return (macd - np.mean(macd)) / np.std(macd)
+        # Compute MACD using pandas_ta
+        macd = ta.macd(close)["MACD_12_26_9"]
+        return (macd - macd.mean()) / macd.std()
 
     def _add_technical_indicators(self, prices: pd.DataFrame):
         prices = prices.copy()
-        prices["rsi"] = prices.groupby(level="symbol").close.apply(
-            lambda x: RSI(x).reset_index(level=0, drop=True)
+
+        # Add RSI and normalize
+        prices["rsi"] = (
+            prices.groupby(level="symbol")
+            .close.apply(lambda x: ta.rsi(x, length=14))
+            .reset_index(level=0, drop=True)
         )
-        bb = (
-            prices.groupby(level=0)
-            .close.apply(self._compute_bb)
-            .reset_index(level=1, drop=True)
-        )
+
+        # Add Bollinger Bands
+        bb = prices.groupby(level="symbol").close.apply(self._compute_bb)
+        bb = bb.reset_index(level=1, drop=True)
         prices = prices.join(bb)
+
         prices["bb_high"] = (
             prices.bb_high.sub(prices.close).div(prices.bb_high).apply(np.log1p)
         )
         prices["bb_low"] = (
             prices.close.sub(prices.bb_low).div(prices.close).apply(np.log1p)
         )
-        prices["NATR"] = prices.groupby(level="symbol", group_keys=False).apply(
-            lambda x: talib.NATR(x.high, x.low, x.close)
+
+        # Add ATR and normalize
+        prices["ATR"] = prices.groupby(level="symbol", group_keys=False).apply(
+            lambda x: self._compute_atr(x)
         )
 
-        prices["ATR"] = prices.groupby("symbol", group_keys=False).apply(
-            self._compute_atr
-        )
-        prices["PPO"] = prices.groupby(level="symbol").close.apply(
-            lambda x: talib.PPO(x).reset_index(level=0, drop=True)
-        )
-        prices["MACD"] = prices.groupby("symbol", group_keys=False).close.apply(
+        # Add MACD and normalize
+        prices["MACD"] = prices.groupby(level="symbol", group_keys=False).close.apply(
             self._compute_macd
         )
+
         return prices
 
     def download_boosting_data(self, tickers, start, end=None):
@@ -423,8 +430,8 @@ class LightGBModel(object):
         prices.volume /= 1e3  # make vol figures a bit smaller
         prices.index.names = ["symbol", "date"]
         metadata.index.name = "symbol"
-        prices.reset_index().to_hdf(self.datastore, "stock_data")
-        metadata.reset_index().to_hdf(self.datastore, "stock_metadata")
+        prices.reset_index().to_hdf(path_or_buf=self.datastore, key="stock_data")
+        metadata.reset_index().to_hdf(path_or_buf=self.datastore, key="stock_metadata")
 
         # Remove stocks with insufficient observations
         min_obs = min_years * YEAR
@@ -518,7 +525,7 @@ class LightGBModel(object):
         prices = prices.drop(["open", "close", "low", "high", "volume"], axis=1)
         if "adj_close" in prices.columns:
             prices = prices.drop("adj_close", axis=1)
-        prices.reset_index().to_hdf(self.datastore, "model_data")
+        prices.reset_index().to_hdf(path_or_buf=self.datastore, key="model_data")
         return prices.sort_index()
 
     def tickers(self):
@@ -748,10 +755,16 @@ class LightGBModel(object):
                     print(msg)
 
                 # persist results for given CV run and hyperparameter combination
-                metrics.to_hdf(self.trainstore, "metrics/" + key)
-                ic_by_day.assign(**params).to_hdf(self.trainstore, "daily_ic/" + key)
-                fi.T.describe().T.assign(**params).to_hdf(self.trainstore, "fi/" + key)
-                cv_preds.to_hdf(self.trainstore, "predictions/" + key, append=True)
+                metrics.to_hdf(path_or_buf=self.trainstore, key="metrics/" + key)
+                ic_by_day.assign(**params).to_hdf(
+                    path_or_buf=self.trainstore, key="daily_ic/" + key
+                )
+                fi.T.describe().T.assign(**params).to_hdf(
+                    path_or_buf=self.trainstore, key="fi/" + key
+                )
+                cv_preds.to_hdf(
+                    path_or_buf=self.trainstore, key="predictions/" + key, append=True
+                )
 
     def _get_lgb_metrics(self, scope_params, lgb_train_params, daily_ic_metrics):
         with pd.HDFStore(self.trainstore) as store:
@@ -906,7 +919,7 @@ class LightGBModel(object):
                 )[rounds]
         best_predictions = best_predictions.sort_index()
         best_predictions.reset_index().to_hdf(
-            self.outstore, f"lgb/train/{lookahead:02}"
+            path_or_buf=self.outstore, key=f"lgb/train/{lookahead:02}"
         )
         return best_predictions
 
@@ -1012,20 +1025,20 @@ class LightGBModel(object):
             scope_params, lgb_train_params, daily_ic_metrics
         )
         # Summary Metrics by Fold
-        lgb_metrics.to_hdf(self.outstore, "lgb/metrics")
+        lgb_metrics.to_hdf(path_or_buf=self.outstore, key="lgb/metrics")
 
         # Information Coefficient by Day
         int_cols = ["lookahead", "train_length", "test_length", "boost_rounds"]
         id_vars = ["date"] + scope_params + lgb_train_params
         lgb_ic = self._get_lgb_ic(int_cols, scope_params, lgb_train_params, id_vars)
-        lgb_ic.to_hdf(self.outstore, "lgb/ic")
+        lgb_ic.to_hdf(path_or_buf=self.outstore, key="lgb/ic")
         lgb_daily_ic = (
             lgb_ic.groupby(id_vars[1:] + ["boost_rounds"])
             .ic.mean()
             .to_frame("ic")
             .reset_index()
         )
-        lgb_daily_ic.to_hdf(self.outstore, "lgb/daily_ic")
+        lgb_daily_ic.to_hdf(path_or_buf=self.outstore, key="lgb/daily_ic")
 
         # Cross-validation Result: Best Hyperparameters
         if verbose:
@@ -1039,7 +1052,7 @@ class LightGBModel(object):
         )
         lgb_metrics.groupby("lookahead", group_keys=False).apply(
             lambda x: x.nlargest(3, "ic")
-        ).to_hdf(self.outstore, "lgb/best_model")
+        ).to_hdf(path_or_buf=self.outstore, key="lgb/best_model")
         if verbose:
             print(
                 lgb_metrics.groupby("lookahead", group_keys=False).apply(
@@ -1056,7 +1069,7 @@ class LightGBModel(object):
         best_params = self._get_lgb_params(
             lgb_daily_ic, scope_params, lgb_train_params, t=lookahead, best=0
         )
-        best_params.to_hdf(self.outstore, "lgb/best_params")
+        best_params.to_hdf(path_or_buf=self.outstore, key="lgb/best_params")
 
         if verbose:
             self.plot_ic(lgb_ic, lgb_daily_ic, scope_params, lgb_train_params)
@@ -1069,7 +1082,7 @@ class LightGBModel(object):
         start = best_predictions.index.get_level_values("date").min()
         end = best_predictions.index.get_level_values("date").max()
         trade_prices = self.get_trade_prices(test_tickers, start, end)
-        pd.Series(test_tickers).to_hdf(self.outstore, "lgb/tickers")
+        pd.Series(test_tickers).to_hdf(path_or_buf=self.outstore, key="lgb/tickers")
         # We average the top five models and provide the corresponding prices to Alphalens,
         # in order to compute the mean period-wise
         # return earned on an equal-weighted portfolio invested in the daily factor quintiles
@@ -1195,7 +1208,9 @@ class LightGBModel(object):
                 )
         if verbose:
             print(ic_by_day.describe())
-        test_predictions.reset_index().to_hdf(self.outstore, f"lgb/test/{lookahead:02}")
+        test_predictions.reset_index().to_hdf(
+            path_or_buf=self.outstore, key=f"lgb/test/{lookahead:02}"
+        )
         return test_predictions
 
     def load_predictions(self, predictions=None, lookahead=1):
