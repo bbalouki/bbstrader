@@ -246,13 +246,13 @@ class ArimaGarchModel:
 
     Exemple:
         >>> import yfinance as yf
-        >>> from bbstrader.strategies import ArimaGarchModel
+        >>> from bbstrader.tseries import ArimaGarchModel
         >>> from bbstrader.tseries import load_and_prepare_data
 
         >>> if __name__ == '__main__':
         >>>     # ARCH SPY Vectorize Backtest
         >>>     k = 252
-        >>>     data = yf.download("SPY", start="2004-01-02", end="2015-12-31")
+        >>>     data = yf.download("SPY", start="2010-01-02", end="2015-12-31")
         >>>     arch = ArimaGarchModel("SPY", data, k=k)
         >>>     df = load_and_prepare_data(data)
         >>>     arch.show_arima_garch_results(df['diff_log_return'].values[-k:])
