@@ -2,6 +2,11 @@
 ![bbstrader](https://github.com/bbalouki/bbstrader/blob/main/assets/bbstrader_logo.png?raw=true)
 
 [![Documentation Status](https://readthedocs.org/projects/bbstrader/badge/?version=latest)](https://bbstrader.readthedocs.io/en/latest/?badge=latest)
+[![PYPI Version](https://img.shields.io/pypi/v/bbstrader)](https://pypi.org/project/bbstrader/)
+[![Supported Python Versions](https://img.shields.io/pypi/pyversions/bbstrader)](https://pypi.org/project/bbstrader/)
+[![PyPI Downloads](https://static.pepy.tech/badge/bbstrader)](https://pepy.tech/projects/bbstrader)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-grey?logo=Linkedin&logoColor=white)](https://www.linkedin.com/in/bertin-balouki-simyeli-15b17a1a6/)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy_Me_a_Coffee-grey?logo=buymeacoffee)](https://www.buymeacoffee.com/bbalouki)
 
 [Dcoumentation](https://bbstrader.readthedocs.io/en/latest/index.html)
 
@@ -14,7 +19,7 @@ BBSTrader is a trading system suite developed for MetaTrader 5 (MT5) and IBKR pl
 - **Backtesting Module (btengine)** : Enables traders to rigorously test their trading strategies using historical data to evaluate performance before live deployment.
 - **Trading Strategies Module**: A collection of predefined trading strategies, including ARIMA+GARCH models, Kalman Filters, and Simple Moving Averages, equipped with risk management through Hidden Markov Models.
 - **MetaTrader5 Module (metatrader)**: Facilitates the direct execution of trading strategies on the MetaTrader 5 platform, supporting real-time trading across multiple financial instruments.
-- **Modles Module**: Serves as a framework for implementing various types of financial models (risk managment models, Machine learing models etc).
+- **Models Module**: Serves as a framework for implementing various types of financial models (risk managment models, Machine learing models etc).
 - **Time serie Module (tseries)** designed for conducting advanced time series analysis in financial markets. 
 It leverages statistical models and algorithms to perform tasks such as cointegration testing, volatility modeling, and filter-based estimation to assist in trading strategy development, market analysis, and financial data exploration.
 

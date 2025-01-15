@@ -465,7 +465,7 @@ class RiskManagement(Account):
                 symbol = self.symbol[:-1]
             else:
                 symbol = self.symbol
-            if symbol in supported:
+            if str(symbol) not in supported:
                 raise ValueError(
                     f"Currency risk calculation for '{self.symbol}' is not a currently supported. \n"
                     f"Supported commodity symbols are: {', '.join(supported)}"

@@ -457,7 +457,7 @@ class Trade(RiskManagement):
             request["tp"] = mm_price + take_profit * point
         self.break_even(mm=mm, id=Id)
         if self.check(comment):
-            (self.request_result(_price, request, action),)
+            self.request_result(_price, request, action)
 
     def _order_type(self):
         type = {
