@@ -115,7 +115,7 @@ def _mt5_execution(
             bot_token = kwargs.get("bot_token")
             chat_id = kwargs.get("chat_id")
 
-        expert_ids = kwargs.get("expert_id")
+        expert_ids = kwargs.get("expert_ids")
         if expert_ids is None:
             expert_ids = list(
                 set([trade.expert_id for trade in trades_instances.values()])
