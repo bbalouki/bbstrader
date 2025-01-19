@@ -10,7 +10,11 @@ import pytz
 
 from bbstrader.btengine.data import DataHandler
 from bbstrader.btengine.event import FillEvent, SignalEvent
-from bbstrader.metatrader.account import Account, AdmiralMarktsGroup
+from bbstrader.metatrader.account import (
+    Account,
+    AdmiralMarktsGroup,
+    PepperstoneGroupLimited,
+)
 from bbstrader.metatrader.rates import Rates
 from bbstrader.models.optimization import optimized_weights
 from bbstrader.core.utils import TradeSignal
@@ -122,7 +126,7 @@ class MT5Strategy(Strategy):
             for asset in self.symbols:
                 if asset not in weights:
                     raise ValueError(f"Risk budget for asset {asset} is missing.")
-            total_risk = sum(weights.values())
+            total_risk = float(round(sum(weights.values())))
             if not np.isclose(total_risk, 1.0):
                 raise ValueError(f"Risk budget weights must sum to 1. got {total_risk}")
             return weights
@@ -226,7 +230,7 @@ class MT5Strategy(Strategy):
         prices = prices.dropna(axis=0, how="any")
         try:
             weights = optimized_weights(prices=prices, freq=freq, method=optimer)
-            return {symbol: weight for symbol, weight in weights.items()}
+            return {symbol: abs(weight) for symbol, weight in weights.items()}
         except Exception:
             return {symbol: 0.0 for symbol in symbols}
 
@@ -605,6 +609,7 @@ class MT5Strategy(Strategy):
         bars: DataHandler = None,
         mode: Literal["backtest", "live"] = "backtest",
         tf: str = "D1",
+        error: Literal["ignore", "raise"] = None,
     ) -> Dict[str, np.ndarray | pd.Series] | None:
         """
         Get the historical OHLCV value or returns or custum value
@@ -618,6 +623,7 @@ class MT5Strategy(Strategy):
             mode : Mode of operation for the strategy.
             window : The lookback period for resquesting the data.
             tf : The time frame for the strategy.
+            error : The error handling method for the function.
 
         Returns:
             asset_values : Historical values of the assets in the symbol list.
@@ -651,6 +657,10 @@ class MT5Strategy(Strategy):
         if all(len(values) >= window for values in asset_values.values()):
             return {a: v[-window:] for a, v in asset_values.items()}
         else:
+            if error == "raise":
+                raise ValueError("Not enough data to calculate the values.")
+            elif error == "ignore":
+                return asset_values
             return None
 
     @staticmethod
@@ -763,8 +773,20 @@ class MT5Strategy(Strategy):
         return dt_to
 
     @staticmethod
-    def get_mt5_equivalent(symbols, type="STK", path: str = None) -> List[str]:
-        account = Account(path=path)
+    def get_mt5_equivalent(symbols, type="STK", **kwargs) -> List[str]:
+        """
+        Get the MetaTrader 5 equivalent symbols for the symbols in the list.
+        This method is used to get the symbols that are available on the MetaTrader 5 platform.
+
+        Args:
+            symbols : The list of symbols to get the MetaTrader 5 equivalent symbols for.
+            type : The type of symbols to get (e.g., STK, CFD, etc.).
+            **kwargs : Additional keyword arguments for the `bbstrader.metatrader.Account` object.
+
+        Returns:
+            mt5_equivalent : The MetaTrader 5 equivalent symbols for the symbols in the list.
+        """
+        account = Account(**kwargs)
         mt5_symbols = account.get_symbols(symbol_type=type)
         mt5_equivalent = []
         if account.broker == AdmiralMarktsGroup():
@@ -772,6 +794,11 @@ class MT5Strategy(Strategy):
                 _s = s[1:] if s[0] in string.punctuation else s
                 for symbol in symbols:
                     if _s.split(".")[0] == symbol or _s.split("_")[0] == symbol:
+                        mt5_equivalent.append(s)
+        elif account.broker == PepperstoneGroupLimited():
+            for s in mt5_symbols:
+                for symbol in symbols:
+                    if s.split(".")[0] == symbol:
                         mt5_equivalent.append(s)
         return mt5_equivalent
 
