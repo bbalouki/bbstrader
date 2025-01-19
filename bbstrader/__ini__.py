@@ -3,11 +3,12 @@ Simplified Investment & Trading Toolkit
 =======================================
 
 """
-__author__      = "Bertin Balouki SIMYELI"
-__copyright__   = "2023-2025 Bertin Balouki SIMYELI"
-__email__       = "bertin@bbstrader.com"
-__license__     = "MIT"
-__version__     = '0.2.0'
+
+__author__ = "Bertin Balouki SIMYELI"
+__copyright__ = "2023-2025 Bertin Balouki SIMYELI"
+__email__ = "bertin@bbstrader.com"
+__license__ = "MIT"
+__version__ = "0.2.0"
 
 
 from bbstrader import btengine  # noqa: F401
