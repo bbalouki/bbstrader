@@ -11,7 +11,6 @@ from bbstrader.metatrader.utils import TIMEFRAMES, TimeFrame
 
 _COMMD_SUPPORTED_ = [
     "GOLD",
-    "XAUEUR",
     "SILVER",
     "BRENT",
     "CRUDOIL",
@@ -19,11 +18,17 @@ _COMMD_SUPPORTED_ = [
     "UKOIL",
     "XAGEUR",
     "XAGUSD",
+    "XAGAUD",
+    "XAGGBP",
     "XAUAUD",
     "XAUEUR",
     "XAUUSD",
     "XAUGBP",
     "USOIL",
+    "SpotCrude",
+    "SpotBrent",
+    "NatGas",
+    "Soybeans",
 ]
 
 _ADMIRAL_MARKETS_FUTURES_ = [
@@ -52,6 +57,27 @@ _ADMIRAL_MARKETS_FUTURES_ = [
     "_XAU_",
     "_HK50_",
     "_HSCEI50_",
+]
+
+__PEPPERSTONE_FUTURES__ = [
+    "AUS200-F",
+    "GER40-F",
+    "HK50-F",
+    "JPN225-F",
+    "UK100-F",
+    "US30-F",
+    "NAS100-F",
+    "US500-F",
+    "Crude-F",
+    "Brent-F",
+    "XAUUSD-F",
+    "XAGUSD-F",
+    "USDX-F",
+    "EUSTX50-F",
+    "FRA40-F",
+    "GERTEC30-F",
+    "SPA35-F",
+    "SWI20-F",
 ]
 
 __all__ = ["RiskManagement"]
@@ -461,7 +487,7 @@ class RiskManagement(Account):
                 symbol = self.symbol.split(".")[0]
             elif self.symbol.endswith("xx"):
                 symbol = self.symbol[:-2]
-            elif self.symbol.endswith('-'):
+            elif self.symbol.endswith("-"):
                 symbol = self.symbol[:-1]
             else:
                 symbol = self.symbol
@@ -471,8 +497,12 @@ class RiskManagement(Account):
                     f"Supported commodity symbols are: {', '.join(supported)}"
                 )
         if FUT:
-            supported = _ADMIRAL_MARKETS_FUTURES_
-            if self.symbol[:-2] not in supported:
+            if "_" in self.symbol:
+                symbol = self.symbol[:-2]
+            else:
+                symbol = self.symbol
+            supported = _ADMIRAL_MARKETS_FUTURES_ + __PEPPERSTONE_FUTURES__
+            if str(symbol) not in supported:
                 raise ValueError(
                     f"Currency risk calculation for '{self.symbol}' is not a currently supported. \n"
                     f"Supported future symbols are: {', '.join(supported)}"

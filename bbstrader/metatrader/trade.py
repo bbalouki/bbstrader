@@ -604,6 +604,11 @@ class Trade(RiskManagement):
                     result = self.send_order(request)
                     if result.retcode == Mt5.TRADE_RETCODE_DONE:
                         break
+            elif result.retcode == Mt5.TRADE_RETCODE_INVALID_VOLUME: #10014
+                new_volume = int(request["volume"])
+                if new_volume >= 1:
+                    request["volume"] = new_volume
+                    result = self.send_order(request)
             elif result.retcode not in self._retcodes:
                 self._retcodes.append(result.retcode)
                 msg = trade_retcode_message(result.retcode)

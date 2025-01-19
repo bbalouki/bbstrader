@@ -2,16 +2,22 @@ import logging
 from pathlib import Path
 from typing import List
 
-AMG_PATH = "C:\\Program Files\\Admirals Group MT5 Terminal\\terminal64.exe"
-FTMO_PATH = "C:\\Program Files\\FTMO MetaTrader 5\\terminal64.exe"
-XCB_PATH = "C:\\Program Files\\4xCube MT5 Terminal\\terminal64.exe"
-TML_PATH = "C:\\Program Files\\Trinota Markets MetaTrader 5 Terminal\\terminal64.exe"
+
+TERMINAL = "\\terminal64.exe"
+BASE_FOLDER = "C:\\Program Files\\"
+
+AMG_PATH = BASE_FOLDER + "Admirals Group MT5 Terminal" + TERMINAL
+XCB_PATH = BASE_FOLDER + "4xCube MT5 Terminal" + TERMINAL
+TML_PATH = BASE_FOLDER + "Trinota Markets MetaTrader 5 Terminal" + TERMINAL
+PGL_PATH = BASE_FOLDER + "Pepperstone MetaTrader 5" + TERMINAL
+FTMO_PATH = BASE_FOLDER + "FTMO MetaTrader 5" + TERMINAL
 
 BROKERS_PATHS = {
     "AMG": AMG_PATH,
     "FTMO": FTMO_PATH,
     "XCB": XCB_PATH,
     "TML": TML_PATH,
+    "PGL": PGL_PATH,
 }
 
 

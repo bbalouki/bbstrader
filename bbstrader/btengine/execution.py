@@ -124,7 +124,7 @@ class MT5ExecutionHandler(ExecutionHandler):
         self.events = events
         self.bardata = data
         self.logger = kwargs.get("logger")
-        self.__account = Account()
+        self.__account = Account(**kwargs)
 
     def _calculate_lot(self, symbol, quantity, price):
         symbol_type = self.__account.get_symbol_type(symbol)
