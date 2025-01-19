@@ -28,6 +28,9 @@ __all__ = [
     "Broker",
     "AdmiralMarktsGroup",
     "JustGlobalMarkets",
+    "TrinotaMarkets",
+    "XCubeLimited",
+    "PepperstoneGroupLimited",
     "FTMO",
 ]
 
@@ -36,7 +39,8 @@ __BROKERS__ = {
     "JGM": "Just Global Markets Ltd.",
     "FTMO": "FTMO S.R.O.",
     "XCB": "4xCube Limited",
-    "TML": "Trinota Markets (Global) Limited"
+    "TML": "Trinota Markets (Global) Limited",
+    "PGL": "Pepperstone Group Limited",
 }
 
 BROKERS_TIMEZONES = {
@@ -45,6 +49,7 @@ BROKERS_TIMEZONES = {
     "FTMO": "Europe/Helsinki",
     "XCB": "Europe/Helsinki",
     "TML": "Europe/Helsinki",
+    "PGL": "Europe/Helsinki",
 }
 
 _ADMIRAL_MARKETS_URL_ = (
@@ -52,8 +57,6 @@ _ADMIRAL_MARKETS_URL_ = (
 )
 _JUST_MARKETS_URL_ = "https://one.justmarkets.link/a/tufvj0xugm/registration/trader"
 _FTMO_URL_ = "https://trader.ftmo.com/?affiliates=JGmeuQqepAZLMcdOEQRp"
-_XCB_URL_ = ""
-_TML_URL_ = ""
 _ADMIRAL_MARKETS_PRODUCTS_ = [
     "Stocks",
     "ETFs",
@@ -72,27 +75,26 @@ INIT_MSG = (
     f"* If you want to trade {', '.join(_ADMIRAL_MARKETS_PRODUCTS_)}, See [{_ADMIRAL_MARKETS_URL_}]\n"
     f"* If you want to trade {', '.join(_JUST_MARKETS_PRODUCTS_)}, See [{_JUST_MARKETS_URL_}]\n"
     f"* If you are looking for a prop firm, See [{_FTMO_URL_}]\n"
-    f"* You can also look at 4xCube Limited [{_XCB_URL_}] \n and Trinota Markets (Global) Limited [{_TML_URL_}]\n"
 )
 
 amg_url = _ADMIRAL_MARKETS_URL_
 jgm_url = _JUST_MARKETS_URL_
 ftmo_url = _FTMO_URL_
-xcb_url = _XCB_URL_
-tml_url = _TML_URL_
+
 
 _SYMBOLS_TYPE_ = {
     "STK": r"\b(Stocks?|Equities?|Shares?)\b",
     "ETF": r"\b(ETFs?)\b",
+    "BOND": r"\b(Treasuries?)\b",
     "IDX": r"\b(?:Indices?|Cash|Index)\b(?!.*\\(?:UKOIL|USOIL))",
     "FX": r"\b(Forex|Exotics?)\b",
-    "COMD": r"\b(Metals?|Agricultures?|Energies?|OIL|Oil|USOIL|UKOIL)\b",
-    "FUT": r"\b(Futures?)\b",
+    "COMD": r"\b(Commodity|Commodities?|Metals?|Agricultures?|Energies?|OIL|Oil|USOIL|UKOIL)\b",
+    "FUT": r"\b(Futures?|Forwards)\b",
     "CRYPTO": r"\b(Cryptos?|Cryptocurrencies|Cryptocurrency)\b",
 }
 
 _COUNTRY_MAP_ = {
-    "USA": r"\b(US)\b",
+    "USA": r"\b(US|USA)\b",
     "AUS": r"\b(Australia)\b",
     "BEL": r"\b(Belgium)\b",
     "DNK": r"\b(Denmark)\b",
@@ -106,6 +108,9 @@ _COUNTRY_MAP_ = {
     "SWE": r"\b(Sweden)\b",
     "GBR": r"\b(UK)\b",
     "CHE": r"\b(Switzerland)\b",
+    "HKG": r"\b(Hong Kong)\b",
+    "IRL": r"\b(Ireland)\b",
+    "AUT": r"\b(Austria)\b",
 }
 
 AMG_EXCHANGES = {
@@ -205,6 +210,9 @@ class Broker(object):
     def __ne__(self, orther) -> bool:
         return self.name != orther.name
 
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.name})"
+
 
 class AdmiralMarktsGroup(Broker):
     def __init__(self, **kwargs):
@@ -232,6 +240,7 @@ class FTMO(Broker):
     def timezone(self) -> str:
         return BROKERS_TIMEZONES["FTMO"]
 
+
 class XCubeLimited(Broker):
     def __init__(self, **kwargs):
         super().__init__("4xCube Limited", **kwargs)
@@ -239,7 +248,8 @@ class XCubeLimited(Broker):
     @property
     def timezone(self) -> str:
         return BROKERS_TIMEZONES["XCB"]
-    
+
+
 class TrinotaMarkets(Broker):
     def __init__(self, **kwargs):
         super().__init__("Trinota Markets (Global) Limited", **kwargs)
@@ -247,6 +257,15 @@ class TrinotaMarkets(Broker):
     @property
     def timezone(self) -> str:
         return BROKERS_TIMEZONES["TML"]
+
+
+class PepperstoneGroupLimited(Broker):
+    def __init__(self, **kwargs):
+        super().__init__("Pepperstone Group Limited", **kwargs)
+
+    @property
+    def timezone(self) -> str:
+        return BROKERS_TIMEZONES["PGL"]
 
 
 class AMP(Broker): ...
@@ -258,6 +277,7 @@ BROKERS: Dict[str, Broker] = {
     "JGM": JustGlobalMarkets(),
     "XCB": XCubeLimited(),
     "TML": TrinotaMarkets(),
+    "PGL": PepperstoneGroupLimited(),
 }
 
 
@@ -316,8 +336,6 @@ class Account(object):
                 f"For {supported['AMG'].name}, See [{amg_url}]\n"
                 f"For {supported['JGM'].name}, See [{jgm_url}]\n"
                 f"For {supported['FTMO'].name}, See [{ftmo_url}]\n"
-                f"For {supported['XCB'].name}, See [{xcb_url}]\n"
-                f"For {supported['TML'].name}, See [{tml_url}]\n"
             )
             raise InvalidBroker(message=msg)
 
@@ -584,6 +602,7 @@ class Account(object):
             - `COMD`: Commodities (e.g., 'CRUDOIL', 'GOLD')
             - `FUT`: Futures (e.g., 'USTNote_U4'),
             - `CRYPTO`: Cryptocurrencies (e.g., 'BTC', 'ETH')
+            - `BOND`: Bonds (e.g., 'USTN10YR')
 
             check_etf (bool): If True and symbol_type is 'etf', check if the
                 ETF description contains 'ETF'.
@@ -669,6 +688,7 @@ class Account(object):
                 "COMD": "Commodities",
                 "FUT": "Futures",
                 "CRYPTO": "Cryptos Assets",
+                "BOND": "Bonds",
             }
             print(f"Total {names[symbol_type]}: {len(symbol_list)}")
 
@@ -684,7 +704,7 @@ class Account(object):
 
     def get_symbol_type(
         self, symbol: str
-    ) -> Literal["STK", "ETF", "IDX", "FX", "COMD", "FUT", "CRYPTO", "unknown"]:
+    ) -> Literal["STK", "ETF", "IDX", "FX", "COMD", "FUT", "CRYPTO", "BOND", "unknown"]:
         """
         Determines the type of a given financial instrument symbol.
 
@@ -692,7 +712,7 @@ class Account(object):
             symbol (str): The symbol of the financial instrument (e.g., `GOOGL`, `EURUSD`).
 
         Returns:
-            Literal["STK", "ETF", "IDX", "FX", "COMD", "FUT", "CRYPTO", "unknown"]:
+            Literal["STK", "ETF", "IDX", "FX", "COMD", "FUT", "CRYPTO", "BOND", "unknown"]:
             The type of the financial instrument, one of the following:
 
             - `STK`: For Stocks (e.g., `GOOGL`)
@@ -702,14 +722,25 @@ class Account(object):
             - `COMD`: For Commodities (e.g., `CRUDOIL`, `GOLD`)
             - `FUT` : For Futures (e.g., `USTNote_U4`)
             - `CRYPTO`: For Cryptocurrencies (e.g., `BTC`, `ETH`)
+            - `BOND`: For Bonds (e.g., `USTN10YR`)
 
             Returns `unknown` if the type cannot be determined.
         """
 
         patterns = _SYMBOLS_TYPE_
         info = self.get_symbol_info(symbol)
+        indices = self.get_symbols(symbol_type="IDX")
+        commodity = self.get_symbols(symbol_type="COMD")
         if info is not None:
             for symbol_type, pattern in patterns.items():
+                if (
+                    symbol_type in ["IDX", "COMD"]
+                    and self.broker == PepperstoneGroupLimited()
+                    and info.name.endswith("-F")
+                    and info.name in indices + commodity
+                ):
+                    symbol_type = "FUT"
+                    pattern = r"\b(Forwards?)\b"
                 match = re.search(pattern, info.path)  # , re.IGNORECASE
                 if match:
                     return symbol_type
@@ -733,14 +764,15 @@ class Account(object):
         return symbol_list
 
     def get_fx_symbols(
-        self, category: Literal["majors", "minors", "exotics"] = "majors"
+        self,
+        category: Literal["majors", "minors", "exotics", "crosses", "ndfs"] = "majors",
     ) -> List[str]:
         """
         Retrieves a list of forex symbols belonging to a specific category.
 
         Args:
             category (str, optional): The category of forex symbols to retrieve.
-                                        Possible values are 'majors', 'minors', 'exotics'.
+                                        Possible values are 'majors', 'minors', 'exotics', 'crosses', 'ndfs'.
                                         Defaults to 'majors'.
 
         Returns:
@@ -750,20 +782,22 @@ class Account(object):
             ValueError: If an unsupported category is provided.
 
         Notes:
-            This mthods works primarly with Admirals Group AS products,
+            This mthods works primarly with Admirals Group AS products and Pepperstone Group Limited,
             For other brokers use `get_symbols()` or this method will use it by default.
         """
-        if self.broker != AdmiralMarktsGroup():
+        if self.broker not in [AdmiralMarktsGroup(), PepperstoneGroupLimited()]:
             return self.get_symbols(symbol_type="FX")
         else:
             fx_categories = {
                 "majors": r"\b(Majors?)\b",
                 "minors": r"\b(Minors?)\b",
                 "exotics": r"\b(Exotics?)\b",
+                "crosses": r"\b(Crosses?)\b",
+                "ndfs": r"\b(NDFs?)\b",
             }
             return self._get_symbols_by_category("FX", category, fx_categories)
 
-    def get_stocks_from_country(self, country_code: str = "USA", etf=True) -> List[str]:
+    def get_stocks_from_country(self, country_code: str = "USA", etf=False) -> List[str]:
         """
         Retrieves a list of stock symbols from a specific country.
 
@@ -782,6 +816,9 @@ class Account(object):
             * **United Kingdom:** GBR
             * **United States:** USA
             * **Switzerland:** CHE
+            * **Hong Kong:** HKG
+            * **Ireland:** IRL
+            * **Austria:** AUT
 
         Args:
             country (str, optional): The country code of stocks to retrieve.
@@ -794,11 +831,11 @@ class Account(object):
             ValueError: If an unsupported country is provided.
 
         Notes:
-            This mthods works primarly with Admirals Group AS products,
+            This mthods works primarly with Admirals Group AS products and Pepperstone Group Limited,
             For other brokers use `get_symbols()` or this method will use it by default.
         """
 
-        if self.broker != AdmiralMarktsGroup():
+        if self.broker not in [AdmiralMarktsGroup(), PepperstoneGroupLimited()]:
             stocks = self.get_symbols(symbol_type="STK")
             return stocks
         else:
