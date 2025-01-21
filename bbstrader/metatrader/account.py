@@ -83,13 +83,13 @@ ftmo_url = _FTMO_URL_
 
 
 _SYMBOLS_TYPE_ = {
-    "STK": r"\b(Stocks?|Equities?|Shares?)\b",
     "ETF": r"\b(ETFs?)\b",
     "BOND": r"\b(Treasuries?)\b",
-    "IDX": r"\b(?:Indices?|Cash|Index)\b(?!.*\\(?:UKOIL|USOIL))",
     "FX": r"\b(Forex|Exotics?)\b",
-    "COMD": r"\b(Commodity|Commodities?|Metals?|Agricultures?|Energies?|OIL|Oil|USOIL|UKOIL)\b",
     "FUT": r"\b(Futures?|Forwards)\b",
+    "STK": r"\b(Stocks?|Equities?|Shares?)\b",
+    "IDX": r"\b(?:Indices?|Cash|Index)\b(?!.*\\(?:UKOIL|USOIL))",
+    "COMD": r"\b(Commodity|Commodities?|Metals?|Agricultures?|Energies?|OIL|Oil|USOIL|UKOIL)\b",
     "CRYPTO": r"\b(Cryptos?|Cryptocurrencies|Cryptocurrency)\b",
 }
 
@@ -741,8 +741,8 @@ class Account(object):
                 ):
                     symbol_type = "FUT"
                     pattern = r"\b(Forwards?)\b"
-                match = re.search(pattern, info.path)  # , re.IGNORECASE
-                if match:
+                search = re.compile(pattern)
+                if re.search(search, info.path):
                     return symbol_type
         return "unknown"
 
