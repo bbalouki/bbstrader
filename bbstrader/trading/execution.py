@@ -110,6 +110,7 @@ def _mt5_execution(
         notify = kwargs.get("notify", False)
         signal_tickers = kwargs.get("signal_tickers", symbols)
         debug_mode = kwargs.get("debug_mode", False)
+        delay = kwargs.get("delay", 0)
         if notify:
             telegram = kwargs.get("telegram", False)
             bot_token = kwargs.get("bot_token")
@@ -192,8 +193,9 @@ def _mt5_execution(
         symbol_type = account.get_symbol_type(symbol)
         desc = account.get_symbol_info(symbol).description
         sigmsg = (
-            f"SIGNAL = {signal}, SYMBOL={symbol}, TYPE={symbol_type}, DESCRIPTION={desc}, "
-            f"PRICE={price}, STOPLIMIT={stoplimit}, STRATEGY={STRATEGY}, TIMEFRAME={time_frame}"
+            f"SIGNAL = {signal}, \nSYMBOL={symbol}, \nTYPE={symbol_type}, \nDESCRIPTION={desc}, "
+            f"\nPRICE={price}, \nSTOPLIMIT={stoplimit}, \nSTRATEGY={STRATEGY}, \nTIMEFRAME={time_frame}"
+            f"\nBROKER={account.broker.name}, \nTIMESTAMP={datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
         )
         msg = f"Sending {signal} Order ... SYMBOL={symbol}, STRATEGY={STRATEGY}"
         tfmsg = f"Time Frame Not completed !!! SYMBOL={symbol}, STRATEGY={STRATEGY}"
@@ -399,10 +401,11 @@ def _mt5_execution(
         elif trade_time % iter_time == 0:
             time_intervals += iter_time
         else:
-            raise ValueError(
-                f"iter_time must be a multiple of the {time_frame} !!!"
-                f"(e.g., if time_frame is 15m, iter_time must be 1.5, 3, 3, 15 etc)"
-            )
+            if use_trade_time:
+                raise ValueError(
+                    f"iter_time must be a multiple of the {time_frame} !!!"
+                    f"(e.g., if time_frame is 15m, iter_time must be 1.5, 3, 5, 15 etc)"
+                )
         try:
             FRIDAY = "friday"
             check_mt5_connection(**kwargs)
@@ -449,15 +452,15 @@ def _mt5_execution(
                         period_end_action == "sleep" and today != FRIDAY or not closing
                     ):
                         sleep_time = trades_instances[symbols[-1]].sleep_time()
-                        sleepmsg(sleep_time)
-                        time.sleep(60 * sleep_time)
+                        sleepmsg(sleep_time + delay)
+                        time.sleep(60 * sleep_time + delay)
                         logger.info(sessionmsg)
                     elif period_end_action == "sleep" and today == FRIDAY:
                         sleep_time = trades_instances[symbols[-1]].sleep_time(
                             weekend=True
                         )
-                        sleepmsg(sleep_time)
-                        time.sleep(60 * sleep_time)
+                        sleepmsg(sleep_time + delay)
+                        time.sleep(60 * sleep_time + delay)
                         logger.info(sessionmsg)
 
             elif period.lower() == "week":
@@ -476,8 +479,8 @@ def _mt5_execution(
 
                 if day_end and today != FRIDAY:
                     sleep_time = trades_instances[symbols[-1]].sleep_time()
-                    sleepmsg(sleep_time)
-                    time.sleep(60 * sleep_time)
+                    sleepmsg(sleep_time + delay)
+                    time.sleep(60 * sleep_time + delay)
                     logger.info(sessionmsg)
                 elif day_end and today == FRIDAY:
                     strategy.perform_period_end_checks()
@@ -487,8 +490,8 @@ def _mt5_execution(
                         sleep_time = trades_instances[symbols[-1]].sleep_time(
                             weekend=True
                         )
-                        sleepmsg(sleep_time)
-                        time.sleep(60 * sleep_time)
+                        sleepmsg(sleep_time + delay)
+                        time.sleep(60 * sleep_time + delay)
                         logger.info(sessionmsg)
 
             elif period.lower() == "month":
@@ -501,7 +504,7 @@ def _mt5_execution(
                     elif (
                         trade.days_end()
                         and today == FRIDAY
-                        and num_days / len(symbols) >= 20
+                        and num_days >= 20
                     ) and closing:
                         for id in expert_ids:
                             trade.close_positions(
@@ -511,17 +514,17 @@ def _mt5_execution(
                         trade.statistics(save=True)
                 if day_end and today != FRIDAY:
                     sleep_time = trades_instances[symbols[-1]].sleep_time()
-                    sleepmsg(sleep_time)
-                    time.sleep(60 * sleep_time)
+                    sleepmsg(sleep_time + delay)
+                    time.sleep(60 * sleep_time + delay)
                     logger.info(sessionmsg)
                     num_days += 1
                 elif day_end and today == FRIDAY:
                     sleep_time = trades_instances[symbols[-1]].sleep_time(weekend=True)
-                    sleepmsg(sleep_time)
-                    time.sleep(60 * sleep_time)
+                    sleepmsg(sleep_time + delay)
+                    time.sleep(60 * sleep_time + delay)
                     logger.info(sessionmsg)
                     num_days += 1
-                elif day_end and today == FRIDAY and num_days / len(symbols) >= 20:
+                elif day_end and today == FRIDAY and num_days >= 20:
                     strategy.perform_period_end_checks()
                     break
         except Exception:

@@ -329,7 +329,9 @@ class RiskManagement(Account):
         tf_int = self._convert_time_frame(self._tf)
         interval = round((minutes / tf_int) * 252)
 
-        rate = Rates(self.symbol, self._tf, 0, interval, **self.kwargs)
+        rate = Rates(
+            self.symbol, timeframe=self._tf, start_pos=0, count=interval, **self.kwargs
+        )
         returns = rate.returns * 100
         std = returns.std()
         point = self.get_symbol_info(self.symbol).point
@@ -381,7 +383,9 @@ class RiskManagement(Account):
         tf_int = self._convert_time_frame(tf)
         interval = round((minutes / tf_int) * 252)
 
-        rate = Rates(self.symbol, tf, 0, interval, **self.kwargs)
+        rate = Rates(
+            self.symbol, timeframe=tf, start_pos=0, count=interval, **self.kwargs
+        )
         returns = rate.returns * 100
         p = self.get_account_info().margin_free
         mu = returns.mean()

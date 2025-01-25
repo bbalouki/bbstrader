@@ -129,7 +129,7 @@ class Trade(RiskManagement):
             -   sl
             -   tp
             -   be
-        See the RiskManagement class for more details on these parameters.
+        See the ``bbstrader.metatrader.risk.RiskManagement`` class for more details on these parameters.
         See `bbstrader.metatrader.account.check_mt5_connection()` for more details on how to connect to MT5 terminal.
         """
         # Call the parent class constructor first
@@ -649,25 +649,26 @@ class Trade(RiskManagement):
             if type == "BMKT" or type == "SMKT":
                 self.opened_positions.append(result.order)
                 positions = self.get_positions(symbol=self.symbol)
-                for position in positions:
-                    if position.ticket == result.order:
-                        if position.type == 0:
-                            order_type = "BUY"
-                            self.buy_positions.append(position.ticket)
-                        else:
-                            order_type = "SELL"
-                            self.sell_positions.append(position.ticket)
-                        profit = round(self.get_account_info().profit, 5)
-                        order_info = (
-                            f"2. {order_type} Position Opened, Symbol: {self.symbol}, Price: @{round(position.price_open,5)}, "
-                            f"Sl: @{position.sl} Tp: @{position.tp}"
-                        )
-                        self.logger.info(order_info)
-                        pos_info = (
-                            f"3. [OPEN POSITIONS ON {self.symbol} = {len(positions)}, ACCOUNT OPEN PnL = {profit} "
-                            f"{self.get_account_info().currency}]\n"
-                        )
-                        self.logger.info(pos_info)
+                if positions is not None:
+                    for position in positions:
+                        if position.ticket == result.order:
+                            if position.type == 0:
+                                order_type = "BUY"
+                                self.buy_positions.append(position.ticket)
+                            else:
+                                order_type = "SELL"
+                                self.sell_positions.append(position.ticket)
+                            profit = round(self.get_account_info().profit, 5)
+                            order_info = (
+                                f"2. {order_type} Position Opened, Symbol: {self.symbol}, Price: @{round(position.price_open,5)}, "
+                                f"Sl: @{position.sl} Tp: @{position.tp}"
+                            )
+                            self.logger.info(order_info)
+                            pos_info = (
+                                f"3. [OPEN POSITIONS ON {self.symbol} = {len(positions)}, ACCOUNT OPEN PnL = {profit} "
+                                f"{self.get_account_info().currency}]\n"
+                            )
+                            self.logger.info(pos_info)
         else:
             msg = trade_retcode_message(result.retcode)
             self.logger.error(
@@ -1054,7 +1055,10 @@ class Trade(RiskManagement):
         spread = self.get_symbol_info(self.symbol).spread
         fees = self.get_stats()[0]["average_fee"] * -1
         risk = self.currency_risk()["trade_profit"]
-        fees_points = round((fees / risk), 3)
+        try:
+            fees_points = round((fees / risk), 3)
+        except ZeroDivisionError:
+            fees_points = 0
         # If Buy
         if position.type == 0 and position.price_current > position.price_open:
             # Calculate the break-even level and price
@@ -1161,7 +1165,10 @@ class Trade(RiskManagement):
         point = self.get_symbol_info(self.symbol).point
         fees = self.get_stats()[0]["average_fee"] * -1
         risk = self.currency_risk()["trade_profit"]
-        min_be = round((fees / risk)) + 2
+        try:
+            min_be = round((fees / risk)) + 2
+        except ZeroDivisionError:
+            min_be = self.symbol_info(self.symbol).spread
         be = self.get_break_even()
         if th is not None:
             win_be = th
@@ -1189,7 +1196,7 @@ class Trade(RiskManagement):
                 # The first one is the opening order
                 # The second is the closing order
                 history = self.get_trades_history(position=position, to_df=False)
-                if len(history) == 2:
+                if history is not None and len(history) == 2:
                     profit += history[1].profit
                     commission += history[0].commission
                     swap += history[0].swap
@@ -1460,7 +1467,7 @@ class Trade(RiskManagement):
             for position in self.opened_positions:
                 time.sleep(0.1)
                 history = self.get_trades_history(position=position, to_df=False)
-                if len(history) == 2:
+                if history is not None and len(history) == 2:
                     result = history[1].profit
                     comm = history[0].commission
                     swap = history[0].swap
