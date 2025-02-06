@@ -16,7 +16,7 @@ with io.open(path.join(here, "README.md"), encoding="utf-8") as f:
 with io.open(path.join(here, "requirements.txt"), encoding="utf-8") as f:
     REQUIREMENTS = [line.rstrip() for line in f]
 
-VERSION = "0.2.07"
+VERSION = "0.2.091"
 DESCRIPTION = "Simplified Investment & Trading Toolkit"
 
 KEYWORDS = [
@@ -54,6 +54,8 @@ CLASSIFIERS = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
     "License :: OSI Approved :: MIT License",
 ]
 

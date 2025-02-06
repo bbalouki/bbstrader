@@ -4,6 +4,7 @@ import urllib.request
 from datetime import datetime
 from typing import Any, Dict, List, Literal, Optional, Tuple, Union
 
+from bbstrader import compat  # noqa: F401
 import MetaTrader5 as mt5
 import pandas as pd
 from currency_converter import SINGLE_DAY_ECB_URL, CurrencyConverter

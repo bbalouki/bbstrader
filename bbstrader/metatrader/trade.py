@@ -4,6 +4,7 @@ from datetime import datetime
 from logging import Logger
 from typing import Any, Callable, Dict, List, Literal, Optional, Tuple
 
+from bbstrader import compat  # noqa: F401
 import MetaTrader5 as Mt5
 import pandas as pd
 from tabulate import tabulate
@@ -89,7 +90,7 @@ class Trade(RiskManagement):
         symbol: str = "EURUSD",
         expert_name: str = "bbstrader",
         expert_id: int = 9818,
-        version: str = "1.0",
+        version: str = "2.0",
         target: float = 5.0,
         start_time: str = "1:00",
         finishing_time: str = "23:00",
@@ -604,7 +605,7 @@ class Trade(RiskManagement):
                     result = self.send_order(request)
                     if result.retcode == Mt5.TRADE_RETCODE_DONE:
                         break
-            elif result.retcode == Mt5.TRADE_RETCODE_INVALID_VOLUME: #10014
+            elif result.retcode == Mt5.TRADE_RETCODE_INVALID_VOLUME:  # 10014
                 new_volume = int(request["volume"])
                 if new_volume >= 1:
                     request["volume"] = new_volume
@@ -660,7 +661,7 @@ class Trade(RiskManagement):
                                 self.sell_positions.append(position.ticket)
                             profit = round(self.get_account_info().profit, 5)
                             order_info = (
-                                f"2. {order_type} Position Opened, Symbol: {self.symbol}, Price: @{round(position.price_open,5)}, "
+                                f"2. {order_type} Position Opened, Symbol: {self.symbol}, Price: @{round(position.price_open, 5)}, "
                                 f"Sl: @{position.sl} Tp: @{position.tp}"
                             )
                             self.logger.info(order_info)
@@ -922,21 +923,35 @@ class Trade(RiskManagement):
             return current_profit >= th_profit
         return False
 
+    def _get_trail_after_points(self, trail_after_points: int | str) -> int:
+        if isinstance(trail_after_points, str):
+            if trail_after_points == "SL":
+                return self.get_stop_loss()
+            elif trail_after_points == "TP":
+                return self.get_take_profit()
+            elif trail_after_points == "BE":
+                return self.get_break_even()
+        # TODO: Add other combinations (e.g. "SL+TP", "SL+BE", "TP+BE", "SL*N", etc.)
+        return trail_after_points
+
     def break_even(
         self,
         mm=True,
         id: Optional[int] = None,
         trail: Optional[bool] = True,
         stop_trail: Optional[int] = None,
-        trail_after_points: Optional[int] = None,
+        trail_after_points: int | str = None,
         be_plus_points: Optional[int] = None,
     ):
         """
-        This function checks if it's time to set the break-even level for a trading position.
-        If it is, it sets the break-even level. If the break-even level has already been set,
-        it checks if the price has moved in a favorable direction.
-        If it has, and the trail parameter is set to True, it updates
-        the break-even level based on the trail_after_points and stop_trail parameters.
+        Manages the break-even level of a trading position.
+
+        This function checks whether it is time to set a break-even stop loss for an open position.
+        If the break-even level is already set, it monitors price movement and updates the stop loss
+        accordingly if the `trail` parameter is enabled.
+
+        When `trail` is enabled, the function dynamically adjusts the break-even level based on the
+        `trail_after_points` and `stop_trail` parameters.
 
         Args:
             id (int): The strategy ID or expert ID.
@@ -944,8 +959,12 @@ class Trade(RiskManagement):
             trail (bool): Whether to trail the stop loss or not.
             stop_trail (int): Number of points to trail the stop loss by.
                 It represent the distance from the current price to the stop loss.
-            trail_after_points (int): Number of points in profit
+            trail_after_points (int, str): Number of points in profit
                 from where the strategy will start to trail the stop loss.
+                If set to str, it must be one of the following values:
+                - 'SL' to trail the stop loss after the profit reaches the stop loss level in points.
+                - 'TP' to trail the stop loss after the profit reaches the take profit level in points.
+                - 'BE' to trail the stop loss after the profit reaches the break-even level in points.
             be_plus_points (int): Number of points to add to the break-even level.
                 Represents the minimum profit to secure.
         """
@@ -956,16 +975,19 @@ class Trade(RiskManagement):
         positions = self.get_positions(symbol=self.symbol)
         be = self.get_break_even()
         if trail_after_points is not None:
-            assert trail_after_points > be, (
-                "trail_after_points must be greater than break even" " or set to None"
-            )
+            if isinstance(trail_after_points, int):
+                assert trail_after_points > be, (
+                    "trail_after_points must be greater than break even or set to None"
+                )
+            trail_after_points = self._get_trail_after_points(trail_after_points)
         if positions is not None:
             for position in positions:
                 if position.magic == Id:
-                    size = self.get_symbol_info(self.symbol).trade_tick_size
-                    value = self.get_symbol_info(self.symbol).trade_tick_value
-                    point = self.get_symbol_info(self.symbol).point
-                    digits = self.get_symbol_info(self.symbol).digits
+                    symbol_info = self.get_symbol_info(self.symbol)
+                    size = symbol_info.trade_tick_size
+                    value = symbol_info.trade_tick_value
+                    point = symbol_info.point
+                    digits = symbol_info.digits
                     points = position.profit * (size / value / position.volume)
                     break_even = float(points / point) >= be
                     if break_even:

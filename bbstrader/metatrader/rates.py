@@ -1,11 +1,13 @@
 from datetime import datetime
 from typing import Optional, Union
 
+from bbstrader import compat  # noqa: F401
 import MetaTrader5 as Mt5
 import pandas as pd
 from exchange_calendars import get_calendar, get_calendar_names
 from pandas.tseries.holiday import USFederalHolidayCalendar
 from pandas.tseries.offsets import CustomBusinessDay
+
 
 from bbstrader.metatrader.account import AMG_EXCHANGES, Account, check_mt5_connection
 from bbstrader.metatrader.utils import TIMEFRAMES, TimeFrame, raise_mt5_error
@@ -172,7 +174,7 @@ class Rates(object):
             480,
             720,
         ]:
-            key = f"{minutes//60}h" if minutes >= 60 else f"{minutes}m"
+            key = f"{minutes // 60}h" if minutes >= 60 else f"{minutes}m"
             time_frame_mapping[key] = int(td * (60 / minutes) * sd)
         time_frame_mapping["D1"] = int(td)
 

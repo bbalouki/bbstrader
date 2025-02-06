@@ -2,6 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import NamedTuple, Optional
 
+from bbstrader import compat  # noqa: F401
 import MetaTrader5 as MT5
 
 __all__ = [
