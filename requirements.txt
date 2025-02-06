@@ -29,4 +29,3 @@ financetoolkit
 tables
 lightgbm
 alphalens-reloaded
-MetaTrader5

@@ -15,9 +15,5 @@ def setup_mock_metatrader():
         MOCK_MODULES = ["MetaTrader5"]
         sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
-        print(
-            "Warning: MetaTrader5 is not available on Linux. A mock version is being used."
-        )
-
 
 setup_mock_metatrader()
