@@ -195,14 +195,12 @@ class Portfolio(object):
         try:
             price = self.bars.get_latest_bar_value(symbol, "adj_close")
             return price
-        except AttributeError:
+        except (AttributeError, KeyError, ValueError):
             try:
                 price = self.bars.get_latest_bar_value(symbol, "close")
                 return price
-            except AttributeError:
-                raise AttributeError(
-                    "Bars object must have 'adj_close' or 'close' prices"
-                )
+            except (AttributeError, KeyError, ValueError):
+                return 0.0
 
     def update_timeindex(self, event: MarketEvent):
         """

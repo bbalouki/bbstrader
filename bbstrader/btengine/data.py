@@ -203,10 +203,11 @@ class BaseCSVDataHandler(DataHandler):
             self.symbol_data[s] = self.symbol_data[s].reindex(
                 index=comb_index, method="pad"
             )
+            if "adj_close" not in new_names:
+                self.columns.append("adj_close")
+                self.symbol_data[s]["adj_close"] = self.symbol_data[s]["close"]
             self.symbol_data[s]["returns"] = (
-                self.symbol_data[s][
-                    "adj_close" if "adj_close" in new_names else "close"
-                ]
+                self.symbol_data[s]["adj_close" if "adj_close" in new_names else "close"]
                 .pct_change()
                 .dropna()
             )
@@ -229,7 +230,7 @@ class BaseCSVDataHandler(DataHandler):
         try:
             bars_list = self.latest_symbol_data[symbol]
         except KeyError:
-            print("Symbol not available in the historical data set.")
+            print(f"{symbol} not available in the historical data set.")
             raise
         else:
             return bars_list[-1]
@@ -244,7 +245,7 @@ class BaseCSVDataHandler(DataHandler):
         try:
             bars_list = self.latest_symbol_data[symbol]
         except KeyError:
-            print("Symbol not available in the historical data set.")
+            print(f"{symbol} not available in the historical data set.")
             raise
         else:
             if df:
@@ -260,7 +261,7 @@ class BaseCSVDataHandler(DataHandler):
         try:
             bars_list = self.latest_symbol_data[symbol]
         except KeyError:
-            print("Symbol not available in the historical data set.")
+            print(f"{symbol} not available in the historical data set.")
             raise
         else:
             return bars_list[-1][0]
@@ -274,7 +275,7 @@ class BaseCSVDataHandler(DataHandler):
         try:
             bars_list = self.get_latest_bars(symbol, N)
         except KeyError:
-            print("Symbol not available in the historical data set.")
+            print(f"{symbol} not available in the historical data set for .")
             raise
         else:
             return [b[0] for b in bars_list]
@@ -287,14 +288,14 @@ class BaseCSVDataHandler(DataHandler):
         try:
             bars_list = self.latest_symbol_data[symbol]
         except KeyError:
-            print("Symbol not available in the historical data set.")
+            print(f"{symbol} not available in the historical data set.")
             raise
         else:
             try:
                 return getattr(bars_list[-1][1], val_type)
             except AttributeError:
                 print(
-                    f"Value type {val_type} not available in the historical data set."
+                    f"Value type {val_type} not available in the historical data set for {symbol}."
                 )
                 raise
 
@@ -306,7 +307,7 @@ class BaseCSVDataHandler(DataHandler):
         try:
             bars_list = self.get_latest_bars(symbol, N, df=False)
         except KeyError:
-            print("That symbol is not available in the historical data set.")
+            print(f"{symbol} not available in the historical data set.")
             raise
         else:
             try:
@@ -497,6 +498,8 @@ class YFDataHandler(BaseCSVDataHandler):
                     multi_level_index=False,
                     progress=False,
                 )
+                if "Adj Close" not in data.columns:
+                    data["Adj Close"] = data["Close"]
                 if data.empty:
                     raise ValueError(f"No data found for {symbol}")
                 data.to_csv(filepath)

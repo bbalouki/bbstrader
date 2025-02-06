@@ -2,6 +2,7 @@ import random
 from datetime import datetime
 from typing import Any, Dict, Optional, Union
 
+from bbstrader import compat  # noqa: F401
 import MetaTrader5 as Mt5
 from scipy.stats import norm
 

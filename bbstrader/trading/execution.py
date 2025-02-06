@@ -621,7 +621,7 @@ class MT5ExecutionEngine:
         optimizer: str = "equal",
         trail: bool = True,
         stop_trail: Optional[int] = None,
-        trail_after_points: Optional[int] = None,
+        trail_after_points: int | str = None,
         be_plus_points: Optional[int] = None,
         show_positions_orders: bool = False,
         iter_time: int | float = 5,

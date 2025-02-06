@@ -1,6 +1,7 @@
 import io
 import sys
 from os import path
+import platform
 
 from setuptools import setup
 
@@ -16,7 +17,10 @@ with io.open(path.join(here, "README.md"), encoding="utf-8") as f:
 with io.open(path.join(here, "requirements.txt"), encoding="utf-8") as f:
     REQUIREMENTS = [line.rstrip() for line in f]
 
-VERSION = "0.2.07"
+if platform.system() == "Linux":
+    REQUIREMENTS.remove("MetaTrader5")
+
+VERSION = "0.2.08"
 DESCRIPTION = "Simplified Investment & Trading Toolkit"
 
 KEYWORDS = [
@@ -54,6 +58,8 @@ CLASSIFIERS = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
     "License :: OSI Approved :: MIT License",
 ]
 
@@ -88,7 +94,6 @@ setup(
     packages=INLCUDE,
     install_requires=REQUIREMENTS,
     extras_require={
-        "MT5": ["MetaTrader5"],
         # 'zipline': ['zipline'],
         # 'cerebro': ['backtrader'],
     },
