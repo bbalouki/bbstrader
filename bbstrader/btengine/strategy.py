@@ -7,9 +7,12 @@ from typing import Dict, List, Literal, Union
 import numpy as np
 import pandas as pd
 import pytz
+from loguru import logger
 
 from bbstrader.btengine.data import DataHandler
 from bbstrader.btengine.event import FillEvent, SignalEvent
+from bbstrader.config import BBSTRADER_DIR
+from bbstrader.core.utils import TradeSignal
 from bbstrader.metatrader.account import (
     Account,
     AdmiralMarktsGroup,
@@ -17,9 +20,15 @@ from bbstrader.metatrader.account import (
 )
 from bbstrader.metatrader.rates import Rates
 from bbstrader.models.optimization import optimized_weights
-from bbstrader.core.utils import TradeSignal
 
 __all__ = ["Strategy", "MT5Strategy"]
+
+logger.add(
+    f"{BBSTRADER_DIR}/logs/strategy.log",
+    enqueue=True,
+    level="INFO",
+    format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {name} | {message}",
+)
 
 
 class Strategy(metaclass=ABCMeta):
@@ -91,10 +100,11 @@ class MT5Strategy(Strategy):
         self.risk_budget = self._check_risk_budget(**kwargs)
         self.max_trades = kwargs.get("max_trades", {s: 1 for s in self.symbols})
         self.tf = kwargs.get("time_frame", "D1")
-        self.logger = kwargs.get("logger")
+        self.logger = kwargs.get("logger") or logger
         if self.mode == "backtest":
             self._initialize_portfolio()
         self.kwargs = kwargs
+        self.periodes = 0
 
     @property
     def cash(self) -> float:
