@@ -29,3 +29,6 @@ financetoolkit
 tables
 lightgbm
 alphalens-reloaded
+pyfiglet
+colorama
+
