@@ -1,16 +1,23 @@
+import multiprocessing as mp
 import time
 import traceback
-import MetaTrader5 as MT5
 from datetime import datetime
-from logging import Logger
 from typing import Dict, List, Literal, Optional
 
+from loguru import logger as log
+
 from bbstrader.btengine.strategy import MT5Strategy, Strategy
-from bbstrader.metatrader.account import check_mt5_connection
-from bbstrader.metatrader.trade import Trade
-from bbstrader.metatrader.account import Account
-from bbstrader.trading.scripts import send_message
+from bbstrader.config import BBSTRADER_DIR
 from bbstrader.core.utils import TradeAction
+from bbstrader.metatrader.account import Account, check_mt5_connection
+from bbstrader.metatrader.trade import Trade
+from bbstrader.trading.scripts import send_message
+
+try:
+    import MetaTrader5 as MT5
+except ImportError:
+    import bbstrader.compat  # noqa: F401
+
 
 __all__ = ["MT5ExecutionEngine", "TWSExecutionEngine"]
 
@@ -31,6 +38,7 @@ _TF_MAPPING = {
 }
 
 TradingDays = ["monday", "tuesday", "wednesday", "thursday", "friday"]
+WEEK_DAYS = TradingDays + ["saturday", "sunday"]
 
 BUYS = ["BMKT", "BLMT", "BSTP", "BSTPLMT"]
 SELLS = ["SMKT", "SLMT", "SSTP", "SSTPLMT"]
@@ -77,6 +85,13 @@ NON_EXEC_RETCODES = {
     "SMKT": [MT5.TRADE_RETCODE_LONG_ONLY] + COMMON_RETCODES,
 }
 
+log.add(
+    f"{BBSTRADER_DIR}/logs/execution.log",
+    enqueue=True,
+    level="INFO",
+    format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {name} | {message}",
+)
+
 
 def _mt5_execution(
     symbol_list,
@@ -99,18 +114,22 @@ def _mt5_execution(
     comment,
     **kwargs,
 ):
+    logger = kwargs.get("logger", log)
+
     def _print_exc(dm, msg):
         traceback.print_exc() if dm else logger.error(msg)
 
     try:
         symbols = symbol_list.copy()
         time_frame = kwargs.get("time_frame", "15m")
+        daily_risk = kwargs.get("daily_risk")
         STRATEGY = kwargs.get("strategy_name")
         mtrades = kwargs.get("max_trades")
         notify = kwargs.get("notify", False)
         signal_tickers = kwargs.get("signal_tickers", symbols)
         debug_mode = kwargs.get("debug_mode", False)
         delay = kwargs.get("delay", 0)
+        ACCOUNT = kwargs.get("account", "MT5 Account")
         if notify:
             telegram = kwargs.get("telegram", False)
             bot_token = kwargs.get("bot_token")
@@ -124,9 +143,6 @@ def _mt5_execution(
         elif isinstance(expert_ids, int):
             expert_ids = [expert_ids]
 
-        logger: Logger = kwargs.get("logger")
-        if logger is None:
-            logger: Logger = trades_instances[symbols[0]].logger
         max_trades = {
             symbol: mtrades[symbol]
             if mtrades is not None and symbol in mtrades
@@ -136,8 +152,14 @@ def _mt5_execution(
         if comment is None:
             trade = trades_instances[symbols[0]]
             comment = f"{trade.expert_name}@{trade.version}"
+
+        if period.lower() == "24/7":
+            trading_days = WEEK_DAYS
     except Exception:
-        _print_exc(debug_mode, f"Initializing Execution Engine, STRATEGY={STRATEGY}")
+        _print_exc(
+            debug_mode,
+            f"Initializing Execution Engine, STRATEGY={STRATEGY}, ACCOUNT={ACCOUNT}",
+        )
         return
 
     def update_risk(weights):
@@ -146,7 +168,8 @@ def _mt5_execution(
                 if symbol not in weights:
                     continue
                 trade = trades_instances[symbol]
-                trade.dailydd = round(weights[symbol], 5)
+                dailydd = round(weights[symbol] * daily_risk, 5)
+                trade.dailydd = dailydd
 
     def check_retcode(trade: Trade, position):
         if len(trade.retcodes) > 0:
@@ -181,14 +204,18 @@ def _mt5_execution(
         check_mt5_connection(**kwargs)
         strategy: MT5Strategy = strategy_cls(symbol_list=symbols, mode="live", **kwargs)
     except Exception:
-        _print_exc(debug_mode, f"Initializing strategy, STRATEGY={STRATEGY}")
+        _print_exc(
+            debug_mode, f"Initializing strategy, STRATEGY={STRATEGY}, ACCOUNT={ACCOUNT}"
+        )
         return
-    logger.info(f"Running {STRATEGY} Strategy in {time_frame} Interval ...")
+    logger.info(
+        f"Running {STRATEGY} Strategy in {time_frame} Interval ..., ACCOUNT={ACCOUNT}"
+    )
 
     def run_trade_algorithm(signal, symbol, id, trade: Trade, price, stoplimit):
         signal = "BMKT" if signal == "LONG" or signal == "BUY" else signal
         signal = "SMKT" if signal == "SHORT" or signal == "SELL" else signal
-        info = f"SIGNAL = {signal}, SYMBOL={symbol}, STRATEGY={STRATEGY}, TIMEFRAME={time_frame}"
+        info = f"SIGNAL = {signal}, SYMBOL={symbol}, STRATEGY={STRATEGY}, TIMEFRAME={time_frame} , ACCOUNT={ACCOUNT}"
         account = Account(**kwargs)
         symbol_type = account.get_symbol_type(symbol)
         desc = account.get_symbol_info(symbol).description
@@ -197,9 +224,9 @@ def _mt5_execution(
             f"\nPRICE={price}, \nSTOPLIMIT={stoplimit}, \nSTRATEGY={STRATEGY}, \nTIMEFRAME={time_frame}"
             f"\nBROKER={account.broker.name}, \nTIMESTAMP={datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
         )
-        msg = f"Sending {signal} Order ... SYMBOL={symbol}, STRATEGY={STRATEGY}"
-        tfmsg = f"Time Frame Not completed !!! SYMBOL={symbol}, STRATEGY={STRATEGY}"
-        riskmsg = f"Risk not allowed !!! SYMBOL={symbol}, STRATEGY={STRATEGY}"
+        msg = f"Sending {signal} Order ... SYMBOL={symbol}, STRATEGY={STRATEGY} , ACCOUNT={ACCOUNT}"
+        tfmsg = f"Time Frame Not completed !!! SYMBOL={symbol}, STRATEGY={STRATEGY} , ACCOUNT={ACCOUNT}"
+        riskmsg = f"Risk not allowed !!! SYMBOL={symbol}, STRATEGY={STRATEGY} , ACCOUNT={ACCOUNT}"
         if signal not in EXIT_SIGNAL_ACTIONS:
             if signal in NON_EXEC_RETCODES and not check_retcode(trade, signal):
                 logger.info(info)
@@ -324,7 +351,7 @@ def _mt5_execution(
                         if show_positions_orders:
                             logger.info(
                                 f"Current {type.upper()} SYMBOL={symbol}: \
-                                    {positions_orders[type][symbol]}, STRATEGY={STRATEGY}"
+                                    {positions_orders[type][symbol]}, STRATEGY={STRATEGY} , ACCOUNT={ACCOUNT}"
                             )
             long_market = {
                 symbol: buys[symbol] is not None
@@ -338,7 +365,8 @@ def _mt5_execution(
             }
         except Exception:
             _print_exc(
-                debug_mode, f"Checking positions and orders, STRATEGY={STRATEGY}"
+                debug_mode,
+                f"Checking positions and orders, STRATEGY={STRATEGY}, ACCOUNT={ACCOUNT}",
             )
             continue
         time.sleep(0.5)
@@ -352,7 +380,10 @@ def _mt5_execution(
             )
             update_risk(weights)
         except Exception:
-            _print_exc(debug_mode, f"Calculating Signals, STRATEGY={STRATEGY}")
+            _print_exc(
+                debug_mode,
+                f"Calculating Signals, STRATEGY={STRATEGY} , ACCOUNT={ACCOUNT}",
+            )
             continue
         if len(signals) == 0:
             for symbol in symbols:
@@ -382,16 +413,16 @@ def _mt5_execution(
                         if len(symbols) >= 10:
                             if symbol == symbols[-1]:
                                 logger.info(
-                                    f"Not trading Time !!!, STRATEGY={STRATEGY}"
+                                    f"Not trading Time !!!, STRATEGY={STRATEGY} , ACCOUNT={ACCOUNT}"
                                 )
                         else:
                             logger.info(
-                                f"Not trading Time !!! SYMBOL={trade.symbol}, STRATEGY={STRATEGY}"
+                                f"Not trading Time !!! SYMBOL={trade.symbol}, STRATEGY={STRATEGY} , ACCOUNT={ACCOUNT}"
                             )
                     check(buys[symbol], sells[symbol], symbol)
 
             except Exception:
-                msg = f"Handling Signals, SYMBOL={symbol}, STRATEGY={STRATEGY}"
+                msg = f"Handling Signals, SYMBOL={symbol}, STRATEGY={STRATEGY} , ACCOUNT={ACCOUNT}"
                 _print_exc(debug_mode, msg)
                 continue
 
@@ -420,20 +451,40 @@ def _mt5_execution(
 
             def logmsg(period, symbol):
                 logger.info(
-                    f"End of the {period} !!! SYMBOL={symbol}, STRATEGY={STRATEGY}"
+                    f"End of the {period} !!! SYMBOL={symbol}, STRATEGY={STRATEGY} , ACCOUNT={ACCOUNT}"
                 )
 
             def logmsgif(period, symbol):
                 if len(symbols) <= 10:
                     logmsg(period, symbol)
                 elif len(symbols) > 10 and symbol == symbols[-1]:
-                    logger.info(f"End of the {period} !!! STRATEGY={STRATEGY}")
+                    logger.info(
+                        f"End of the {period} !!! STRATEGY={STRATEGY} , ACCOUNT={ACCOUNT}"
+                    )
 
             def sleepmsg(sleep_time):
-                logger.info(f"Sleeping for {sleep_time} minutes ...\n")
+                logger.info(f"{ACCOUNT} Sleeping for {sleep_time} minutes ...\n")
 
-            sessionmsg = "STARTING NEW TRADING SESSION ...\n"
-            if period.lower() == "day":
+            sessionmsg = f"{ACCOUNT} STARTING NEW TRADING SESSION ...\n"
+            if period.lower() == "24/7":  # For Cryptos
+                for symbol in symbols:
+                    trade = trades_instances[symbol]
+                    if trade.days_end() and closing:
+                        for id in expert_ids:
+                            trade.close_positions(
+                                position_type="all", id=id, comment=comment
+                            )
+                        logmsgif("Day", symbol)
+                        trade.statistics(save=True)
+                if day_end:
+                    strategy.perform_period_end_checks()
+                    sleep_time = trades_instances[symbols[-1]].sleep_time()
+                    sleepmsg(sleep_time + delay)
+                    time.sleep(60 * sleep_time + delay)
+                    logger.info(sessionmsg)
+                    time_intervals = 0
+
+            elif period.lower() == "day":
                 for symbol in symbols:
                     trade = trades_instances[symbol]
                     if trade.days_end() and closing:
@@ -455,6 +506,7 @@ def _mt5_execution(
                         sleepmsg(sleep_time + delay)
                         time.sleep(60 * sleep_time + delay)
                         logger.info(sessionmsg)
+                        time_intervals = 0
                     elif period_end_action == "sleep" and today == FRIDAY:
                         sleep_time = trades_instances[symbols[-1]].sleep_time(
                             weekend=True
@@ -462,6 +514,7 @@ def _mt5_execution(
                         sleepmsg(sleep_time + delay)
                         time.sleep(60 * sleep_time + delay)
                         logger.info(sessionmsg)
+                        time_intervals = 0
 
             elif period.lower() == "week":
                 for symbol in symbols:
@@ -482,6 +535,7 @@ def _mt5_execution(
                     sleepmsg(sleep_time + delay)
                     time.sleep(60 * sleep_time + delay)
                     logger.info(sessionmsg)
+                    time_intervals = 0
                 elif day_end and today == FRIDAY:
                     strategy.perform_period_end_checks()
                     if period_end_action == "break" and closing:
@@ -493,6 +547,7 @@ def _mt5_execution(
                         sleepmsg(sleep_time + delay)
                         time.sleep(60 * sleep_time + delay)
                         logger.info(sessionmsg)
+                        time_intervals = 0
 
             elif period.lower() == "month":
                 for symbol in symbols:
@@ -502,9 +557,7 @@ def _mt5_execution(
                     elif trade.days_end() and today == FRIDAY:
                         logmsgif("Week", symbol)
                     elif (
-                        trade.days_end()
-                        and today == FRIDAY
-                        and num_days >= 20
+                        trade.days_end() and today == FRIDAY and num_days >= 20
                     ) and closing:
                         for id in expert_ids:
                             trade.close_positions(
@@ -517,18 +570,22 @@ def _mt5_execution(
                     sleepmsg(sleep_time + delay)
                     time.sleep(60 * sleep_time + delay)
                     logger.info(sessionmsg)
+                    time_intervals = 0
                     num_days += 1
                 elif day_end and today == FRIDAY:
                     sleep_time = trades_instances[symbols[-1]].sleep_time(weekend=True)
                     sleepmsg(sleep_time + delay)
                     time.sleep(60 * sleep_time + delay)
                     logger.info(sessionmsg)
+                    time_intervals = 0
                     num_days += 1
                 elif day_end and today == FRIDAY and num_days >= 20:
                     strategy.perform_period_end_checks()
                     break
         except Exception:
-            msg = f"Handling period end actions, STRATEGY={STRATEGY}"
+            msg = (
+                f"Handling period end actions, STRATEGY={STRATEGY} , ACCOUNT={ACCOUNT}"
+            )
             _print_exc(debug_mode, msg)
             continue
 
@@ -638,7 +695,7 @@ class MT5ExecutionEngine:
             symbol_list : List of symbols to trade
             trades_instances : Dictionary of Trade instances
             strategy_cls : Strategy class to use for trading
-            mm : Enable Money Management. Defaults to False.
+            mm : Enable Money Management. Defaults to True.
             optimizer : Risk management optimizer. Defaults to 'equal'.
                 See `bbstrader.models.optimization` module for more information.
             show_positions_orders : Print open positions and orders. Defaults to False.
@@ -724,6 +781,62 @@ class MT5ExecutionEngine:
             comment=self.comment,
             **self.kwargs,
         )
+
+
+def mt5_engine(account_id: str, **kwargs):
+    """Starts an MT5 execution engine for a given account.
+    Args:
+        account_id: Account ID to run the execution engine on.
+        **kwargs: Additional keyword arguments
+            _ symbol_list : List of symbols to trade.
+            - trades_instances : Dictionary of Trade instances.
+            - strategy_cls : Strategy class to use for trading.
+    """
+    log.info(f"Starting execution engine for {account_id}")
+
+    symbol_list = kwargs.pop("symbol_list")
+    trades_instances = kwargs.pop("trades_instances")
+    strategy_cls = kwargs.pop("strategy_cls")
+
+    if symbol_list is None or trades_instances is None or strategy_cls is None:
+        log.error(f"Missing required arguments for account {account_id}")
+        raise ValueError(f"Missing required arguments for account {account_id}")
+
+    try:
+        engine = MT5ExecutionEngine(
+            symbol_list, trades_instances, strategy_cls, **kwargs
+        )
+        engine.run()
+    except Exception as e:
+        log.exception(f"Error running execution engine for {account_id}: {e}")
+    finally:
+        log.info(f"Execution engine for {account_id} completed")
+
+
+def RunMt5Engines(accounts: Dict[str, Dict], start_delay: float = 1.0):
+    """Runs multiple MT5 execution engines in parallel using multiprocessing.
+    
+    Args:
+        accounts: Dictionary of accounts to run the execution engines on.
+            Keys are the account names or IDs and values are the parameters for the execution engine.
+            The parameters are the same as the ones passed to the `MT5ExecutionEngine` class.
+        start_delay: Delay in seconds between starting the processes. Defaults to 1.0.
+    """
+
+    processes = {}
+
+    for account_id, params in accounts.items():
+        log.info(f"Starting process for {account_id}")
+        process = mp.Process(target=mt5_engine, args=(account_id,), kwargs=params)
+        process.start()
+        processes[process] = account_id
+
+        if start_delay:
+            time.sleep(start_delay)
+
+    for process, account_id in processes.items():
+        process.join()
+        log.info(f"Process for {account_id} joined")
 
 
 class TWSExecutionEngine: ...

@@ -1,16 +1,19 @@
 from datetime import datetime
 from typing import Optional, Union
 
-from bbstrader import compat  # noqa: F401
-import MetaTrader5 as Mt5
 import pandas as pd
 from exchange_calendars import get_calendar, get_calendar_names
 from pandas.tseries.holiday import USFederalHolidayCalendar
 from pandas.tseries.offsets import CustomBusinessDay
 
-
 from bbstrader.metatrader.account import AMG_EXCHANGES, Account, check_mt5_connection
 from bbstrader.metatrader.utils import TIMEFRAMES, TimeFrame, raise_mt5_error
+
+try:
+    import MetaTrader5 as Mt5
+except ImportError:
+    import bbstrader.compat  # noqa: F401
+
 
 __all__ = [
     "Rates",

@@ -243,6 +243,7 @@ class LightGBModel(object):
                     end=end,
                     progress=False,
                     multi_level_index=False,
+                    auto_adjust=True,
                 )
                 prices["symbol"] = ticker
                 data.append(prices)

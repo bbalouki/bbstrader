@@ -30,6 +30,7 @@ It leverages statistical models and algorithms to perform tasks such as cointegr
 - **Comprehensive Backtesting**: Assess the performance of trading strategies with historical market data to optimize parameters and strategies for live trading environments.
 - **Integrated Risk Management**: Leverage advanced risk management techniques to adapt to changing market conditions and maintain control over risk exposure.
 - **Automated Trading**: Execute trades automatically on the MT5 platform, with support for managing orders, positions, and risk in real-time.
+- **Trade Copier**: Copy trades from one account to another or multiple accounts.
 - **Flexible Framework**: Customize existing strategies or develop new ones with the flexible, modular architecture designed to accommodate traders' evolving needs.
 - **Advanced Time Series Analysis**: Conduct in-depth analysis of financial time series data to identify patterns, trends, and relationships that can inform trading strategies.
 You can read the full documentation [here](https://bbstrader.readthedocs.io/en/latest/index.html)
@@ -44,7 +45,8 @@ This Module currenlty support three brokers, [Admirals Group AS](https://cabinet
 
 Then, you can install `bbstrader` using pip:
 ```bash
-pip install bbstrader
+pip install bbstrader # Mac and Linux
+pip install bbstrader[MT5] # Windows
 ```
 
 ## Examples

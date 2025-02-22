@@ -598,7 +598,9 @@ def plot_residuals(df: pd.DataFrame):
 
 
 def run_cadf_test(
-    pair: Union[List[str], Tuple[str, ...]], start: str, end: str
+    pair: Union[List[str], Tuple[str, ...]],
+    start: str,
+    end: str,
 ) -> None:
     """
     Performs the Cointegration Augmented Dickey-Fuller (CADF) test on a pair of stock tickers
@@ -666,8 +668,22 @@ def run_cadf_test(
     """
     # Download historical data for required stocks
     p0, p1 = pair[0], pair[1]
-    _p0 = yf.download(p0, start=start, end=end, progress=False, multi_level_index=False)
-    _p1 = yf.download(p1, start=start, end=end, progress=False, multi_level_index=False)
+    _p0 = yf.download(
+        p0,
+        start=start,
+        end=end,
+        progress=False,
+        multi_level_index=False,
+        auto_adjust=True,
+    )
+    _p1 = yf.download(
+        p1,
+        start=start,
+        end=end,
+        progress=False,
+        multi_level_index=False,
+        auto_adjust=True,
+    )
     df = pd.DataFrame(index=_p0.index)
     df[p0] = _p0["Adj Close"]
     df[p1] = _p1["Adj Close"]
@@ -751,7 +767,12 @@ def run_hurst_test(symbol: str, start: str, end: str):
     >>> run_hurst_test('AAPL', '2023-01-01', '2023-12-31')
     """
     data = yf.download(
-        symbol, start=start, end=end, progress=False, multi_level_index=False
+        symbol,
+        start=start,
+        end=end,
+        progress=False,
+        multi_level_index=False,
+        auto_adjust=True,
     )
 
     # Create a Geometric Brownian Motion, Mean-Reverting, and Trending Series
@@ -774,6 +795,7 @@ def test_cointegration(ticker1, ticker2, start, end):
         end=end,
         progress=False,
         multi_level_index=False,
+        auto_adjust=True,
     )["Adj Close"].dropna()
 
     # Perform Johansen cointegration test
@@ -917,8 +939,12 @@ def run_kalman_filter(
 
     >>> run_kalman_filter(['SPY', 'QQQ'], '2023-01-01', '2023-12-31')
     """
-    etf_df1 = yf.download(etfs[0], start, end, progress=False, multi_level_index=False)
-    etf_df2 = yf.download(etfs[1], start, end, progress=False, multi_level_index=False)
+    etf_df1 = yf.download(
+        etfs[0], start, end, progress=False, multi_level_index=False, auto_adjust=True
+    )
+    etf_df2 = yf.download(
+        etfs[1], start, end, progress=False, multi_level_index=False, auto_adjust=True
+    )
 
     prices = pd.DataFrame(index=etf_df1.index)
     prices[etfs[0]] = etf_df1["Adj Close"]
@@ -1674,7 +1700,7 @@ def analyze_cointegrated_pairs(
         y = spreads.coint
         X = spreads[["drift", "vol", "corr", "corr_ret"]]
         decision_tree.fit(X, y)
-        res = f'{decision_tree.best_score_:.2%}, Depth: {decision_tree.best_params_["max_depth"]}'
+        res = f"{decision_tree.best_score_:.2%}, Depth: {decision_tree.best_params_['max_depth']}"
         print(res)
 
     if crosstab:

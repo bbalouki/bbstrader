@@ -496,6 +496,7 @@ class YFDataHandler(BaseCSVDataHandler):
                     start=self.start_date,
                     end=self.end_date,
                     multi_level_index=False,
+                    auto_adjust=True,
                     progress=False,
                 )
                 if "Adj Close" not in data.columns:

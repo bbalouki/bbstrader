@@ -23,6 +23,8 @@ Understanding the high entry barriers in traditional asset trading, this module 
 - **Account Management**: Easily access and display account information, including balance, equity, margin, and profit, to monitor trading performance and make informed decisions.
 - **Symbol Information**: Query detailed symbol information, such as trading conditions, costs, and constraints, essential for strategy development and optimization.
 
+- **Copy Trading**: Implement copy trading class to replicate the trades of experienced traders and benefit from their expertise and insights.
+
 ## Installation
 
 Before you can use the MT5 Trading Module, you need to have MetaTrader 5 (MT5) installed on your computer and an active MT5 trading account. 
@@ -33,7 +35,8 @@ This Module currenlty support two brokers, [Admirals Group AS](https://cabinet.a
 Then, you can install `bbstrader` using pip:
 
 ```bash
-pip install bbstrader
+pip install bbstrader # Mac and Linux
+pip install bbstrader[MT5] # Windows
 ```
 ## Usage
 

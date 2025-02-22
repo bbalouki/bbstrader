@@ -2,8 +2,11 @@ from datetime import datetime
 from enum import Enum
 from typing import NamedTuple, Optional
 
-from bbstrader import compat  # noqa: F401
-import MetaTrader5 as MT5
+try:
+    import MetaTrader5 as MT5
+except ImportError:
+    import bbstrader.compat  # noqa: F401
+
 
 __all__ = [
     "TIMEFRAMES",

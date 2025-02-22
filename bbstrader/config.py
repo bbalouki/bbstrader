@@ -7,17 +7,15 @@ TERMINAL = "\\terminal64.exe"
 BASE_FOLDER = "C:\\Program Files\\"
 
 AMG_PATH = BASE_FOLDER + "Admirals Group MT5 Terminal" + TERMINAL
-XCB_PATH = BASE_FOLDER + "4xCube MT5 Terminal" + TERMINAL
-TML_PATH = BASE_FOLDER + "Trinota Markets MetaTrader 5 Terminal" + TERMINAL
 PGL_PATH = BASE_FOLDER + "Pepperstone MetaTrader 5" + TERMINAL
 FTMO_PATH = BASE_FOLDER + "FTMO MetaTrader 5" + TERMINAL
+JGM_PATH = BASE_FOLDER + "JustMarkets MetaTrader 5" + TERMINAL
 
 BROKERS_PATHS = {
     "AMG": AMG_PATH,
     "FTMO": FTMO_PATH,
-    "XCB": XCB_PATH,
-    "TML": TML_PATH,
     "PGL": PGL_PATH,
+    "JGM": JGM_PATH,
 }
 
 

@@ -1,11 +1,22 @@
 from abc import ABCMeta, abstractmethod
 from queue import Queue
 
+from loguru import logger
+
 from bbstrader.btengine.data import DataHandler
 from bbstrader.btengine.event import FillEvent, OrderEvent
+from bbstrader.config import BBSTRADER_DIR
 from bbstrader.metatrader.account import Account
 
 __all__ = ["ExecutionHandler", "SimExecutionHandler", "MT5ExecutionHandler"]
+
+
+logger.add(
+    f"{BBSTRADER_DIR}/logs/execution.log",
+    enqueue=True,
+    level="INFO",
+    format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {name} | {message}",
+)
 
 
 class ExecutionHandler(metaclass=ABCMeta):
@@ -59,7 +70,7 @@ class SimExecutionHandler(ExecutionHandler):
         """
         self.events = events
         self.bardata = data
-        self.logger = kwargs.get("logger")
+        self.logger = kwargs.get("logger") or logger
 
     def execute_order(self, event: OrderEvent):
         """
@@ -123,7 +134,7 @@ class MT5ExecutionHandler(ExecutionHandler):
         """
         self.events = events
         self.bardata = data
-        self.logger = kwargs.get("logger")
+        self.logger = kwargs.get("logger") or logger
         self.__account = Account(**kwargs)
 
     def _calculate_lot(self, symbol, quantity, price):

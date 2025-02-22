@@ -1,3 +1,4 @@
+from typing import Dict, List
 import warnings
 
 import matplotlib.pyplot as plt
@@ -19,7 +20,55 @@ __all__ = [
     "plot_returns_and_dd",
     "plot_monthly_yearly_returns",
     "show_qs_stats",
+    "get_asset_performances",
+    "get_perfbased_weights",
 ]
+
+def get_asset_performances(
+    portfolio: pd.DataFrame, assets: List[str], plot=True, strategy=""
+) -> pd.Series:
+    """
+    Calculate the performance of the assets in the portfolio.
+
+    Args:
+        portfolio (pd.DataFrame): The portfolio DataFrame.
+        assets (List[str]): The list of assets to calculate the performance for.
+        plot (bool): Whether to plot the performance of the assets.
+        strategy (str): The name of the strategy.
+
+    Returns:
+        pd.Series: The performance of the assets.
+    """
+    asset_prices = portfolio[assets]
+    asset_prices = asset_prices.abs()
+    asset_prices.replace(0, np.nan, inplace=True)
+    asset_prices.ffill(inplace=True)
+    asset_returns = asset_prices.pct_change()
+    asset_returns.replace([np.inf, -np.inf], np.nan, inplace=True)
+    asset_returns.fillna(0, inplace=True)
+    asset_cum_returns = (1.0 + asset_returns).cumprod()
+    if plot:
+        asset_cum_returns.plot(figsize=(12, 6), title=f"{strategy} Strategy Assets Performance")
+        plt.show()
+    return asset_cum_returns.iloc[-1] - 1
+
+
+def get_perfbased_weights(performances) -> Dict[str, float]:
+    """
+    Calculate the weights of the assets based on their performances.
+
+    Args:
+        performances (pd.Series): The performances of the assets.
+
+    Returns:
+        Dict[str, float]: The weights of the assets.
+    """
+    weights = (
+        performances.to_frame()
+        .assign(weight=performances.values / performances.sum())
+        .weight.to_dict()
+    )
+    return weights
 
 
 def create_sharpe_ratio(returns, periods=252) -> float:
@@ -173,7 +222,7 @@ def plot_returns_and_dd(df: pd.DataFrame, benchmark: str, title):
     # To avoid errors, we use the try-except block
     # in case the benchmark is not available
     try:
-        bm = yf.download(benchmark, start=first_date, end=last_date)
+        bm = yf.download(benchmark, start=first_date, end=last_date, auto_adjust=True)
         bm["log_return"] = np.log(bm["Close"] / bm["Close"].shift(1))
         # Use exponential to get cumulative returns
         bm_returns = np.exp(np.cumsum(bm["log_return"].fillna(0)))
