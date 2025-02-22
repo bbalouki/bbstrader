@@ -4,6 +4,7 @@ from notifypy import Notify
 from telegram import Bot
 from telegram.error import TelegramError
 
+
 __all__ = ["send_telegram_message", "send_notification", "send_message"]
 
 
@@ -65,3 +66,4 @@ def send_message(
         if token is None or chat_id is None:
             raise ValueError("Token and chat_id must be provided")
         asyncio.run(send_telegram_message(token, chat_id, text=message))
+
