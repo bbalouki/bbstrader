@@ -5,6 +5,7 @@ bbstrader
    :maxdepth: 4
 
    btengine
+   compat
    config
    core
    ibkr

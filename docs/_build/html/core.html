@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>core package &mdash; BBSTrader 0.2.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+  <title>core package &mdash; bbstrader 0.2.092 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=938c9ccc"></script>
+      <script src="_static/documentation_options.js?v=97badf68"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -32,7 +32,7 @@
           
           
           <a href="index.html" class="icon icon-home">
-            BBSTrader
+            bbstrader
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -46,13 +46,22 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">bbstrader</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="btengine.html">Backtesting Egine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="compat.html">compat module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="config.html">configurations</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">core package</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#module-core.data">core.data</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#core.data.FMP"><code class="docutils literal notranslate"><span class="pre">FMP</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#module-core.utils">core.utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-core.utils">core.utils</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#core.utils.TradeAction"><code class="docutils literal notranslate"><span class="pre">TradeAction</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#core.utils.TradeSignal"><code class="docutils literal notranslate"><span class="pre">TradeSignal</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#core.utils.auto_convert"><code class="docutils literal notranslate"><span class="pre">auto_convert()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#core.utils.dict_from_ini"><code class="docutils literal notranslate"><span class="pre">dict_from_ini()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#core.utils.load_class"><code class="docutils literal notranslate"><span class="pre">load_class()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#core.utils.load_module"><code class="docutils literal notranslate"><span class="pre">load_module()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="ibkr.html">ibkr package</a></li>
@@ -70,7 +79,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">BBSTrader</a>
+          <a href="index.html">bbstrader</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -95,7 +104,7 @@
 <span id="core-data"></span><h2>core.data<a class="headerlink" href="#module-core.data" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="core.data.FMP">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">core.data.</span></span><span class="sig-name descname"><span class="pre">FMP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">api_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbols</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'AAPL'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/data.html#FMP"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.data.FMP" title="Link to this definition"></a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">core.data.</span></span><span class="sig-name descname"><span class="pre">FMP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">api_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbols</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'AAPL'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/data.html#FMP"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.data.FMP" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Toolkit</span></code></p>
 <p>FMPData class for fetching data from Financial Modeling Prep API
 using the Toolkit class from financetoolkit package.</p>
@@ -105,6 +114,232 @@ using the Toolkit class from financetoolkit package.</p>
 </section>
 <section id="module-core.utils">
 <span id="core-utils"></span><h2>core.utils<a class="headerlink" href="#module-core.utils" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="core.utils.TradeAction">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">core.utils.</span></span><span class="sig-name descname"><span class="pre">TradeAction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/utils.html#TradeAction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.utils.TradeAction" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>An enumeration class for trade actions.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.utils.TradeAction.BLMT">
+<span class="sig-name descname"><span class="pre">BLMT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'BLMT'</span></em><a class="headerlink" href="#core.utils.TradeAction.BLMT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.utils.TradeAction.BMKT">
+<span class="sig-name descname"><span class="pre">BMKT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'BMKT'</span></em><a class="headerlink" href="#core.utils.TradeAction.BMKT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.utils.TradeAction.BSTP">
+<span class="sig-name descname"><span class="pre">BSTP</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'BSTP'</span></em><a class="headerlink" href="#core.utils.TradeAction.BSTP" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.utils.TradeAction.BSTPLMT">
+<span class="sig-name descname"><span class="pre">BSTPLMT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'BSTPLMT'</span></em><a class="headerlink" href="#core.utils.TradeAction.BSTPLMT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.utils.TradeAction.BUY">
+<span class="sig-name descname"><span class="pre">BUY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'LONG'</span></em><a class="headerlink" href="#core.utils.TradeAction.BUY" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.utils.TradeAction.EXIT">
+<span class="sig-name descname"><span class="pre">EXIT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'EXIT'</span></em><a class="headerlink" href="#core.utils.TradeAction.EXIT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.utils.TradeAction.EXIT_ALL_ORDERS">
+<span class="sig-name descname"><span class="pre">EXIT_ALL_ORDERS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'EXIT_ALL_ORDERS'</span></em><a class="headerlink" href="#core.utils.TradeAction.EXIT_ALL_ORDERS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.utils.TradeAction.EXIT_ALL_POSITIONS">
+<span class="sig-name descname"><span class="pre">EXIT_ALL_POSITIONS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'EXIT_ALL_POSITIONS'</span></em><a class="headerlink" href="#core.utils.TradeAction.EXIT_ALL_POSITIONS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.utils.TradeAction.EXIT_LIMIT">
+<span class="sig-name descname"><span class="pre">EXIT_LIMIT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'EXIT_LIMIT'</span></em><a class="headerlink" href="#core.utils.TradeAction.EXIT_LIMIT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.utils.TradeAction.EXIT_LONG">
+<span class="sig-name descname"><span class="pre">EXIT_LONG</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'EXIT_LONG'</span></em><a class="headerlink" href="#core.utils.TradeAction.EXIT_LONG" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.utils.TradeAction.EXIT_LONG_LIMIT">
+<span class="sig-name descname"><span class="pre">EXIT_LONG_LIMIT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'EXIT_LONG_LIMIT'</span></em><a class="headerlink" href="#core.utils.TradeAction.EXIT_LONG_LIMIT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.utils.TradeAction.EXIT_LONG_STOP">
+<span class="sig-name descname"><span class="pre">EXIT_LONG_STOP</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'EXIT_LONG_STOP'</span></em><a class="headerlink" href="#core.utils.TradeAction.EXIT_LONG_STOP" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.utils.TradeAction.EXIT_LONG_STOP_LIMIT">
+<span class="sig-name descname"><span class="pre">EXIT_LONG_STOP_LIMIT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'EXIT_LONG_STOP_LIMIT'</span></em><a class="headerlink" href="#core.utils.TradeAction.EXIT_LONG_STOP_LIMIT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.utils.TradeAction.EXIT_LOSINGS">
+<span class="sig-name descname"><span class="pre">EXIT_LOSINGS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'EXIT_LOSINGS'</span></em><a class="headerlink" href="#core.utils.TradeAction.EXIT_LOSINGS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.utils.TradeAction.EXIT_PROFITABLES">
+<span class="sig-name descname"><span class="pre">EXIT_PROFITABLES</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'EXIT_PROFITABLES'</span></em><a class="headerlink" href="#core.utils.TradeAction.EXIT_PROFITABLES" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.utils.TradeAction.EXIT_SHORT">
+<span class="sig-name descname"><span class="pre">EXIT_SHORT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'EXIT_SHORT'</span></em><a class="headerlink" href="#core.utils.TradeAction.EXIT_SHORT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.utils.TradeAction.EXIT_SHORT_LIMIT">
+<span class="sig-name descname"><span class="pre">EXIT_SHORT_LIMIT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'EXIT_SHORT_LIMIT'</span></em><a class="headerlink" href="#core.utils.TradeAction.EXIT_SHORT_LIMIT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.utils.TradeAction.EXIT_SHORT_STOP">
+<span class="sig-name descname"><span class="pre">EXIT_SHORT_STOP</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'EXIT_SHORT_STOP'</span></em><a class="headerlink" href="#core.utils.TradeAction.EXIT_SHORT_STOP" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.utils.TradeAction.EXIT_SHORT_STOP_LIMIT">
+<span class="sig-name descname"><span class="pre">EXIT_SHORT_STOP_LIMIT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'EXIT_SHORT_STOP_LIMIT'</span></em><a class="headerlink" href="#core.utils.TradeAction.EXIT_SHORT_STOP_LIMIT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.utils.TradeAction.EXIT_STOP">
+<span class="sig-name descname"><span class="pre">EXIT_STOP</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'EXIT_STOP'</span></em><a class="headerlink" href="#core.utils.TradeAction.EXIT_STOP" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.utils.TradeAction.LONG">
+<span class="sig-name descname"><span class="pre">LONG</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'LONG'</span></em><a class="headerlink" href="#core.utils.TradeAction.LONG" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.utils.TradeAction.SELL">
+<span class="sig-name descname"><span class="pre">SELL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'SHORT'</span></em><a class="headerlink" href="#core.utils.TradeAction.SELL" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.utils.TradeAction.SHORT">
+<span class="sig-name descname"><span class="pre">SHORT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'SHORT'</span></em><a class="headerlink" href="#core.utils.TradeAction.SHORT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.utils.TradeAction.SLMT">
+<span class="sig-name descname"><span class="pre">SLMT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'SLMT'</span></em><a class="headerlink" href="#core.utils.TradeAction.SLMT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.utils.TradeAction.SMKT">
+<span class="sig-name descname"><span class="pre">SMKT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'SMKT'</span></em><a class="headerlink" href="#core.utils.TradeAction.SMKT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.utils.TradeAction.SSTP">
+<span class="sig-name descname"><span class="pre">SSTP</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'SSTP'</span></em><a class="headerlink" href="#core.utils.TradeAction.SSTP" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.utils.TradeAction.SSTPLMT">
+<span class="sig-name descname"><span class="pre">SSTPLMT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'SSTPLMT'</span></em><a class="headerlink" href="#core.utils.TradeAction.SSTPLMT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="core.utils.TradeSignal">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">core.utils.</span></span><span class="sig-name descname"><span class="pre">TradeSignal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#core.utils.TradeAction" title="core.utils.TradeAction"><span class="pre">TradeAction</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">price</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stoplimit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/utils.html#TradeSignal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.utils.TradeSignal" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A dataclass for storing trading signal.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.utils.TradeSignal.action">
+<span class="sig-name descname"><span class="pre">action</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#core.utils.TradeAction" title="core.utils.TradeAction"><span class="pre">TradeAction</span></a></em><a class="headerlink" href="#core.utils.TradeSignal.action" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.utils.TradeSignal.id">
+<span class="sig-name descname"><span class="pre">id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#core.utils.TradeSignal.id" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.utils.TradeSignal.price">
+<span class="sig-name descname"><span class="pre">price</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#core.utils.TradeSignal.price" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.utils.TradeSignal.stoplimit">
+<span class="sig-name descname"><span class="pre">stoplimit</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#core.utils.TradeSignal.stoplimit" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.utils.TradeSignal.symbol">
+<span class="sig-name descname"><span class="pre">symbol</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#core.utils.TradeSignal.symbol" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="core.utils.auto_convert">
+<span class="sig-prename descclassname"><span class="pre">core.utils.</span></span><span class="sig-name descname"><span class="pre">auto_convert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/utils.html#auto_convert"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.utils.auto_convert" title="Link to this definition"></a></dt>
+<dd><p>Convert string values to appropriate data types</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="core.utils.dict_from_ini">
+<span class="sig-prename descclassname"><span class="pre">core.utils.</span></span><span class="sig-name descname"><span class="pre">dict_from_ini</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sections</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/core/utils.html#dict_from_ini"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.utils.dict_from_ini" title="Link to this definition"></a></dt>
+<dd><p>Reads an INI file and converts it to a dictionary with proper data types.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file_path</strong> – Path to the INI file to read.</p></li>
+<li><p><strong>sections</strong> – Optional list of sections to read from the INI file.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary containing the INI file contents with proper data types.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="core.utils.load_class">
+<span class="sig-prename descclassname"><span class="pre">core.utils.</span></span><span class="sig-name descname"><span class="pre">load_class</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">class_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_class</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/utils.html#load_class"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.utils.load_class" title="Link to this definition"></a></dt>
+<dd><p>Load a class from a module.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>module</strong> – The module to load the class from.</p></li>
+<li><p><strong>class_name</strong> – The name of the class to load.</p></li>
+<li><p><strong>base_class</strong> – The base class that the class must inherit from.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="core.utils.load_module">
+<span class="sig-prename descclassname"><span class="pre">core.utils.</span></span><span class="sig-name descname"><span class="pre">load_module</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/utils.html#load_module"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.utils.load_module" title="Link to this definition"></a></dt>
+<dd><p>Load a module from a file path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>file_path</strong> – Path to the file to load.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The loaded module.</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 </section>
 
@@ -119,7 +354,7 @@ using the Toolkit class from financetoolkit package.</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2024, Bertin Balouki SIMYELI.</p>
+    <p>&#169; Copyright 2023 - 2025, Bertin Balouki SIMYELI.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

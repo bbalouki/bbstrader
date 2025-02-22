@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>numpy &mdash; BBSTrader 0.2.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+  <title>numpy &mdash; bbstrader 0.2.092 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=938c9ccc"></script>
+      <script src="../_static/documentation_options.js?v=97badf68"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
@@ -29,7 +29,7 @@
           
           
           <a href="../index.html" class="icon icon-home">
-            BBSTrader
+            bbstrader
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -50,7 +50,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../index.html">BBSTrader</a>
+          <a href="../index.html">bbstrader</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -170,19 +170,33 @@
 <span class="sd">Exceptions to this rule are documented.</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
 
-<span class="kn">from</span> <span class="nn">._globals</span> <span class="kn">import</span> <span class="n">_NoValue</span><span class="p">,</span> <span class="n">_CopyMode</span>
+
+<span class="c1"># start delvewheel patch</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_delvewheel_patch_1_5_2</span><span class="p">():</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+    <span class="n">libs_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="n">os</span><span class="o">.</span><span class="n">pardir</span><span class="p">,</span> <span class="s1">&#39;numpy.libs&#39;</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">libs_dir</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">add_dll_directory</span><span class="p">(</span><span class="n">libs_dir</span><span class="p">)</span>
+
+
+<span class="n">_delvewheel_patch_1_5_2</span><span class="p">()</span>
+<span class="k">del</span> <span class="n">_delvewheel_patch_1_5_2</span>
+<span class="c1"># end delvewheel patch</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">._globals</span><span class="w"> </span><span class="kn">import</span> <span class="n">_NoValue</span><span class="p">,</span> <span class="n">_CopyMode</span>
 <span class="c1"># These exceptions were moved in 1.25 and are hidden from __dir__()</span>
-<span class="kn">from</span> <span class="nn">.exceptions</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">ComplexWarning</span><span class="p">,</span> <span class="n">ModuleDeprecationWarning</span><span class="p">,</span> <span class="n">VisibleDeprecationWarning</span><span class="p">,</span>
     <span class="n">TooHardError</span><span class="p">,</span> <span class="n">AxisError</span><span class="p">)</span>
 
 
 <span class="c1"># If a version with git hash was stored, use that instead</span>
-<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">version</span>
-<span class="kn">from</span> <span class="nn">.version</span> <span class="kn">import</span> <span class="n">__version__</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">version</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.version</span><span class="w"> </span><span class="kn">import</span> <span class="n">__version__</span>
 
 <span class="c1"># We first need to detect if we&#39;re being called as part of the numpy setup</span>
 <span class="c1"># procedure itself in a reliable manner.</span>
@@ -195,15 +209,15 @@
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;Running from numpy source directory.</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
 <span class="k">else</span><span class="p">:</span>
     <span class="c1"># Allow distributors to run custom init code before importing numpy.core</span>
-    <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">_distributor_init</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">_distributor_init</span>
 
     <span class="k">try</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">numpy.__config__</span> <span class="kn">import</span> <span class="n">show</span> <span class="k">as</span> <span class="n">show_config</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">numpy.__config__</span><span class="w"> </span><span class="kn">import</span> <span class="n">show</span> <span class="k">as</span> <span class="n">show_config</span>
     <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Error importing numpy: you should not try to import numpy from</span>
 <span class="s2">        its source directory; please exit the numpy source tree, and relaunch</span>
 <span class="s2">        your python interpreter from there.&quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
     <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
         <span class="s1">&#39;exceptions&#39;</span><span class="p">,</span> <span class="s1">&#39;ModuleDeprecationWarning&#39;</span><span class="p">,</span> <span class="s1">&#39;VisibleDeprecationWarning&#39;</span><span class="p">,</span>
@@ -212,27 +226,27 @@
     <span class="c1"># mapping of {name: (value, deprecation_msg)}</span>
     <span class="n">__deprecated_attrs__</span> <span class="o">=</span> <span class="p">{}</span>
 
-    <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">core</span>
-    <span class="kn">from</span> <span class="nn">.core</span> <span class="kn">import</span> <span class="o">*</span>
-    <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">compat</span>
-    <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">exceptions</span>
-    <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">dtypes</span>
-    <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">lib</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">core</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.core</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">compat</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">exceptions</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">dtypes</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">lib</span>
     <span class="c1"># NOTE: to be revisited following future namespace cleanup.</span>
     <span class="c1"># See gh-14454 and gh-15672 for discussion.</span>
-    <span class="kn">from</span> <span class="nn">.lib</span> <span class="kn">import</span> <span class="o">*</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.lib</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
 
-    <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">linalg</span>
-    <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">fft</span>
-    <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">polynomial</span>
-    <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">random</span>
-    <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">ctypeslib</span>
-    <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">ma</span>
-    <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">matrixlib</span> <span class="k">as</span> <span class="n">_mat</span>
-    <span class="kn">from</span> <span class="nn">.matrixlib</span> <span class="kn">import</span> <span class="o">*</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">linalg</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">fft</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">polynomial</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">random</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">ctypeslib</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">ma</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">matrixlib</span> <span class="k">as</span> <span class="n">_mat</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.matrixlib</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
 
     <span class="c1"># Deprecations introduced in NumPy 1.20.0, 2020-06-06</span>
-    <span class="kn">import</span> <span class="nn">builtins</span> <span class="k">as</span> <span class="nn">_builtins</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">builtins</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_builtins</span>
 
     <span class="n">_msg</span> <span class="o">=</span> <span class="p">(</span>
         <span class="s2">&quot;module &#39;numpy&#39; has no attribute &#39;</span><span class="si">{n}</span><span class="s2">&#39;.</span><span class="se">\n</span><span class="s2">&quot;</span>
@@ -292,7 +306,7 @@
     <span class="n">__deprecated_attrs__</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
         <span class="n">n</span><span class="p">:</span> <span class="p">(</span><span class="n">alias</span><span class="p">,</span> <span class="n">_msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">an</span><span class="o">=</span><span class="n">an</span><span class="p">))</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">alias</span><span class="p">,</span> <span class="n">an</span> <span class="ow">in</span> <span class="n">_type_info</span><span class="p">})</span>
 
-    <span class="kn">import</span> <span class="nn">math</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
 
     <span class="n">__deprecated_attrs__</span><span class="p">[</span><span class="s1">&#39;math&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">math</span><span class="p">,</span>
         <span class="s2">&quot;`np.math` is a deprecated alias for the standard library `math` &quot;</span>
@@ -301,7 +315,7 @@
 
     <span class="k">del</span> <span class="n">math</span><span class="p">,</span> <span class="n">_msg</span><span class="p">,</span> <span class="n">_type_info</span>
 
-    <span class="kn">from</span> <span class="nn">.core</span> <span class="kn">import</span> <span class="nb">abs</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.core</span><span class="w"> </span><span class="kn">import</span> <span class="nb">abs</span>
     <span class="c1"># now that numpy modules are imported, can initialize limits</span>
     <span class="n">core</span><span class="o">.</span><span class="n">getlimits</span><span class="o">.</span><span class="n">_register_known_types</span><span class="p">()</span>
 
@@ -358,11 +372,11 @@
     <span class="n">oldnumeric</span> <span class="o">=</span> <span class="s1">&#39;removed&#39;</span>
     <span class="n">numarray</span> <span class="o">=</span> <span class="s1">&#39;removed&#39;</span>
 
-    <span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="n">attr</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="n">attr</span><span class="p">):</span>
         <span class="c1"># Warn for expired attributes, and return a dummy function</span>
         <span class="c1"># that always raises an exception.</span>
-        <span class="kn">import</span> <span class="nn">warnings</span>
-        <span class="kn">import</span> <span class="nn">math</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="n">__expired_functions__</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
@@ -370,7 +384,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="ne">DeprecationWarning</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
-            <span class="k">def</span> <span class="nf">_expired</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">_expired</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
             <span class="k">return</span> <span class="n">_expired</span>
@@ -395,7 +409,7 @@
             <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="n">__former_attrs__</span><span class="p">[</span><span class="n">attr</span><span class="p">])</span>
 
         <span class="k">if</span> <span class="n">attr</span> <span class="o">==</span> <span class="s1">&#39;testing&#39;</span><span class="p">:</span>
-            <span class="kn">import</span> <span class="nn">numpy.testing</span> <span class="k">as</span> <span class="nn">testing</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">numpy.testing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">testing</span>
             <span class="k">return</span> <span class="n">testing</span>
         <span class="k">elif</span> <span class="n">attr</span> <span class="o">==</span> <span class="s1">&#39;Tester&#39;</span><span class="p">:</span>
             <span class="s2">&quot;Removed in NumPy 1.25.0&quot;</span>
@@ -404,7 +418,7 @@
         <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;module </span><span class="si">{!r}</span><span class="s2"> has no attribute &quot;</span>
                              <span class="s2">&quot;</span><span class="si">{!r}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">attr</span><span class="p">))</span>
 
-    <span class="k">def</span> <span class="fm">__dir__</span><span class="p">():</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__dir__</span><span class="p">():</span>
         <span class="n">public_symbols</span> <span class="o">=</span> <span class="nb">globals</span><span class="p">()</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="o">|</span> <span class="p">{</span><span class="s1">&#39;testing&#39;</span><span class="p">}</span>
         <span class="n">public_symbols</span> <span class="o">-=</span> <span class="p">{</span>
             <span class="s2">&quot;core&quot;</span><span class="p">,</span> <span class="s2">&quot;matrixlib&quot;</span><span class="p">,</span>
@@ -415,11 +429,11 @@
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">public_symbols</span><span class="p">)</span>
 
     <span class="c1"># Pytest testing</span>
-    <span class="kn">from</span> <span class="nn">numpy._pytesttester</span> <span class="kn">import</span> <span class="n">PytestTester</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">numpy._pytesttester</span><span class="w"> </span><span class="kn">import</span> <span class="n">PytestTester</span>
     <span class="n">test</span> <span class="o">=</span> <span class="n">PytestTester</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
     <span class="k">del</span> <span class="n">PytestTester</span>
 
-    <span class="k">def</span> <span class="nf">_sanity_check</span><span class="p">():</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_sanity_check</span><span class="p">():</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Quick sanity checks for common bugs caused by environment.</span>
 <span class="sd">        There are some cases e.g. with wrong BLAS ABI that cause wrong</span>
@@ -440,12 +454,12 @@
                    <span class="s2">&quot;by incorrect BLAS library being linked in, or by mixing &quot;</span>
                    <span class="s2">&quot;package managers (pip, conda, apt, ...). Search closed &quot;</span>
                    <span class="s2">&quot;numpy issues for similar problems.&quot;</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span> <span class="kn">from</span> <span class="kc">None</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
 
     <span class="n">_sanity_check</span><span class="p">()</span>
     <span class="k">del</span> <span class="n">_sanity_check</span>
 
-    <span class="k">def</span> <span class="nf">_mac_os_check</span><span class="p">():</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_mac_os_check</span><span class="p">():</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Quick Sanity check for Mac OS look for accelerate build bugs.</span>
 <span class="sd">        Testing numpy polyfit calls init_dgelsd(LAPACK)</span>
@@ -459,7 +473,7 @@
             <span class="k">pass</span>
 
     <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s2">&quot;darwin&quot;</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">exceptions</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">exceptions</span>
         <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">(</span><span class="n">record</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">w</span><span class="p">:</span>
             <span class="n">_mac_os_check</span><span class="p">()</span>
             <span class="c1"># Throw runtime error, if the test failed Check for warning and error_message</span>
@@ -484,7 +498,7 @@
     <span class="c1"># is slow and thus better avoided.</span>
     <span class="c1"># Specifically kernel version 4.6 had a bug fix which probably fixed this:</span>
     <span class="c1"># https://github.com/torvalds/linux/commit/7cf91a98e607c2f935dbcc177d70011e95b8faff</span>
-    <span class="kn">import</span> <span class="nn">os</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
     <span class="n">use_hugepage</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;NUMPY_MADVISE_HUGEPAGE&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s2">&quot;linux&quot;</span> <span class="ow">and</span> <span class="n">use_hugepage</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># If there is an issue with parsing the kernel version,</span>
@@ -520,8 +534,8 @@
                        <span class="s2">&quot;weak&quot;</span> <span class="k">if</span> <span class="n">_using_numpy2_behavior</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;legacy&quot;</span><span class="p">))</span>
 
     <span class="c1"># Tell PyInstaller where to find hook-numpy.py</span>
-    <span class="k">def</span> <span class="nf">_pyinstaller_hooks_dir</span><span class="p">():</span>
-        <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_pyinstaller_hooks_dir</span><span class="p">():</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
         <span class="k">return</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">with_name</span><span class="p">(</span><span class="s2">&quot;_pyinstaller&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">())]</span>
 
     <span class="c1"># Remove symbols imported for internal use</span>
@@ -539,7 +553,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2024, Bertin Balouki SIMYELI.</p>
+    <p>&#169; Copyright 2023 - 2025, Bertin Balouki SIMYELI.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

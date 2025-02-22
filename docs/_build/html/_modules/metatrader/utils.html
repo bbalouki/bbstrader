@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>metatrader.utils &mdash; BBSTrader 0.2.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+  <title>metatrader.utils &mdash; bbstrader 0.2.092 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=938c9ccc"></script>
+      <script src="../../_static/documentation_options.js?v=97badf68"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -29,7 +29,7 @@
           
           
           <a href="../../index.html" class="icon icon-home">
-            BBSTrader
+            bbstrader
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -50,7 +50,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../index.html">BBSTrader</a>
+          <a href="../../index.html">bbstrader</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -69,11 +69,14 @@
            <div itemprop="articleBody">
              
   <h1>Source code for metatrader.utils</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
-<span class="kn">import</span> <span class="nn">MetaTrader5</span> <span class="k">as</span> <span class="nn">MT5</span>
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">NamedTuple</span><span class="p">,</span> <span class="n">Optional</span>
-<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NamedTuple</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">MetaTrader5</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">MT5</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">bbstrader.compat</span>  <span class="c1"># noqa: F401</span>
 
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
@@ -109,36 +112,37 @@
 <span class="c1"># TIMEFRAME is an enumeration with possible chart period values</span>
 <span class="c1"># See https://www.mql5.com/en/docs/python_metatrader5/mt5copyratesfrom_py#timeframe</span>
 <span class="n">TIMEFRAMES</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;1m&#39;</span><span class="p">:</span>  <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_M1</span><span class="p">,</span>
-    <span class="s1">&#39;2m&#39;</span><span class="p">:</span>  <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_M2</span><span class="p">,</span>
-    <span class="s1">&#39;3m&#39;</span><span class="p">:</span>  <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_M3</span><span class="p">,</span>
-    <span class="s1">&#39;4m&#39;</span><span class="p">:</span>  <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_M4</span><span class="p">,</span>
-    <span class="s1">&#39;5m&#39;</span><span class="p">:</span>  <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_M5</span><span class="p">,</span>
-    <span class="s1">&#39;6m&#39;</span><span class="p">:</span>  <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_M6</span><span class="p">,</span>
-    <span class="s1">&#39;10m&#39;</span><span class="p">:</span> <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_M10</span><span class="p">,</span>
-    <span class="s1">&#39;12m&#39;</span><span class="p">:</span> <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_M12</span><span class="p">,</span>
-    <span class="s1">&#39;15m&#39;</span><span class="p">:</span> <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_M15</span><span class="p">,</span>
-    <span class="s1">&#39;20m&#39;</span><span class="p">:</span> <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_M20</span><span class="p">,</span>
-    <span class="s1">&#39;30m&#39;</span><span class="p">:</span> <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_M30</span><span class="p">,</span>
-    <span class="s1">&#39;1h&#39;</span><span class="p">:</span>  <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_H1</span><span class="p">,</span>
-    <span class="s1">&#39;2h&#39;</span><span class="p">:</span>  <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_H2</span><span class="p">,</span>
-    <span class="s1">&#39;3h&#39;</span><span class="p">:</span>  <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_H3</span><span class="p">,</span>
-    <span class="s1">&#39;4h&#39;</span><span class="p">:</span>  <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_H4</span><span class="p">,</span>
-    <span class="s1">&#39;6h&#39;</span><span class="p">:</span>  <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_H6</span><span class="p">,</span>
-    <span class="s1">&#39;8h&#39;</span><span class="p">:</span>  <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_H8</span><span class="p">,</span>
-    <span class="s1">&#39;12h&#39;</span><span class="p">:</span> <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_H12</span><span class="p">,</span>
-    <span class="s1">&#39;D1&#39;</span><span class="p">:</span>  <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_D1</span><span class="p">,</span>
-    <span class="s1">&#39;W1&#39;</span><span class="p">:</span>  <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_W1</span><span class="p">,</span>
-    <span class="s1">&#39;MN1&#39;</span><span class="p">:</span> <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_MN1</span>
+    <span class="s2">&quot;1m&quot;</span><span class="p">:</span> <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_M1</span><span class="p">,</span>
+    <span class="s2">&quot;2m&quot;</span><span class="p">:</span> <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_M2</span><span class="p">,</span>
+    <span class="s2">&quot;3m&quot;</span><span class="p">:</span> <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_M3</span><span class="p">,</span>
+    <span class="s2">&quot;4m&quot;</span><span class="p">:</span> <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_M4</span><span class="p">,</span>
+    <span class="s2">&quot;5m&quot;</span><span class="p">:</span> <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_M5</span><span class="p">,</span>
+    <span class="s2">&quot;6m&quot;</span><span class="p">:</span> <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_M6</span><span class="p">,</span>
+    <span class="s2">&quot;10m&quot;</span><span class="p">:</span> <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_M10</span><span class="p">,</span>
+    <span class="s2">&quot;12m&quot;</span><span class="p">:</span> <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_M12</span><span class="p">,</span>
+    <span class="s2">&quot;15m&quot;</span><span class="p">:</span> <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_M15</span><span class="p">,</span>
+    <span class="s2">&quot;20m&quot;</span><span class="p">:</span> <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_M20</span><span class="p">,</span>
+    <span class="s2">&quot;30m&quot;</span><span class="p">:</span> <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_M30</span><span class="p">,</span>
+    <span class="s2">&quot;1h&quot;</span><span class="p">:</span> <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_H1</span><span class="p">,</span>
+    <span class="s2">&quot;2h&quot;</span><span class="p">:</span> <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_H2</span><span class="p">,</span>
+    <span class="s2">&quot;3h&quot;</span><span class="p">:</span> <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_H3</span><span class="p">,</span>
+    <span class="s2">&quot;4h&quot;</span><span class="p">:</span> <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_H4</span><span class="p">,</span>
+    <span class="s2">&quot;6h&quot;</span><span class="p">:</span> <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_H6</span><span class="p">,</span>
+    <span class="s2">&quot;8h&quot;</span><span class="p">:</span> <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_H8</span><span class="p">,</span>
+    <span class="s2">&quot;12h&quot;</span><span class="p">:</span> <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_H12</span><span class="p">,</span>
+    <span class="s2">&quot;D1&quot;</span><span class="p">:</span> <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_D1</span><span class="p">,</span>
+    <span class="s2">&quot;W1&quot;</span><span class="p">:</span> <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_W1</span><span class="p">,</span>
+    <span class="s2">&quot;MN1&quot;</span><span class="p">:</span> <span class="n">MT5</span><span class="o">.</span><span class="n">TIMEFRAME_MN1</span><span class="p">,</span>
 <span class="p">}</span>
 
 
 <div class="viewcode-block" id="TimeFrame">
 <a class="viewcode-back" href="../../metatrader.html#metatrader.utils.TimeFrame">[docs]</a>
-<span class="k">class</span> <span class="nc">TimeFrame</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TimeFrame</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Rrepresent a time frame object</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">M1</span> <span class="o">=</span> <span class="s2">&quot;1m&quot;</span>
     <span class="n">M2</span> <span class="o">=</span> <span class="s2">&quot;2m&quot;</span>
     <span class="n">M3</span> <span class="o">=</span> <span class="s2">&quot;3m&quot;</span>
@@ -165,11 +169,12 @@
 
 <div class="viewcode-block" id="TerminalInfo">
 <a class="viewcode-back" href="../../metatrader.html#metatrader.utils.TerminalInfo">[docs]</a>
-<span class="k">class</span> <span class="nc">TerminalInfo</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TerminalInfo</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Represents general information about the trading terminal.</span>
 <span class="sd">    See https://www.mql5.com/en/docs/constants/environment_state/terminalstatus</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">community_account</span><span class="p">:</span> <span class="nb">bool</span>
     <span class="n">community_connection</span><span class="p">:</span> <span class="nb">bool</span>
     <span class="n">connected</span><span class="p">:</span> <span class="nb">bool</span>
@@ -197,11 +202,12 @@
 
 <div class="viewcode-block" id="AccountInfo">
 <a class="viewcode-back" href="../../metatrader.html#metatrader.utils.AccountInfo">[docs]</a>
-<span class="k">class</span> <span class="nc">AccountInfo</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">AccountInfo</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Represents information about a trading account.</span>
 <span class="sd">    See https://www.mql5.com/en/docs/constants/environment_state/accountinformation</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">login</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">trade_mode</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">leverage</span><span class="p">:</span> <span class="nb">int</span>
@@ -235,11 +241,12 @@
 
 <div class="viewcode-block" id="SymbolInfo">
 <a class="viewcode-back" href="../../metatrader.html#metatrader.utils.SymbolInfo">[docs]</a>
-<span class="k">class</span> <span class="nc">SymbolInfo</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SymbolInfo</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Represents detailed information about a financial instrument.</span>
 <span class="sd">    See https://www.mql5.com/en/docs/constants/environment_state/marketinfoconstants</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">custom</span><span class="p">:</span> <span class="nb">bool</span>
     <span class="n">chart_mode</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">select</span><span class="p">:</span> <span class="nb">bool</span>
@@ -341,7 +348,7 @@
 
 <div class="viewcode-block" id="TickInfo">
 <a class="viewcode-back" href="../../metatrader.html#metatrader.utils.TickInfo">[docs]</a>
-<span class="k">class</span> <span class="nc">TickInfo</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TickInfo</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Represents the last tick for the specified financial instrument.</span>
 <span class="sd">    * time:     Time of the last prices update</span>
@@ -353,6 +360,7 @@
 <span class="sd">    * flags:    Tick flags</span>
 <span class="sd">    * volume_real:  Volume for the current Last price with greater accuracy</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">time</span><span class="p">:</span> <span class="n">datetime</span>
     <span class="n">bid</span><span class="p">:</span> <span class="nb">float</span>
     <span class="n">ask</span><span class="p">:</span> <span class="nb">float</span>
@@ -366,11 +374,12 @@
 
 <div class="viewcode-block" id="TradeRequest">
 <a class="viewcode-back" href="../../metatrader.html#metatrader.utils.TradeRequest">[docs]</a>
-<span class="k">class</span> <span class="nc">TradeRequest</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TradeRequest</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Represents a Trade Request Structure</span>
 <span class="sd">    See https://www.mql5.com/en/docs/constants/structures/mqltraderequest</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">action</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">magic</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">order</span><span class="p">:</span> <span class="nb">int</span>
@@ -393,11 +402,12 @@
 
 <div class="viewcode-block" id="OrderCheckResult">
 <a class="viewcode-back" href="../../metatrader.html#metatrader.utils.OrderCheckResult">[docs]</a>
-<span class="k">class</span> <span class="nc">OrderCheckResult</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">OrderCheckResult</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The Structure of Results of a Trade Request Check</span>
 <span class="sd">    See https://www.mql5.com/en/docs/constants/structures/mqltradecheckresult</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">retcode</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">balance</span><span class="p">:</span> <span class="nb">float</span>
     <span class="n">equity</span><span class="p">:</span> <span class="nb">float</span>
@@ -412,11 +422,12 @@
 
 <div class="viewcode-block" id="OrderSentResult">
 <a class="viewcode-back" href="../../metatrader.html#metatrader.utils.OrderSentResult">[docs]</a>
-<span class="k">class</span> <span class="nc">OrderSentResult</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">OrderSentResult</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    The Structure of a Trade Request Result </span>
+<span class="sd">    The Structure of a Trade Request Result</span>
 <span class="sd">    See https://www.mql5.com/en/docs/constants/structures/mqltraderesult</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">retcode</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">deal</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">order</span><span class="p">:</span> <span class="nb">int</span>
@@ -433,11 +444,12 @@
 
 <div class="viewcode-block" id="TradeOrder">
 <a class="viewcode-back" href="../../metatrader.html#metatrader.utils.TradeOrder">[docs]</a>
-<span class="k">class</span> <span class="nc">TradeOrder</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TradeOrder</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Represents a trade order.</span>
 <span class="sd">    See https://www.mql5.com/en/docs/constants/tradingconstants/orderproperties</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">ticket</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">time_setup</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">time_setup_msc</span><span class="p">:</span> <span class="nb">int</span>
@@ -467,12 +479,13 @@
 
 <div class="viewcode-block" id="TradePosition">
 <a class="viewcode-back" href="../../metatrader.html#metatrader.utils.TradePosition">[docs]</a>
-<span class="k">class</span> <span class="nc">TradePosition</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TradePosition</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Represents a trade position with attributes like ticket, open/close prices, </span>
+<span class="sd">    Represents a trade position with attributes like ticket, open/close prices,</span>
 <span class="sd">    volume, profit, and other trading details.</span>
 <span class="sd">    See https://www.mql5.com/en/docs/constants/tradingconstants/positionproperties</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">ticket</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">time</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">time_msc</span><span class="p">:</span> <span class="nb">int</span>
@@ -497,11 +510,12 @@
 
 <div class="viewcode-block" id="TradeDeal">
 <a class="viewcode-back" href="../../metatrader.html#metatrader.utils.TradeDeal">[docs]</a>
-<span class="k">class</span> <span class="nc">TradeDeal</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TradeDeal</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Represents a trade deal execution.</span>
 <span class="sd">    See https://www.mql5.com/en/docs/constants/tradingconstants/dealproperties</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">ticket</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">order</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">time</span><span class="p">:</span> <span class="nb">int</span>
@@ -525,22 +539,23 @@
 
 <div class="viewcode-block" id="InvalidBroker">
 <a class="viewcode-back" href="../../metatrader.html#metatrader.utils.InvalidBroker">[docs]</a>
-<span class="k">class</span> <span class="nc">InvalidBroker</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">InvalidBroker</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception raised for invalid broker errors.&quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Invalid broker.&quot;</span><span class="p">):</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Invalid broker.&quot;</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
 
 
 
-<span class="k">class</span> <span class="nc">MT5TerminalError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MT5TerminalError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Base exception class for trading-related errors.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">code</span> <span class="o">=</span> <span class="n">code</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span>
 
-    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="k">else</span><span class="p">:</span>
@@ -549,125 +564,126 @@
 
 <div class="viewcode-block" id="GenericFail">
 <a class="viewcode-back" href="../../metatrader.html#metatrader.utils.GenericFail">[docs]</a>
-<span class="k">class</span> <span class="nc">GenericFail</span><span class="p">(</span><span class="n">MT5TerminalError</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GenericFail</span><span class="p">(</span><span class="n">MT5TerminalError</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception raised for generic failure.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Generic fail&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Generic fail&quot;</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">MT5</span><span class="o">.</span><span class="n">RES_E_FAIL</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="InvalidParams">
 <a class="viewcode-back" href="../../metatrader.html#metatrader.utils.InvalidParams">[docs]</a>
-<span class="k">class</span> <span class="nc">InvalidParams</span><span class="p">(</span><span class="n">MT5TerminalError</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">InvalidParams</span><span class="p">(</span><span class="n">MT5TerminalError</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception raised for invalid arguments or parameters.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Invalid arguments or parameters.&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Invalid arguments or parameters.&quot;</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">MT5</span><span class="o">.</span><span class="n">RES_E_INVALID_PARAMS</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="HistoryNotFound">
 <a class="viewcode-back" href="../../metatrader.html#metatrader.utils.HistoryNotFound">[docs]</a>
-<span class="k">class</span> <span class="nc">HistoryNotFound</span><span class="p">(</span><span class="n">MT5TerminalError</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">HistoryNotFound</span><span class="p">(</span><span class="n">MT5TerminalError</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception raised when no history is found.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;No history found.&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;No history found.&quot;</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">MT5</span><span class="o">.</span><span class="n">RES_E_NOT_FOUND</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="InvalidVersion">
 <a class="viewcode-back" href="../../metatrader.html#metatrader.utils.InvalidVersion">[docs]</a>
-<span class="k">class</span> <span class="nc">InvalidVersion</span><span class="p">(</span><span class="n">MT5TerminalError</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">InvalidVersion</span><span class="p">(</span><span class="n">MT5TerminalError</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception raised for an invalid version.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Invalid version.&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Invalid version.&quot;</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">MT5</span><span class="o">.</span><span class="n">RES_E_INVALID_VERSION</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="AuthFailed">
 <a class="viewcode-back" href="../../metatrader.html#metatrader.utils.AuthFailed">[docs]</a>
-<span class="k">class</span> <span class="nc">AuthFailed</span><span class="p">(</span><span class="n">MT5TerminalError</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">AuthFailed</span><span class="p">(</span><span class="n">MT5TerminalError</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception raised for authorization failure.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Authorization failed.&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Authorization failed.&quot;</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">MT5</span><span class="o">.</span><span class="n">RES_E_AUTH_FAILED</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="UnsupportedMethod">
 <a class="viewcode-back" href="../../metatrader.html#metatrader.utils.UnsupportedMethod">[docs]</a>
-<span class="k">class</span> <span class="nc">UnsupportedMethod</span><span class="p">(</span><span class="n">MT5TerminalError</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">UnsupportedMethod</span><span class="p">(</span><span class="n">MT5TerminalError</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception raised for an unsupported method.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Unsupported method.&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Unsupported method.&quot;</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">MT5</span><span class="o">.</span><span class="n">RES_E_UNSUPPORTED</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="AutoTradingDisabled">
 <a class="viewcode-back" href="../../metatrader.html#metatrader.utils.AutoTradingDisabled">[docs]</a>
-<span class="k">class</span> <span class="nc">AutoTradingDisabled</span><span class="p">(</span><span class="n">MT5TerminalError</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">AutoTradingDisabled</span><span class="p">(</span><span class="n">MT5TerminalError</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception raised when auto-trading is disabled.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Auto-trading is disabled.&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Auto-trading is disabled.&quot;</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">MT5</span><span class="o">.</span><span class="n">RES_E_AUTO_TRADING_DISABLED</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span></div>
 
 
 
-<span class="k">class</span> <span class="nc">InternalFailError</span><span class="p">(</span><span class="n">MT5TerminalError</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">InternalFailError</span><span class="p">(</span><span class="n">MT5TerminalError</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Base exception class for internal IPC errors.&quot;&quot;&quot;</span>
+
     <span class="k">pass</span>
 
 
 <div class="viewcode-block" id="InternalFailSend">
 <a class="viewcode-back" href="../../metatrader.html#metatrader.utils.InternalFailSend">[docs]</a>
-<span class="k">class</span> <span class="nc">InternalFailSend</span><span class="p">(</span><span class="n">InternalFailError</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">InternalFailSend</span><span class="p">(</span><span class="n">InternalFailError</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception raised for internal IPC send failure.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Internal IPC send failed.&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Internal IPC send failed.&quot;</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">MT5</span><span class="o">.</span><span class="n">RES_E_INTERNAL_FAIL_SEND</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="InternalFailReceive">
 <a class="viewcode-back" href="../../metatrader.html#metatrader.utils.InternalFailReceive">[docs]</a>
-<span class="k">class</span> <span class="nc">InternalFailReceive</span><span class="p">(</span><span class="n">InternalFailError</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">InternalFailReceive</span><span class="p">(</span><span class="n">InternalFailError</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception raised for internal IPC receive failure.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Internal IPC receive failed.&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Internal IPC receive failed.&quot;</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">MT5</span><span class="o">.</span><span class="n">RES_E_INTERNAL_FAIL_RECEIVE</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="InternalFailInit">
 <a class="viewcode-back" href="../../metatrader.html#metatrader.utils.InternalFailInit">[docs]</a>
-<span class="k">class</span> <span class="nc">InternalFailInit</span><span class="p">(</span><span class="n">InternalFailError</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">InternalFailInit</span><span class="p">(</span><span class="n">InternalFailError</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception raised for internal IPC initialization failure.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Internal IPC initialization failed.&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Internal IPC initialization failed.&quot;</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">MT5</span><span class="o">.</span><span class="n">RES_E_INTERNAL_FAIL_INIT</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="InternalFailConnect">
 <a class="viewcode-back" href="../../metatrader.html#metatrader.utils.InternalFailConnect">[docs]</a>
-<span class="k">class</span> <span class="nc">InternalFailConnect</span><span class="p">(</span><span class="n">InternalFailError</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">InternalFailConnect</span><span class="p">(</span><span class="n">InternalFailError</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception raised for no IPC connection.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;No IPC connection.&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;No IPC connection.&quot;</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">MT5</span><span class="o">.</span><span class="n">RES_E_INTERNAL_FAIL_CONNECT</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="InternalFailTimeout">
 <a class="viewcode-back" href="../../metatrader.html#metatrader.utils.InternalFailTimeout">[docs]</a>
-<span class="k">class</span> <span class="nc">InternalFailTimeout</span><span class="p">(</span><span class="n">InternalFailError</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">InternalFailTimeout</span><span class="p">(</span><span class="n">InternalFailError</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception raised for an internal timeout.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Internal timeout.&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Internal timeout.&quot;</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">MT5</span><span class="o">.</span><span class="n">RES_E_INTERNAL_FAIL_TIMEOUT</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span></div>
 
 
@@ -691,7 +707,7 @@
 
 <div class="viewcode-block" id="raise_mt5_error">
 <a class="viewcode-back" href="../../metatrader.html#metatrader.utils.raise_mt5_error">[docs]</a>
-<span class="k">def</span> <span class="nf">raise_mt5_error</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">raise_mt5_error</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Raises an exception based on the given error code.</span>
 
 <span class="sd">    Args:</span>
@@ -736,13 +752,15 @@
     <span class="mi">10027</span><span class="p">:</span> <span class="s2">&quot;Autotrading disabled by client terminal&quot;</span><span class="p">,</span>
     <span class="mi">10028</span><span class="p">:</span> <span class="s2">&quot;Request locked for processing&quot;</span><span class="p">,</span>
     <span class="mi">10029</span><span class="p">:</span> <span class="s2">&quot;Order or position frozen&quot;</span><span class="p">,</span>
-    <span class="mi">10030</span><span class="p">:</span> <span class="s2">&quot;Invalid order filling type: see&quot;</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span><span class="o">+</span><span class="n">_ORDER_FILLING_TYPE_</span><span class="p">,</span>
+    <span class="mi">10030</span><span class="p">:</span> <span class="s2">&quot;Invalid order filling type: see&quot;</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">_ORDER_FILLING_TYPE_</span><span class="p">,</span>
     <span class="mi">10031</span><span class="p">:</span> <span class="s2">&quot;No connection with the trade server&quot;</span><span class="p">,</span>
     <span class="mi">10032</span><span class="p">:</span> <span class="s2">&quot;Operation allowed only for live accounts&quot;</span><span class="p">,</span>
     <span class="mi">10033</span><span class="p">:</span> <span class="s2">&quot;The number of pending orders has reached the limit&quot;</span><span class="p">,</span>
     <span class="mi">10034</span><span class="p">:</span> <span class="s2">&quot;Order/position volume limit for the symbol reached&quot;</span><span class="p">,</span>
     <span class="mi">10035</span><span class="p">:</span> <span class="s2">&quot;Incorrect or prohibited order type: see&quot;</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">_ORDER_TYPE_</span><span class="p">,</span>
-    <span class="mi">10036</span><span class="p">:</span> <span class="s2">&quot;Position with the specified ID has already been closed: see&quot;</span><span class="o">+</span><span class="s2">&quot; &quot;</span><span class="o">+</span><span class="n">_POSITION_IDENTIFIER_</span><span class="p">,</span>
+    <span class="mi">10036</span><span class="p">:</span> <span class="s2">&quot;Position with the specified ID has already been closed: see&quot;</span>
+    <span class="o">+</span> <span class="s2">&quot; &quot;</span>
+    <span class="o">+</span> <span class="n">_POSITION_IDENTIFIER_</span><span class="p">,</span>
     <span class="mi">10038</span><span class="p">:</span> <span class="s2">&quot;Close volume exceeds the current position volume&quot;</span><span class="p">,</span>
     <span class="mi">10039</span><span class="p">:</span> <span class="s2">&quot;A close order already exists for this position&quot;</span><span class="p">,</span>
     <span class="mi">10040</span><span class="p">:</span> <span class="s2">&quot;Maximum number of open positions reached&quot;</span><span class="p">,</span>
@@ -751,13 +769,13 @@
     <span class="mi">10043</span><span class="p">:</span> <span class="s2">&quot;Only short positions are allowed&quot;</span><span class="p">,</span>
     <span class="mi">10044</span><span class="p">:</span> <span class="s2">&quot;Only position closing is allowed&quot;</span><span class="p">,</span>
     <span class="mi">10045</span><span class="p">:</span> <span class="s2">&quot;Position closing allowed only by FIFO rule: see&quot;</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">_FIFO_RULE_</span><span class="p">,</span>
-    <span class="mi">10046</span><span class="p">:</span> <span class="s2">&quot;Opposite positions on this symbol are disabled&quot;</span>
+    <span class="mi">10046</span><span class="p">:</span> <span class="s2">&quot;Opposite positions on this symbol are disabled&quot;</span><span class="p">,</span>
 <span class="p">}</span>
 
 
 <div class="viewcode-block" id="trade_retcode_message">
 <a class="viewcode-back" href="../../metatrader.html#metatrader.utils.trade_retcode_message">[docs]</a>
-<span class="k">def</span> <span class="nf">trade_retcode_message</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">display</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">add_msg</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">trade_retcode_message</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">display</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">add_msg</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Retrieves a user-friendly message corresponding to a given trade return code.</span>
 
@@ -783,7 +801,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2024, Bertin Balouki SIMYELI.</p>
+    <p>&#169; Copyright 2023 - 2025, Bertin Balouki SIMYELI.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Simplified Investment &amp; Trading Toolkit &mdash; BBSTrader 0.2.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+  <title>Simplified Investment &amp; Trading Toolkit &mdash; bbstrader 0.2.092 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=938c9ccc"></script>
+      <script src="_static/documentation_options.js?v=97badf68"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -31,7 +31,7 @@
           
           
           <a href="#" class="icon icon-home">
-            BBSTrader
+            bbstrader
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -52,7 +52,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="#">BBSTrader</a>
+          <a href="#">bbstrader</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -92,6 +92,7 @@
 <li><p><strong>Integrated Risk Management</strong>: Leverage advanced risk management techniques to adapt to changing market conditions and maintain control over risk exposure.</p></li>
 <li><p><strong>Automated Trading</strong>: Execute trades automatically on the MT5 platform, with support for managing orders, positions, and risk in real-time.</p></li>
 <li><p><strong>Flexible Framework</strong>: Customize existing strategies or develop new ones with the flexible, modular architecture designed to accommodate traders’ evolving needs.</p></li>
+<li><p><strong>Copy Trading</strong>: Implement copy trading strategies to replicate the trades of experienced traders or signal providers to enhance trading performance.</p></li>
 </ul>
 </section>
 <section id="getting-started">
@@ -104,7 +105,8 @@ This module currently supports three brokers, <a class="reference external" href
 <li><p>If you are looking for a prop firm, see <a class="reference external" href="https://trader.ftmo.com/?affiliates=JGmeuQqepAZLMcdOEQRp">FTMO</a>.</p></li>
 </ul>
 <p>Then, you can install <cite>bbstrader</cite> using pip:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>bbstrader
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>bbstrader<span class="w"> </span><span class="c1"># Mac and Linux</span>
+pip<span class="w"> </span>install<span class="w"> </span>bbstrader<span class="o">[</span>MT5<span class="o">]</span><span class="w"> </span><span class="c1"># Windows</span>
 </pre></div>
 </div>
 </section>
@@ -113,7 +115,7 @@ This module currently supports three brokers, <a class="reference external" href
 <h1>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h1>
 <section id="backtesting-module">
 <h2>Backtesting Module<a class="headerlink" href="#backtesting-module" title="Link to this heading"></a></h2>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bbstrader.trading.strategies</span> <span class="kn">import</span> <span class="n">test_strategy</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">bbstrader.trading.strategies</span><span class="w"> </span><span class="kn">import</span> <span class="n">test_strategy</span>
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
    <span class="c1"># Run backtesting for Stock Index Short Term Buy Only Strategy</span>
@@ -182,6 +184,7 @@ This module currently supports three brokers, <a class="reference external" href
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="modules.html">bbstrader</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="btengine.html">Backtesting Egine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="compat.html">compat module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="config.html">configurations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="core.html">core package</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ibkr.html">ibkr package</a></li>
@@ -205,7 +208,7 @@ This module currently supports three brokers, <a class="reference external" href
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2024, Bertin Balouki SIMYELI.</p>
+    <p>&#169; Copyright 2023 - 2025, Bertin Balouki SIMYELI.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

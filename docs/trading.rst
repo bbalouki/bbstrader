@@ -6,15 +6,15 @@ Trading Execution
    :undoc-members:
    :show-inheritance:
 
-execution
-----------
+Execution
+--------
 
 .. automodule:: trading.execution
    :members:
    :undoc-members:
    :show-inheritance:
 
-strategies
+Strategies
 ----------
 
 .. automodule:: trading.strategies
@@ -22,10 +22,15 @@ strategies
    :undoc-members:
    :show-inheritance:
 
-scripts
+Scripts
 --------
 
 .. automodule:: trading.scripts
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. automodule:: trading.script
    :members:
    :undoc-members:
    :show-inheritance:

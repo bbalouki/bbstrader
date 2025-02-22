@@ -6,21 +6,21 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>configurations &mdash; BBSTrader 0.2.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+  <title>configurations &mdash; bbstrader 0.2.092 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=938c9ccc"></script>
+      <script src="_static/documentation_options.js?v=97badf68"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="core package" href="core.html" />
-    <link rel="prev" title="Backtesting Egine" href="btengine.html" /> 
+    <link rel="prev" title="compat module" href="compat.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -32,7 +32,7 @@
           
           
           <a href="index.html" class="icon icon-home">
-            BBSTrader
+            bbstrader
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -46,6 +46,7 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">bbstrader</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="btengine.html">Backtesting Egine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="compat.html">compat module</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">configurations</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#config.CustomFormatter"><code class="docutils literal notranslate"><span class="pre">CustomFormatter</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#config.CustomFormatter.formatTime"><code class="docutils literal notranslate"><span class="pre">CustomFormatter.formatTime()</span></code></a></li>
@@ -83,7 +84,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">BBSTrader</a>
+          <a href="index.html">bbstrader</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -106,7 +107,7 @@
 <span id="configurations"></span><h1>configurations<a class="headerlink" href="#module-config" title="Link to this heading"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="config.CustomFormatter">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">config.</span></span><span class="sig-name descname"><span class="pre">CustomFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fmt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datefmt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'%'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">defaults</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/config.html#CustomFormatter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config.CustomFormatter" title="Link to this definition"></a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">config.</span></span><span class="sig-name descname"><span class="pre">CustomFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fmt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datefmt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'%'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">defaults</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/config.html#CustomFormatter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config.CustomFormatter" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Formatter</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="config.CustomFormatter.formatTime">
@@ -131,7 +132,7 @@ set the ‘converter’ attribute in the Formatter class.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="config.CustomLogger">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">config.</span></span><span class="sig-name descname"><span class="pre">CustomLogger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/config.html#CustomLogger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config.CustomLogger" title="Link to this definition"></a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">config.</span></span><span class="sig-name descname"><span class="pre">CustomLogger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/config.html#CustomLogger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config.CustomLogger" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Logger</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="config.CustomLogger.critical">
@@ -139,7 +140,7 @@ set the ‘converter’ attribute in the Formatter class.</p>
 <dd><p>Log ‘msg % args’ with severity ‘CRITICAL’.</p>
 <p>To pass exception information, use the keyword argument exc_info with
 a true value, e.g.</p>
-<p>logger.critical(“Houston, we have a %s”, “major disaster”, exc_info=1)</p>
+<p>logger.critical(“Houston, we have a %s”, “major disaster”, exc_info=True)</p>
 </dd></dl>
 
 <dl class="py method">
@@ -148,7 +149,7 @@ a true value, e.g.</p>
 <dd><p>Log ‘msg % args’ with severity ‘DEBUG’.</p>
 <p>To pass exception information, use the keyword argument exc_info with
 a true value, e.g.</p>
-<p>logger.debug(“Houston, we have a %s”, “thorny problem”, exc_info=1)</p>
+<p>logger.debug(“Houston, we have a %s”, “thorny problem”, exc_info=True)</p>
 </dd></dl>
 
 <dl class="py method">
@@ -157,7 +158,7 @@ a true value, e.g.</p>
 <dd><p>Log ‘msg % args’ with severity ‘ERROR’.</p>
 <p>To pass exception information, use the keyword argument exc_info with
 a true value, e.g.</p>
-<p>logger.error(“Houston, we have a %s”, “major problem”, exc_info=1)</p>
+<p>logger.error(“Houston, we have a %s”, “major problem”, exc_info=True)</p>
 </dd></dl>
 
 <dl class="py method">
@@ -166,7 +167,7 @@ a true value, e.g.</p>
 <dd><p>Log ‘msg % args’ with severity ‘INFO’.</p>
 <p>To pass exception information, use the keyword argument exc_info with
 a true value, e.g.</p>
-<p>logger.info(“Houston, we have a %s”, “interesting problem”, exc_info=1)</p>
+<p>logger.info(“Houston, we have a %s”, “interesting problem”, exc_info=True)</p>
 </dd></dl>
 
 <dl class="py method">
@@ -175,14 +176,14 @@ a true value, e.g.</p>
 <dd><p>Log ‘msg % args’ with severity ‘WARNING’.</p>
 <p>To pass exception information, use the keyword argument exc_info with
 a true value, e.g.</p>
-<p>logger.warning(“Houston, we have a %s”, “bit of a problem”, exc_info=1)</p>
+<p>logger.warning(“Houston, we have a %s”, “bit of a problem”, exc_info=True)</p>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="config.LogLevelFilter">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">config.</span></span><span class="sig-name descname"><span class="pre">LogLevelFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">levels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/config.html#LogLevelFilter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config.LogLevelFilter" title="Link to this definition"></a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">config.</span></span><span class="sig-name descname"><span class="pre">LogLevelFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">levels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/config.html#LogLevelFilter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config.LogLevelFilter" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Filter</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="config.LogLevelFilter.filter">
@@ -225,14 +226,14 @@ a true value, e.g.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="btengine.html" class="btn btn-neutral float-left" title="Backtesting Egine" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="compat.html" class="btn btn-neutral float-left" title="compat module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="core.html" class="btn btn-neutral float-right" title="core package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2024, Bertin Balouki SIMYELI.</p>
+    <p>&#169; Copyright 2023 - 2025, Bertin Balouki SIMYELI.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

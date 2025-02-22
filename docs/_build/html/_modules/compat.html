@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Overview: module code &mdash; bbstrader 0.2.092 documentation</title>
+  <title>compat &mdash; bbstrader 0.2.092 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
 
@@ -58,7 +58,8 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Overview: module code</li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">compat</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -67,38 +68,30 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <h1>All modules for which code is available</h1>
-<ul><li><a href="btengine/backtest.html">btengine.backtest</a></li>
-<li><a href="btengine/data.html">btengine.data</a></li>
-<li><a href="btengine/event.html">btengine.event</a></li>
-<li><a href="btengine/execution.html">btengine.execution</a></li>
-<li><a href="btengine/performance.html">btengine.performance</a></li>
-<li><a href="btengine/portfolio.html">btengine.portfolio</a></li>
-<li><a href="btengine/scripts.html">btengine.scripts</a></li>
-<li><a href="btengine/strategy.html">btengine.strategy</a></li>
-<li><a href="compat.html">compat</a></li>
-<li><a href="config.html">config</a></li>
-<li><a href="core/data.html">core.data</a></li>
-<li><a href="core/utils.html">core.utils</a></li>
-<li><a href="metatrader/account.html">metatrader.account</a></li>
-<li><a href="metatrader/copier.html">metatrader.copier</a></li>
-<li><a href="metatrader/rates.html">metatrader.rates</a></li>
-<li><a href="metatrader/risk.html">metatrader.risk</a></li>
-<li><a href="metatrader/scripts.html">metatrader.scripts</a></li>
-<li><a href="metatrader/trade.html">metatrader.trade</a></li>
-<li><a href="metatrader/utils.html">metatrader.utils</a></li>
-<li><a href="models/factors.html">models.factors</a></li>
-<li><a href="models/ml.html">models.ml</a></li>
-<li><a href="models/optimization.html">models.optimization</a></li>
-<li><a href="models/portfolio.html">models.portfolio</a></li>
-<li><a href="models/risk.html">models.risk</a></li>
-<li><a href="numpy.html">numpy</a></li>
-<li><a href="trading/execution.html">trading.execution</a></li>
-<li><a href="trading/script.html">trading.script</a></li>
-<li><a href="trading/scripts.html">trading.scripts</a></li>
-<li><a href="trading/strategies.html">trading.strategies</a></li>
-<li><a href="tseries.html">tseries</a></li>
-</ul>
+  <h1>Source code for compat</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">platform</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+
+
+<div class="viewcode-block" id="setup_mock_metatrader">
+<a class="viewcode-back" href="../compat.html#compat.setup_mock_metatrader">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">setup_mock_metatrader</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Mock MetaTrader5 on Linux to prevent import errors.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span> <span class="o">!=</span> <span class="s2">&quot;Windows&quot;</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">unittest.mock</span><span class="w"> </span><span class="kn">import</span> <span class="n">MagicMock</span>
+
+        <span class="k">class</span><span class="w"> </span><span class="nc">Mock</span><span class="p">(</span><span class="n">MagicMock</span><span class="p">):</span>
+            <span class="nd">@classmethod</span>
+            <span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">MagicMock</span><span class="p">()</span>
+
+        <span class="n">MOCK_MODULES</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;MetaTrader5&quot;</span><span class="p">]</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="o">.</span><span class="n">update</span><span class="p">((</span><span class="n">mod_name</span><span class="p">,</span> <span class="n">Mock</span><span class="p">())</span> <span class="k">for</span> <span class="n">mod_name</span> <span class="ow">in</span> <span class="n">MOCK_MODULES</span><span class="p">)</span></div>
+
+
+
+<span class="n">setup_mock_metatrader</span><span class="p">()</span>
+</pre></div>
 
            </div>
           </div>

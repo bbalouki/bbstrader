@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>trading.scripts &mdash; BBSTrader 0.2.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+  <title>trading.scripts &mdash; bbstrader 0.2.092 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=938c9ccc"></script>
+      <script src="../../_static/documentation_options.js?v=97badf68"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -29,7 +29,7 @@
           
           
           <a href="../../index.html" class="icon icon-home">
-            BBSTrader
+            bbstrader
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -50,7 +50,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../index.html">BBSTrader</a>
+          <a href="../../index.html">bbstrader</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -69,16 +69,19 @@
            <div itemprop="articleBody">
              
   <h1>Source code for trading.scripts</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">asyncio</span>
-<span class="kn">from</span> <span class="nn">telegram</span> <span class="kn">import</span> <span class="n">Bot</span>
-<span class="kn">from</span> <span class="nn">notifypy</span> <span class="kn">import</span> <span class="n">Notify</span>
-<span class="kn">from</span> <span class="nn">telegram.error</span> <span class="kn">import</span> <span class="n">TelegramError</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;send_telegram_message&#39;</span><span class="p">,</span> <span class="s1">&#39;send_notification&#39;</span><span class="p">,</span> <span class="s1">&#39;send_message&#39;</span><span class="p">]</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">notifypy</span><span class="w"> </span><span class="kn">import</span> <span class="n">Notify</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">telegram</span><span class="w"> </span><span class="kn">import</span> <span class="n">Bot</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">telegram.error</span><span class="w"> </span><span class="kn">import</span> <span class="n">TelegramError</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;send_telegram_message&quot;</span><span class="p">,</span> <span class="s2">&quot;send_notification&quot;</span><span class="p">,</span> <span class="s2">&quot;send_message&quot;</span><span class="p">]</span>
+
 
 <div class="viewcode-block" id="send_telegram_message">
 <a class="viewcode-back" href="../../trading.html#trading.scripts.send_telegram_message">[docs]</a>
-<span class="k">async</span> <span class="k">def</span> <span class="nf">send_telegram_message</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">chat_id</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">send_telegram_message</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">chat_id</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Send a message to a telegram chat</span>
 
@@ -97,9 +100,10 @@
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error sending message: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 
+
 <div class="viewcode-block" id="send_notification">
 <a class="viewcode-back" href="../../trading.html#trading.scripts.send_notification">[docs]</a>
-<span class="k">def</span> <span class="nf">send_notification</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">send_notification</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Send a desktop notification</span>
 
@@ -107,16 +111,23 @@
 <span class="sd">        title: str: Title of the notification</span>
 <span class="sd">        message: str: Message of the notification</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">notification</span> <span class="o">=</span> <span class="n">Notify</span><span class="p">(</span><span class="n">default_notification_application_name</span><span class="o">=</span><span class="s1">&#39;bbstrading&#39;</span><span class="p">)</span>
+    <span class="n">notification</span> <span class="o">=</span> <span class="n">Notify</span><span class="p">(</span><span class="n">default_notification_application_name</span><span class="o">=</span><span class="s2">&quot;bbstrading&quot;</span><span class="p">)</span>
     <span class="n">notification</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="n">title</span>
     <span class="n">notification</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span>
     <span class="n">notification</span><span class="o">.</span><span class="n">send</span><span class="p">()</span></div>
 
-    
+
+
 <div class="viewcode-block" id="send_message">
 <a class="viewcode-back" href="../../trading.html#trading.scripts.send_message">[docs]</a>
-<span class="k">def</span> <span class="nf">send_message</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s1">&#39;SIGNAL&#39;</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s1">&#39;New signal&#39;</span><span class="p">,</span> 
-                <span class="n">notify_me</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">telegram</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">token</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">chat_id</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">send_message</span><span class="p">(</span>
+    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;SIGNAL&quot;</span><span class="p">,</span>
+    <span class="n">message</span><span class="o">=</span><span class="s2">&quot;New signal&quot;</span><span class="p">,</span>
+    <span class="n">notify_me</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">telegram</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">token</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">chat_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Send a message to the user</span>
 
@@ -132,8 +143,9 @@
         <span class="n">send_notification</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="n">message</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">telegram</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">token</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">chat_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Token and chat_id must be provided&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Token and chat_id must be provided&quot;</span><span class="p">)</span>
         <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">send_telegram_message</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">chat_id</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">message</span><span class="p">))</span></div>
+
 
 </pre></div>
 
@@ -144,7 +156,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2024, Bertin Balouki SIMYELI.</p>
+    <p>&#169; Copyright 2023 - 2025, Bertin Balouki SIMYELI.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
