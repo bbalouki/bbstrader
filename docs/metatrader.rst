@@ -68,7 +68,7 @@ You can customize and extend the module to fit your trading strategies and requi
    :show-inheritance:
 
 
-Aaccount
+Account
 -------
 
 .. automodule:: metatrader.account
