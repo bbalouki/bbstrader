@@ -4,8 +4,6 @@ import urllib.request
 from datetime import datetime
 from typing import Any, Dict, List, Literal, Optional, Tuple, Union
 
-from bbstrader import compat  # noqa: F401
-import MetaTrader5 as mt5
 import pandas as pd
 from currency_converter import SINGLE_DAY_ECB_URL, CurrencyConverter
 
@@ -24,14 +22,19 @@ from bbstrader.metatrader.utils import (
     raise_mt5_error,
 )
 
+try:
+    import MetaTrader5 as mt5
+except ImportError:
+    import bbstrader.compat  # noqa: F401
+
+
 __all__ = [
     "Account",
     "Broker",
     "AdmiralMarktsGroup",
     "JustGlobalMarkets",
-    "TrinotaMarkets",
-    "XCubeLimited",
     "PepperstoneGroupLimited",
+    "check_mt5_connection",
     "FTMO",
 ]
 
@@ -39,8 +42,6 @@ __BROKERS__ = {
     "AMG": "Admirals Group AS",
     "JGM": "Just Global Markets Ltd.",
     "FTMO": "FTMO S.R.O.",
-    "XCB": "4xCube Limited",
-    "TML": "Trinota Markets (Global) Limited",
     "PGL": "Pepperstone Group Limited",
 }
 
@@ -48,8 +49,6 @@ BROKERS_TIMEZONES = {
     "AMG": "Europe/Helsinki",
     "JGM": "Europe/Helsinki",
     "FTMO": "Europe/Helsinki",
-    "XCB": "Europe/Helsinki",
-    "TML": "Europe/Helsinki",
     "PGL": "Europe/Helsinki",
 }
 
@@ -68,11 +67,11 @@ _ADMIRAL_MARKETS_PRODUCTS_ = [
 ]
 _JUST_MARKETS_PRODUCTS_ = ["Stocks", "Crypto", "indices", "Commodities", "Forex"]
 
-
+SUPPORTED_BROKERS = [__BROKERS__[b] for b in {"AMG", "JGM", "FTMO"}]
 INIT_MSG = (
     f"\n* Ensure you have a good and stable internet connexion\n"
     f"* Ensure you have an activete MT5 terminal install on your machine\n"
-    f"* Ensure you have an active MT5 Account with {' or '.join(__BROKERS__.values())}\n"
+    f"* Ensure you have an active MT5 Account with {' or '.join(SUPPORTED_BROKERS)}\n"
     f"* If you want to trade {', '.join(_ADMIRAL_MARKETS_PRODUCTS_)}, See [{_ADMIRAL_MARKETS_URL_}]\n"
     f"* If you want to trade {', '.join(_JUST_MARKETS_PRODUCTS_)}, See [{_JUST_MARKETS_URL_}]\n"
     f"* If you are looking for a prop firm, See [{_FTMO_URL_}]\n"
@@ -189,7 +188,10 @@ def check_mt5_connection(**kwargs):
     except Exception:
         raise_mt5_error(INIT_MSG)
 
-
+def shutdown_mt5():
+    """Close the connection to the MetaTrader 5 terminal."""
+    mt5.shutdown()
+    
 class Broker(object):
     def __init__(self, name: str = None, **kwargs):
         if name is None:
@@ -242,24 +244,6 @@ class FTMO(Broker):
         return BROKERS_TIMEZONES["FTMO"]
 
 
-class XCubeLimited(Broker):
-    def __init__(self, **kwargs):
-        super().__init__("4xCube Limited", **kwargs)
-
-    @property
-    def timezone(self) -> str:
-        return BROKERS_TIMEZONES["XCB"]
-
-
-class TrinotaMarkets(Broker):
-    def __init__(self, **kwargs):
-        super().__init__("Trinota Markets (Global) Limited", **kwargs)
-
-    @property
-    def timezone(self) -> str:
-        return BROKERS_TIMEZONES["TML"]
-
-
 class PepperstoneGroupLimited(Broker):
     def __init__(self, **kwargs):
         super().__init__("Pepperstone Group Limited", **kwargs)
@@ -276,8 +260,6 @@ BROKERS: Dict[str, Broker] = {
     "FTMO": FTMO(),
     "AMG": AdmiralMarktsGroup(),
     "JGM": JustGlobalMarkets(),
-    "XCB": XCubeLimited(),
-    "TML": TrinotaMarkets(),
     "PGL": PepperstoneGroupLimited(),
 }
 
@@ -326,19 +308,25 @@ class Account(object):
 
         """
         check_mt5_connection(**kwargs)
-        self._check_brokers()
+        self._check_brokers(**kwargs)
 
-    def _check_brokers(self):
+    def _check_brokers(self, **kwargs):
+        if kwargs.get("copy", False):
+            return
         supported = BROKERS.copy()
         if self.broker not in supported.values():
             msg = (
                 f"{self.broker.name} is not currently supported broker for the Account() class\n"
-                f"Currently Supported brokers are: {', '.join([b.name for b in supported.values()])}\n"
+                f"Currently Supported brokers are: {', '.join(SUPPORTED_BROKERS)}\n"
                 f"For {supported['AMG'].name}, See [{amg_url}]\n"
                 f"For {supported['JGM'].name}, See [{jgm_url}]\n"
                 f"For {supported['FTMO'].name}, See [{ftmo_url}]\n"
             )
             raise InvalidBroker(message=msg)
+    
+    def shutdown(self):
+        """Close the connection to the MetaTrader 5 terminal."""
+        mt5.shutdown()
 
     @property
     def broker(self) -> Broker:
@@ -798,7 +786,9 @@ class Account(object):
             }
             return self._get_symbols_by_category("FX", category, fx_categories)
 
-    def get_stocks_from_country(self, country_code: str = "USA", etf=False) -> List[str]:
+    def get_stocks_from_country(
+        self, country_code: str = "USA", etf=False
+    ) -> List[str]:
         """
         Retrieves a list of stock symbols from a specific country.
 
@@ -990,7 +980,7 @@ class Account(object):
                 return SymbolInfo(**symbol_info_dict)
         except Exception as e:
             msg = self._symbol_info_msg(symbol)
-            raise_mt5_error(message=f"{e+msg}")
+            raise_mt5_error(message=f"{e + msg}")
 
     def show_symbol_info(self, symbol: str):
         """
@@ -1036,7 +1026,7 @@ class Account(object):
                 return TickInfo(**info_dict)
         except Exception as e:
             msg = self._symbol_info_msg(symbol)
-            raise_mt5_error(message=f"{e+msg}")
+            raise_mt5_error(message=f"{e + msg}")
 
     def show_tick_info(self, symbol: str):
         """

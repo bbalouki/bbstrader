@@ -2,13 +2,17 @@ import random
 from datetime import datetime
 from typing import Any, Dict, Optional, Union
 
-from bbstrader import compat  # noqa: F401
-import MetaTrader5 as Mt5
 from scipy.stats import norm
 
 from bbstrader.metatrader.account import Account
 from bbstrader.metatrader.rates import Rates
 from bbstrader.metatrader.utils import TIMEFRAMES, TimeFrame
+
+try:
+    import MetaTrader5 as Mt5
+except ImportError:
+    import bbstrader.compat  # noqa: F401
+
 
 _COMMD_SUPPORTED_ = [
     "GOLD",
@@ -28,8 +32,19 @@ _COMMD_SUPPORTED_ = [
     "USOIL",
     "SpotCrude",
     "SpotBrent",
-    "NatGas",
     "Soybeans",
+    "Wheat",
+    "SoyOil",
+    "LeanHogs",
+    "LDSugar",
+    "Coffee",
+    "OJ",
+    "Cocoa",
+    "Cattle",
+    "Copper",
+    "XCUUSD",
+    "NatGas",
+    "Gasoline",
 ]
 
 _ADMIRAL_MARKETS_FUTURES_ = [
@@ -196,7 +211,7 @@ class RiskManagement(Account):
         self.pchange = pchange_sl
         self.var_level = var_level
         self.var_tf = var_time_frame
-        self.daily_dd = round(daily_risk, 5)
+        self.daily_dd = round(daily_risk, 5) if daily_risk is not None else None
         self.max_risk = max_risk
         self.rr = rr
         self.sl = sl
@@ -490,10 +505,6 @@ class RiskManagement(Account):
             supported = _COMMD_SUPPORTED_
             if "." in self.symbol:
                 symbol = self.symbol.split(".")[0]
-            elif self.symbol.endswith("xx"):
-                symbol = self.symbol[:-2]
-            elif self.symbol.endswith("-"):
-                symbol = self.symbol[:-1]
             else:
                 symbol = self.symbol
             if str(symbol) not in supported:

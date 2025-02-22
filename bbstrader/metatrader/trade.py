@@ -2,15 +2,15 @@ import os
 import time
 from datetime import datetime
 from logging import Logger
+from pathlib import Path
 from typing import Any, Callable, Dict, List, Literal, Optional, Tuple
 
-from bbstrader import compat  # noqa: F401
-import MetaTrader5 as Mt5
 import pandas as pd
+from loguru import logger as log
 from tabulate import tabulate
 
 from bbstrader.btengine.performance import create_sharpe_ratio
-from bbstrader.config import config_logger
+from bbstrader.config import BBSTRADER_DIR, config_logger
 from bbstrader.metatrader.account import INIT_MSG, check_mt5_connection
 from bbstrader.metatrader.risk import RiskManagement
 from bbstrader.metatrader.utils import (
@@ -18,6 +18,12 @@ from bbstrader.metatrader.utils import (
     raise_mt5_error,
     trade_retcode_message,
 )
+
+try:
+    import MetaTrader5 as Mt5
+except ImportError:
+    import bbstrader.compat  # noqa: F401
+
 
 __all__ = [
     "Trade",
@@ -29,6 +35,16 @@ FILLING_TYPE = [
     Mt5.ORDER_FILLING_RETURN,
     Mt5.ORDER_FILLING_BOC,
 ]
+
+log.add(
+    f"{BBSTRADER_DIR}/logs/trade.log",
+    enqueue=True,
+    level="INFO",
+    format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {name} | {message}",
+)
+
+global LOGGER
+LOGGER = log
 
 
 class Trade(RiskManagement):
@@ -92,9 +108,9 @@ class Trade(RiskManagement):
         expert_id: int = 9818,
         version: str = "2.0",
         target: float = 5.0,
-        start_time: str = "1:00",
-        finishing_time: str = "23:00",
-        ending_time: str = "23:30",
+        start_time: str = "0:00",
+        finishing_time: str = "23:59",
+        ending_time: str = "23:59",
         verbose: Optional[bool] = None,
         console_log: Optional[bool] = False,
         logger: Logger | str = "bbstrader.log",
@@ -152,7 +168,6 @@ class Trade(RiskManagement):
         self.end = ending_time
         self.finishing = finishing_time
         self.console_log = console_log
-        self.logger = self._get_logger(logger, console_log)
         self.tf = kwargs.get("time_frame", "D1")
         self.kwargs = kwargs
 
@@ -171,6 +186,7 @@ class Trade(RiskManagement):
         self.trail_after_points = []
         self._retcodes = []
 
+        self._get_logger(logger, console_log)
         self.initialize(**kwargs)
         self.select_symbol(**kwargs)
         self.prepare_symbol()
@@ -187,11 +203,19 @@ class Trade(RiskManagement):
         """Return all the retcodes"""
         return self._retcodes
 
-    def _get_logger(self, logger: str | Logger, consol_log: bool) -> Logger:
+    @property
+    def logger(self):
+        return LOGGER
+
+    def _get_logger(self, loger: Any, consol_log: bool):
         """Get the logger object"""
-        if isinstance(logger, str):
-            return config_logger(logger, consol_log)
-        return logger
+        global LOGGER
+        if loger is None:
+            ...  # Do nothing
+        elif isinstance(loger, (str, Path)):
+            LOGGER = config_logger(f"{BBSTRADER_DIR}/logs/{loger}", consol_log)
+        elif isinstance(loger, (Logger, type(log))):
+            LOGGER = loger
 
     def initialize(self, **kwargs):
         """
@@ -213,7 +237,7 @@ class Trade(RiskManagement):
                     f" Version @{self.version}, on {self.symbol}."
                 )
         except Exception as e:
-            self.logger.error(f"During initialization: {e}")
+            LOGGER.error(f"During initialization: {e}")
 
     def select_symbol(self, **kwargs):
         """
@@ -231,7 +255,7 @@ class Trade(RiskManagement):
             if not Mt5.symbol_select(self.symbol, True):
                 raise_mt5_error(message=INIT_MSG)
         except Exception as e:
-            self.logger.error(f"Selecting symbol '{self.symbol}': {e}")
+            LOGGER.error(f"Selecting symbol '{self.symbol}': {e}")
 
     def prepare_symbol(self):
         """
@@ -253,7 +277,7 @@ class Trade(RiskManagement):
             if self.verbose:
                 print("Initialization successfully completed.")
         except Exception as e:
-            self.logger.error(f"Preparing symbol '{self.symbol}': {e}")
+            LOGGER.error(f"Preparing symbol '{self.symbol}': {e}")
 
     def summary(self):
         """Show a brief description about the trading program"""
@@ -388,7 +412,7 @@ class Trade(RiskManagement):
             filename = f"{symbol}_{today_date}@{self.expert_id}.csv"
             filepath = os.path.join(dir, filename)
             stats_df.to_csv(filepath, index=False)
-            self.logger.info(f"Session statistics saved to {filepath}")
+            LOGGER.info(f"Session statistics saved to {filepath}")
 
     Buys = Literal["BMKT", "BLMT", "BSTP", "BSTPLMT"]
 
@@ -400,6 +424,10 @@ class Trade(RiskManagement):
         mm: bool = True,
         id: Optional[int] = None,
         comment: Optional[str] = None,
+        symbol: Optional[str] = None,
+        volume: Optional[float] = None,
+        sl: Optional[float] = None,
+        tp: Optional[float] = None,
     ):
         """
         Open a Buy positin
@@ -424,19 +452,19 @@ class Trade(RiskManagement):
         else:
             _price = self.get_tick_info(self.symbol).ask
 
-        lot = self.get_lot()
+        lot = volume or self.get_lot()
         stop_loss = self.get_stop_loss()
         take_profit = self.get_take_profit()
         deviation = self.get_deviation()
         request = {
             "action": Mt5.TRADE_ACTION_DEAL,
-            "symbol": self.symbol,
+            "symbol": symbol or self.symbol,
             "volume": float(lot),
             "type": Mt5.ORDER_TYPE_BUY,
             "price": _price,
             "deviation": deviation,
             "magic": Id,
-            "comment": f"@{self.expert_name}" if comment is None else comment,
+            "comment": comment or f"@{self.expert_name}",
             "type_time": Mt5.ORDER_TIME_GTC,
             "type_filling": Mt5.ORDER_FILLING_FOK,
         }
@@ -454,11 +482,12 @@ class Trade(RiskManagement):
             request["stoplimit"] = stoplimit
             mm_price = stoplimit
         if mm:
-            request["sl"] = mm_price - stop_loss * point
-            request["tp"] = mm_price + take_profit * point
+            request["sl"] = sl or mm_price - stop_loss * point
+            request["tp"] = tp or mm_price + take_profit * point
         self.break_even(mm=mm, id=Id)
         if self.check(comment):
-            self.request_result(_price, request, action)
+            return self.request_result(_price, request, action)
+        return False
 
     def _order_type(self):
         type = {
@@ -483,6 +512,10 @@ class Trade(RiskManagement):
         mm: bool = True,
         id: Optional[int] = None,
         comment: Optional[str] = None,
+        symbol: Optional[str] = None,
+        volume: Optional[float] = None,
+        sl: Optional[float] = None,
+        tp: Optional[float] = None,
     ):
         """
         Open a sell positin
@@ -496,6 +529,10 @@ class Trade(RiskManagement):
             id (int): The strategy id or expert Id
             mm (bool): Weither to put stop loss and tp or not
             comment (str): The comment for the closing position
+                        symbol (str): The symbol to trade
+            volume (float): The volume (lot) to trade
+            sl (float): The stop loss in points
+            tp (float): The take profit in points
         """
         Id = id if id is not None else self.expert_id
         point = self.get_symbol_info(self.symbol).point
@@ -507,19 +544,19 @@ class Trade(RiskManagement):
         else:
             _price = self.get_tick_info(self.symbol).bid
 
-        lot = self.get_lot()
+        lot = volume or self.get_lot()
         stop_loss = self.get_stop_loss()
         take_profit = self.get_take_profit()
         deviation = self.get_deviation()
         request = {
             "action": Mt5.TRADE_ACTION_DEAL,
-            "symbol": self.symbol,
+            "symbol": symbol or self.symbol,
             "volume": float(lot),
             "type": Mt5.ORDER_TYPE_SELL,
             "price": _price,
             "deviation": deviation,
             "magic": Id,
-            "comment": f"@{self.expert_name}" if comment is None else comment,
+            "comment": comment or f"@{self.expert_name}",
             "type_time": Mt5.ORDER_TIME_GTC,
             "type_filling": Mt5.ORDER_FILLING_FOK,
         }
@@ -537,11 +574,12 @@ class Trade(RiskManagement):
             request["stoplimit"] = stoplimit
             mm_price = stoplimit
         if mm:
-            request["sl"] = mm_price + stop_loss * point
-            request["tp"] = mm_price - take_profit * point
+            request["sl"] = sl or mm_price + stop_loss * point
+            request["tp"] = tp or mm_price - take_profit * point
         self.break_even(mm=mm, id=Id)
         if self.check(comment):
-            self.request_result(_price, request, action)
+            return self.request_result(_price, request, action)
+        return False
 
     def check(self, comment):
         """
@@ -555,10 +593,10 @@ class Trade(RiskManagement):
         if self.days_end():
             return False
         elif not self.trading_time():
-            self.logger.info(f"Not Trading time, SYMBOL={self.symbol}")
+            LOGGER.info(f"Not Trading time, SYMBOL={self.symbol}")
             return False
         elif not self.is_risk_ok():
-            self.logger.error(f"Account Risk not allowed, SYMBOL={self.symbol}")
+            LOGGER.error(f"Account Risk not allowed, SYMBOL={self.symbol}")
             self._check(comment)
             return False
         elif self.profit_target():
@@ -571,7 +609,7 @@ class Trade(RiskManagement):
             or self.get_current_positions() is None
         ):
             self.close_positions(position_type="all")
-            self.logger.info(txt)
+            LOGGER.info(txt)
             time.sleep(5)
             self.statistics(save=True)
 
@@ -613,7 +651,7 @@ class Trade(RiskManagement):
             elif result.retcode not in self._retcodes:
                 self._retcodes.append(result.retcode)
                 msg = trade_retcode_message(result.retcode)
-                self.logger.error(
+                LOGGER.error(
                     f"Trade Order Request, RETCODE={result.retcode}: {msg}{addtionnal}"
                 )
             elif result.retcode in [
@@ -637,7 +675,7 @@ class Trade(RiskManagement):
         # Print the result
         if result.retcode == Mt5.TRADE_RETCODE_DONE:
             msg = trade_retcode_message(result.retcode)
-            self.logger.info(f"Trade Order {msg}{addtionnal}")
+            LOGGER.info(f"Trade Order {msg}{addtionnal}")
             if type != "BMKT" or type != "SMKT":
                 self.opened_orders.append(result.order)
             long_msg = (
@@ -645,7 +683,7 @@ class Trade(RiskManagement):
                 f"Lot(s): {result.volume}, Sl: {self.get_stop_loss()}, "
                 f"Tp: {self.get_take_profit()}"
             )
-            self.logger.info(long_msg)
+            LOGGER.info(long_msg)
             time.sleep(0.1)
             if type == "BMKT" or type == "SMKT":
                 self.opened_positions.append(result.order)
@@ -664,17 +702,19 @@ class Trade(RiskManagement):
                                 f"2. {order_type} Position Opened, Symbol: {self.symbol}, Price: @{round(position.price_open, 5)}, "
                                 f"Sl: @{position.sl} Tp: @{position.tp}"
                             )
-                            self.logger.info(order_info)
+                            LOGGER.info(order_info)
                             pos_info = (
                                 f"3. [OPEN POSITIONS ON {self.symbol} = {len(positions)}, ACCOUNT OPEN PnL = {profit} "
                                 f"{self.get_account_info().currency}]\n"
                             )
-                            self.logger.info(pos_info)
+                            LOGGER.info(pos_info)
+            return True
         else:
             msg = trade_retcode_message(result.retcode)
-            self.logger.error(
+            LOGGER.error(
                 f"Unable to Open Position, RETCODE={result.retcode}: {msg}{addtionnal}"
             )
+            return False
 
     def open_position(
         self,
@@ -684,6 +724,10 @@ class Trade(RiskManagement):
         id: Optional[int] = None,
         mm: bool = True,
         comment: Optional[str] = None,
+        symbol: Optional[str] = None,
+        volume: Optional[float] = None,
+        sl: Optional[float] = None,
+        tp: Optional[float] = None,
     ):
         """
         Open a buy or sell position.
@@ -697,26 +741,36 @@ class Trade(RiskManagement):
             id (int): The strategy id or expert Id
             mm (bool): Weither to put stop loss and tp or not
             comment (str): The comment for the closing position
+            symbol (str): The symbol to trade
+            volume (float): The volume (lot) to trade
+            sl (float): The stop loss in points
+            tp (float): The take profit in points
         """
         BUYS = ["BMKT", "BLMT", "BSTP", "BSTPLMT"]
         SELLS = ["SMKT", "SLMT", "SSTP", "SSTPLMT"]
         if action in BUYS:
-            self.open_buy_position(
+            return self.open_buy_position(
                 action=action,
                 price=price,
                 stoplimit=stoplimit,
                 id=id,
                 mm=mm,
                 comment=comment,
+                symbol=symbol,
+                volume=volume,
+                sl=sl,
+                tp=tp,
             )
         elif action in SELLS:
-            self.open_sell_position(
+            return self.open_sell_position(
                 action=action,
                 price=price,
                 stoplimit=stoplimit,
                 id=id,
                 mm=mm,
                 comment=comment,
+                symbol=symbol,
+                volume=volume,
             )
         else:
             raise ValueError(
@@ -939,7 +993,7 @@ class Trade(RiskManagement):
         mm=True,
         id: Optional[int] = None,
         trail: Optional[bool] = True,
-        stop_trail: Optional[int] = None,
+        stop_trail: int | str = None,
         trail_after_points: int | str = None,
         be_plus_points: Optional[int] = None,
     ):
@@ -1096,7 +1150,6 @@ class Trade(RiskManagement):
                 # Set the stop loss to break even
                 request = {
                     "action": Mt5.TRADE_ACTION_SLTP,
-                    "type": Mt5.ORDER_TYPE_SELL_STOP,
                     "position": position.ticket,
                     "sl": round(_price, digits),
                     "tp": position.tp,
@@ -1115,7 +1168,6 @@ class Trade(RiskManagement):
                 # Set the stop loss to break even
                 request = {
                     "action": Mt5.TRADE_ACTION_SLTP,
-                    "type": Mt5.ORDER_TYPE_BUY_STOP,
                     "position": position.ticket,
                     "sl": round(_price, digits),
                     "tp": position.tp,
@@ -1144,7 +1196,7 @@ class Trade(RiskManagement):
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
             msg = trade_retcode_message(result.retcode)
             if result.retcode != Mt5.TRADE_RETCODE_NO_CHANGES:
-                self.logger.error(
+                LOGGER.error(
                     f"Break-Even Order Request, Position: #{tiket}, RETCODE={result.retcode}: {msg}{addtionnal}"
                 )
             tries = 0
@@ -1166,9 +1218,9 @@ class Trade(RiskManagement):
                 tries += 1
         if result.retcode == Mt5.TRADE_RETCODE_DONE:
             msg = trade_retcode_message(result.retcode)
-            self.logger.info(f"Break-Even Order {msg}{addtionnal}")
+            LOGGER.info(f"Break-Even Order {msg}{addtionnal}")
             info = f"Stop loss set to Break-even, Position: #{tiket}, Symbol: {self.symbol}, Price: @{price}"
-            self.logger.info(info)
+            LOGGER.info(info)
             self.break_even_status.append(tiket)
 
     def win_trade(self, position: TradePosition, th: Optional[int] = None) -> bool:
@@ -1256,7 +1308,7 @@ class Trade(RiskManagement):
             elif result.retcode not in self._retcodes:
                 self._retcodes.append(result.retcode)
                 msg = trade_retcode_message(result.retcode)
-                self.logger.error(
+                LOGGER.error(
                     f"Closing Order Request, {type.capitalize()}: #{ticket}, RETCODE={result.retcode}: {msg}{addtionnal}"
                 )
             else:
@@ -1276,12 +1328,58 @@ class Trade(RiskManagement):
                     tries += 1
         if result.retcode == Mt5.TRADE_RETCODE_DONE:
             msg = trade_retcode_message(result.retcode)
-            self.logger.info(f"Closing Order {msg}{addtionnal}")
+            LOGGER.info(f"Closing Order {msg}{addtionnal}")
             info = f"{type.capitalize()} #{ticket} closed, Symbol: {self.symbol}, Price: @{request.get('price', 0.0)}"
-            self.logger.info(info)
+            LOGGER.info(info)
             return True
         else:
             return False
+
+    def modify_order(
+        self,
+        ticket: int,
+        price: Optional[float] = None,
+        stoplimit: Optional[float] = None,
+        sl: Optional[float] = None,
+        tp: Optional[float] = None,
+    ):
+        """
+        Modify an open order by it ticket
+
+        Args:
+            ticket (int): Order ticket to modify (e.g TradeOrder.ticket)
+            price (float): The price at which to modify the order
+            stoplimit (float): A price a pending Limit order is set at when the price reaches the 'price' value (this condition is mandatory).
+                The pending order is not passed to the trading system until that moment
+            sl (float): The stop loss in points
+            tp (float): The take profit in points
+        """
+        orders = self.get_orders(ticket=ticket) or []
+        if len(orders) == 0:
+            LOGGER.error(
+                f"Order #{ticket} not found, SYMBOL={self.symbol}, PRICE={price}"
+            )
+            return
+        order = orders[0]
+        request = {
+            "action": Mt5.TRADE_ACTION_MODIFY,
+            "order": ticket,
+            "price": price or order.price_open,
+            "sl": sl or order.sl,
+            "tp": tp or order.tp,
+            "stoplimit": stoplimit or order.price_stoplimit,
+        }
+        self.check_order(request)
+        result = self.send_order(request)
+        if result.retcode == Mt5.TRADE_RETCODE_DONE:
+            LOGGER.info(
+                f"Order #{ticket} modified, SYMBOL={self.symbol}, PRICE={price}, SL={sl}, TP={tp}, STOP_LIMIT={stoplimit}"
+            )
+        else:
+            msg = trade_retcode_message(result.retcode)
+            LOGGER.error(
+                f"Unable to modify Order #{ticket}, RETCODE={result.retcode}: {msg}, SYMBOL={self.symbol}"
+            )
 
     def close_order(
         self, ticket: int, id: Optional[int] = None, comment: Optional[str] = None
@@ -1312,6 +1410,7 @@ class Trade(RiskManagement):
         id: Optional[int] = None,
         pct: Optional[float] = 1.0,
         comment: Optional[str] = None,
+        symbol: Optional[str] = None,
     ) -> bool:
         """
         Close an open position by it ticket
@@ -1327,10 +1426,11 @@ class Trade(RiskManagement):
         """
         # get all Actives positions
         time.sleep(0.1)
+        symbol = symbol or self.symbol
         Id = id if id is not None else self.expert_id
         positions = self.get_positions(ticket=ticket)
-        buy_price = self.get_tick_info(self.symbol).ask
-        sell_price = self.get_tick_info(self.symbol).bid
+        buy_price = self.get_tick_info(symbol).ask
+        sell_price = self.get_tick_info(symbol).bid
         deviation = self.get_deviation()
         if positions is not None and len(positions) == 1:
             position = positions[0]
@@ -1338,7 +1438,7 @@ class Trade(RiskManagement):
                 buy = position.type == 0
                 request = {
                     "action": Mt5.TRADE_ACTION_DEAL,
-                    "symbol": self.symbol,
+                    "symbol": symbol,
                     "volume": (position.volume * pct),
                     "type": Mt5.ORDER_TYPE_SELL if buy else Mt5.ORDER_TYPE_BUY,
                     "position": ticket,
@@ -1379,15 +1479,15 @@ class Trade(RiskManagement):
                     tickets.remove(ticket)
                 time.sleep(1)
             if tickets is not None and len(tickets) == 0:
-                self.logger.info(
+                LOGGER.info(
                     f"ALL {order_type.upper()} {tikets_type.upper()} closed, SYMBOL={self.symbol}."
                 )
             else:
-                self.logger.info(
+                LOGGER.info(
                     f"{len(tickets)} {order_type.upper()} {tikets_type.upper()} not closed, SYMBOL={self.symbol}"
                 )
         else:
-            self.logger.info(
+            LOGGER.info(
                 f"No {order_type.upper()} {tikets_type.upper()} to close, SYMBOL={self.symbol}."
             )
 
@@ -1429,7 +1529,7 @@ class Trade(RiskManagement):
         elif order_type == "sell_stop_limits":
             orders = self.get_current_sell_stop_limits(id=id)
         else:
-            self.logger.error(f"Invalid order type: {order_type}")
+            LOGGER.error(f"Invalid order type: {order_type}")
             return
         self.bulk_close(
             orders, "orders", self.close_order, order_type, id=id, comment=comment
@@ -1461,7 +1561,7 @@ class Trade(RiskManagement):
         elif position_type == "losing":
             positions = self.get_current_losings(id=id)
         else:
-            self.logger.error(f"Invalid position type: {position_type}")
+            LOGGER.error(f"Invalid position type: {position_type}")
             return
         self.bulk_close(
             positions,
@@ -1642,8 +1742,12 @@ def create_trade_instance(
     Note:
         `daily_risk` and `max_risk`  can be used to manage the risk of each symbol
         based on the importance of the symbol in the portfolio or strategy.
+        See bbstrader.metatrader.trade.Trade for more details.
     """
-    logger = params.get("logger", None)
+    if not isinstance(params.get("logger"), (Logger, type(log))):
+        loggr = log
+    else:
+        loggr = params.get("logger")
     ids = params.get("expert_id", None)
     trade_instances = {}
     if not symbols:
@@ -1710,15 +1814,13 @@ def create_trade_instance(
             )
             trade_instances[symbol] = Trade(**params)
         except Exception as e:
-            logger.error(f"Creating Trade instance, SYMBOL={symbol} {e}")
+            loggr.error(f"Creating Trade instance, SYMBOL={symbol} {e}")
 
     if len(trade_instances) != len(symbols):
         for symbol in symbols:
             if symbol not in trade_instances:
-                if logger is not None and isinstance(logger, Logger):
-                    logger.error(f"Failed to create Trade instance for SYMBOL={symbol}")
-                else:
-                    raise ValueError(
-                        f"Failed to create Trade instance for SYMBOL={symbol}"
-                    )
+                loggr.error(f"Failed to create Trade instance for SYMBOL={symbol}")
+    loggr.info(
+        f"Trade instances created successfully for {len(trade_instances)} symbols."
+    )
     return trade_instances
