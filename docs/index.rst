@@ -28,6 +28,7 @@ Features
 - **Integrated Risk Management**: Leverage advanced risk management techniques to adapt to changing market conditions and maintain control over risk exposure.
 - **Automated Trading**: Execute trades automatically on the MT5 platform, with support for managing orders, positions, and risk in real-time.
 - **Flexible Framework**: Customize existing strategies or develop new ones with the flexible, modular architecture designed to accommodate traders' evolving needs.
+- **Copy Trading**: Implement copy trading strategies to replicate the trades of experienced traders or signal providers to enhance trading performance.
 
 Getting Started
 ---------------
@@ -43,7 +44,8 @@ Then, you can install `bbstrader` using pip:
 
 .. code-block:: bash
    
-   pip install bbstrader
+   pip install bbstrader # Mac and Linux
+   pip install bbstrader[MT5] # Windows
 
 Examples
 ========
