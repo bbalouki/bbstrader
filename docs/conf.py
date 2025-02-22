@@ -22,10 +22,10 @@ class Mock(MagicMock):
 MOCK_MODULES = ['MetaTrader5', 'talib']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
-project = 'BBSTrader'
+project = 'bbstrader'
 copyright = '2023 - 2025, Bertin Balouki SIMYELI'
 author = 'Bertin Balouki SIMYELI'
-release = '0.2.0'
+release = '0.2.092'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

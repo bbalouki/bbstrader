@@ -7,8 +7,8 @@ Models
    :show-inheritance:
 
 
-risk
------
+Risk Models
+------------
 
 .. automodule:: models.risk
    :members:
@@ -16,23 +16,23 @@ risk
    :show-inheritance:
 
 
-factors 
--------
+Alfa Factors Model
+--------------------
 
 .. automodule:: models.factors
    :members:
    :undoc-members:
    :show-inheritance:
 
-ml
----
+Machine Learning Model
+----------------------
 
 .. automodule:: models.ml
    :members:
    :undoc-members:
    :show-inheritance:
 
-optimization
+Optimization
 ------------
 
 .. automodule:: models.optimization
@@ -40,8 +40,8 @@ optimization
    :undoc-members:
    :show-inheritance:
 
-portfolios
-----------
+Portfolio
+---------
 
 .. automodule:: models.portfolio
    :members:

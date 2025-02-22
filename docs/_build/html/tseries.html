@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Time Series &mdash; BBSTrader 0.2.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+  <title>Time Series &mdash; bbstrader 0.2.092 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=938c9ccc"></script>
+      <script src="_static/documentation_options.js?v=97badf68"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -31,7 +31,7 @@
           
           
           <a href="index.html" class="icon icon-home">
-            BBSTrader
+            bbstrader
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -45,6 +45,7 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">bbstrader</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="btengine.html">Backtesting Egine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="compat.html">compat module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="config.html">configurations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="core.html">core package</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ibkr.html">ibkr package</a></li>
@@ -66,22 +67,38 @@
 <li class="toctree-l4"><a class="reference internal" href="#tseries.ArimaGarchModel.show_arima_garch_results"><code class="docutils literal notranslate"><span class="pre">ArimaGarchModel.show_arima_garch_results()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#tseries.KFHedgeRatio"><code class="docutils literal notranslate"><span class="pre">KFHedgeRatio()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tseries.KFSmoother"><code class="docutils literal notranslate"><span class="pre">KFSmoother()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#tseries.KalmanFilterModel"><code class="docutils literal notranslate"><span class="pre">KalmanFilterModel</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#tseries.KalmanFilterModel.Array"><code class="docutils literal notranslate"><span class="pre">KalmanFilterModel.Array</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#tseries.KalmanFilterModel.calc_slope_intercep"><code class="docutils literal notranslate"><span class="pre">KalmanFilterModel.calc_slope_intercep()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#tseries.KalmanFilterModel.calculate_etqt"><code class="docutils literal notranslate"><span class="pre">KalmanFilterModel.calculate_etqt()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#tseries.OrnsteinUhlenbeck"><code class="docutils literal notranslate"><span class="pre">OrnsteinUhlenbeck</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#tseries.OrnsteinUhlenbeck.estimate_parameters"><code class="docutils literal notranslate"><span class="pre">OrnsteinUhlenbeck.estimate_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tseries.OrnsteinUhlenbeck.ornstein_uhlenbeck"><code class="docutils literal notranslate"><span class="pre">OrnsteinUhlenbeck.ornstein_uhlenbeck()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tseries.OrnsteinUhlenbeck.simulate_process"><code class="docutils literal notranslate"><span class="pre">OrnsteinUhlenbeck.simulate_process()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#tseries.analyze_cointegrated_pairs"><code class="docutils literal notranslate"><span class="pre">analyze_cointegrated_pairs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tseries.check_stationarity"><code class="docutils literal notranslate"><span class="pre">check_stationarity()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tseries.compute_pair_metrics"><code class="docutils literal notranslate"><span class="pre">compute_pair_metrics()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tseries.find_cointegrated_pairs"><code class="docutils literal notranslate"><span class="pre">find_cointegrated_pairs()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#tseries.fit_best_arima"><code class="docutils literal notranslate"><span class="pre">fit_best_arima()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#tseries.fit_garch"><code class="docutils literal notranslate"><span class="pre">fit_garch()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#tseries.get_corr"><code class="docutils literal notranslate"><span class="pre">get_corr()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#tseries.get_prediction"><code class="docutils literal notranslate"><span class="pre">get_prediction()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#tseries.load_and_prepare_data"><code class="docutils literal notranslate"><span class="pre">load_and_prepare_data()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#tseries.predict_next_return"><code class="docutils literal notranslate"><span class="pre">predict_next_return()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tseries.remove_correlated_assets"><code class="docutils literal notranslate"><span class="pre">remove_correlated_assets()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tseries.remove_stationary_assets"><code class="docutils literal notranslate"><span class="pre">remove_stationary_assets()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#tseries.run_cadf_test"><code class="docutils literal notranslate"><span class="pre">run_cadf_test()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#tseries.run_coint_test"><code class="docutils literal notranslate"><span class="pre">run_coint_test()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#tseries.run_hurst_test"><code class="docutils literal notranslate"><span class="pre">run_hurst_test()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#tseries.run_kalman_filter"><code class="docutils literal notranslate"><span class="pre">run_kalman_filter()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tseries.select_assets"><code class="docutils literal notranslate"><span class="pre">select_assets()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tseries.select_candidate_pairs"><code class="docutils literal notranslate"><span class="pre">select_candidate_pairs()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -94,7 +111,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">BBSTrader</a>
+          <a href="index.html">bbstrader</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -123,7 +140,7 @@ and filter-based estimation to assist in trading strategy development,
 market analysis, and financial data exploration.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="tseries.ArimaGarchModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tseries.</span></span><span class="sig-name descname"><span class="pre">ArimaGarchModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">252</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#ArimaGarchModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.ArimaGarchModel" title="Link to this definition"></a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tseries.</span></span><span class="sig-name descname"><span class="pre">ArimaGarchModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">252</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#ArimaGarchModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.ArimaGarchModel" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>This class implements a time serie model
 that combines <cite>ARIMA (AutoRegressive Integrated Moving Average)</cite>
@@ -136,15 +153,15 @@ to predict future returns based on historical price data.</p>
 4. Trading Strategy: Execute the trading strategy based on the predictions.
 5. Vectorized Backtesting: Backtest the trading strategy using the historical data.</p>
 <dl>
-<dt>Exemple:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">yfinance</span> <span class="k">as</span> <span class="nn">yf</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">bbstrader.strategies</span> <span class="kn">import</span> <span class="n">ArimaGarchModel</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">bbstrader.tseries</span> <span class="kn">import</span> <span class="n">load_and_prepare_data</span>
+<dt>Exemple:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">yfinance</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">yf</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">bbstrader.tseries</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArimaGarchModel</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">bbstrader.tseries</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_and_prepare_data</span>
 </pre></div>
 </div>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="c1"># ARCH SPY Vectorize Backtest</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="n">k</span> <span class="o">=</span> <span class="mi">252</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">data</span> <span class="o">=</span> <span class="n">yf</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="s2">&quot;SPY&quot;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s2">&quot;2004-01-02&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;2015-12-31&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">data</span> <span class="o">=</span> <span class="n">yf</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="s2">&quot;SPY&quot;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s2">&quot;2010-01-02&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;2015-12-31&quot;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="n">arch</span> <span class="o">=</span> <span class="n">ArimaGarchModel</span><span class="p">(</span><span class="s2">&quot;SPY&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="n">df</span> <span class="o">=</span> <span class="n">load_and_prepare_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="n">arch</span><span class="o">.</span><span class="n">show_arima_garch_results</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;diff_log_return&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="o">-</span><span class="n">k</span><span class="p">:])</span>
@@ -338,9 +355,74 @@ ACF of residuals and conducting , Box-Pierce and Ljung-Box tests.</p>
 
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="tseries.KFHedgeRatio">
+<span class="sig-prename descclassname"><span class="pre">tseries.</span></span><span class="sig-name descname"><span class="pre">KFHedgeRatio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/tseries.html#KFHedgeRatio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.KFHedgeRatio" title="Link to this definition"></a></dt>
+<dd><p>Estimate Hedge Ratio using Kalman Filter.
+:param x: pd.Series or np.ndarray</p>
+<blockquote>
+<div><p>The independent variable, which can be either a pandas Series or a numpy array.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>y</strong> – pd.Series or np.ndarray
+The dependent variable, which can be either a pandas Series or a numpy array.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>np.ndarray</dt><dd><p>The estimated hedge ratio as a numpy array.</p>
+</dd>
+</dl>
+</p>
+</dd>
+</dl>
+<p>The function returns the negative of the first state variable of each Kalman Filter estimate,
+which represents the estimated hedge ratio.</p>
+<p class="rubric">References</p>
+<p>Stefan Jansen (2020). Machine Learning for Algorithmic Trading - Second Edition.
+chapter 9, Time-Series Models for Volatility Forecasts and Statistical Arbitrage.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tseries.KFSmoother">
+<span class="sig-prename descclassname"><span class="pre">tseries.</span></span><span class="sig-name descname"><span class="pre">KFSmoother</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prices</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Series</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/tseries.html#KFSmoother"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.KFSmoother" title="Link to this definition"></a></dt>
+<dd><p>Estimate rolling mean using Kalman Smoothing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>prices</strong> – pd.Series or np.ndarray
+The input time series data to be smoothed. It must be either a pandas Series or a numpy array.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>pd.Series or np.ndarray</dt><dd><p>The smoothed time series data. If the input is a pandas Series, the output will also be a pandas Series with the same index.
+If the input is a numpy array, the output will be a numpy array.</p>
+</dd>
+</dl>
+</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>Stefan Jansen (2020). Machine Learning for Algorithmic Trading - Second Edition.
+chapter 9, Time-Series Models for Volatility Forecasts and Statistical Arbitrage.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">yfinance</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">yf</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">prices</span> <span class="o">=</span> <span class="n">yf</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="s1">&#39;AAPL&#39;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s1">&#39;2020-01-01&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;2021-01-01&#39;</span><span class="p">,</span> <span class="n">multi_level_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="s1">&#39;Adj Close&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">prices</span> <span class="o">=</span> <span class="n">KFSmoother</span><span class="p">(</span><span class="n">prices</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">prices</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
+<span class="go">Date</span>
+<span class="go">2020-01-02 00:00:00+00:00   36.39801407</span>
+<span class="go">2020-01-03 00:00:00+00:00   49.06231000</span>
+<span class="go">2020-01-06 00:00:00+00:00   55.86334436</span>
+<span class="go">2020-01-07 00:00:00+00:00   60.02240894</span>
+<span class="go">2020-01-08 00:00:00+00:00   63.15057948</span>
+<span class="go">dtype: float64</span>
+</pre></div>
+</div>
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="tseries.KalmanFilterModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tseries.</span></span><span class="sig-name descname"><span class="pre">KalmanFilterModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tickers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#KalmanFilterModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.KalmanFilterModel" title="Link to this definition"></a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tseries.</span></span><span class="sig-name descname"><span class="pre">KalmanFilterModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tickers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#KalmanFilterModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.KalmanFilterModel" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Implements a Kalman Filter model a recursive algorithm used for estimating
 the state of a linear dynamic system from a series of noisy measurements.
@@ -386,6 +468,289 @@ using the Kalman Filter.</p>
 </dl>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tseries.OrnsteinUhlenbeck">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tseries.</span></span><span class="sig-name descname"><span class="pre">OrnsteinUhlenbeck</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prices</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">returns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeframe</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'D1'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#OrnsteinUhlenbeck"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.OrnsteinUhlenbeck" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>The Ornstein-Uhlenbeck process is a mathematical model
+used to describe the behavior of a mean-reverting stochastic process.
+We use it  to model the price dynamics of an asset that tends
+to revert to a long-term mean.</p>
+<p>We Estimate the drift (θ), volatility (σ), and long-term mean (μ)
+based on historical price data; then we Simulate the OU process
+using the estimated parameters.</p>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Ornstein%E2%80%93Uhlenbeck_process">https://en.wikipedia.org/wiki/Ornstein%E2%80%93Uhlenbeck_process</a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="tseries.OrnsteinUhlenbeck.estimate_parameters">
+<span class="sig-name descname"><span class="pre">estimate_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#OrnsteinUhlenbeck.estimate_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.OrnsteinUhlenbeck.estimate_parameters" title="Link to this definition"></a></dt>
+<dd><p>Estimates the mean-reverting parameters (μ, θ, σ)
+using the negative log-likelihood.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Estimated μ, θ, and σ.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tseries.OrnsteinUhlenbeck.ornstein_uhlenbeck">
+<span class="sig-name descname"><span class="pre">ornstein_uhlenbeck</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#OrnsteinUhlenbeck.ornstein_uhlenbeck"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.OrnsteinUhlenbeck.ornstein_uhlenbeck" title="Link to this definition"></a></dt>
+<dd><p>Simulates the Ornstein-Uhlenbeck process.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mu</strong> (<em>float</em>) – Estimated long-term mean.</p></li>
+<li><p><strong>theta</strong> (<em>float</em>) – Estimated drift.</p></li>
+<li><p><strong>sigma</strong> (<em>float</em>) – Estimated volatility.</p></li>
+<li><p><strong>dt</strong> (<em>float</em>) – Time step.</p></li>
+<li><p><strong>X0</strong> (<em>float</em>) – Initial value.</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – Number of time steps.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Simulated process.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tseries.OrnsteinUhlenbeck.simulate_process">
+<span class="sig-name descname"><span class="pre">simulate_process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">returns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#OrnsteinUhlenbeck.simulate_process"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.OrnsteinUhlenbeck.simulate_process" title="Link to this definition"></a></dt>
+<dd><p>Simulates the OU process multiple times .</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>returns</strong> (<em>np.ndarray</em>) – Historical returns.</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – Number of simulations to perform.</p></li>
+<li><p><strong>p</strong> (<em>int</em>) – Number of time steps.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>2D array representing simulated processes.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tseries.analyze_cointegrated_pairs">
+<span class="sig-prename descclassname"><span class="pre">tseries.</span></span><span class="sig-name descname"><span class="pre">analyze_cointegrated_pairs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spreads</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_coint</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crosstab</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">heuristics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_reg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decis_tree</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#analyze_cointegrated_pairs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.analyze_cointegrated_pairs" title="Link to this definition"></a></dt>
+<dd><p>Analyzes cointegrated pairs by visualizing, summarizing, and applying predictive models.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>spreads</strong> (<em>pd.DataFrame</em>) – A DataFrame containing cointegration metrics and characteristics.
+Required columns: ‘coint’, ‘t’, ‘trace0’, ‘trace1’, ‘drift’, ‘vol’, ‘corr’, ‘corr_ret’, ‘eg_sig’, ‘joh_sig’.</p></li>
+<li><p><strong>plot_coint</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, generates scatterplots and boxplots to visualize cointegration characteristics.</p></li>
+<li><p><strong>cosstab</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, displays crosstabulations of Engle-Granger and Johansen test significance.</p></li>
+<li><p><strong>heuristics</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, prints descriptive statistics for drift, volatility, and correlation grouped by cointegration status.</p></li>
+<li><p><strong>log_reg</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, fits a logistic regression model to predict cointegration and evaluates its performance.</p></li>
+<li><p><strong>decis_tree</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, fits a decision tree model to predict cointegration and evaluates its performance.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>Stefan Jansen (2020). Machine Learning for Algorithmic Trading - Second Edition.
+chapter 9, Time-Series Models for Volatility Forecasts and Statistical Arbitrage.</p>
+<p>Example:
+&gt;&gt;&gt;   import pandas as pd
+&gt;&gt;&gt;   from bbstrader.tseries import find_cointegrated_pairs, analyze_cointegrated_pairs</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span>   <span class="c1"># Sample Data</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">securities</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+<span class="gp">... </span>       <span class="s1">&#39;SPY&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">102</span><span class="p">,</span> <span class="mi">101</span><span class="p">,</span> <span class="mi">103</span><span class="p">,</span> <span class="mi">105</span><span class="p">],</span>
+<span class="gp">... </span>       <span class="s1">&#39;QQQ&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">50</span><span class="p">,</span> <span class="mi">52</span><span class="p">,</span> <span class="mi">53</span><span class="p">,</span> <span class="mi">51</span><span class="p">,</span> <span class="mi">54</span><span class="p">]</span>
+<span class="gp">... </span>   <span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">candidates</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+<span class="gp">... </span>       <span class="s1">&#39;AAPL&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">101</span><span class="p">,</span> <span class="mi">99</span><span class="p">,</span> <span class="mi">102</span><span class="p">,</span> <span class="mi">104</span><span class="p">],</span>
+<span class="gp">... </span>       <span class="s1">&#39;MSFT&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">200</span><span class="p">,</span> <span class="mi">202</span><span class="p">,</span> <span class="mi">201</span><span class="p">,</span> <span class="mi">203</span><span class="p">,</span> <span class="mi">205</span><span class="p">]</span>
+<span class="gp">... </span>   <span class="p">})</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span>   <span class="n">pairs</span> <span class="o">=</span> <span class="n">find_cointegrated_pairs</span><span class="p">(</span><span class="n">securities</span><span class="p">,</span> <span class="n">candidates</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">coint</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">analyze_cointegrated_pairs</span><span class="p">(</span><span class="n">pairs</span><span class="p">,</span> <span class="n">plot_coint</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cosstab</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">heuristics</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">log_reg</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">decis_tree</span><span class="o">=</span><span class="kc">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tseries.check_stationarity">
+<span class="sig-prename descclassname"><span class="pre">tseries.</span></span><span class="sig-name descname"><span class="pre">check_stationarity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#check_stationarity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.check_stationarity" title="Link to this definition"></a></dt>
+<dd><p>Tests the stationarity of time-series data for each asset in the DataFrame
+using the Augmented Dickey-Fuller (ADF) test. Stationarity is a key property
+in time-series analysis, and non-stationary data can affect model performance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>df</strong> (<em>pd.DataFrame</em>) – A DataFrame where each column represents a time series of an asset.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A DataFrame containing the ADF p-values for each asset,
+- ticker Asset name (column name from df).
+- adf p-value from the ADF test, indicating the probability of the null hypothesis (data is non-stationary).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>Stefan Jansen (2020). Machine Learning for Algorithmic Trading - Second Edition.
+chapter 9, Time-Series Models for Volatility Forecasts and Statistical Arbitrage.</p>
+<p>Example:
+&gt;&gt;&gt; df = pd.DataFrame({
+…     ‘AAPL’: [100, 101, 102, 103, 104],
+…     ‘MSFT’: [200, 201, 202, 203, 204],
+…     ‘GOOG’: [300, 301, 302, 303, 304]
+… })
+&gt;&gt;&gt; df = check_stationarity(df)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tseries.compute_pair_metrics">
+<span class="sig-prename descclassname"><span class="pre">tseries.</span></span><span class="sig-name descname"><span class="pre">compute_pair_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">security</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">candidates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#compute_pair_metrics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.compute_pair_metrics" title="Link to this definition"></a></dt>
+<dd><p>Calculates statistical and econometric metrics for a target security and a set of candidate securities.
+These metrics are useful in financial modeling and pairs trading strategies,
+providing information about drift, volatility, correlation, and cointegration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>security</strong> (<em>pd.Series</em>) – A time-series of the target security’s prices.
+The name of the Series should correspond to the security’s identifier (e.g., ticker symbol).</p></li>
+<li><p><strong>candidates</strong> (<em>pd.DataFrame</em>) – A DataFrame where each column represents a time-series of prices
+for candidate securities to be evaluated against the target security.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl>
+<dt>A DataFrame combining:</dt><dd><p>Drift: Estimated drift of spreads between the target security and each candidate.
+Volatility: Standard deviation of spreads.
+Correlation:</p>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">corr</span></code>: Correlation of normalized prices between the target and each candidate.
+<code class="docutils literal notranslate"><span class="pre">corr_ret</span></code>: Correlation of returns (percentage change) between the target and each candidate.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>Cointegration metrics:</dt><dd><p>Engle-Granger test statistics (<code class="docutils literal notranslate"><span class="pre">t1</span></code>, <code class="docutils literal notranslate"><span class="pre">t2</span></code>) and p-values (<code class="docutils literal notranslate"><span class="pre">p1</span></code>, <code class="docutils literal notranslate"><span class="pre">p2</span></code>).
+Johansen test trace statistics (<code class="docutils literal notranslate"><span class="pre">trace0</span></code>, <code class="docutils literal notranslate"><span class="pre">trace1</span></code>) and selected lag order (<code class="docutils literal notranslate"><span class="pre">k_ar_diff</span></code>).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>Stefan Jansen (2020). Machine Learning for Algorithmic Trading - Second Edition.
+chapter 9, Time-Series Models for Volatility Forecasts and Statistical Arbitrage.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tseries.find_cointegrated_pairs">
+<span class="sig-prename descclassname"><span class="pre">tseries.</span></span><span class="sig-name descname"><span class="pre">find_cointegrated_pairs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">securities</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">candidates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coint</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#find_cointegrated_pairs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.find_cointegrated_pairs" title="Link to this definition"></a></dt>
+<dd><p>Identifies cointegrated pairs between a target set of securities and candidate securities
+based on econometric tests. The function evaluates statistical relationships,
+such as cointegration and Engle-Granger significance, to determine pairs suitable
+for financial strategies like pairs trading.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>securities</strong> (<cite>pd.DataFrame</cite>) – A DataFrame where each column represents the time-series
+prices of target securities to evaluate.</p></li>
+<li><p><strong>candidates</strong> (<cite>pd.DataFrame</cite>) – A DataFrame where each column represents the time-series
+prices of candidate securities to compare against the target securities.</p></li>
+<li><p><strong>n</strong> (<cite>int</cite>, optional) – The number of top pairs to return. If <cite>None</cite>, returns all pairs.</p></li>
+<li><p><strong>start</strong> (<cite>str</cite>, optional) – Start date for slicing the data (e.g., ‘YYYY-MM-DD’).</p></li>
+<li><p><strong>stop</strong> (<cite>str</cite>, optional) – End date for slicing the data (e.g., ‘YYYY-MM-DD’).</p></li>
+<li><p><strong>coint</strong> (<cite>bool</cite>, optional, default=False) – <ul>
+<li><p>If <cite>True</cite>, filters for pairs identified as cointegrated.</p></li>
+<li><p>If <cite>False</cite>, returns all evaluated pairs.</p></li>
+</ul>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>A DataFrame containing:
+- Johansen and Engle-Granger cointegration metrics:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><cite>t1</cite>, <cite>t2</cite>: Engle-Granger test statistics for two directions.</p></li>
+<li><p><cite>p1</cite>, <cite>p2</cite>: Engle-Granger p-values for two directions.</p></li>
+<li><p><cite>trace0</cite>, <cite>trace1</cite>: Johansen test trace statistics for 0 and 1 cointegration relationships.</p></li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li><dl class="simple">
+<dt>Indicators and filters:</dt><dd><ul>
+<li><p><cite>joh_sig</cite>: Indicates Johansen cointegration significance.</p></li>
+<li><p><cite>eg_sig</cite>: Indicates Engle-Granger significance (p-value &lt; 0.05).</p></li>
+<li><p><cite>s1_dep</cite>: Indicates whether the first series depends on the second (based on p-values).</p></li>
+<li><p><cite>coint</cite>: Combined cointegration indicator (Johansen &amp; Engle-Granger).</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Spread and ranking:</dt><dd><ul>
+<li><p><cite>t</cite>: Minimum of <cite>t1</cite> and <cite>t2</cite>.</p></li>
+<li><p><cite>p</cite>: Minimum of <cite>p1</cite> and <cite>p2</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">pd.DataFrame</span></code></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>Stefan Jansen (2020). Machine Learning for Algorithmic Trading - Second Edition.
+chapter 9, Time-Series Models for Volatility Forecasts and Statistical Arbitrage.</p>
+<p>Example:
+&gt;&gt;&gt;    import pandas as pd</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span>   <span class="c1"># Sample Data</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">data_securities</span> <span class="o">=</span> <span class="p">{</span>
+<span class="gp">... </span>       <span class="s1">&#39;Security1&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">102</span><span class="p">,</span> <span class="mi">101</span><span class="p">,</span> <span class="mi">103</span><span class="p">,</span> <span class="mi">105</span><span class="p">],</span>
+<span class="gp">... </span>       <span class="s1">&#39;Security2&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">50</span><span class="p">,</span> <span class="mi">52</span><span class="p">,</span> <span class="mi">53</span><span class="p">,</span> <span class="mi">51</span><span class="p">,</span> <span class="mi">54</span><span class="p">]</span>
+<span class="gp">... </span>   <span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">data_candidates</span> <span class="o">=</span> <span class="p">{</span>
+<span class="gp">... </span>       <span class="s1">&#39;Candidate1&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">101</span><span class="p">,</span> <span class="mi">99</span><span class="p">,</span> <span class="mi">102</span><span class="p">,</span> <span class="mi">104</span><span class="p">],</span>
+<span class="gp">... </span>       <span class="s1">&#39;Candidate2&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">200</span><span class="p">,</span> <span class="mi">202</span><span class="p">,</span> <span class="mi">201</span><span class="p">,</span> <span class="mi">203</span><span class="p">,</span> <span class="mi">205</span><span class="p">]</span>
+<span class="gp">... </span>   <span class="p">}</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span>   <span class="n">securities</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data_securities</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="s1">&#39;2023-01-01&#39;</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="mi">5</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">candidates</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data_candidates</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="s1">&#39;2023-01-01&#39;</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="mi">5</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span>   <span class="c1"># Find cointegrated pairs</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">top_pairs</span> <span class="o">=</span> <span class="n">find_cointegrated_pairs</span><span class="p">(</span><span class="n">securities</span><span class="p">,</span> <span class="n">candidates</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">coint</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="nb">print</span><span class="p">(</span><span class="n">top_pairs</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span>   <span class="o">|</span> <span class="n">s1</span>       <span class="o">|</span> <span class="n">s2</span>        <span class="o">|</span> <span class="n">t</span>    <span class="o">|</span> <span class="n">p</span>     <span class="o">|</span> <span class="n">joh_sig</span> <span class="o">|</span> <span class="n">eg_sig</span> <span class="o">|</span> <span class="n">coint</span> <span class="o">|</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="o">|----------|-----------|------|-------|---------|--------|-------|</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="o">|</span> <span class="n">Security1</span><span class="o">|</span> <span class="n">Candidate1</span><span class="o">|</span> <span class="o">-</span><span class="mf">3.5</span> <span class="o">|</span> <span class="mf">0.01</span>  <span class="o">|</span> <span class="mi">1</span>       <span class="o">|</span> <span class="mi">1</span>      <span class="o">|</span> <span class="mi">1</span>     <span class="o">|</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="o">|</span> <span class="n">Security2</span><span class="o">|</span> <span class="n">Candidate2</span><span class="o">|</span> <span class="o">-</span><span class="mf">2.9</span> <span class="o">|</span> <span class="mf">0.04</span>  <span class="o">|</span> <span class="mi">1</span>       <span class="o">|</span> <span class="mi">1</span>      <span class="o">|</span> <span class="mi">1</span>     <span class="o">|</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -524,6 +889,76 @@ to predict the next return value.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="tseries.remove_correlated_assets">
+<span class="sig-prename descclassname"><span class="pre">tseries.</span></span><span class="sig-name descname"><span class="pre">remove_correlated_assets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.99</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#remove_correlated_assets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.remove_correlated_assets" title="Link to this definition"></a></dt>
+<dd><p>Removes highly correlated assets from a DataFrame based on a specified correlation cutoff threshold.
+This is useful in financial data analysis to reduce redundancy and multicollinearity in portfolios or datasets.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pd.DataFrame</em>) – A DataFrame where each column represents an asset
+and rows represent observations (e.g., time-series data).</p></li>
+<li><p><strong>cutoff</strong> (<em>float</em><em>, </em><em>optional</em><em>, </em><em>default=0.99</em>) – The correlation threshold.
+Columns with absolute correlation greater than this value will be considered for removal.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A DataFrame with less correlated assets.</dt><dd><p>The columns that are highly correlated (above the cutoff) are removed.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>Stefan Jansen (2020). Machine Learning for Algorithmic Trading - Second Edition.
+chapter 9, Time-Series Models for Volatility Forecasts and Statistical Arbitrage.</p>
+<p>Example:
+&gt;&gt;&gt; df = pd.DataFrame({
+…     ‘AAPL’: [100, 101, 102, 103, 104],
+…     ‘MSFT’: [200, 201, 202, 203, 204],
+…     ‘GOOG’: [300, 301, 302, 303, 304]
+… })
+&gt;&gt;&gt; df =  remove_correlated_assets(df)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tseries.remove_stationary_assets">
+<span class="sig-prename descclassname"><span class="pre">tseries.</span></span><span class="sig-name descname"><span class="pre">remove_stationary_assets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#remove_stationary_assets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.remove_stationary_assets" title="Link to this definition"></a></dt>
+<dd><p>Filters out stationary assets from the DataFrame based on the p-value obtained
+from the Augmented Dickey-Fuller test.
+Useful for focusing only on non-stationary time-series data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pd.DataFrame</em>) – A DataFrame where each column represents a time series of an asset.</p></li>
+<li><p><strong>pval</strong> (<em>float</em><em>, </em><em>optional</em><em>, </em><em>default=0.05</em>) – The significance level to determine stationarity.
+Columns with an ADF test p-value below this threshold are considered stationary and removed.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A DataFrame containing only the non-stationary assets.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>Stefan Jansen (2020). Machine Learning for Algorithmic Trading - Second Edition.
+chapter 9, Time-Series Models for Volatility Forecasts and Statistical Arbitrage.</p>
+<p>Example:
+&gt;&gt;&gt; df = pd.DataFrame({
+…     ‘AAPL’: [100, 101, 102, 103, 104],
+…     ‘MSFT’: [200, 201, 202, 203, 204],
+…     ‘GOOG’: [300, 301, 302, 303, 304]
+… })
+&gt;&gt;&gt; df = remove_stationary_assets(df)</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="tseries.run_cadf_test">
 <span class="sig-prename descclassname"><span class="pre">tseries.</span></span><span class="sig-name descname"><span class="pre">run_cadf_test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pair</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/tseries.html#run_cadf_test"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.run_cadf_test" title="Link to this definition"></a></dt>
 <dd><p>Performs the Cointegration Augmented Dickey-Fuller (CADF) test on a pair of stock tickers
@@ -541,7 +976,7 @@ time series and their residuals, and finally performs the CADF test on the resid
 </dd>
 </dl>
 <p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">bbstrader.tseries</span> <span class="kn">import</span> <span class="n">run_cadf_test</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">bbstrader.tseries</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_cadf_test</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">run_cadf_test</span><span class="p">([</span><span class="s1">&#39;AAPL&#39;</span><span class="p">,</span> <span class="s1">&#39;MSFT&#39;</span><span class="p">],</span> <span class="s1">&#39;2023-01-01&#39;</span><span class="p">,</span> <span class="s1">&#39;2023-12-31&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">Regression</span> <span class="n">Metrics</span><span class="p">:</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">Optimal</span> <span class="n">Hedge</span> <span class="n">Ratio</span> <span class="p">(</span><span class="n">Beta</span><span class="p">):</span> <span class="mf">2.2485845594120333</span>
@@ -667,6 +1102,60 @@ intercept, and visualizes the changes in these estimates over time.</p>
 </div>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="tseries.select_assets">
+<span class="sig-prename descclassname"><span class="pre">tseries.</span></span><span class="sig-name descname"><span class="pre">select_assets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rolling_window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#select_assets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.select_assets" title="Link to this definition"></a></dt>
+<dd><p>Selects the top N assets based on the average trading volume from the input DataFrame.
+These assets are used as universe in which we can search cointegrated pairs for pairs trading strategies.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pd.DataFrame</em>) – A multi-index DataFrame with levels [‘ticker’, ‘date’] containing market data.
+Must include columns ‘close’ (price) and ‘volume’.</p></li>
+<li><p><strong>n</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of assets to select based on highest average trading volume. Default is 100.</p></li>
+<li><p><strong>start</strong> (<em>str</em><em>, </em><em>optional</em>) – Start date for filtering the data. Default is the earliest date in the DataFrame.</p></li>
+<li><p><strong>end</strong> (<em>str</em><em>, </em><em>optional</em>) – End date for filtering the data. Default is the latest date in the DataFrame.</p></li>
+<li><p><strong>rolling_window</strong> (<em>int</em><em>, </em><em>optional</em>) – Rolling window for calculating the average trading volume. Default is None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A DataFrame of selected assets with filtered, cleaned data, indexed by date.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>Stefan Jansen (2020). Machine Learning for Algorithmic Trading - Second Edition.
+chapter 9, Time-Series Models for Volatility Forecasts and Statistical Arbitrage.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tseries.select_candidate_pairs">
+<span class="sig-prename descclassname"><span class="pre">tseries.</span></span><span class="sig-name descname"><span class="pre">select_candidate_pairs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pairs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">period</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tseries.html#select_candidate_pairs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tseries.select_candidate_pairs" title="Link to this definition"></a></dt>
+<dd><p>Select candidate pairs from a DataFrame based on cointegration status.</p>
+<p>This function filters the input DataFrame to select pairs where the ‘coint’ column equals 1,
+indicating cointegration. It then determines the dependent and independent series for each pair
+and returns the selected pairs in a dictionary format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pairs</strong> (<em>pd.DataFrame</em>) – A DataFrame containing pairs of time series with columns ‘coint’, ‘s1’, ‘s2’, and ‘s1_dep’.</p></li>
+<li><p><strong>period</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, includes the ‘period’ column in the output. Defaults to False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of dictionaries, each containing the keys ‘x’ and ‘y’ (and optionally ‘period’) representing the selected pairs.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[dict]</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>Stefan Jansen (2020). Machine Learning for Algorithmic Trading - Second Edition.
+chapter 9, Time-Series Models for Volatility Forecasts and Statistical Arbitrage.</p>
+</dd></dl>
+
 </section>
 
 
@@ -679,7 +1168,7 @@ intercept, and visualizes the changes in these estimates over time.</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2024, Bertin Balouki SIMYELI.</p>
+    <p>&#169; Copyright 2023 - 2025, Bertin Balouki SIMYELI.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

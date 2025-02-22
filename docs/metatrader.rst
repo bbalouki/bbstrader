@@ -37,7 +37,8 @@ Then, you can install `bbstrader` using pip:
 
 .. code-block:: bash
    
-   pip install bbstrader
+   pip install bbstrader # Mac or Linux
+   pip install bbstrader[MT5] # Windows
 
 Usage
 -----
@@ -48,6 +49,7 @@ The module consists of several components, each responsible for different aspect
 - **Market Data** (`Rates()`): Fetch real-time and historical market data.
 - **Risk Management** (`RiskManagement()`): Apply risk management strategies to your trading.
 - **Trade Execution** (`Trade()`): Execute trades based on your strategies.
+- **Trade Copier** (`TradeCopier()`): Copy trades from one account to another.
 
 Customization
 -------------
@@ -66,7 +68,7 @@ You can customize and extend the module to fit your trading strategies and requi
    :show-inheritance:
 
 
-account
+Aaccount
 -------
 
 .. automodule:: metatrader.account
@@ -74,23 +76,39 @@ account
    :undoc-members:
    :show-inheritance:
 
-rates
-------
+TradeCopier
+------------
+
+.. automodule:: metatrader.copier
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Rates
+-----
 
 .. automodule:: metatrader.rates
    :members:
    :undoc-members:
    :show-inheritance:
 
-risk
------
+RiskManagement
+--------------
 
 .. automodule:: metatrader.risk
    :members:
    :undoc-members:
    :show-inheritance:
 
-trade
+scripts
+-------
+
+.. automodule:: metatrader.scripts
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Trade
 -----
 
 .. automodule:: metatrader.trade
@@ -105,4 +123,3 @@ utils
    :members:
    :undoc-members:
    :show-inheritance:
-

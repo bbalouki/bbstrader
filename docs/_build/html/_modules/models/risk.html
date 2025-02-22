@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>models.risk &mdash; BBSTrader 0.2.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+  <title>models.risk &mdash; bbstrader 0.2.092 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=938c9ccc"></script>
+      <script src="../../_static/documentation_options.js?v=97badf68"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -29,7 +29,7 @@
           
           
           <a href="../../index.html" class="icon icon-home">
-            BBSTrader
+            bbstrader
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -50,7 +50,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../index.html">BBSTrader</a>
+          <a href="../../index.html">bbstrader</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -69,78 +69,78 @@
            <div itemprop="articleBody">
              
   <h1>Source code for models.risk</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">pickle</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
-<span class="kn">from</span> <span class="nn">hmmlearn.hmm</span> <span class="kn">import</span> <span class="n">GaussianHMM</span>
-<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
-<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">cm</span><span class="p">,</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
-<span class="kn">from</span> <span class="nn">matplotlib.dates</span> <span class="kn">import</span> <span class="n">YearLocator</span><span class="p">,</span> <span class="n">MonthLocator</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span>
-<span class="kn">from</span> <span class="nn">bbstrader.metatrader.rates</span> <span class="kn">import</span> <span class="n">Rates</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hmmlearn.hmm</span><span class="w"> </span><span class="kn">import</span> <span class="n">GaussianHMM</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">cm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.dates</span><span class="w"> </span><span class="kn">import</span> <span class="n">MonthLocator</span><span class="p">,</span> <span class="n">YearLocator</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">bbstrader.metatrader.rates</span><span class="w"> </span><span class="kn">import</span> <span class="n">Rates</span>
+
 <span class="n">sns</span><span class="o">.</span><span class="n">set_theme</span><span class="p">()</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s2">&quot;RiskModel&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;HMMRiskManager&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;build_hmm_models&quot;</span>
-<span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;RiskModel&quot;</span><span class="p">,</span> <span class="s2">&quot;HMMRiskManager&quot;</span><span class="p">,</span> <span class="s2">&quot;build_hmm_models&quot;</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="RiskModel">
 <a class="viewcode-back" href="../../models.html#models.risk.RiskModel">[docs]</a>
-<span class="k">class</span> <span class="nc">RiskModel</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">RiskModel</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    The RiskModel class serves as an abstract base for implementing </span>
-<span class="sd">    risk management strategies in financial markets. It is designed </span>
-<span class="sd">    to assist in the decision-making process regarding which trades </span>
-<span class="sd">    are permissible under current market conditions and how to allocate </span>
+<span class="sd">    The RiskModel class serves as an abstract base for implementing</span>
+<span class="sd">    risk management strategies in financial markets. It is designed</span>
+<span class="sd">    to assist in the decision-making process regarding which trades</span>
+<span class="sd">    are permissible under current market conditions and how to allocate</span>
 <span class="sd">    assets effectively to optimize the risk-reward ratio.</span>
 
-<span class="sd">    Risk management is a critical component in trading and investment </span>
-<span class="sd">    strategies, aiming to minimize potential losses without significantly </span>
-<span class="sd">    reducing the potential for gains. This class encapsulates the core </span>
-<span class="sd">    principles of risk management by providing a structured approach to </span>
+<span class="sd">    Risk management is a critical component in trading and investment</span>
+<span class="sd">    strategies, aiming to minimize potential losses without significantly</span>
+<span class="sd">    reducing the potential for gains. This class encapsulates the core</span>
+<span class="sd">    principles of risk management by providing a structured approach to</span>
 <span class="sd">    evaluate market conditions and manage asset allocation.</span>
 
 <span class="sd">    Implementing classes are required to define two key methods:</span>
 
-<span class="sd">    - `which_trade_allowed`: </span>
-<span class="sd">      Determines the types of trades that are permissible based on the </span>
-<span class="sd">      analysis of current market conditions and the risk profile of the portfolio. </span>
-<span class="sd">      This method should analyze the provided `returns_val` parameter, </span>
-<span class="sd">      which could represent historical returns, volatility measures, </span>
-<span class="sd">      or other financial metrics, to decide on the suitability of executing </span>
+<span class="sd">    - `which_trade_allowed`:</span>
+<span class="sd">      Determines the types of trades that are permissible based on the</span>
+<span class="sd">      analysis of current market conditions and the risk profile of the portfolio.</span>
+<span class="sd">      This method should analyze the provided `returns_val` parameter,</span>
+<span class="sd">      which could represent historical returns, volatility measures,</span>
+<span class="sd">      or other financial metrics, to decide on the suitability of executing</span>
 <span class="sd">      certain trades.</span>
 
-<span class="sd">    - `which_quantity_allowed`: </span>
-<span class="sd">      Defines how assets should be allocated across the portfolio to maintain </span>
-<span class="sd">      an optimal balance between risk and return. This involves determining </span>
-<span class="sd">      the quantity of each asset that can be held, considering factors such as </span>
-<span class="sd">      diversification, liquidity, and the asset&#39;s volatility. This method ensures </span>
-<span class="sd">      that the portfolio adheres to predefined risk tolerance levels and </span>
+<span class="sd">    - `which_quantity_allowed`:</span>
+<span class="sd">      Defines how assets should be allocated across the portfolio to maintain</span>
+<span class="sd">      an optimal balance between risk and return. This involves determining</span>
+<span class="sd">      the quantity of each asset that can be held, considering factors such as</span>
+<span class="sd">      diversification, liquidity, and the asset&#39;s volatility. This method ensures</span>
+<span class="sd">      that the portfolio adheres to predefined risk tolerance levels and</span>
 <span class="sd">      investment objectives.</span>
 
 <span class="sd">    Note:</span>
-<span class="sd">        Implementing these methods requires a deep understanding of risk </span>
-<span class="sd">        management theories, market analysis, and portfolio management principles. </span>
-<span class="sd">        The implementation should be tailored to the specific needs of the </span>
-<span class="sd">        investment strategy and the risk tolerance of the investor or the fund </span>
+<span class="sd">        Implementing these methods requires a deep understanding of risk</span>
+<span class="sd">        management theories, market analysis, and portfolio management principles.</span>
+<span class="sd">        The implementation should be tailored to the specific needs of the</span>
+<span class="sd">        investment strategy and the risk tolerance of the investor or the fund</span>
 <span class="sd">        being managed.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="RiskModel.which_trade_allowed">
 <a class="viewcode-back" href="../../models.html#models.risk.RiskModel.which_trade_allowed">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">which_trade_allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">returns_val</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">which_trade_allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">returns_val</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Determines the types of trades permissible under current market conditions.</span>
 
 <span class="sd">        Parameters:</span>
-<span class="sd">            returns_val: A parameter representing financial metrics </span>
-<span class="sd">            such as historical returns or volatility, used to </span>
+<span class="sd">            returns_val: A parameter representing financial metrics</span>
+<span class="sd">            such as historical returns or volatility, used to</span>
 <span class="sd">            assess market conditions.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Should implement which_trade_allowed()&quot;</span><span class="p">)</span></div>
@@ -149,9 +149,9 @@
 <div class="viewcode-block" id="RiskModel.which_quantity_allowed">
 <a class="viewcode-back" href="../../models.html#models.risk.RiskModel.which_quantity_allowed">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">which_quantity_allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">which_quantity_allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Defines the strategy for asset allocation within </span>
+<span class="sd">        Defines the strategy for asset allocation within</span>
 <span class="sd">        the portfolio to optimize risk-reward ratio.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Should implement which_quantity_allowed()&quot;</span><span class="p">)</span></div>
@@ -161,7 +161,7 @@
 
 <div class="viewcode-block" id="HMMRiskManager">
 <a class="viewcode-back" href="../../models.html#models.risk.HMMRiskManager">[docs]</a>
-<span class="k">class</span> <span class="nc">HMMRiskManager</span><span class="p">(</span><span class="n">RiskModel</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">HMMRiskManager</span><span class="p">(</span><span class="n">RiskModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This class represents a risk management model using Hidden Markov Models (HMM)</span>
 <span class="sd">    to identify and manage market risks. It inherits from a generic RiskModel class</span>
@@ -180,14 +180,15 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">data</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">states</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
-            <span class="n">iterations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
-            <span class="n">end_date</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">csv_filepath</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">states</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">iterations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+        <span class="n">end_date</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">csv_filepath</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initializes the HMMRiskManager with market data and model parameters.</span>
 
@@ -199,7 +200,7 @@
 <span class="sd">            `iterations` (int): The number of iterations for the HMM to converge.</span>
 <span class="sd">            `end_date` (datetime): The end date for the market data to be considered.</span>
 
-<span class="sd">            `csv_filepath` (str): Path to the CSV file containing </span>
+<span class="sd">            `csv_filepath` (str): Path to the CSV file containing</span>
 <span class="sd">                market data if data is not provided directly.</span>
 
 <span class="sd">            kwarg (dict): Additional arguments</span>
@@ -226,13 +227,13 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">show_hidden_states</span><span class="p">()</span>
         <span class="n">trends</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">identify_market_trends</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">bullish_state</span> <span class="o">=</span> <span class="n">trends</span><span class="p">[</span><span class="s1">&#39;bullish&#39;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">bearish_state</span> <span class="o">=</span> <span class="n">trends</span><span class="p">[</span><span class="s1">&#39;bearish&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bullish_state</span> <span class="o">=</span> <span class="n">trends</span><span class="p">[</span><span class="s2">&quot;bullish&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bearish_state</span> <span class="o">=</span> <span class="n">trends</span><span class="p">[</span><span class="s2">&quot;bearish&quot;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">allowed_regimes</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">trends</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
 
-    <span class="k">def</span> <span class="nf">_get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Retrieves market data for the model either </span>
+<span class="sd">        Retrieves market data for the model either</span>
 <span class="sd">            from a provided DataFrame or a CSV file.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -242,9 +243,9 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No data source provided.&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_fit_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_fit_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Fits the HMM model to the market data </span>
+<span class="sd">        Fits the HMM model to the market data</span>
 <span class="sd">            and saves the model if a filename is provided.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -252,13 +253,13 @@
         <span class="n">returns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;Returns&quot;</span><span class="p">]])</span>
 
         <span class="n">hmm_model</span> <span class="o">=</span> <span class="n">GaussianHMM</span><span class="p">(</span>
-            <span class="n">n_components</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">,</span> <span class="n">covariance_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cov_variance</span><span class="p">,</span>
-            <span class="n">n_iter</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">iterations</span>
+            <span class="n">n_components</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">,</span>
+            <span class="n">covariance_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cov_variance</span><span class="p">,</span>
+            <span class="n">n_iter</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">iterations</span><span class="p">,</span>
         <span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">returns</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Hidden Markov model (HMM) Score: </span><span class="si">{</span><span class="n">hmm_model</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">returns</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Hidden Markov model (HMM) Score: </span><span class="si">{</span><span class="n">hmm_model</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">returns</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">save_hmm_model</span><span class="p">(</span><span class="n">hmm_model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_filename</span><span class="p">)</span>
 
@@ -266,43 +267,45 @@
 
 <div class="viewcode-block" id="HMMRiskManager.get_states">
 <a class="viewcode-back" href="../../models.html#models.risk.HMMRiskManager.get_states">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_states</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_states</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Predicts the hidden states for the market data </span>
+<span class="sd">        Predicts the hidden states for the market data</span>
 <span class="sd">        and calculates the mean returns and volatility for each state.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            DataFrame containing mean returns </span>
+<span class="sd">            DataFrame containing mean returns</span>
 <span class="sd">            and volatility for each hidden state.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obtain_prices_df</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">end_date</span><span class="p">)</span>
         <span class="n">returns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;Returns&quot;</span><span class="p">]])</span>
         <span class="n">states</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hmm_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">returns</span><span class="p">)</span>
-        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;State&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">states</span>
+        <span class="n">data</span><span class="p">[</span><span class="s2">&quot;State&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">states</span>
         <span class="c1"># Calculating mean and volatility for each state</span>
-        <span class="n">state_stats</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span>
-            <span class="s1">&#39;State&#39;</span>
-        <span class="p">)[</span><span class="s1">&#39;Returns&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="s1">&#39;std&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
-            <span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;mean&#39;</span><span class="p">:</span> <span class="s1">&#39;Mean Returns&#39;</span><span class="p">,</span> <span class="s1">&#39;std&#39;</span><span class="p">:</span> <span class="s1">&#39;Volatility&#39;</span><span class="p">})</span>
+        <span class="n">state_stats</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;State&quot;</span><span class="p">)[</span><span class="s2">&quot;Returns&quot;</span><span class="p">]</span>
+            <span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="s2">&quot;std&quot;</span><span class="p">])</span>
+            <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;mean&quot;</span><span class="p">:</span> <span class="s2">&quot;Mean Returns&quot;</span><span class="p">,</span> <span class="s2">&quot;std&quot;</span><span class="p">:</span> <span class="s2">&quot;Volatility&quot;</span><span class="p">})</span>
+        <span class="p">)</span>
         <span class="k">return</span> <span class="n">state_stats</span></div>
 
 
 <div class="viewcode-block" id="HMMRiskManager.identify_market_trends">
 <a class="viewcode-back" href="../../models.html#models.risk.HMMRiskManager.identify_market_trends">[docs]</a>
-    <span class="k">def</span> <span class="nf">identify_market_trends</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">identify_market_trends</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Identifies bullish and bearish market trends</span>
 <span class="sd">          based on the mean returns and volatility of each state.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A dictionary with keys &#39;bullish&#39; and &#39;bearish&#39; </span>
+<span class="sd">            A dictionary with keys &#39;bullish&#39; and &#39;bearish&#39;</span>
 <span class="sd">            indicating the identified states.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_states</span><span class="p">()</span>
         <span class="c1"># Sort the df based on Mean Returns and then by lower Volatility</span>
-        <span class="n">sorted_df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Mean Returns&#39;</span><span class="p">,</span> <span class="s1">&#39;Volatility&#39;</span><span class="p">],</span>
-                                   <span class="n">ascending</span><span class="o">=</span><span class="p">[</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">])</span>
+        <span class="n">sorted_df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span>
+            <span class="n">by</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Mean Returns&quot;</span><span class="p">,</span> <span class="s2">&quot;Volatility&quot;</span><span class="p">],</span> <span class="n">ascending</span><span class="o">=</span><span class="p">[</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">]</span>
+        <span class="p">)</span>
 
         <span class="c1"># The first row after sorting will be the bullish state</span>
         <span class="c1"># (highest mean return, lower volatility preferred)</span>
@@ -317,12 +320,12 @@
 
 <div class="viewcode-block" id="HMMRiskManager.get_current_regime">
 <a class="viewcode-back" href="../../models.html#models.risk.HMMRiskManager.get_current_regime">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_current_regime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">returns_val</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_current_regime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">returns_val</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Determines the current market regime based on the latest returns.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            returns_val : Array of recent return values </span>
+<span class="sd">            returns_val : Array of recent return values</span>
 <span class="sd">            to predict the current state.</span>
 
 <span class="sd">        Returns:</span>
@@ -336,19 +339,19 @@
 
 <div class="viewcode-block" id="HMMRiskManager.which_trade_allowed">
 <a class="viewcode-back" href="../../models.html#models.risk.HMMRiskManager.which_trade_allowed">[docs]</a>
-    <span class="k">def</span> <span class="nf">which_trade_allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">returns_val</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">which_trade_allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">returns_val</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Decides whether a long or short trade </span>
+<span class="sd">        Decides whether a long or short trade</span>
 <span class="sd">        is allowed based on the current market regime.</span>
-<span class="sd">        This method override the which_trade_allowed() from </span>
-<span class="sd">        RiskModel class . </span>
+<span class="sd">        This method override the which_trade_allowed() from</span>
+<span class="sd">        RiskModel class .</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            returns_val : Array of recent return values </span>
+<span class="sd">            returns_val : Array of recent return values</span>
 <span class="sd">            to assess the permissible trade.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A string indicating &quot;LONG&quot; or &quot;SHORT&quot; </span>
+<span class="sd">            A string indicating &quot;LONG&quot; or &quot;SHORT&quot;</span>
 <span class="sd">                if a trade is allowed, or None if no trade is permitted.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_current_regime</span><span class="p">(</span><span class="n">returns_val</span><span class="p">)</span>
@@ -361,13 +364,12 @@
 
 <div class="viewcode-block" id="HMMRiskManager.which_quantity_allowed">
 <a class="viewcode-back" href="../../models.html#models.risk.HMMRiskManager.which_quantity_allowed">[docs]</a>
-    <span class="k">def</span> <span class="nf">which_quantity_allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="o">...</span></div>
+    <span class="k">def</span><span class="w"> </span><span class="nf">which_quantity_allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="o">...</span></div>
 
 
 <div class="viewcode-block" id="HMMRiskManager.save_hmm_model">
 <a class="viewcode-back" href="../../models.html#models.risk.HMMRiskManager.save_hmm_model">[docs]</a>
-    <span class="k">def</span> <span class="nf">save_hmm_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hmm_model</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save_hmm_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hmm_model</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Saves the trained HMM model to a pickle file.</span>
 
@@ -382,7 +384,7 @@
 
 <div class="viewcode-block" id="HMMRiskManager.read_csv_file">
 <a class="viewcode-back" href="../../models.html#models.risk.HMMRiskManager.read_csv_file">[docs]</a>
-    <span class="k">def</span> <span class="nf">read_csv_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">csv_filepath</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">read_csv_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">csv_filepath</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Reads market data from a CSV file.</span>
 
@@ -392,18 +394,21 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            DataFrame containing the parsed market data.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">csv_filepath</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-                         <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Date&quot;</span><span class="p">,</span> <span class="s2">&quot;Open&quot;</span><span class="p">,</span> <span class="s2">&quot;High&quot;</span><span class="p">,</span> <span class="s2">&quot;Low&quot;</span><span class="p">,</span>
-                                <span class="s2">&quot;Close&quot;</span><span class="p">,</span> <span class="s2">&quot;Adj Close&quot;</span><span class="p">,</span> <span class="s2">&quot;Volume&quot;</span><span class="p">],</span>
-                         <span class="n">index_col</span><span class="o">=</span><span class="s2">&quot;Date&quot;</span><span class="p">,</span> <span class="n">parse_dates</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+            <span class="n">csv_filepath</span><span class="p">,</span>
+            <span class="n">header</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Date&quot;</span><span class="p">,</span> <span class="s2">&quot;Open&quot;</span><span class="p">,</span> <span class="s2">&quot;High&quot;</span><span class="p">,</span> <span class="s2">&quot;Low&quot;</span><span class="p">,</span> <span class="s2">&quot;Close&quot;</span><span class="p">,</span> <span class="s2">&quot;Adj Close&quot;</span><span class="p">,</span> <span class="s2">&quot;Volume&quot;</span><span class="p">],</span>
+            <span class="n">index_col</span><span class="o">=</span><span class="s2">&quot;Date&quot;</span><span class="p">,</span>
+            <span class="n">parse_dates</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
         <span class="k">return</span> <span class="n">df</span></div>
 
 
 <div class="viewcode-block" id="HMMRiskManager.obtain_prices_df">
 <a class="viewcode-back" href="../../models.html#models.risk.HMMRiskManager.obtain_prices_df">[docs]</a>
-    <span class="k">def</span> <span class="nf">obtain_prices_df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_frame</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">obtain_prices_df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_frame</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Processes the market data to calculate returns </span>
+<span class="sd">        Processes the market data to calculate returns</span>
 <span class="sd">        and optionally filters data up to a specified end date.</span>
 
 <span class="sd">        Args:</span>
@@ -411,30 +416,30 @@
 <span class="sd">            end : Optional datetime object specifying the end date for the data.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            DataFrame with returns calculated </span>
+<span class="sd">            DataFrame with returns calculated</span>
 <span class="sd">                and data filtered up to the end date if specified.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">data_frame</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="k">if</span> <span class="s1">&#39;Returns&#39;</span> <span class="ow">or</span> <span class="s1">&#39;returns&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
-            <span class="k">if</span> <span class="s1">&#39;Close&#39;</span>  <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
-                <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Returns&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Close&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">pct_change</span><span class="p">()</span>
-            <span class="k">elif</span> <span class="s1">&#39;Adj Close&#39;</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
-                <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Returns&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Adj Close&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">pct_change</span><span class="p">()</span>
+        <span class="k">if</span> <span class="s2">&quot;Returns&quot;</span> <span class="ow">or</span> <span class="s2">&quot;returns&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;Close&quot;</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Returns&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Close&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">pct_change</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="s2">&quot;Adj Close&quot;</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Returns&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Adj Close&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">pct_change</span><span class="p">()</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No &#39;Close&#39; or &#39;Adj Close&#39; columns found.&quot;</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="s1">&#39;returns&#39;</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
-            <span class="n">df</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;returns&#39;</span><span class="p">:</span> <span class="s1">&#39;Returns&#39;</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="s2">&quot;returns&quot;</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;returns&quot;</span><span class="p">:</span> <span class="s2">&quot;Returns&quot;</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">end</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[:</span><span class="n">end</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)]</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[:</span> <span class="n">end</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)]</span>
         <span class="n">df</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">df</span></div>
 
 
 <div class="viewcode-block" id="HMMRiskManager.show_hidden_states">
 <a class="viewcode-back" href="../../models.html#models.risk.HMMRiskManager.show_hidden_states">[docs]</a>
-    <span class="k">def</span> <span class="nf">show_hidden_states</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">show_hidden_states</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Visualizes the market data </span>
+<span class="sd">        Visualizes the market data</span>
 <span class="sd">            and the predicted hidden states from the HMM model.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -444,25 +449,25 @@
 
 <div class="viewcode-block" id="HMMRiskManager.plot_hidden_states">
 <a class="viewcode-back" href="../../models.html#models.risk.HMMRiskManager.plot_hidden_states">[docs]</a>
-    <span class="k">def</span> <span class="nf">plot_hidden_states</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hmm_model</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_hidden_states</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hmm_model</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Plots the adjusted closing prices masked </span>
-<span class="sd">        by the in-sample hidden states as a mechanism </span>
+<span class="sd">        Plots the adjusted closing prices masked</span>
+<span class="sd">        by the in-sample hidden states as a mechanism</span>
 <span class="sd">        to understand the market regimes.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            hmm_model : The trained GaussianHMM model used for predicting states.</span>
 <span class="sd">            df : DataFrame containing the market data with calculated returns.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">hidden_states</span> <span class="o">=</span> <span class="n">hmm_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">df</span><span class="p">[[</span><span class="s1">&#39;Returns&#39;</span><span class="p">]])</span>
-        <span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">hmm_model</span><span class="o">.</span><span class="n">n_components</span><span class="p">,</span>
-                                <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">sharey</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">hidden_states</span> <span class="o">=</span> <span class="n">hmm_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">df</span><span class="p">[[</span><span class="s2">&quot;Returns&quot;</span><span class="p">]])</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">hmm_model</span><span class="o">.</span><span class="n">n_components</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">sharey</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">colours</span> <span class="o">=</span> <span class="n">cm</span><span class="o">.</span><span class="n">rainbow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">hmm_model</span><span class="o">.</span><span class="n">n_components</span><span class="p">))</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">colour</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">axs</span><span class="p">,</span> <span class="n">colours</span><span class="p">)):</span>
             <span class="n">mask</span> <span class="o">=</span> <span class="n">hidden_states</span> <span class="o">==</span> <span class="n">i</span>
-            <span class="n">ax</span><span class="o">.</span><span class="n">plot_date</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Adj Close&#39;</span><span class="p">]</span>
-                         <span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">colour</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">plot_date</span><span class="p">(</span>
+                <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Adj Close&quot;</span><span class="p">][</span><span class="n">mask</span><span class="p">],</span> <span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">colour</span>
+            <span class="p">)</span>
             <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Hidden State #</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">ax</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_major_locator</span><span class="p">(</span><span class="n">YearLocator</span><span class="p">())</span>
             <span class="n">ax</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_minor_locator</span><span class="p">(</span><span class="n">MonthLocator</span><span class="p">())</span>
@@ -471,14 +476,14 @@
 </div>
 
 
+
 <div class="viewcode-block" id="build_hmm_models">
 <a class="viewcode-back" href="../../models.html#models.risk.build_hmm_models">[docs]</a>
-<span class="k">def</span> <span class="nf">build_hmm_models</span><span class="p">(</span><span class="n">symbol_list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
-                     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">HMMRiskManager</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">build_hmm_models</span><span class="p">(</span><span class="n">symbol_list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">HMMRiskManager</span><span class="p">]:</span>
     <span class="n">mt5_data</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;use_mt5_data&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;hmm_data&quot;</span><span class="p">)</span>
-    <span class="n">tf</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;time_frame&quot;</span><span class="p">,</span> <span class="s1">&#39;D1&#39;</span><span class="p">)</span>
-    <span class="n">hmm_end</span> <span class="o">=</span>  <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;hmm_end&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">tf</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;time_frame&quot;</span><span class="p">,</span> <span class="s2">&quot;D1&quot;</span><span class="p">)</span>
+    <span class="n">hmm_end</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;hmm_end&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
     <span class="n">sd</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;session_duration&quot;</span><span class="p">,</span> <span class="mf">23.0</span><span class="p">)</span>
     <span class="n">hmm_tickers</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;hmm_tickers&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">hmm_tickers</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -489,22 +494,21 @@
     <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
             <span class="n">hmm_data</span> <span class="o">=</span> <span class="n">data</span>
-            <span class="n">hmm</span> <span class="o">=</span> <span class="n">HMMRiskManager</span><span class="p">(</span>
-                <span class="n">data</span><span class="o">=</span><span class="n">hmm_data</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">hmm</span> <span class="o">=</span> <span class="n">HMMRiskManager</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">hmm_data</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="n">symbols</span><span class="p">:</span>
                 <span class="n">hmm_models</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span> <span class="o">=</span> <span class="n">hmm</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="n">hmm</span> <span class="o">=</span> <span class="n">HMMRiskManager</span><span class="p">(</span>
-                    <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="n">hmm</span> <span class="o">=</span> <span class="n">HMMRiskManager</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
                 <span class="n">hmm_models</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span> <span class="o">=</span> <span class="n">hmm</span>
     <span class="k">if</span> <span class="n">mt5_data</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="n">symbols</span><span class="p">:</span>
-            <span class="n">rates</span> <span class="o">=</span> <span class="n">Rates</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">timeframe</span><span class="o">=</span><span class="n">tf</span><span class="p">,</span> <span class="n">start_pos</span><span class="o">=</span><span class="n">hmm_end</span><span class="p">,</span> <span class="n">session_duration</span><span class="o">=</span><span class="n">sd</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">rates</span> <span class="o">=</span> <span class="n">Rates</span><span class="p">(</span>
+                <span class="n">symbol</span><span class="p">,</span> <span class="n">timeframe</span><span class="o">=</span><span class="n">tf</span><span class="p">,</span> <span class="n">start_pos</span><span class="o">=</span><span class="n">hmm_end</span><span class="p">,</span> <span class="n">session_duration</span><span class="o">=</span><span class="n">sd</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+            <span class="p">)</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">rates</span><span class="o">.</span><span class="n">get_rates_from_pos</span><span class="p">()</span>
             <span class="k">assert</span> <span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;No data for </span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="n">hmm</span> <span class="o">=</span> <span class="n">HMMRiskManager</span><span class="p">(</span>
-                <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">hmm</span> <span class="o">=</span> <span class="n">HMMRiskManager</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="n">hmm_models</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span> <span class="o">=</span> <span class="n">hmm</span>
     <span class="k">return</span> <span class="n">hmm_models</span></div>
 
@@ -517,7 +521,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2024, Bertin Balouki SIMYELI.</p>
+    <p>&#169; Copyright 2023 - 2025, Bertin Balouki SIMYELI.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

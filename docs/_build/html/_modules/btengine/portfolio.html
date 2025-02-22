@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>btengine.portfolio &mdash; BBSTrader 0.2.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+  <title>btengine.portfolio &mdash; bbstrader 0.2.092 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=938c9ccc"></script>
+      <script src="../../_static/documentation_options.js?v=97badf68"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -29,7 +29,7 @@
           
           
           <a href="../../index.html" class="icon icon-home">
-            BBSTrader
+            bbstrader
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -50,7 +50,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../index.html">BBSTrader</a>
+          <a href="../../index.html">bbstrader</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -69,91 +69,87 @@
            <div itemprop="articleBody">
              
   <h1>Source code for btengine.portfolio</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">from</span> <span class="nn">queue</span> <span class="kn">import</span> <span class="n">Queue</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
-<span class="kn">from</span> <span class="nn">bbstrader.btengine.event</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">OrderEvent</span><span class="p">,</span> 
-    <span class="n">FillEvent</span><span class="p">,</span> 
-    <span class="n">MarketEvent</span><span class="p">,</span> 
-    <span class="n">SignalEvent</span>
-<span class="p">)</span>
-<span class="kn">from</span> <span class="nn">bbstrader.btengine.data</span> <span class="kn">import</span> <span class="n">DataHandler</span>
-<span class="kn">from</span> <span class="nn">bbstrader.btengine.performance</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">create_drawdowns</span><span class="p">,</span> 
-    <span class="n">create_sharpe_ratio</span><span class="p">,</span> 
-    <span class="n">create_sortino_ratio</span><span class="p">,</span> 
-    <span class="n">plot_performance</span><span class="p">,</span> 
-    <span class="n">show_qs_stats</span><span class="p">,</span> 
-    <span class="n">plot_returns_and_dd</span><span class="p">,</span> 
-    <span class="n">plot_monthly_yearly_returns</span>
-<span class="p">)</span>
-<span class="kn">from</span> <span class="nn">bbstrader.config</span> <span class="kn">import</span> <span class="n">BBSTRADER_DIR</span>
-<span class="kn">import</span> <span class="nn">quantstats</span> <span class="k">as</span> <span class="nn">qs</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">queue</span><span class="w"> </span><span class="kn">import</span> <span class="n">Queue</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">quantstats</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">qs</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">bbstrader.btengine.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataHandler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bbstrader.btengine.event</span><span class="w"> </span><span class="kn">import</span> <span class="n">FillEvent</span><span class="p">,</span> <span class="n">MarketEvent</span><span class="p">,</span> <span class="n">OrderEvent</span><span class="p">,</span> <span class="n">SignalEvent</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bbstrader.btengine.performance</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">create_drawdowns</span><span class="p">,</span>
+    <span class="n">create_sharpe_ratio</span><span class="p">,</span>
+    <span class="n">create_sortino_ratio</span><span class="p">,</span>
+    <span class="n">plot_monthly_yearly_returns</span><span class="p">,</span>
+    <span class="n">plot_performance</span><span class="p">,</span>
+    <span class="n">plot_returns_and_dd</span><span class="p">,</span>
+    <span class="n">show_qs_stats</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s1">&#39;Portfolio&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;Portfolio&quot;</span><span class="p">,</span>
 <span class="p">]</span>
 
 
 <div class="viewcode-block" id="Portfolio">
 <a class="viewcode-back" href="../../btengine.html#btengine.portfolio.Portfolio">[docs]</a>
-<span class="k">class</span> <span class="nc">Portfolio</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Portfolio</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    This  describes a `Portfolio()` object that keeps track of the positions </span>
-<span class="sd">    within a portfolio and generates orders of a fixed quantity of stock based on signals. </span>
+<span class="sd">    This  describes a `Portfolio()` object that keeps track of the positions</span>
+<span class="sd">    within a portfolio and generates orders of a fixed quantity of stock based on signals.</span>
 
-<span class="sd">    The portfolio order management system is possibly the most complex component of </span>
-<span class="sd">    an event driven backtester. Its role is to keep track of all current market positions </span>
-<span class="sd">    as well as the market value of the positions (known as the &quot;holdings&quot;). </span>
-<span class="sd">    This is simply an estimate of the liquidation value of the position and is derived in part </span>
+<span class="sd">    The portfolio order management system is possibly the most complex component of</span>
+<span class="sd">    an event driven backtester. Its role is to keep track of all current market positions</span>
+<span class="sd">    as well as the market value of the positions (known as the &quot;holdings&quot;).</span>
+<span class="sd">    This is simply an estimate of the liquidation value of the position and is derived in part</span>
 <span class="sd">    from the data handling facility of the backtester.</span>
 
-<span class="sd">    In addition to the positions and holdings management the portfolio must also be aware of </span>
-<span class="sd">    risk factors and position sizing techniques in order to optimise orders that are sent </span>
+<span class="sd">    In addition to the positions and holdings management the portfolio must also be aware of</span>
+<span class="sd">    risk factors and position sizing techniques in order to optimise orders that are sent</span>
 <span class="sd">    to a brokerage or other form of market access.</span>
 
 <span class="sd">    Unfortunately, Portfolio and `Order Management Systems (OMS)` can become rather complex!</span>
 <span class="sd">    So let&#39;s keep the `Portfolio` object relatively straightforward  anf improve it foward.</span>
 
-<span class="sd">    Continuing in the vein of the Event class hierarchy a Portfolio object must be able </span>
-<span class="sd">    to handle `SignalEvent` objects, generate `OrderEvent` objects and interpret `FillEvent` </span>
-<span class="sd">    objects to update positions. Thus it is no surprise that the Portfolio objects are often </span>
+<span class="sd">    Continuing in the vein of the Event class hierarchy a Portfolio object must be able</span>
+<span class="sd">    to handle `SignalEvent` objects, generate `OrderEvent` objects and interpret `FillEvent`</span>
+<span class="sd">    objects to update positions. Thus it is no surprise that the Portfolio objects are often</span>
 <span class="sd">    the largest component of event-driven systems, in terms of lines of code (LOC).</span>
 
-<span class="sd">    The initialisation of the Portfolio object requires access to the bars `DataHandler`, </span>
-<span class="sd">    the  `Event Queue`, a `start datetime stamp` and an `initial capital` </span>
+<span class="sd">    The initialisation of the Portfolio object requires access to the bars `DataHandler`,</span>
+<span class="sd">    the  `Event Queue`, a `start datetime stamp` and an `initial capital`</span>
 <span class="sd">    value (defaulting to `100,000 USD`) and others parameter based on the `Strategy` requirement.</span>
 
-<span class="sd">    The `Portfolio` is designed to handle position sizing and current holdings, </span>
-<span class="sd">    but will carry out trading orders by simply them to the brokerage with a predetermined </span>
+<span class="sd">    The `Portfolio` is designed to handle position sizing and current holdings,</span>
+<span class="sd">    but will carry out trading orders by simply them to the brokerage with a predetermined</span>
 <span class="sd">    fixed quantity size, if the portfolio has enough cash to place the order.</span>
 
 
-<span class="sd">    The portfolio contains the `all_positions` and `current_positions` members. </span>
-<span class="sd">    The former stores a list of all previous positions recorded at the timestamp of a market data event. </span>
+<span class="sd">    The portfolio contains the `all_positions` and `current_positions` members.</span>
+<span class="sd">    The former stores a list of all previous positions recorded at the timestamp of a market data event.</span>
 <span class="sd">    A position is simply the quantity of the asset held. Negative positions mean the asset has been shorted.</span>
 
-<span class="sd">    The latter current_positions dictionary stores contains the current positions </span>
+<span class="sd">    The latter current_positions dictionary stores contains the current positions</span>
 <span class="sd">    for the last market bar update, for each symbol.</span>
 
-<span class="sd">    In addition to the positions data the portfolio stores `holdings`, </span>
-<span class="sd">    which describe the current market value of the positions held. &quot;Current market value&quot; </span>
-<span class="sd">    in this instance means the closing price obtained from the current market bar, </span>
-<span class="sd">    which is clearly an approximation, but is reasonable enough for the time being. </span>
-<span class="sd">    `all_holdings` stores the historical list of all symbol holdings, while current_holdings </span>
+<span class="sd">    In addition to the positions data the portfolio stores `holdings`,</span>
+<span class="sd">    which describe the current market value of the positions held. &quot;Current market value&quot;</span>
+<span class="sd">    in this instance means the closing price obtained from the current market bar,</span>
+<span class="sd">    which is clearly an approximation, but is reasonable enough for the time being.</span>
+<span class="sd">    `all_holdings` stores the historical list of all symbol holdings, while current_holdings</span>
 <span class="sd">    stores the most up to date dictionary of all symbol holdings values.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                 <span class="n">bars</span><span class="p">:</span> <span class="n">DataHandler</span><span class="p">,</span>
-                 <span class="n">events</span><span class="p">:</span> <span class="n">Queue</span><span class="p">,</span>
-                 <span class="n">start_date</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span>
-                 <span class="n">initial_capital</span><span class="o">=</span><span class="mf">100000.0</span><span class="p">,</span>
-                 <span class="o">**</span><span class="n">kwargs</span>
-                 <span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">bars</span><span class="p">:</span> <span class="n">DataHandler</span><span class="p">,</span>
+        <span class="n">events</span><span class="p">:</span> <span class="n">Queue</span><span class="p">,</span>
+        <span class="n">start_date</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span>
+        <span class="n">initial_capital</span><span class="o">=</span><span class="mf">100000.0</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialises the portfolio with bars and an event queue.</span>
 <span class="sd">        Also includes a starting datetime index and initial capital</span>
@@ -171,22 +167,22 @@
 <span class="sd">                - `session_duration`: The number of trading hours in a day.</span>
 <span class="sd">                - `benchmark`: The benchmark symbol to compare the portfolio.</span>
 <span class="sd">                - `output_dir`: The directory to save the backtest results.</span>
-<span class="sd">                - `strategy_name`: The name of the strategy  (the name must not include &#39;Strategy&#39; in it). </span>
-<span class="sd">                - `print_stats`: Whether to print the backtest statistics.   </span>
+<span class="sd">                - `strategy_name`: The name of the strategy  (the name must not include &#39;Strategy&#39; in it).</span>
+<span class="sd">                - `print_stats`: Whether to print the backtest statistics.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bars</span> <span class="o">=</span> <span class="n">bars</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">events</span> <span class="o">=</span> <span class="n">events</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">symbol_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bars</span><span class="o">.</span><span class="n">symbol_list</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">start_date</span> <span class="o">=</span> <span class="n">start_date</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">initial_capital</span> <span class="o">=</span> <span class="n">initial_capital</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_leverage</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;leverage&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_leverage</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;leverage&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">timeframe</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;time_frame&quot;</span><span class="p">,</span> <span class="s2">&quot;D1&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">trading_hours</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;session_duration&quot;</span><span class="p">,</span> <span class="mi">23</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">benchmark</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;benchmark&#39;</span><span class="p">,</span> <span class="s1">&#39;SPY&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;output_dir&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">strategy_name</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;strategy_name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">print_stats</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;print_stats&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">benchmark</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;benchmark&quot;</span><span class="p">,</span> <span class="s2">&quot;SPY&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;output_dir&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">strategy_name</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;strategy_name&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">print_stats</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;print_stats&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeframe</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tf_mapping</span><span class="p">():</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;Timeframe not supported,&quot;</span>
@@ -197,100 +193,111 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">tf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tf_mapping</span><span class="p">()[</span><span class="bp">self</span><span class="o">.</span><span class="n">timeframe</span><span class="p">]</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">all_positions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">construct_all_positions</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">current_positions</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span>
-                                      <span class="p">[(</span><span class="n">s</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol_list</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_positions</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">[(</span><span class="n">s</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol_list</span><span class="p">]</span>
+        <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">all_holdings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">construct_all_holdings</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_holdings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">construct_current_holdings</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">equity_curve</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="k">def</span> <span class="nf">_tf_mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_tf_mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns a dictionary mapping the time frames</span>
 <span class="sd">        to the number of bars in a year.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">th</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trading_hours</span>
         <span class="n">time_frame_mapping</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="k">for</span> <span class="n">minutes</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span>
-                        <span class="mi">30</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">120</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="mi">240</span><span class="p">,</span> <span class="mi">360</span><span class="p">,</span> <span class="mi">480</span><span class="p">,</span> <span class="mi">720</span><span class="p">]:</span>
+        <span class="k">for</span> <span class="n">minutes</span> <span class="ow">in</span> <span class="p">[</span>
+            <span class="mi">1</span><span class="p">,</span>
+            <span class="mi">2</span><span class="p">,</span>
+            <span class="mi">3</span><span class="p">,</span>
+            <span class="mi">4</span><span class="p">,</span>
+            <span class="mi">5</span><span class="p">,</span>
+            <span class="mi">6</span><span class="p">,</span>
+            <span class="mi">10</span><span class="p">,</span>
+            <span class="mi">12</span><span class="p">,</span>
+            <span class="mi">15</span><span class="p">,</span>
+            <span class="mi">20</span><span class="p">,</span>
+            <span class="mi">30</span><span class="p">,</span>
+            <span class="mi">60</span><span class="p">,</span>
+            <span class="mi">120</span><span class="p">,</span>
+            <span class="mi">180</span><span class="p">,</span>
+            <span class="mi">240</span><span class="p">,</span>
+            <span class="mi">360</span><span class="p">,</span>
+            <span class="mi">480</span><span class="p">,</span>
+            <span class="mi">720</span><span class="p">,</span>
+        <span class="p">]:</span>
             <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">minutes</span><span class="o">//</span><span class="mi">60</span><span class="si">}</span><span class="s2">h&quot;</span> <span class="k">if</span> <span class="n">minutes</span> <span class="o">&gt;=</span> <span class="mi">60</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">minutes</span><span class="si">}</span><span class="s2">m&quot;</span>
             <span class="n">time_frame_mapping</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">252</span> <span class="o">*</span> <span class="p">(</span><span class="mi">60</span> <span class="o">/</span> <span class="n">minutes</span><span class="p">)</span> <span class="o">*</span> <span class="n">th</span><span class="p">)</span>
-        <span class="n">time_frame_mapping</span><span class="p">[</span><span class="s1">&#39;D1&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">252</span>
+        <span class="n">time_frame_mapping</span><span class="p">[</span><span class="s2">&quot;D1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">252</span>
         <span class="k">return</span> <span class="n">time_frame_mapping</span>
 
 <div class="viewcode-block" id="Portfolio.construct_all_positions">
 <a class="viewcode-back" href="../../btengine.html#btengine.portfolio.Portfolio.construct_all_positions">[docs]</a>
-    <span class="k">def</span> <span class="nf">construct_all_positions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">construct_all_positions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Constructs the positions list using the start_date</span>
 <span class="sd">        to determine when the time index will begin.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">d</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">[(</span><span class="n">s</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol_list</span><span class="p">])</span>
-        <span class="n">d</span><span class="p">[</span><span class="s1">&#39;Datetime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_date</span>
+        <span class="n">d</span><span class="p">[</span><span class="s2">&quot;Datetime&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_date</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">d</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="Portfolio.construct_all_holdings">
 <a class="viewcode-back" href="../../btengine.html#btengine.portfolio.Portfolio.construct_all_holdings">[docs]</a>
-    <span class="k">def</span> <span class="nf">construct_all_holdings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">construct_all_holdings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Constructs the holdings list using the start_date</span>
 <span class="sd">        to determine when the time index will begin.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">d</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">[(</span><span class="n">s</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol_list</span><span class="p">])</span>
-        <span class="n">d</span><span class="p">[</span><span class="s1">&#39;Datetime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_date</span>
-        <span class="n">d</span><span class="p">[</span><span class="s1">&#39;Cash&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_capital</span>
-        <span class="n">d</span><span class="p">[</span><span class="s1">&#39;Commission&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
-        <span class="n">d</span><span class="p">[</span><span class="s1">&#39;Total&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_capital</span>
+        <span class="n">d</span><span class="p">[</span><span class="s2">&quot;Datetime&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_date</span>
+        <span class="n">d</span><span class="p">[</span><span class="s2">&quot;Cash&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_capital</span>
+        <span class="n">d</span><span class="p">[</span><span class="s2">&quot;Commission&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">d</span><span class="p">[</span><span class="s2">&quot;Total&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_capital</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">d</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="Portfolio.construct_current_holdings">
 <a class="viewcode-back" href="../../btengine.html#btengine.portfolio.Portfolio.construct_current_holdings">[docs]</a>
-    <span class="k">def</span> <span class="nf">construct_current_holdings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">construct_current_holdings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This constructs the dictionary which will hold the instantaneous</span>
 <span class="sd">        value of the portfolio across all symbols.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">d</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">[(</span><span class="n">s</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol_list</span><span class="p">])</span>
-        <span class="n">d</span><span class="p">[</span><span class="s1">&#39;Cash&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_capital</span>
-        <span class="n">d</span><span class="p">[</span><span class="s1">&#39;Commission&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
-        <span class="n">d</span><span class="p">[</span><span class="s1">&#39;Total&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_capital</span>
+        <span class="n">d</span><span class="p">[</span><span class="s2">&quot;Cash&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_capital</span>
+        <span class="n">d</span><span class="p">[</span><span class="s2">&quot;Commission&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">d</span><span class="p">[</span><span class="s2">&quot;Total&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_capital</span>
         <span class="k">return</span> <span class="n">d</span></div>
 
-    
-    <span class="k">def</span> <span class="nf">_get_price</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_price</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">price</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bars</span><span class="o">.</span><span class="n">get_latest_bar_value</span><span class="p">(</span>
-                <span class="n">symbol</span><span class="p">,</span> <span class="s2">&quot;adj_close&quot;</span>
-            <span class="p">)</span>
+            <span class="n">price</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bars</span><span class="o">.</span><span class="n">get_latest_bar_value</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="s2">&quot;adj_close&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">price</span>
-        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">price</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bars</span><span class="o">.</span><span class="n">get_latest_bar_value</span><span class="p">(</span>
-                    <span class="n">symbol</span><span class="p">,</span> <span class="s2">&quot;close&quot;</span>
-                <span class="p">)</span>
+                <span class="n">price</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bars</span><span class="o">.</span><span class="n">get_latest_bar_value</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="s2">&quot;close&quot;</span><span class="p">)</span>
                 <span class="k">return</span> <span class="n">price</span>
-            <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;Bars object must have &#39;adj_close&#39; or &#39;close&#39; prices&quot;</span>
-                <span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+                <span class="k">return</span> <span class="mf">0.0</span>
 
 <div class="viewcode-block" id="Portfolio.update_timeindex">
 <a class="viewcode-back" href="../../btengine.html#btengine.portfolio.Portfolio.update_timeindex">[docs]</a>
-    <span class="k">def</span> <span class="nf">update_timeindex</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">MarketEvent</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_timeindex</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">MarketEvent</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Adds a new record to the positions matrix for the current</span>
 <span class="sd">        market data bar. This reflects the PREVIOUS bar, i.e. all</span>
 <span class="sd">        current market data at this stage is known (OHLCV).</span>
 <span class="sd">        Makes use of a MarketEvent from the events queue.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">latest_datetime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bars</span><span class="o">.</span><span class="n">get_latest_bar_datetime</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">symbol_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="p">)</span>
+        <span class="n">latest_datetime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bars</span><span class="o">.</span><span class="n">get_latest_bar_datetime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol_list</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="c1"># Update positions</span>
         <span class="c1"># ================</span>
         <span class="n">dp</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">[(</span><span class="n">s</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol_list</span><span class="p">])</span>
-        <span class="n">dp</span><span class="p">[</span><span class="s1">&#39;Datetime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">latest_datetime</span>
+        <span class="n">dp</span><span class="p">[</span><span class="s2">&quot;Datetime&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">latest_datetime</span>
         <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol_list</span><span class="p">:</span>
             <span class="n">dp</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_positions</span><span class="p">[</span><span class="n">s</span><span class="p">]</span>
         <span class="c1"># Append the current positions</span>
@@ -299,16 +306,16 @@
         <span class="c1"># Update holdings</span>
         <span class="c1"># ===============</span>
         <span class="n">dh</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">[(</span><span class="n">s</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol_list</span><span class="p">])</span>
-        <span class="n">dh</span><span class="p">[</span><span class="s1">&#39;Datetime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">latest_datetime</span>
-        <span class="n">dh</span><span class="p">[</span><span class="s1">&#39;Cash&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_holdings</span><span class="p">[</span><span class="s1">&#39;Cash&#39;</span><span class="p">]</span>
-        <span class="n">dh</span><span class="p">[</span><span class="s1">&#39;Commission&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_holdings</span><span class="p">[</span><span class="s1">&#39;Commission&#39;</span><span class="p">]</span>
-        <span class="n">dh</span><span class="p">[</span><span class="s1">&#39;Total&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_holdings</span><span class="p">[</span><span class="s1">&#39;Cash&#39;</span><span class="p">]</span>
+        <span class="n">dh</span><span class="p">[</span><span class="s2">&quot;Datetime&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">latest_datetime</span>
+        <span class="n">dh</span><span class="p">[</span><span class="s2">&quot;Cash&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_holdings</span><span class="p">[</span><span class="s2">&quot;Cash&quot;</span><span class="p">]</span>
+        <span class="n">dh</span><span class="p">[</span><span class="s2">&quot;Commission&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_holdings</span><span class="p">[</span><span class="s2">&quot;Commission&quot;</span><span class="p">]</span>
+        <span class="n">dh</span><span class="p">[</span><span class="s2">&quot;Total&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_holdings</span><span class="p">[</span><span class="s2">&quot;Cash&quot;</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol_list</span><span class="p">:</span>
             <span class="c1"># Approximation to the real value</span>
             <span class="n">price</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_price</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
             <span class="n">market_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_positions</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">*</span> <span class="n">price</span>
             <span class="n">dh</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">market_value</span>
-            <span class="n">dh</span><span class="p">[</span><span class="s1">&#39;Total&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">market_value</span>
+            <span class="n">dh</span><span class="p">[</span><span class="s2">&quot;Total&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">market_value</span>
 
         <span class="c1"># Append the current holdings</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">all_holdings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dh</span><span class="p">)</span></div>
@@ -316,7 +323,7 @@
 
 <div class="viewcode-block" id="Portfolio.update_positions_from_fill">
 <a class="viewcode-back" href="../../btengine.html#btengine.portfolio.Portfolio.update_positions_from_fill">[docs]</a>
-    <span class="k">def</span> <span class="nf">update_positions_from_fill</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fill</span><span class="p">:</span> <span class="n">FillEvent</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_positions_from_fill</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fill</span><span class="p">:</span> <span class="n">FillEvent</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Takes a Fill object and updates the position matrix to</span>
 <span class="sd">        reflect the new position.</span>
@@ -326,18 +333,18 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Check whether the fill is a buy or sell</span>
         <span class="n">fill_dir</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">if</span> <span class="n">fill</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;BUY&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">fill</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="s2">&quot;BUY&quot;</span><span class="p">:</span>
             <span class="n">fill_dir</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="k">if</span> <span class="n">fill</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;SELL&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">fill</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="s2">&quot;SELL&quot;</span><span class="p">:</span>
             <span class="n">fill_dir</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
 
         <span class="c1"># Update positions list with new quantities</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">current_positions</span><span class="p">[</span><span class="n">fill</span><span class="o">.</span><span class="n">symbol</span><span class="p">]</span> <span class="o">+=</span> <span class="n">fill_dir</span><span class="o">*</span><span class="n">fill</span><span class="o">.</span><span class="n">quantity</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_positions</span><span class="p">[</span><span class="n">fill</span><span class="o">.</span><span class="n">symbol</span><span class="p">]</span> <span class="o">+=</span> <span class="n">fill_dir</span> <span class="o">*</span> <span class="n">fill</span><span class="o">.</span><span class="n">quantity</span></div>
 
 
 <div class="viewcode-block" id="Portfolio.update_holdings_from_fill">
 <a class="viewcode-back" href="../../btengine.html#btengine.portfolio.Portfolio.update_holdings_from_fill">[docs]</a>
-    <span class="k">def</span> <span class="nf">update_holdings_from_fill</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fill</span><span class="p">:</span> <span class="n">FillEvent</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_holdings_from_fill</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fill</span><span class="p">:</span> <span class="n">FillEvent</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Takes a Fill object and updates the holdings matrix to</span>
 <span class="sd">        reflect the holdings value.</span>
@@ -347,41 +354,41 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Check whether the fill is a buy or sell</span>
         <span class="n">fill_dir</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">if</span> <span class="n">fill</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;BUY&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">fill</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="s2">&quot;BUY&quot;</span><span class="p">:</span>
             <span class="n">fill_dir</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="k">if</span> <span class="n">fill</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;SELL&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">fill</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="s2">&quot;SELL&quot;</span><span class="p">:</span>
             <span class="n">fill_dir</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
 
         <span class="c1"># Update holdings list with new quantities</span>
         <span class="n">price</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_price</span><span class="p">(</span><span class="n">fill</span><span class="o">.</span><span class="n">symbol</span><span class="p">)</span>
         <span class="n">cost</span> <span class="o">=</span> <span class="n">fill_dir</span> <span class="o">*</span> <span class="n">price</span> <span class="o">*</span> <span class="n">fill</span><span class="o">.</span><span class="n">quantity</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_holdings</span><span class="p">[</span><span class="n">fill</span><span class="o">.</span><span class="n">symbol</span><span class="p">]</span> <span class="o">+=</span> <span class="n">cost</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">current_holdings</span><span class="p">[</span><span class="s1">&#39;Commission&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">fill</span><span class="o">.</span><span class="n">commission</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">current_holdings</span><span class="p">[</span><span class="s1">&#39;Cash&#39;</span><span class="p">]</span> <span class="o">-=</span> <span class="p">(</span><span class="n">cost</span> <span class="o">+</span> <span class="n">fill</span><span class="o">.</span><span class="n">commission</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">current_holdings</span><span class="p">[</span><span class="s1">&#39;Total&#39;</span><span class="p">]</span> <span class="o">-=</span> <span class="p">(</span><span class="n">cost</span> <span class="o">+</span> <span class="n">fill</span><span class="o">.</span><span class="n">commission</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_holdings</span><span class="p">[</span><span class="s2">&quot;Commission&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">fill</span><span class="o">.</span><span class="n">commission</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_holdings</span><span class="p">[</span><span class="s2">&quot;Cash&quot;</span><span class="p">]</span> <span class="o">-=</span> <span class="n">cost</span> <span class="o">+</span> <span class="n">fill</span><span class="o">.</span><span class="n">commission</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_holdings</span><span class="p">[</span><span class="s2">&quot;Total&quot;</span><span class="p">]</span> <span class="o">-=</span> <span class="n">cost</span> <span class="o">+</span> <span class="n">fill</span><span class="o">.</span><span class="n">commission</span></div>
 
 
 <div class="viewcode-block" id="Portfolio.update_fill">
 <a class="viewcode-back" href="../../btengine.html#btengine.portfolio.Portfolio.update_fill">[docs]</a>
-    <span class="k">def</span> <span class="nf">update_fill</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">FillEvent</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_fill</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">FillEvent</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Updates the portfolio current positions and holdings</span>
 <span class="sd">        from a FillEvent.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;FILL&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;FILL&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">update_positions_from_fill</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">update_holdings_from_fill</span><span class="p">(</span><span class="n">event</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Portfolio.generate_order">
 <a class="viewcode-back" href="../../btengine.html#btengine.portfolio.Portfolio.generate_order">[docs]</a>
-    <span class="k">def</span> <span class="nf">generate_order</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signal</span><span class="p">:</span> <span class="n">SignalEvent</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate_order</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signal</span><span class="p">:</span> <span class="n">SignalEvent</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Turns a SignalEvent into an OrderEvent.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            signal (SignalEvent): The tuple containing Signal information.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            OrderEvent: The OrderEvent to be executed.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -396,101 +403,111 @@
         <span class="n">mkt_quantity</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">quantity</span> <span class="o">*</span> <span class="n">strength</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
         <span class="n">new_quantity</span> <span class="o">=</span> <span class="n">mkt_quantity</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_leverage</span>
 
-        <span class="k">if</span> <span class="n">direction</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;LONG&#39;</span><span class="p">,</span> <span class="s1">&#39;SHORT&#39;</span><span class="p">,</span> <span class="s1">&#39;EXIT&#39;</span><span class="p">]:</span>
-            <span class="n">order_type</span> <span class="o">=</span> <span class="s1">&#39;MKT&#39;</span>
+        <span class="k">if</span> <span class="n">direction</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;LONG&quot;</span><span class="p">,</span> <span class="s2">&quot;SHORT&quot;</span><span class="p">,</span> <span class="s2">&quot;EXIT&quot;</span><span class="p">]:</span>
+            <span class="n">order_type</span> <span class="o">=</span> <span class="s2">&quot;MKT&quot;</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">order_type</span> <span class="o">=</span> <span class="n">direction</span>
 
-        <span class="k">if</span>  <span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;LONG&#39;</span> <span class="ow">and</span> <span class="n">new_quantity</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span> 
-            <span class="n">order</span> <span class="o">=</span> <span class="n">OrderEvent</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">order_type</span><span class="p">,</span> <span class="n">new_quantity</span><span class="p">,</span> <span class="s1">&#39;BUY&#39;</span><span class="p">,</span> <span class="n">price</span><span class="p">,</span> <span class="n">direction</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;SHORT&#39;</span> <span class="ow">and</span> <span class="n">new_quantity</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">order</span> <span class="o">=</span> <span class="n">OrderEvent</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">order_type</span><span class="p">,</span> <span class="n">new_quantity</span><span class="p">,</span> <span class="s1">&#39;SELL&#39;</span><span class="p">,</span> <span class="n">price</span><span class="p">,</span> <span class="n">direction</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s2">&quot;LONG&quot;</span> <span class="ow">and</span> <span class="n">new_quantity</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">order</span> <span class="o">=</span> <span class="n">OrderEvent</span><span class="p">(</span>
+                <span class="n">symbol</span><span class="p">,</span> <span class="n">order_type</span><span class="p">,</span> <span class="n">new_quantity</span><span class="p">,</span> <span class="s2">&quot;BUY&quot;</span><span class="p">,</span> <span class="n">price</span><span class="p">,</span> <span class="n">direction</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s2">&quot;SHORT&quot;</span> <span class="ow">and</span> <span class="n">new_quantity</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">order</span> <span class="o">=</span> <span class="n">OrderEvent</span><span class="p">(</span>
+                <span class="n">symbol</span><span class="p">,</span> <span class="n">order_type</span><span class="p">,</span> <span class="n">new_quantity</span><span class="p">,</span> <span class="s2">&quot;SELL&quot;</span><span class="p">,</span> <span class="n">price</span><span class="p">,</span> <span class="n">direction</span>
+            <span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;EXIT&#39;</span> <span class="ow">and</span> <span class="n">cur_quantity</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">order</span> <span class="o">=</span> <span class="n">OrderEvent</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">order_type</span><span class="p">,</span> <span class="nb">abs</span><span class="p">(</span><span class="n">cur_quantity</span><span class="p">),</span> <span class="s1">&#39;SELL&#39;</span><span class="p">,</span> <span class="n">price</span><span class="p">,</span> <span class="n">direction</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;EXIT&#39;</span> <span class="ow">and</span> <span class="n">cur_quantity</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">order</span> <span class="o">=</span> <span class="n">OrderEvent</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">order_type</span><span class="p">,</span> <span class="nb">abs</span><span class="p">(</span><span class="n">cur_quantity</span><span class="p">),</span> <span class="s1">&#39;BUY&#39;</span><span class="p">,</span> <span class="n">price</span><span class="p">,</span> <span class="n">direction</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s2">&quot;EXIT&quot;</span> <span class="ow">and</span> <span class="n">cur_quantity</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">order</span> <span class="o">=</span> <span class="n">OrderEvent</span><span class="p">(</span>
+                <span class="n">symbol</span><span class="p">,</span> <span class="n">order_type</span><span class="p">,</span> <span class="nb">abs</span><span class="p">(</span><span class="n">cur_quantity</span><span class="p">),</span> <span class="s2">&quot;SELL&quot;</span><span class="p">,</span> <span class="n">price</span><span class="p">,</span> <span class="n">direction</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s2">&quot;EXIT&quot;</span> <span class="ow">and</span> <span class="n">cur_quantity</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">order</span> <span class="o">=</span> <span class="n">OrderEvent</span><span class="p">(</span>
+                <span class="n">symbol</span><span class="p">,</span> <span class="n">order_type</span><span class="p">,</span> <span class="nb">abs</span><span class="p">(</span><span class="n">cur_quantity</span><span class="p">),</span> <span class="s2">&quot;BUY&quot;</span><span class="p">,</span> <span class="n">price</span><span class="p">,</span> <span class="n">direction</span>
+            <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">order</span></div>
 
 
-
 <div class="viewcode-block" id="Portfolio.update_signal">
 <a class="viewcode-back" href="../../btengine.html#btengine.portfolio.Portfolio.update_signal">[docs]</a>
-    <span class="k">def</span> <span class="nf">update_signal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">SignalEvent</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_signal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">SignalEvent</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Acts on a SignalEvent to generate new orders</span>
 <span class="sd">        based on the portfolio logic.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;SIGNAL&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;SIGNAL&quot;</span><span class="p">:</span>
             <span class="n">order_event</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_order</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">order_event</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Portfolio.create_equity_curve_dataframe">
 <a class="viewcode-back" href="../../btengine.html#btengine.portfolio.Portfolio.create_equity_curve_dataframe">[docs]</a>
-    <span class="k">def</span> <span class="nf">create_equity_curve_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_equity_curve_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Creates a pandas DataFrame from the all_holdings</span>
 <span class="sd">        list of dictionaries.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">curve</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_holdings</span><span class="p">)</span>
-        <span class="n">curve</span><span class="p">[</span><span class="s1">&#39;Datetime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">curve</span><span class="p">[</span><span class="s1">&#39;Datetime&#39;</span><span class="p">],</span> <span class="n">utc</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">curve</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;Datetime&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">curve</span><span class="p">[</span><span class="s1">&#39;Returns&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">curve</span><span class="p">[</span><span class="s1">&#39;Total&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">pct_change</span><span class="p">(</span><span class="n">fill_method</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-        <span class="n">curve</span><span class="p">[</span><span class="s1">&#39;Equity Curve&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="o">+</span><span class="n">curve</span><span class="p">[</span><span class="s1">&#39;Returns&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">cumprod</span><span class="p">()</span>
+        <span class="n">curve</span><span class="p">[</span><span class="s2">&quot;Datetime&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">curve</span><span class="p">[</span><span class="s2">&quot;Datetime&quot;</span><span class="p">],</span> <span class="n">utc</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">curve</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;Datetime&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">curve</span><span class="p">[</span><span class="s2">&quot;Returns&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">curve</span><span class="p">[</span><span class="s2">&quot;Total&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">pct_change</span><span class="p">(</span><span class="n">fill_method</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">curve</span><span class="p">[</span><span class="s2">&quot;Equity Curve&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">curve</span><span class="p">[</span><span class="s2">&quot;Returns&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">cumprod</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">equity_curve</span> <span class="o">=</span> <span class="n">curve</span></div>
 
 
 <div class="viewcode-block" id="Portfolio.output_summary_stats">
 <a class="viewcode-back" href="../../btengine.html#btengine.portfolio.Portfolio.output_summary_stats">[docs]</a>
-    <span class="k">def</span> <span class="nf">output_summary_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">output_summary_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Creates a list of summary statistics for the portfolio.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">total_return</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">equity_curve</span><span class="p">[</span><span class="s1">&#39;Equity Curve&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-        <span class="n">returns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">equity_curve</span><span class="p">[</span><span class="s1">&#39;Returns&#39;</span><span class="p">]</span>
-        <span class="n">pnl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">equity_curve</span><span class="p">[</span><span class="s1">&#39;Equity Curve&#39;</span><span class="p">]</span>
+        <span class="n">total_return</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">equity_curve</span><span class="p">[</span><span class="s2">&quot;Equity Curve&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">returns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">equity_curve</span><span class="p">[</span><span class="s2">&quot;Returns&quot;</span><span class="p">]</span>
+        <span class="n">pnl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">equity_curve</span><span class="p">[</span><span class="s2">&quot;Equity Curve&quot;</span><span class="p">]</span>
 
         <span class="n">sharpe_ratio</span> <span class="o">=</span> <span class="n">create_sharpe_ratio</span><span class="p">(</span><span class="n">returns</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tf</span><span class="p">)</span>
         <span class="n">sortino_ratio</span> <span class="o">=</span> <span class="n">create_sortino_ratio</span><span class="p">(</span><span class="n">returns</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tf</span><span class="p">)</span>
         <span class="n">drawdown</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">create_drawdowns</span><span class="p">(</span><span class="n">pnl</span><span class="p">)</span>
         <span class="n">max_dd</span> <span class="o">=</span> <span class="n">qs</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">max_drawdown</span><span class="p">(</span><span class="n">returns</span><span class="p">)</span>
         <span class="n">dd_details</span> <span class="o">=</span> <span class="n">qs</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">drawdown_details</span><span class="p">(</span><span class="n">drawdown</span><span class="p">)</span>
-        <span class="n">dd_duration</span> <span class="o">=</span> <span class="n">dd_details</span><span class="p">[</span><span class="s1">&#39;days&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">equity_curve</span><span class="p">[</span><span class="s1">&#39;Drawdown&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">drawdown</span>
+        <span class="n">dd_duration</span> <span class="o">=</span> <span class="n">dd_details</span><span class="p">[</span><span class="s2">&quot;days&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">equity_curve</span><span class="p">[</span><span class="s2">&quot;Drawdown&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">drawdown</span>
 
         <span class="n">stats</span> <span class="o">=</span> <span class="p">[</span>
             <span class="p">(</span><span class="s2">&quot;Total Return&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="p">(</span><span class="n">total_return</span><span class="o">-</span><span class="mf">1.0</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">100.0</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">),</span>
             <span class="p">(</span><span class="s2">&quot;Sharpe Ratio&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sharpe_ratio</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">),</span>
             <span class="p">(</span><span class="s2">&quot;Sortino Ratio&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sortino_ratio</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">),</span>
             <span class="p">(</span><span class="s2">&quot;Max Drawdown&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">max_dd</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">100.0</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">),</span>
-            <span class="p">(</span><span class="s2">&quot;Drawdown Duration&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dd_duration</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="p">(</span><span class="s2">&quot;Drawdown Duration&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dd_duration</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">),</span>
         <span class="p">]</span>
-        <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H%M%S&#39;</span><span class="p">)</span>
-        <span class="n">strategy_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span>
+        <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">%H%M%S&quot;</span><span class="p">)</span>
+        <span class="n">strategy_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">:</span>
             <span class="n">results_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">)</span> <span class="o">/</span> <span class="n">strategy_name</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">results_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s1">&#39;.backtests&#39;</span><span class="p">)</span> <span class="o">/</span> <span class="n">strategy_name</span>
+            <span class="n">results_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;.backtests&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="n">strategy_name</span>
         <span class="n">results_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        
-        <span class="n">csv_file</span> <span class="o">=</span>  <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">strategy_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">now</span><span class="si">}</span><span class="s2">_equities.csv&quot;</span>
-        <span class="n">png_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">strategy_name</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">now</span><span class="si">}</span><span class="s1">_returns_heatmap.png&#39;</span>
+
+        <span class="n">csv_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">strategy_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">now</span><span class="si">}</span><span class="s2">_equities.csv&quot;</span>
+        <span class="n">png_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">strategy_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">now</span><span class="si">}</span><span class="s2">_returns_heatmap.png&quot;</span>
         <span class="n">html_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">strategy_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">now</span><span class="si">}</span><span class="s2">_report.html&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">equity_curve</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">results_dir</span> <span class="o">/</span> <span class="n">csv_file</span><span class="p">)</span>
-        
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">print_stats</span><span class="p">:</span>
             <span class="n">plot_performance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">equity_curve</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy_name</span><span class="p">)</span>
             <span class="n">plot_returns_and_dd</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">equity_curve</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">benchmark</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy_name</span><span class="p">)</span>
             <span class="n">qs</span><span class="o">.</span><span class="n">plots</span><span class="o">.</span><span class="n">monthly_heatmap</span><span class="p">(</span><span class="n">returns</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">results_dir</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">png_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">plot_monthly_yearly_returns</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">equity_curve</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy_name</span><span class="p">)</span>
-            <span class="n">show_qs_stats</span><span class="p">(</span><span class="n">returns</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">benchmark</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy_name</span><span class="p">,</span> 
-                        <span class="n">save_dir</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">results_dir</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">html_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">show_qs_stats</span><span class="p">(</span>
+                <span class="n">returns</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">benchmark</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">strategy_name</span><span class="p">,</span>
+                <span class="n">save_dir</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">results_dir</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">html_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">stats</span></div>
 </div>
-
 
 </pre></div>
 
@@ -501,7 +518,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2024, Bertin Balouki SIMYELI.</p>
+    <p>&#169; Copyright 2023 - 2025, Bertin Balouki SIMYELI.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>models.optimization &mdash; BBSTrader 0.2.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+  <title>models.optimization &mdash; bbstrader 0.2.092 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=938c9ccc"></script>
+      <script src="../../_static/documentation_options.js?v=97badf68"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -29,7 +29,7 @@
           
           
           <a href="../../index.html" class="icon icon-home">
-            BBSTrader
+            bbstrader
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -50,7 +50,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../index.html">BBSTrader</a>
+          <a href="../../index.html">bbstrader</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -69,24 +69,23 @@
            <div itemprop="articleBody">
              
   <h1>Source code for models.optimization</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">from</span> <span class="nn">pypfopt</span> <span class="kn">import</span> <span class="n">risk_models</span>
-<span class="kn">from</span> <span class="nn">pypfopt</span> <span class="kn">import</span> <span class="n">expected_returns</span>
-<span class="kn">from</span> <span class="nn">pypfopt.efficient_frontier</span> <span class="kn">import</span> <span class="n">EfficientFrontier</span>
-<span class="kn">from</span> <span class="nn">pypfopt.hierarchical_portfolio</span> <span class="kn">import</span> <span class="n">HRPOpt</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pypfopt</span><span class="w"> </span><span class="kn">import</span> <span class="n">expected_returns</span><span class="p">,</span> <span class="n">risk_models</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pypfopt.efficient_frontier</span><span class="w"> </span><span class="kn">import</span> <span class="n">EfficientFrontier</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pypfopt.hierarchical_portfolio</span><span class="w"> </span><span class="kn">import</span> <span class="n">HRPOpt</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s1">&#39;markowitz_weights&#39;</span><span class="p">,</span> 
-    <span class="s1">&#39;hierarchical_risk_parity&#39;</span><span class="p">,</span> 
-    <span class="s1">&#39;equal_weighted&#39;</span><span class="p">,</span> 
-    <span class="s1">&#39;optimized_weights&#39;</span>
+    <span class="s2">&quot;markowitz_weights&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;hierarchical_risk_parity&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;equal_weighted&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;optimized_weights&quot;</span><span class="p">,</span>
 <span class="p">]</span>
+
 
 <div class="viewcode-block" id="markowitz_weights">
 <a class="viewcode-back" href="../../models.html#models.optimization.markowitz_weights">[docs]</a>
-<span class="k">def</span> <span class="nf">markowitz_weights</span><span class="p">(</span><span class="n">prices</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rfr</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="mi">252</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">markowitz_weights</span><span class="p">(</span><span class="n">prices</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rfr</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="mi">252</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculates optimal portfolio weights using Markowitz&#39;s mean-variance optimization (Max Sharpe Ratio) with multiple solvers.</span>
 
@@ -104,12 +103,12 @@
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
-<span class="sd">    This function attempts to maximize the Sharpe ratio by iterating through various solvers (&#39;SCS&#39;, &#39;ECOS&#39;, &#39;OSQP&#39;) </span>
-<span class="sd">    from the PyPortfolioOpt library. If a solver fails, it proceeds to the next one. If none succeed, an error message </span>
+<span class="sd">    This function attempts to maximize the Sharpe ratio by iterating through various solvers (&#39;SCS&#39;, &#39;ECOS&#39;, &#39;OSQP&#39;)</span>
+<span class="sd">    from the PyPortfolioOpt library. If a solver fails, it proceeds to the next one. If none succeed, an error message</span>
 <span class="sd">    is printed for each solver that fails.</span>
 
 <span class="sd">    This function is useful for portfolio with a small number of assets, as it may not scale well for large portfolios.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    Exception</span>
@@ -119,21 +118,24 @@
     <span class="n">cov</span> <span class="o">=</span> <span class="n">risk_models</span><span class="o">.</span><span class="n">sample_cov</span><span class="p">(</span><span class="n">prices</span><span class="p">,</span> <span class="n">frequency</span><span class="o">=</span><span class="n">freq</span><span class="p">)</span>
 
     <span class="c1"># Try different solvers to maximize Sharpe ratio</span>
-    <span class="k">for</span> <span class="n">solver</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;SCS&#39;</span><span class="p">,</span> <span class="s1">&#39;ECOS&#39;</span><span class="p">,</span> <span class="s1">&#39;OSQP&#39;</span><span class="p">]:</span>
-        <span class="n">ef</span> <span class="o">=</span> <span class="n">EfficientFrontier</span><span class="p">(</span><span class="n">expected_returns</span><span class="o">=</span><span class="n">returns</span><span class="p">,</span> 
-                               <span class="n">cov_matrix</span><span class="o">=</span><span class="n">cov</span><span class="p">,</span> 
-                               <span class="n">weight_bounds</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
-                               <span class="n">solver</span><span class="o">=</span><span class="n">solver</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">solver</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;SCS&quot;</span><span class="p">,</span> <span class="s2">&quot;ECOS&quot;</span><span class="p">,</span> <span class="s2">&quot;OSQP&quot;</span><span class="p">]:</span>
+        <span class="n">ef</span> <span class="o">=</span> <span class="n">EfficientFrontier</span><span class="p">(</span>
+            <span class="n">expected_returns</span><span class="o">=</span><span class="n">returns</span><span class="p">,</span>
+            <span class="n">cov_matrix</span><span class="o">=</span><span class="n">cov</span><span class="p">,</span>
+            <span class="n">weight_bounds</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="n">solver</span><span class="o">=</span><span class="n">solver</span><span class="p">,</span>
+        <span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">weights</span> <span class="o">=</span> <span class="n">ef</span><span class="o">.</span><span class="n">max_sharpe</span><span class="p">(</span><span class="n">risk_free_rate</span><span class="o">=</span><span class="n">rfr</span><span class="p">)</span>
+            <span class="n">ef</span><span class="o">.</span><span class="n">max_sharpe</span><span class="p">(</span><span class="n">risk_free_rate</span><span class="o">=</span><span class="n">rfr</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">ef</span><span class="o">.</span><span class="n">clean_weights</span><span class="p">()</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Solver </span><span class="si">{</span><span class="n">solver</span><span class="si">}</span><span class="s2"> failed with error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 
+
 <div class="viewcode-block" id="hierarchical_risk_parity">
 <a class="viewcode-back" href="../../models.html#models.optimization.hierarchical_risk_parity">[docs]</a>
-<span class="k">def</span> <span class="nf">hierarchical_risk_parity</span><span class="p">(</span><span class="n">prices</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">returns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="mi">252</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">hierarchical_risk_parity</span><span class="p">(</span><span class="n">prices</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">returns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="mi">252</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Computes asset weights using Hierarchical Risk Parity (HRP) for risk-averse portfolio allocation.</span>
 
@@ -158,25 +160,26 @@
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
-<span class="sd">    Hierarchical Risk Parity is particularly useful for portfolios with a large number of assets, </span>
-<span class="sd">    as it mitigates issues of multicollinearity and estimation errors in covariance matrices by </span>
+<span class="sd">    Hierarchical Risk Parity is particularly useful for portfolios with a large number of assets,</span>
+<span class="sd">    as it mitigates issues of multicollinearity and estimation errors in covariance matrices by</span>
 <span class="sd">    using hierarchical clustering.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">returns</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">prices</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Either prices or returns must be provided&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">returns</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">returns</span> <span class="o">=</span> <span class="n">prices</span><span class="o">.</span><span class="n">pct_change</span><span class="p">()</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">how</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">)</span>
+        <span class="n">returns</span> <span class="o">=</span> <span class="n">prices</span><span class="o">.</span><span class="n">pct_change</span><span class="p">()</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">how</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">)</span>
     <span class="c1"># Remove duplicate columns and index</span>
     <span class="n">returns</span> <span class="o">=</span> <span class="n">returns</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="o">~</span><span class="n">returns</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">duplicated</span><span class="p">()]</span>
-    <span class="n">returns</span> <span class="o">=</span> <span class="n">returns</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="o">~</span><span class="n">returns</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">duplicated</span><span class="p">(</span><span class="n">keep</span><span class="o">=</span><span class="s1">&#39;first&#39;</span><span class="p">)]</span>
+    <span class="n">returns</span> <span class="o">=</span> <span class="n">returns</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="o">~</span><span class="n">returns</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">duplicated</span><span class="p">(</span><span class="n">keep</span><span class="o">=</span><span class="s2">&quot;first&quot;</span><span class="p">)]</span>
     <span class="n">hrp</span> <span class="o">=</span> <span class="n">HRPOpt</span><span class="p">(</span><span class="n">returns</span><span class="o">=</span><span class="n">returns</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="n">freq</span><span class="p">:])</span>
     <span class="k">return</span> <span class="n">hrp</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span></div>
 
 
+
 <div class="viewcode-block" id="equal_weighted">
 <a class="viewcode-back" href="../../models.html#models.optimization.equal_weighted">[docs]</a>
-<span class="k">def</span> <span class="nf">equal_weighted</span><span class="p">(</span><span class="n">prices</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">returns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">round_digits</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">equal_weighted</span><span class="p">(</span><span class="n">prices</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">returns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">round_digits</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Generates an equal-weighted portfolio by assigning an equal proportion to each asset.</span>
 
@@ -201,7 +204,7 @@
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
-<span class="sd">    Equal weighting is a simple allocation method that assumes equal importance across all assets, </span>
+<span class="sd">    Equal weighting is a simple allocation method that assumes equal importance across all assets,</span>
 <span class="sd">    useful as a baseline model and when no strong views exist on asset return expectations or risk.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -213,12 +216,13 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">returns</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
         <span class="n">columns</span> <span class="o">=</span> <span class="n">returns</span><span class="o">.</span><span class="n">columns</span>
-    <span class="k">return</span> <span class="p">{</span><span class="n">col</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">n</span><span class="p">,</span> <span class="n">round_digits</span><span class="p">)</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">}</span></div>
+    <span class="k">return</span> <span class="p">{</span><span class="n">col</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">n</span><span class="p">,</span> <span class="n">round_digits</span><span class="p">)</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">}</span></div>
+
 
 
 <div class="viewcode-block" id="optimized_weights">
 <a class="viewcode-back" href="../../models.html#models.optimization.optimized_weights">[docs]</a>
-<span class="k">def</span> <span class="nf">optimized_weights</span><span class="p">(</span><span class="n">prices</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">returns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rfr</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="mi">252</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;equal&#39;</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">optimized_weights</span><span class="p">(</span><span class="n">prices</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">returns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rfr</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="mi">252</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;equal&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Selects an optimization method to calculate portfolio weights based on user preference.</span>
 
@@ -250,11 +254,11 @@
 <span class="sd">    - &#39;hrp&#39;: Hierarchical Risk Parity, for risk-based clustering of assets</span>
 <span class="sd">    - &#39;equal&#39;: Equal weighting across all assets</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;markowitz&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;markowitz&quot;</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">markowitz_weights</span><span class="p">(</span><span class="n">prices</span><span class="o">=</span><span class="n">prices</span><span class="p">,</span> <span class="n">rfr</span><span class="o">=</span><span class="n">rfr</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="n">freq</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;hrp&#39;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;hrp&quot;</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">hierarchical_risk_parity</span><span class="p">(</span><span class="n">prices</span><span class="o">=</span><span class="n">prices</span><span class="p">,</span> <span class="n">returns</span><span class="o">=</span><span class="n">returns</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="n">freq</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;equal&#39;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;equal&quot;</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">equal_weighted</span><span class="p">(</span><span class="n">prices</span><span class="o">=</span><span class="n">prices</span><span class="p">,</span> <span class="n">returns</span><span class="o">=</span><span class="n">returns</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown method: </span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
@@ -268,7 +272,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2024, Bertin Balouki SIMYELI.</p>
+    <p>&#169; Copyright 2023 - 2025, Bertin Balouki SIMYELI.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

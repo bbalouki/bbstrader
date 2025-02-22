@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Index &mdash; BBSTrader 0.2.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+  <title>Index &mdash; bbstrader 0.2.092 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=938c9ccc"></script>
+      <script src="_static/documentation_options.js?v=97badf68"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -29,7 +29,7 @@
           
           
           <a href="index.html" class="icon icon-home">
-            BBSTrader
+            bbstrader
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -50,7 +50,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">BBSTrader</a>
+          <a href="index.html">bbstrader</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -103,11 +103,17 @@
 </li>
       <li><a href="metatrader.html#metatrader.utils.AccountInfo">AccountInfo (class in metatrader.utils)</a>
 </li>
-      <li><a href="metatrader.html#metatrader.utils.TradeRequest.action">action (metatrader.utils.TradeRequest attribute)</a>
+      <li><a href="core.html#core.utils.TradeSignal.action">action (core.utils.TradeSignal attribute)</a>
+
+      <ul>
+        <li><a href="metatrader.html#metatrader.utils.TradeRequest.action">(metatrader.utils.TradeRequest attribute)</a>
 </li>
+      </ul></li>
       <li><a href="metatrader.html#metatrader.rates.Rates.adjclose">adjclose (metatrader.rates.Rates property)</a>
 </li>
       <li><a href="metatrader.html#metatrader.account.AdmiralMarktsGroup">AdmiralMarktsGroup (class in metatrader.account)</a>
+</li>
+      <li><a href="tseries.html#tseries.analyze_cointegrated_pairs">analyze_cointegrated_pairs() (in module tseries)</a>
 </li>
       <li><a href="models.html#models.ml.LightGBModel.apply_alphalen_analysis">apply_alphalen_analysis() (models.ml.LightGBModel method)</a>
 </li>
@@ -139,6 +145,8 @@
 </li>
       <li><a href="metatrader.html#metatrader.utils.AuthFailed">AuthFailed</a>
 </li>
+      <li><a href="core.html#core.utils.auto_convert">auto_convert() (in module core.utils)</a>
+</li>
       <li><a href="metatrader.html#metatrader.utils.AutoTradingDisabled">AutoTradingDisabled</a>
 </li>
   </ul></td>
@@ -148,6 +156,8 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="btengine.html#btengine.backtest.Backtest">Backtest (class in btengine.backtest)</a>
+</li>
+      <li><a href="btengine.html#btengine.scripts.backtest">backtest() (in module btengine.scripts)</a>
 </li>
       <li><a href="tseries.html#tseries.ArimaGarchModel.backtest_strategy">backtest_strategy() (tseries.ArimaGarchModel method)</a>
 </li>
@@ -179,6 +189,10 @@
 </li>
       <li><a href="metatrader.html#metatrader.utils.SymbolInfo.bidlow">bidlow (metatrader.utils.SymbolInfo attribute)</a>
 </li>
+      <li><a href="core.html#core.utils.TradeAction.BLMT">BLMT (core.utils.TradeAction attribute)</a>
+</li>
+      <li><a href="core.html#core.utils.TradeAction.BMKT">BMKT (core.utils.TradeAction attribute)</a>
+</li>
       <li><a href="metatrader.html#metatrader.trade.Trade.break_even">break_even() (metatrader.trade.Trade method)</a>
 </li>
       <li><a href="metatrader.html#metatrader.trade.Trade.break_even_request">break_even_request() (metatrader.trade.Trade method)</a>
@@ -187,6 +201,10 @@
 </li>
       <li><a href="metatrader.html#metatrader.account.Account.broker">broker (metatrader.account.Account property)</a>
 </li>
+      <li><a href="core.html#core.utils.TradeAction.BSTP">BSTP (core.utils.TradeAction attribute)</a>
+</li>
+      <li><a href="core.html#core.utils.TradeAction.BSTPLMT">BSTPLMT (core.utils.TradeAction attribute)</a>
+</li>
       <li>
     btengine
 
@@ -194,6 +212,8 @@
         <li><a href="btengine.html#module-btengine">module</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     btengine.backtest
 
@@ -201,8 +221,6 @@
         <li><a href="btengine.html#module-btengine.backtest">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     btengine.data
 
@@ -239,6 +257,13 @@
 </li>
       </ul></li>
       <li>
+    btengine.scripts
+
+      <ul>
+        <li><a href="btengine.html#module-btengine.scripts">module</a>
+</li>
+      </ul></li>
+      <li>
     btengine.strategy
 
       <ul>
@@ -250,6 +275,8 @@
       <li><a href="models.html#models.risk.build_hmm_models">build_hmm_models() (in module models.risk)</a>
 </li>
       <li><a href="metatrader.html#metatrader.trade.Trade.bulk_close">bulk_close() (metatrader.trade.Trade method)</a>
+</li>
+      <li><a href="core.html#core.utils.TradeAction.BUY">BUY (core.utils.TradeAction attribute)</a>
 </li>
       <li><a href="btengine.html#btengine.strategy.MT5Strategy.buy_limit">buy_limit() (btengine.strategy.MT5Strategy method)</a>
 </li>
@@ -293,7 +320,7 @@
 </li>
       <li><a href="metatrader.html#metatrader.account.Account.calculate_margin">calculate_margin() (metatrader.account.Account method)</a>
 </li>
-      <li><a href="btengine.html#btengine.strategy.MT5Strategy.calculate_pct_change">calculate_pct_change() (btengine.strategy.MT5Strategy method)</a>
+      <li><a href="btengine.html#btengine.strategy.MT5Strategy.calculate_pct_change">calculate_pct_change() (btengine.strategy.MT5Strategy static method)</a>
 </li>
       <li><a href="btengine.html#btengine.strategy.MT5Strategy.calculate_signals">calculate_signals() (btengine.strategy.MT5Strategy method)</a>
 
@@ -321,6 +348,8 @@
 </li>
       <li><a href="metatrader.html#metatrader.trade.Trade.check">check() (metatrader.trade.Trade method)</a>
 </li>
+      <li><a href="metatrader.html#metatrader.account.check_mt5_connection">check_mt5_connection() (in module metatrader.account)</a>
+</li>
       <li><a href="metatrader.html#metatrader.account.Account.check_order">check_order() (metatrader.account.Account method)</a>
 </li>
       <li><a href="btengine.html#btengine.strategy.MT5Strategy.check_pending_orders">check_pending_orders() (btengine.strategy.MT5Strategy method)</a>
@@ -329,7 +358,11 @@
         <li><a href="btengine.html#btengine.strategy.Strategy.check_pending_orders">(btengine.strategy.Strategy method)</a>
 </li>
       </ul></li>
+      <li><a href="tseries.html#tseries.check_stationarity">check_stationarity() (in module tseries)</a>
+</li>
       <li><a href="models.html#models.ml.OneStepTimeSeriesSplit.chunks">chunks() (models.ml.OneStepTimeSeriesSplit static method)</a>
+</li>
+      <li><a href="models.html#models.ml.LightGBModel.clean_stores">clean_stores() (models.ml.LightGBModel method)</a>
 </li>
       <li><a href="metatrader.html#metatrader.rates.Rates.close">close (metatrader.rates.Rates property)</a>
 </li>
@@ -369,8 +402,6 @@
 </li>
       <li><a href="metatrader.html#metatrader.utils.TerminalInfo.commondata_path">commondata_path (metatrader.utils.TerminalInfo attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="metatrader.html#metatrader.utils.TerminalInfo.community_account">community_account (metatrader.utils.TerminalInfo attribute)</a>
 </li>
       <li><a href="metatrader.html#metatrader.utils.TerminalInfo.community_balance">community_balance (metatrader.utils.TerminalInfo attribute)</a>
@@ -383,6 +414,17 @@
         <li><a href="metatrader.html#metatrader.utils.TerminalInfo.company">(metatrader.utils.TerminalInfo attribute)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    compat
+
+      <ul>
+        <li><a href="compat.html#module-compat">module</a>
+</li>
+      </ul></li>
+      <li><a href="tseries.html#tseries.compute_pair_metrics">compute_pair_metrics() (in module tseries)</a>
+</li>
       <li>
     config
 
@@ -390,6 +432,8 @@
         <li><a href="config.html#module-config">module</a>
 </li>
       </ul></li>
+      <li><a href="metatrader.html#metatrader.copier.config_copier">config_copier() (in module metatrader.copier)</a>
+</li>
       <li><a href="config.html#config.config_logger">config_logger() (in module config)</a>
 </li>
       <li><a href="metatrader.html#metatrader.utils.TerminalInfo.connected">connected (metatrader.utils.TerminalInfo attribute)</a>
@@ -402,7 +446,21 @@
 </li>
       <li><a href="metatrader.html#metatrader.account.Account.convert_currencies">convert_currencies() (metatrader.account.Account method)</a>
 </li>
-      <li><a href="btengine.html#btengine.strategy.MT5Strategy.convert_time_zone">convert_time_zone() (btengine.strategy.MT5Strategy method)</a>
+      <li><a href="btengine.html#btengine.strategy.MT5Strategy.convert_time_zone">convert_time_zone() (btengine.strategy.MT5Strategy static method)</a>
+</li>
+      <li><a href="metatrader.html#metatrader.scripts.copier_args">copier_args() (in module metatrader.scripts)</a>
+</li>
+      <li><a href="metatrader.html#metatrader.copier.TradeCopier.copy_new_order">copy_new_order() (metatrader.copier.TradeCopier method)</a>
+</li>
+      <li><a href="metatrader.html#metatrader.copier.TradeCopier.copy_new_position">copy_new_position() (metatrader.copier.TradeCopier method)</a>
+</li>
+      <li><a href="metatrader.html#metatrader.copier.TradeCopier.copy_new_trade">copy_new_trade() (metatrader.copier.TradeCopier method)</a>
+</li>
+      <li><a href="metatrader.html#metatrader.copier.TradeCopier.copy_orders">copy_orders() (metatrader.copier.TradeCopier method)</a>
+</li>
+      <li><a href="metatrader.html#metatrader.copier.TradeCopier.copy_positions">copy_positions() (metatrader.copier.TradeCopier method)</a>
+</li>
+      <li><a href="metatrader.html#metatrader.scripts.copy_trades">copy_trades() (in module metatrader.scripts)</a>
 </li>
       <li>
     core
@@ -497,13 +555,21 @@
 </li>
       <li><a href="metatrader.html#metatrader.utils.OrderSentResult.deal">deal (metatrader.utils.OrderSentResult attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="config.html#config.CustomLogger.debug">debug() (config.CustomLogger method)</a>
 </li>
       <li><a href="metatrader.html#metatrader.utils.SymbolInfo.description">description (metatrader.utils.SymbolInfo attribute)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="metatrader.html#metatrader.copier.TradeCopier.destination_orders">destination_orders() (metatrader.copier.TradeCopier method)</a>
+</li>
+      <li><a href="metatrader.html#metatrader.copier.TradeCopier.destination_positions">destination_positions() (metatrader.copier.TradeCopier method)</a>
+</li>
+      <li><a href="metatrader.html#metatrader.copier.TradeCopier.destinations">destinations (metatrader.copier.TradeCopier attribute)</a>
+</li>
       <li><a href="metatrader.html#metatrader.utils.TradeRequest.deviation">deviation (metatrader.utils.TradeRequest attribute)</a>
+</li>
+      <li><a href="core.html#core.utils.dict_from_ini">dict_from_ini() (in module core.utils)</a>
 </li>
       <li><a href="metatrader.html#metatrader.utils.SymbolInfo.digits">digits (metatrader.utils.SymbolInfo attribute)</a>
 </li>
@@ -525,6 +591,8 @@
 </li>
       <li><a href="metatrader.html#metatrader.utils.TerminalInfo.email_enabled">email_enabled (metatrader.utils.TerminalInfo attribute)</a>
 </li>
+      <li><a href="metatrader.html#metatrader.copier.TradeCopier.end_time">end_time (metatrader.copier.TradeCopier attribute)</a>
+</li>
       <li><a href="metatrader.html#metatrader.utils.TradeDeal.entry">entry (metatrader.utils.TradeDeal attribute)</a>
 </li>
       <li><a href="btengine.html#btengine.data.EODHDataHandler">EODHDataHandler (class in btengine.data)</a>
@@ -541,14 +609,16 @@
       </ul></li>
       <li><a href="config.html#config.CustomLogger.error">error() (config.CustomLogger method)</a>
 </li>
+      <li><a href="metatrader.html#metatrader.copier.TradeCopier.errors">errors (metatrader.copier.TradeCopier attribute)</a>
+</li>
+      <li><a href="tseries.html#tseries.OrnsteinUhlenbeck.estimate_parameters">estimate_parameters() (tseries.OrnsteinUhlenbeck method)</a>
+</li>
       <li><a href="models.html#models.ml.LightGBModel.evaluate">evaluate() (models.ml.LightGBModel method)</a>
 </li>
       <li><a href="btengine.html#btengine.event.Event">Event (class in btengine.event)</a>
 </li>
       <li><a href="metatrader.html#metatrader.utils.SymbolInfo.exchange">exchange (metatrader.utils.SymbolInfo attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="btengine.html#btengine.execution.ExecutionHandler.execute_order">execute_order() (btengine.execution.ExecutionHandler method)</a>
 
       <ul>
@@ -557,9 +627,43 @@
         <li><a href="btengine.html#btengine.execution.SimExecutionHandler.execute_order">(btengine.execution.SimExecutionHandler method)</a>
 </li>
       </ul></li>
+      <li><a href="trading.html#trading.script.execute_strategy">execute_strategy() (in module trading.script)</a>
+</li>
       <li><a href="tseries.html#tseries.ArimaGarchModel.execute_trading_strategy">execute_trading_strategy() (tseries.ArimaGarchModel method)</a>
 </li>
       <li><a href="btengine.html#btengine.execution.ExecutionHandler">ExecutionHandler (class in btengine.execution)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="core.html#core.utils.TradeAction.EXIT">EXIT (core.utils.TradeAction attribute)</a>
+</li>
+      <li><a href="core.html#core.utils.TradeAction.EXIT_ALL_ORDERS">EXIT_ALL_ORDERS (core.utils.TradeAction attribute)</a>
+</li>
+      <li><a href="core.html#core.utils.TradeAction.EXIT_ALL_POSITIONS">EXIT_ALL_POSITIONS (core.utils.TradeAction attribute)</a>
+</li>
+      <li><a href="core.html#core.utils.TradeAction.EXIT_LIMIT">EXIT_LIMIT (core.utils.TradeAction attribute)</a>
+</li>
+      <li><a href="core.html#core.utils.TradeAction.EXIT_LONG">EXIT_LONG (core.utils.TradeAction attribute)</a>
+</li>
+      <li><a href="core.html#core.utils.TradeAction.EXIT_LONG_LIMIT">EXIT_LONG_LIMIT (core.utils.TradeAction attribute)</a>
+</li>
+      <li><a href="core.html#core.utils.TradeAction.EXIT_LONG_STOP">EXIT_LONG_STOP (core.utils.TradeAction attribute)</a>
+</li>
+      <li><a href="core.html#core.utils.TradeAction.EXIT_LONG_STOP_LIMIT">EXIT_LONG_STOP_LIMIT (core.utils.TradeAction attribute)</a>
+</li>
+      <li><a href="core.html#core.utils.TradeAction.EXIT_LOSINGS">EXIT_LOSINGS (core.utils.TradeAction attribute)</a>
+</li>
+      <li><a href="core.html#core.utils.TradeAction.EXIT_PROFITABLES">EXIT_PROFITABLES (core.utils.TradeAction attribute)</a>
+</li>
+      <li><a href="core.html#core.utils.TradeAction.EXIT_SHORT">EXIT_SHORT (core.utils.TradeAction attribute)</a>
+</li>
+      <li><a href="core.html#core.utils.TradeAction.EXIT_SHORT_LIMIT">EXIT_SHORT_LIMIT (core.utils.TradeAction attribute)</a>
+</li>
+      <li><a href="core.html#core.utils.TradeAction.EXIT_SHORT_STOP">EXIT_SHORT_STOP (core.utils.TradeAction attribute)</a>
+</li>
+      <li><a href="core.html#core.utils.TradeAction.EXIT_SHORT_STOP_LIMIT">EXIT_SHORT_STOP_LIMIT (core.utils.TradeAction attribute)</a>
+</li>
+      <li><a href="core.html#core.utils.TradeAction.EXIT_STOP">EXIT_STOP (core.utils.TradeAction attribute)</a>
 </li>
       <li><a href="metatrader.html#metatrader.risk.RiskManagement.expected_profit">expected_profit() (metatrader.risk.RiskManagement method)</a>
 </li>
@@ -592,6 +696,10 @@
       <li><a href="metatrader.html#metatrader.utils.SymbolInfo.filling_mode">filling_mode (metatrader.utils.SymbolInfo attribute)</a>
 </li>
       <li><a href="config.html#config.LogLevelFilter.filter">filter() (config.LogLevelFilter method)</a>
+</li>
+      <li><a href="metatrader.html#metatrader.copier.TradeCopier.filter_positions_and_orders">filter_positions_and_orders() (metatrader.copier.TradeCopier method)</a>
+</li>
+      <li><a href="tseries.html#tseries.find_cointegrated_pairs">find_cointegrated_pairs() (in module tseries)</a>
 </li>
       <li><a href="models.html#models.ml.LightGBModel.fit">fit() (models.ml.LightGBModel method)</a>
 
@@ -643,6 +751,8 @@
 </li>
       <li><a href="metatrader.html#metatrader.account.Account.get_account_info">get_account_info() (metatrader.account.Account method)</a>
 </li>
+      <li><a href="btengine.html#btengine.performance.get_asset_performances">get_asset_performances() (in module btengine.performance)</a>
+</li>
       <li><a href="btengine.html#btengine.strategy.MT5Strategy.get_asset_values">get_asset_values() (btengine.strategy.MT5Strategy method)</a>
 </li>
       <li><a href="trading.html#trading.strategies.ArimaGarchStrategy.get_backtest_data">get_backtest_data() (trading.strategies.ArimaGarchStrategy method)</a>
@@ -671,7 +781,7 @@
 </li>
       <li><a href="metatrader.html#metatrader.trade.Trade.get_current_buys">get_current_buys() (metatrader.trade.Trade method)</a>
 </li>
-      <li><a href="btengine.html#btengine.strategy.MT5Strategy.get_current_dt">get_current_dt() (btengine.strategy.MT5Strategy method)</a>
+      <li><a href="btengine.html#btengine.strategy.MT5Strategy.get_current_dt">get_current_dt() (btengine.strategy.MT5Strategy static method)</a>
 </li>
       <li><a href="metatrader.html#metatrader.trade.Trade.get_current_losings">get_current_losings() (metatrader.trade.Trade method)</a>
 </li>
@@ -713,12 +823,12 @@
 </li>
       <li><a href="btengine.html#btengine.data.DataHandler.get_latest_bar_value">get_latest_bar_value() (btengine.data.DataHandler method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="btengine.html#btengine.data.DataHandler.get_latest_bars">get_latest_bars() (btengine.data.DataHandler method)</a>
 </li>
       <li><a href="btengine.html#btengine.data.DataHandler.get_latest_bars_values">get_latest_bars_values() (btengine.data.DataHandler method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="metatrader.html#metatrader.risk.RiskManagement.get_leverage">get_leverage() (metatrader.risk.RiskManagement method)</a>
 </li>
       <li><a href="trading.html#trading.strategies.ArimaGarchStrategy.get_live_data">get_live_data() (trading.strategies.ArimaGarchStrategy method)</a>
@@ -731,6 +841,8 @@
 </li>
       <li><a href="metatrader.html#metatrader.risk.RiskManagement.get_minutes">get_minutes() (metatrader.risk.RiskManagement method)</a>
 </li>
+      <li><a href="btengine.html#btengine.strategy.MT5Strategy.get_mt5_equivalent">get_mt5_equivalent() (btengine.strategy.MT5Strategy static method)</a>
+</li>
       <li><a href="models.html#models.ml.MultipleTimeSeriesCV.get_n_splits">get_n_splits() (models.ml.MultipleTimeSeriesCV method)</a>
 
       <ul>
@@ -738,15 +850,25 @@
 </li>
       </ul></li>
       <li><a href="metatrader.html#metatrader.account.Account.get_orders">get_orders() (metatrader.account.Account method)</a>
+
+      <ul>
+        <li><a href="metatrader.html#metatrader.copier.TradeCopier.get_orders">(metatrader.copier.TradeCopier method)</a>
 </li>
+      </ul></li>
       <li><a href="metatrader.html#metatrader.account.Account.get_orders_history">get_orders_history() (metatrader.account.Account method)</a>
 </li>
       <li><a href="metatrader.html#metatrader.risk.RiskManagement.get_pchange_stop">get_pchange_stop() (metatrader.risk.RiskManagement method)</a>
 </li>
+      <li><a href="btengine.html#btengine.performance.get_perfbased_weights">get_perfbased_weights() (in module btengine.performance)</a>
+</li>
       <li><a href="models.html#models.portfolio.EigenPortfolios.get_portfolios">get_portfolios() (models.portfolio.EigenPortfolios method)</a>
 </li>
       <li><a href="metatrader.html#metatrader.account.Account.get_positions">get_positions() (metatrader.account.Account method)</a>
+
+      <ul>
+        <li><a href="metatrader.html#metatrader.copier.TradeCopier.get_positions">(metatrader.copier.TradeCopier method)</a>
 </li>
+      </ul></li>
       <li><a href="btengine.html#btengine.strategy.MT5Strategy.get_positions_prices">get_positions_prices() (btengine.strategy.MT5Strategy method)</a>
 </li>
       <li><a href="tseries.html#tseries.get_prediction">get_prediction() (in module tseries)</a>
@@ -848,6 +970,8 @@
         <li><a href="ibkr.html#module-ibkr">module</a>
 </li>
       </ul></li>
+      <li><a href="core.html#core.utils.TradeSignal.id">id (core.utils.TradeSignal attribute)</a>
+</li>
       <li><a href="metatrader.html#metatrader.utils.TradePosition.identifier">identifier (metatrader.utils.TradePosition attribute)</a>
 </li>
       <li><a href="models.html#models.risk.HMMRiskManager.identify_market_trends">identify_market_trends() (models.risk.HMMRiskManager method)</a>
@@ -862,10 +986,10 @@
 </li>
       <li><a href="metatrader.html#metatrader.utils.InternalFailInit">InternalFailInit</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="metatrader.html#metatrader.utils.InternalFailReceive">InternalFailReceive</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="metatrader.html#metatrader.utils.InternalFailSend">InternalFailSend</a>
 </li>
       <li><a href="metatrader.html#metatrader.utils.InternalFailTimeout">InternalFailTimeout</a>
@@ -878,9 +1002,15 @@
 </li>
       <li><a href="metatrader.html#metatrader.risk.RiskManagement.is_risk_ok">is_risk_ok() (metatrader.risk.RiskManagement method)</a>
 </li>
-      <li><a href="btengine.html#btengine.strategy.MT5Strategy.is_signal_time">is_signal_time() (btengine.strategy.MT5Strategy method)</a>
+      <li><a href="btengine.html#btengine.strategy.MT5Strategy.is_signal_time">is_signal_time() (btengine.strategy.MT5Strategy static method)</a>
+</li>
+      <li><a href="metatrader.html#metatrader.copier.TradeCopier.iscopy_time">iscopy_time() (metatrader.copier.TradeCopier method)</a>
 </li>
       <li><a href="metatrader.html#metatrader.utils.SymbolInfo.isin">isin (metatrader.utils.SymbolInfo attribute)</a>
+</li>
+      <li><a href="metatrader.html#metatrader.copier.TradeCopier.isorder_modified">isorder_modified() (metatrader.copier.TradeCopier method)</a>
+</li>
+      <li><a href="metatrader.html#metatrader.copier.TradeCopier.isposition_modified">isposition_modified() (metatrader.copier.TradeCopier method)</a>
 </li>
       <li><a href="btengine.html#btengine.strategy.MT5Strategy.ispositions">ispositions() (btengine.strategy.MT5Strategy method)</a>
 </li>
@@ -900,9 +1030,13 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="tseries.html#tseries.KalmanFilterModel">KalmanFilterModel (class in tseries)</a>
 </li>
+      <li><a href="trading.html#trading.strategies.KalmanFilterStrategy">KalmanFilterStrategy (class in trading.strategies)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="trading.html#trading.strategies.KalmanFilterStrategy">KalmanFilterStrategy (class in trading.strategies)</a>
+      <li><a href="tseries.html#tseries.KFHedgeRatio">KFHedgeRatio() (in module tseries)</a>
+</li>
+      <li><a href="tseries.html#tseries.KFSmoother">KFSmoother() (in module tseries)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -934,8 +1068,6 @@
         <li><a href="metatrader.html#metatrader.utils.AccountInfo.leverage">(metatrader.utils.AccountInfo attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="metatrader.html#metatrader.utils.AccountInfo.liabilities">liabilities (metatrader.utils.AccountInfo attribute)</a>
 </li>
       <li><a href="models.html#models.ml.LightGBModel">LightGBModel (class in models.ml)</a>
@@ -948,13 +1080,37 @@
         <li><a href="tseries.html#tseries.ArimaGarchModel.load_and_prepare_data">(tseries.ArimaGarchModel method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="core.html#core.utils.load_class">load_class() (in module core.utils)</a>
+</li>
+      <li><a href="btengine.html#btengine.scripts.load_config">load_config() (in module btengine.scripts)</a>
+
+      <ul>
+        <li><a href="trading.html#trading.script.load_config">(in module trading.script)</a>
+</li>
+      </ul></li>
+      <li><a href="btengine.html#btengine.scripts.load_data_handler">load_data_handler() (in module btengine.scripts)</a>
+</li>
+      <li><a href="btengine.html#btengine.scripts.load_exc_handler">load_exc_handler() (in module btengine.scripts)</a>
+</li>
       <li><a href="models.html#models.ml.LightGBModel.load_model_data">load_model_data() (models.ml.LightGBModel method)</a>
 </li>
+      <li><a href="core.html#core.utils.load_module">load_module() (in module core.utils)</a>
+</li>
       <li><a href="models.html#models.ml.LightGBModel.load_predictions">load_predictions() (models.ml.LightGBModel method)</a>
+</li>
+      <li><a href="btengine.html#btengine.scripts.load_strategy">load_strategy() (in module btengine.scripts)</a>
+</li>
+      <li><a href="metatrader.html#metatrader.copier.TradeCopier.log_error">log_error() (metatrader.copier.TradeCopier method)</a>
+</li>
+      <li><a href="metatrader.html#metatrader.trade.Trade.logger">logger (metatrader.trade.Trade property)</a>
 </li>
       <li><a href="metatrader.html#metatrader.utils.AccountInfo.login">login (metatrader.utils.AccountInfo attribute)</a>
 </li>
       <li><a href="config.html#config.LogLevelFilter">LogLevelFilter (class in config)</a>
+</li>
+      <li><a href="core.html#core.utils.TradeAction.LONG">LONG (core.utils.TradeAction attribute)</a>
 </li>
       <li><a href="metatrader.html#metatrader.rates.Rates.low">low (metatrader.rates.Rates property)</a>
 </li>
@@ -1069,6 +1225,13 @@
 </li>
       </ul></li>
       <li>
+    metatrader.copier
+
+      <ul>
+        <li><a href="metatrader.html#module-metatrader.copier">module</a>
+</li>
+      </ul></li>
+      <li>
     metatrader.rates
 
       <ul>
@@ -1080,6 +1243,13 @@
 
       <ul>
         <li><a href="metatrader.html#module-metatrader.risk">module</a>
+</li>
+      </ul></li>
+      <li>
+    metatrader.scripts
+
+      <ul>
+        <li><a href="metatrader.html#module-metatrader.scripts">module</a>
 </li>
       </ul></li>
       <li>
@@ -1096,8 +1266,6 @@
         <li><a href="metatrader.html#module-metatrader.utils">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="metatrader.html#metatrader.utils.TimeFrame.MN1">MN1 (metatrader.utils.TimeFrame attribute)</a>
 </li>
       <li>
@@ -1107,6 +1275,8 @@
         <li><a href="models.html#module-models">module</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     models.factors
 
@@ -1142,6 +1312,14 @@
         <li><a href="models.html#module-models.risk">module</a>
 </li>
       </ul></li>
+      <li><a href="metatrader.html#metatrader.copier.TradeCopier.modify_order">modify_order() (metatrader.copier.TradeCopier method)</a>
+
+      <ul>
+        <li><a href="metatrader.html#metatrader.trade.Trade.modify_order">(metatrader.trade.Trade method)</a>
+</li>
+      </ul></li>
+      <li><a href="metatrader.html#metatrader.copier.TradeCopier.modify_position">modify_position() (metatrader.copier.TradeCopier method)</a>
+</li>
       <li>
     module
 
@@ -1160,7 +1338,11 @@
 </li>
         <li><a href="btengine.html#module-btengine.portfolio">btengine.portfolio</a>
 </li>
+        <li><a href="btengine.html#module-btengine.scripts">btengine.scripts</a>
+</li>
         <li><a href="btengine.html#module-btengine.strategy">btengine.strategy</a>
+</li>
+        <li><a href="compat.html#module-compat">compat</a>
 </li>
         <li><a href="config.html#module-config">config</a>
 </li>
@@ -1176,9 +1358,13 @@
 </li>
         <li><a href="metatrader.html#module-metatrader.account">metatrader.account</a>
 </li>
+        <li><a href="metatrader.html#module-metatrader.copier">metatrader.copier</a>
+</li>
         <li><a href="metatrader.html#module-metatrader.rates">metatrader.rates</a>
 </li>
         <li><a href="metatrader.html#module-metatrader.risk">metatrader.risk</a>
+</li>
+        <li><a href="metatrader.html#module-metatrader.scripts">metatrader.scripts</a>
 </li>
         <li><a href="metatrader.html#module-metatrader.trade">metatrader.trade</a>
 </li>
@@ -1200,6 +1386,8 @@
 </li>
         <li><a href="trading.html#module-trading.execution">trading.execution</a>
 </li>
+        <li><a href="trading.html#module-trading.script">trading.script</a>
+</li>
         <li><a href="trading.html#module-trading.scripts">trading.scripts</a>
 </li>
         <li><a href="trading.html#module-trading.strategies">trading.strategies</a>
@@ -1208,6 +1396,8 @@
 </li>
       </ul></li>
       <li><a href="metatrader.html#metatrader.utils.TerminalInfo.mqid">mqid (metatrader.utils.TerminalInfo attribute)</a>
+</li>
+      <li><a href="trading.html#trading.script.mt5_terminal">mt5_terminal() (in module trading.script)</a>
 </li>
       <li><a href="btengine.html#btengine.data.MT5DataHandler">MT5DataHandler (class in btengine.data)</a>
 </li>
@@ -1271,8 +1461,6 @@
 </li>
       <li><a href="metatrader.html#metatrader.utils.SymbolInfo.option_strike">option_strike (metatrader.utils.SymbolInfo attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="metatrader.html#metatrader.utils.OrderSentResult.order">order (metatrader.utils.OrderSentResult attribute)</a>
 
       <ul>
@@ -1281,6 +1469,8 @@
         <li><a href="metatrader.html#metatrader.utils.TradeRequest.order">(metatrader.utils.TradeRequest attribute)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="metatrader.html#metatrader.utils.SymbolInfo.order_gtc_mode">order_gtc_mode (metatrader.utils.SymbolInfo attribute)</a>
 </li>
       <li><a href="metatrader.html#metatrader.utils.SymbolInfo.order_mode">order_mode (metatrader.utils.SymbolInfo attribute)</a>
@@ -1297,6 +1487,10 @@
 </li>
       <li><a href="metatrader.html#metatrader.utils.OrderSentResult">OrderSentResult (class in metatrader.utils)</a>
 </li>
+      <li><a href="tseries.html#tseries.OrnsteinUhlenbeck.ornstein_uhlenbeck">ornstein_uhlenbeck() (tseries.OrnsteinUhlenbeck method)</a>
+</li>
+      <li><a href="tseries.html#tseries.OrnsteinUhlenbeck">OrnsteinUhlenbeck (class in tseries)</a>
+</li>
       <li><a href="btengine.html#btengine.portfolio.Portfolio.output_summary_stats">output_summary_stats() (btengine.portfolio.Portfolio method)</a>
 </li>
   </ul></td>
@@ -1311,6 +1505,14 @@
 
       <ul>
         <li><a href="metatrader.html#metatrader.utils.TerminalInfo.path">(metatrader.utils.TerminalInfo attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="metatrader.html#metatrader.account.PepperstoneGroupLimited">PepperstoneGroupLimited (class in metatrader.account)</a>
+</li>
+      <li><a href="btengine.html#btengine.strategy.MT5Strategy.perform_period_end_checks">perform_period_end_checks() (btengine.strategy.MT5Strategy method)</a>
+
+      <ul>
+        <li><a href="btengine.html#btengine.strategy.Strategy.perform_period_end_checks">(btengine.strategy.Strategy method)</a>
 </li>
       </ul></li>
       <li><a href="metatrader.html#metatrader.utils.TerminalInfo.ping_last">ping_last (metatrader.utils.TerminalInfo attribute)</a>
@@ -1359,21 +1561,23 @@
 </li>
       <li><a href="metatrader.html#metatrader.trade.Trade.positive_profit">positive_profit() (metatrader.trade.Trade method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="tseries.html#tseries.predict_next_return">predict_next_return() (in module tseries)</a>
 
       <ul>
         <li><a href="tseries.html#tseries.ArimaGarchModel.predict_next_return">(tseries.ArimaGarchModel method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="models.html#models.ml.LightGBModel.prepare_boosting_data">prepare_boosting_data() (models.ml.LightGBModel method)</a>
 </li>
       <li><a href="metatrader.html#metatrader.trade.Trade.prepare_symbol">prepare_symbol() (metatrader.trade.Trade method)</a>
 </li>
-      <li><a href="metatrader.html#metatrader.utils.OrderSentResult.price">price (metatrader.utils.OrderSentResult attribute)</a>
+      <li><a href="core.html#core.utils.TradeSignal.price">price (core.utils.TradeSignal attribute)</a>
 
       <ul>
+        <li><a href="metatrader.html#metatrader.utils.OrderSentResult.price">(metatrader.utils.OrderSentResult attribute)</a>
+</li>
         <li><a href="metatrader.html#metatrader.utils.TradeDeal.price">(metatrader.utils.TradeDeal attribute)</a>
 </li>
         <li><a href="metatrader.html#metatrader.utils.TradeRequest.price">(metatrader.utils.TradeRequest attribute)</a>
@@ -1445,6 +1649,14 @@
         <li><a href="metatrader.html#metatrader.utils.TradePosition.reason">(metatrader.utils.TradePosition attribute)</a>
 </li>
       </ul></li>
+      <li><a href="tseries.html#tseries.remove_correlated_assets">remove_correlated_assets() (in module tseries)</a>
+</li>
+      <li><a href="metatrader.html#metatrader.copier.TradeCopier.remove_order">remove_order() (metatrader.copier.TradeCopier method)</a>
+</li>
+      <li><a href="metatrader.html#metatrader.copier.TradeCopier.remove_position">remove_position() (metatrader.copier.TradeCopier method)</a>
+</li>
+      <li><a href="tseries.html#tseries.remove_stationary_assets">remove_stationary_assets() (in module tseries)</a>
+</li>
       <li><a href="metatrader.html#metatrader.utils.OrderCheckResult.request">request (metatrader.utils.OrderCheckResult attribute)</a>
 
       <ul>
@@ -1465,6 +1677,8 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="metatrader.html#metatrader.utils.OrderSentResult.retcode_external">retcode_external (metatrader.utils.OrderSentResult attribute)</a>
 </li>
+      <li><a href="metatrader.html#metatrader.trade.Trade.retcodes">retcodes (metatrader.trade.Trade property)</a>
+</li>
       <li><a href="metatrader.html#metatrader.utils.TerminalInfo.retransmission">retransmission (metatrader.utils.TerminalInfo attribute)</a>
 </li>
       <li><a href="metatrader.html#metatrader.rates.Rates.returns">returns (metatrader.rates.Rates property)</a>
@@ -1477,8 +1691,12 @@
 </li>
       <li><a href="models.html#models.risk.RiskModel">RiskModel (class in models.risk)</a>
 </li>
-      <li><a href="trading.html#trading.execution.MT5ExecutionEngine.run">run() (trading.execution.MT5ExecutionEngine method)</a>
+      <li><a href="metatrader.html#metatrader.copier.TradeCopier.run">run() (metatrader.copier.TradeCopier method)</a>
+
+      <ul>
+        <li><a href="trading.html#trading.execution.MT5ExecutionEngine.run">(trading.execution.MT5ExecutionEngine method)</a>
 </li>
+      </ul></li>
       <li><a href="btengine.html#btengine.backtest.run_backtest">run_backtest() (in module btengine.backtest)</a>
 </li>
       <li><a href="tseries.html#tseries.run_cadf_test">run_cadf_test() (in module tseries)</a>
@@ -1488,6 +1706,10 @@
       <li><a href="tseries.html#tseries.run_hurst_test">run_hurst_test() (in module tseries)</a>
 </li>
       <li><a href="tseries.html#tseries.run_kalman_filter">run_kalman_filter() (in module tseries)</a>
+</li>
+      <li><a href="metatrader.html#metatrader.copier.RunCopier">RunCopier() (in module metatrader.copier)</a>
+</li>
+      <li><a href="metatrader.html#metatrader.copier.RunMultipleCopier">RunMultipleCopier() (in module metatrader.copier)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -1501,7 +1723,13 @@
 </li>
       <li><a href="metatrader.html#metatrader.utils.SymbolInfo.select">select (metatrader.utils.SymbolInfo attribute)</a>
 </li>
+      <li><a href="tseries.html#tseries.select_assets">select_assets() (in module tseries)</a>
+</li>
+      <li><a href="tseries.html#tseries.select_candidate_pairs">select_candidate_pairs() (in module tseries)</a>
+</li>
       <li><a href="metatrader.html#metatrader.trade.Trade.select_symbol">select_symbol() (metatrader.trade.Trade method)</a>
+</li>
+      <li><a href="core.html#core.utils.TradeAction.SELL">SELL (core.utils.TradeAction attribute)</a>
 </li>
       <li><a href="btengine.html#btengine.strategy.MT5Strategy.sell_limit">sell_limit() (btengine.strategy.MT5Strategy method)</a>
 </li>
@@ -1559,14 +1787,16 @@
 </li>
       <li><a href="metatrader.html#metatrader.trade.Trade.set_break_even">set_break_even() (metatrader.trade.Trade method)</a>
 </li>
+      <li><a href="compat.html#compat.setup_mock_metatrader">setup_mock_metatrader() (in module compat)</a>
+</li>
       <li><a href="metatrader.html#metatrader.trade.Trade.sharpe">sharpe() (metatrader.trade.Trade method)</a>
+</li>
+      <li><a href="core.html#core.utils.TradeAction.SHORT">SHORT (core.utils.TradeAction attribute)</a>
 </li>
       <li><a href="metatrader.html#metatrader.account.Account.show_account_info">show_account_info() (metatrader.account.Account method)</a>
 </li>
       <li><a href="tseries.html#tseries.ArimaGarchModel.show_arima_garch_results">show_arima_garch_results() (tseries.ArimaGarchModel method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="models.html#models.risk.HMMRiskManager.show_hidden_states">show_hidden_states() (models.risk.HMMRiskManager method)</a>
 </li>
       <li><a href="btengine.html#btengine.performance.show_qs_stats">show_qs_stats() (in module btengine.performance)</a>
@@ -1575,9 +1805,15 @@
 </li>
       <li><a href="metatrader.html#metatrader.account.Account.show_tick_info">show_tick_info() (metatrader.account.Account method)</a>
 </li>
+      <li><a href="metatrader.html#metatrader.account.Account.shutdown">shutdown() (metatrader.account.Account method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="btengine.html#btengine.event.SignalEvent">SignalEvent (class in btengine.event)</a>
 </li>
       <li><a href="btengine.html#btengine.execution.SimExecutionHandler">SimExecutionHandler (class in btengine.execution)</a>
+</li>
+      <li><a href="tseries.html#tseries.OrnsteinUhlenbeck.simulate_process">simulate_process() (tseries.OrnsteinUhlenbeck method)</a>
 </li>
       <li><a href="btengine.html#btengine.backtest.BacktestEngine.simulate_trading">simulate_trading() (btengine.backtest.BacktestEngine method)</a>
 </li>
@@ -1591,7 +1827,21 @@
       </ul></li>
       <li><a href="metatrader.html#metatrader.trade.Trade.sleep_time">sleep_time() (metatrader.trade.Trade method)</a>
 </li>
+      <li><a href="metatrader.html#metatrader.copier.TradeCopier.sleeptime">sleeptime (metatrader.copier.TradeCopier attribute)</a>
+</li>
+      <li><a href="metatrader.html#metatrader.copier.TradeCopier.slippage">slippage() (metatrader.copier.TradeCopier method)</a>
+</li>
+      <li><a href="core.html#core.utils.TradeAction.SLMT">SLMT (core.utils.TradeAction attribute)</a>
+</li>
       <li><a href="trading.html#trading.strategies.SMAStrategy">SMAStrategy (class in trading.strategies)</a>
+</li>
+      <li><a href="core.html#core.utils.TradeAction.SMKT">SMKT (core.utils.TradeAction attribute)</a>
+</li>
+      <li><a href="metatrader.html#metatrader.copier.TradeCopier.source">source (metatrader.copier.TradeCopier attribute)</a>
+</li>
+      <li><a href="metatrader.html#metatrader.copier.TradeCopier.source_orders">source_orders() (metatrader.copier.TradeCopier method)</a>
+</li>
+      <li><a href="metatrader.html#metatrader.copier.TradeCopier.source_positions">source_positions() (metatrader.copier.TradeCopier method)</a>
 </li>
       <li><a href="models.html#models.ml.MultipleTimeSeriesCV.split">split() (models.ml.MultipleTimeSeriesCV method)</a>
 
@@ -1603,16 +1853,28 @@
 </li>
       <li><a href="metatrader.html#metatrader.utils.SymbolInfo.spread_float">spread_float (metatrader.utils.SymbolInfo attribute)</a>
 </li>
-      <li><a href="metatrader.html#metatrader.utils.SymbolInfo.start_time">start_time (metatrader.utils.SymbolInfo attribute)</a>
+      <li><a href="core.html#core.utils.TradeAction.SSTP">SSTP (core.utils.TradeAction attribute)</a>
 </li>
+      <li><a href="core.html#core.utils.TradeAction.SSTPLMT">SSTPLMT (core.utils.TradeAction attribute)</a>
+</li>
+      <li><a href="metatrader.html#metatrader.copier.TradeCopier.start_time">start_time (metatrader.copier.TradeCopier attribute)</a>
+
+      <ul>
+        <li><a href="metatrader.html#metatrader.utils.SymbolInfo.start_time">(metatrader.utils.SymbolInfo attribute)</a>
+</li>
+      </ul></li>
       <li><a href="metatrader.html#metatrader.utils.TradeOrder.state">state (metatrader.utils.TradeOrder attribute)</a>
 </li>
       <li><a href="metatrader.html#metatrader.trade.Trade.statistics">statistics() (metatrader.trade.Trade method)</a>
 </li>
       <li><a href="trading.html#trading.strategies.StockIndexSTBOTrading">StockIndexSTBOTrading (class in trading.strategies)</a>
 </li>
-      <li><a href="metatrader.html#metatrader.utils.TradeRequest.stoplimit">stoplimit (metatrader.utils.TradeRequest attribute)</a>
+      <li><a href="core.html#core.utils.TradeSignal.stoplimit">stoplimit (core.utils.TradeSignal attribute)</a>
+
+      <ul>
+        <li><a href="metatrader.html#metatrader.utils.TradeRequest.stoplimit">(metatrader.utils.TradeRequest attribute)</a>
 </li>
+      </ul></li>
       <li><a href="btengine.html#btengine.strategy.Strategy">Strategy (class in btengine.strategy)</a>
 </li>
       <li><a href="metatrader.html#metatrader.trade.Trade.summary">summary() (metatrader.trade.Trade method)</a>
@@ -1631,9 +1893,11 @@
 </li>
       <li><a href="metatrader.html#metatrader.utils.SymbolInfo.swap_short">swap_short (metatrader.utils.SymbolInfo attribute)</a>
 </li>
-      <li><a href="metatrader.html#metatrader.utils.TradeDeal.symbol">symbol (metatrader.utils.TradeDeal attribute)</a>
+      <li><a href="core.html#core.utils.TradeSignal.symbol">symbol (core.utils.TradeSignal attribute)</a>
 
       <ul>
+        <li><a href="metatrader.html#metatrader.utils.TradeDeal.symbol">(metatrader.utils.TradeDeal attribute)</a>
+</li>
         <li><a href="metatrader.html#metatrader.utils.TradeOrder.symbol">(metatrader.utils.TradeOrder attribute)</a>
 </li>
         <li><a href="metatrader.html#metatrader.utils.TradePosition.symbol">(metatrader.utils.TradePosition attribute)</a>
@@ -1712,6 +1976,8 @@
 </li>
         <li><a href="metatrader.html#metatrader.account.JustGlobalMarkets.timezone">(metatrader.account.JustGlobalMarkets property)</a>
 </li>
+        <li><a href="metatrader.html#metatrader.account.PepperstoneGroupLimited.timezone">(metatrader.account.PepperstoneGroupLimited property)</a>
+</li>
       </ul></li>
       <li><a href="metatrader.html#metatrader.utils.TradeOrder.tp">tp (metatrader.utils.TradeOrder attribute)</a>
 
@@ -1737,14 +2003,14 @@
 </li>
       <li><a href="metatrader.html#metatrader.utils.SymbolInfo.trade_exemode">trade_exemode (metatrader.utils.SymbolInfo attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="metatrader.html#metatrader.utils.AccountInfo.trade_expert">trade_expert (metatrader.utils.AccountInfo attribute)</a>
 </li>
       <li><a href="metatrader.html#metatrader.utils.SymbolInfo.trade_face_value">trade_face_value (metatrader.utils.SymbolInfo attribute)</a>
 </li>
       <li><a href="metatrader.html#metatrader.utils.SymbolInfo.trade_freeze_level">trade_freeze_level (metatrader.utils.SymbolInfo attribute)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="metatrader.html#metatrader.utils.SymbolInfo.trade_liquidity_rate">trade_liquidity_rate (metatrader.utils.SymbolInfo attribute)</a>
 </li>
       <li><a href="metatrader.html#metatrader.utils.AccountInfo.trade_mode">trade_mode (metatrader.utils.AccountInfo attribute)</a>
@@ -1765,7 +2031,11 @@
 </li>
       <li><a href="metatrader.html#metatrader.utils.SymbolInfo.trade_tick_value_profit">trade_tick_value_profit (metatrader.utils.SymbolInfo attribute)</a>
 </li>
+      <li><a href="core.html#core.utils.TradeAction">TradeAction (class in core.utils)</a>
+</li>
       <li><a href="metatrader.html#metatrader.utils.TerminalInfo.tradeapi_disabled">tradeapi_disabled (metatrader.utils.TerminalInfo attribute)</a>
+</li>
+      <li><a href="metatrader.html#metatrader.copier.TradeCopier">TradeCopier (class in metatrader.copier)</a>
 </li>
       <li><a href="metatrader.html#metatrader.utils.TradeDeal">TradeDeal (class in metatrader.utils)</a>
 </li>
@@ -1776,6 +2046,8 @@
       <li><a href="metatrader.html#metatrader.utils.TradeRequest">TradeRequest (class in metatrader.utils)</a>
 </li>
       <li><a href="btengine.html#btengine.strategy.MT5Strategy.trades">trades (btengine.strategy.MT5Strategy property)</a>
+</li>
+      <li><a href="core.html#core.utils.TradeSignal">TradeSignal (class in core.utils)</a>
 </li>
       <li>
     trading
@@ -1789,6 +2061,13 @@
 
       <ul>
         <li><a href="trading.html#module-trading.execution">module</a>
+</li>
+      </ul></li>
+      <li>
+    trading.script
+
+      <ul>
+        <li><a href="trading.html#module-trading.script">module</a>
 </li>
       </ul></li>
       <li>
@@ -1814,6 +2093,8 @@
         <li><a href="tseries.html#module-tseries">module</a>
 </li>
       </ul></li>
+      <li><a href="trading.html#trading.script.tws_terminal">tws_terminal() (in module trading.script)</a>
+</li>
       <li><a href="trading.html#trading.execution.TWSExecutionEngine">TWSExecutionEngine (class in trading.execution)</a>
 </li>
       <li><a href="metatrader.html#metatrader.utils.TradeDeal.type">type (metatrader.utils.TradeDeal attribute)</a>
@@ -1950,6 +2231,8 @@
       </ul></li>
       <li><a href="metatrader.html#metatrader.trade.Trade.win_trade">win_trade() (metatrader.trade.Trade method)</a>
 </li>
+      <li><a href="trading.html#trading.script.worker_function">worker_function() (in module trading.script)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -1970,7 +2253,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2024, Bertin Balouki SIMYELI.</p>
+    <p>&#169; Copyright 2023 - 2025, Bertin Balouki SIMYELI.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

@@ -7,31 +7,31 @@ Backtesting Egine
    :show-inheritance:
 
 
-backtest
---------
+BacktestEngine
+--------------
 
 .. automodule:: btengine.backtest
    :members:
    :undoc-members:
    :show-inheritance:
 
-data
-----
+DataHandlers
+------------
 
 .. automodule:: btengine.data
    :members:
    :undoc-members:
    :show-inheritance:
 
-event
------
+Events
+------
 
 .. automodule:: btengine.event
    :members:
    :undoc-members:
    :show-inheritance:
 
-execution
+Execution
 ---------
 
 .. automodule:: btengine.execution
@@ -39,7 +39,7 @@ execution
    :undoc-members:
    :show-inheritance:
 
-performance
+Performance
 -----------
 
 .. automodule:: btengine.performance
@@ -47,18 +47,26 @@ performance
    :undoc-members:
    :show-inheritance:
 
-portfolio 
-----------
+Portfolio
+--------
 
 .. automodule:: btengine.portfolio
    :members:
    :undoc-members:
    :show-inheritance:
 
-strategy
---------
+Strategies
+----------
 
 .. automodule:: btengine.strategy
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+scripts
+-------
+
+.. automodule:: btengine.scripts
    :members:
    :undoc-members:
    :show-inheritance:
