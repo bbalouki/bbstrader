@@ -221,7 +221,7 @@ def _mt5_execution(
         desc = account.get_symbol_info(symbol).description
         sigmsg = (
             f"SIGNAL = {signal}, \nSYMBOL={symbol}, \nTYPE={symbol_type}, \nDESCRIPTION={desc}, "
-            f"\nPRICE={price}, \nSTOPLIMIT={stoplimit}, \nSTRATEGY={STRATEGY}, \nTIMEFRAME={time_frame}"
+            f"\nPRICE={price}, \nSTOPLIMIT={stoplimit}, \nSTRATEGY={STRATEGY}, \nTIMEFRAME={time_frame},"
             f"\nBROKER={account.broker.name}, \nTIMESTAMP={datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
         )
         msg = f"Sending {signal} Order ... SYMBOL={symbol}, STRATEGY={STRATEGY} , ACCOUNT={ACCOUNT}"
@@ -258,6 +258,7 @@ def _mt5_execution(
                             stoplimit=stoplimit,
                             id=id,
                             mm=mm,
+                            trail=trail,
                             comment=comment,
                         )
                 else:
@@ -274,6 +275,7 @@ def _mt5_execution(
                         stoplimit=stoplimit,
                         id=id,
                         mm=mm,
+                        trail=trail,
                         comment=comment,
                     )
 
@@ -293,6 +295,7 @@ def _mt5_execution(
                             stoplimit=stoplimit,
                             id=id,
                             mm=mm,
+                            trail=trail,
                             comment=comment,
                         )
                 else:
@@ -309,6 +312,7 @@ def _mt5_execution(
                         stoplimit=stoplimit,
                         id=id,
                         mm=mm,
+                        trail=trail,
                         comment=comment,
                     )
 

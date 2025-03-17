@@ -18,7 +18,7 @@ USAGE_TEXT = """
         backtest: Backtest a strategy, see bbstrader.btengine.backtest.run_backtest
         execution: Execute a strategy, see bbstrader.trading.execution.MT5ExecutionEngine
     
-    run <module> --help for more information on the module
+    python -m bbstrader --run <module> --help for more information on the module
 """
 
 FONT = pyfiglet.figlet_format("BBSTRADER", font="big")

@@ -294,11 +294,11 @@ class TradeCopier(object):
         return False
 
     def iscopy_time(self):
-        start_hour, start_minutes = self.start_time.split(":")
-        end_hour, end_minutes = self.end_time.split(":")
         if self.start_time is None or self.end_time is None:
             return True
         else:
+            start_hour, start_minutes = self.start_time.split(":")
+            end_hour, end_minutes = self.end_time.split(":")
             if int(start_hour) < datetime.now().hour < int(end_hour):
                 return True
             elif datetime.now().hour == int(start_hour):
@@ -346,13 +346,13 @@ class TradeCopier(object):
                 comment=destination.get("comment", trade.comment + "#Copied"),
             ):
                 logger.info(
-                    f"Copy {action} Order #{trade.ticket} from @{self.source.get('login')} "
-                    f"to @{destination.get('login')} on @{symbol}"
+                    f"Copy {action} Order #{trade.ticket} from @{self.source.get('login')}::{trade.symbol} "
+                    f"to @{destination.get('login')}::{symbol}"
                 )
             else:
                 logger.error(
-                    f"Error copying {action} Order #{trade.ticket} from @{self.source.get('login')} "
-                    f"to @{destination.get('login')} on @{symbol}"
+                    f"Error copying {action} Order #{trade.ticket} from @{self.source.get('login')}::{trade.symbol} "
+                    f"to @{destination.get('login')}::{symbol}"
                 )
         except Exception as e:
             self.log_error(e, symbol=symbol)
@@ -384,27 +384,27 @@ class TradeCopier(object):
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
             msg = trade_retcode_message(result.retcode)
             logger.error(
-                f"Error modifying Order #{ticket} on @{destination.get('login')}: {msg}, "
-                f"SOURCE=@{self.source.get('login')} SYMBOL=@{symbol}"
+                f"Error modifying Order #{ticket} on @{destination.get('login')}::{symbol}, {msg}, "
+                f"SOURCE=@{self.source.get('login')}::{source_order.symbol}"
             )
         if result.retcode == Mt5.TRADE_RETCODE_DONE:
             logger.info(
-                f"Modify Order #{ticket} on @{destination.get('login')}, "
-                f"SOURCE=@{self.source.get('login')} SYMBOL=@{symbol}"
+                f"Modify Order #{ticket} on @{destination.get('login')}::{symbol}, "
+                f"SOURCE=@{self.source.get('login')}::{source_order.symbol}"
             )
 
-    def remove_order(self, order: TradeOrder, destination: dict):
+    def remove_order(self, src_symbol, order: TradeOrder, destination: dict):
         check_mt5_connection(**destination)
         trade = Trade(symbol=order.symbol, **destination)
         if trade.close_order(order.ticket, id=order.magic):
             logger.info(
-                f"Close Order #{order.ticket} on @{destination.get('login')}, "
-                f"SOURCE=@{self.source.get('login')} SYMBOL=@{order.symbol}"
+                f"Close Order #{order.ticket} on @{destination.get('login')}::{order.symbol}, "
+                f"SOURCE=@{self.source.get('login')}::{src_symbol}"
             )
         else:
             logger.error(
-                f"Error closing Order #{order.ticket} on @{destination.get('login')}, "
-                f"SOURCE=@{self.source.get('login')} SYMBOL=@{order.symbol}"
+                f"Error closing Order #{order.ticket} on @{destination.get('login')}::{order.symbol}, "
+                f"SOURCE=@{self.source.get('login')}::{src_symbol}"
             )
 
     def copy_new_position(self, position: TradePosition, destination: dict):
@@ -427,27 +427,27 @@ class TradeCopier(object):
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
             msg = trade_retcode_message(result.retcode)
             logger.error(
-                f"Error modifying Position #{ticket} on @{destination.get('login')}: {msg}, "
-                f"SOURCE=@{self.source.get('login')} SYMBOL=@{symbol}"
+                f"Error modifying Position #{ticket} on @{destination.get('login')}::{symbol},  {msg}, "
+                f"SOURCE=@{self.source.get('login')}::{source_pos.symbol}"
             )
         if result.retcode == Mt5.TRADE_RETCODE_DONE:
             logger.info(
-                f"Modify Position #{ticket} on @{destination.get('login')}, "
-                f"SOURCE=@{self.source.get('login')} SYMBOL=@{symbol}"
+                f"Modify Position #{ticket} on @{destination.get('login')}::{symbol}, "
+                f"SOURCE=@{self.source.get('login')}::{source_pos.symbol}"
             )
 
-    def remove_position(self, position: TradePosition, destination: dict):
+    def remove_position(self, src_symbol, position: TradePosition, destination: dict):
         check_mt5_connection(**destination)
         trade = Trade(symbol=position.symbol, **destination)
         if trade.close_position(position.ticket, id=position.magic):
             logger.info(
-                f"Close Position #{position.ticket} on @{destination.get('login')}, "
-                f"SOURCE=@{self.source.get('login')} SYMBOL=@{position.symbol}"
+                f"Close Position #{position.ticket} on @{destination.get('login')}::{position.symbol}, "
+                f"SOURCE=@{self.source.get('login')}::{src_symbol}"
             )
         else:
             logger.error(
-                f"Error closing Position #{position.ticket} on @{destination.get('login')}, "
-                f"SOURCE=@{self.source.get('login')} SYMBOL=@{position.symbol}"
+                f"Error closing Position #{position.ticket} on @{destination.get('login')}::{position.symbol}, "
+                f"SOURCE=@{self.source.get('login')}::{src_symbol}"
             )
 
     def filter_positions_and_orders(self, pos_or_orders, symbols=None):
@@ -514,7 +514,10 @@ class TradeCopier(object):
         source_ids = [order.ticket for order in source_orders]
         for destination_order in destination_orders:
             if destination_order.magic not in source_ids:
-                self.remove_order(destination_order, destination)
+                for order in source_orders:
+                    if order.ticket == destination_order.magic:
+                        src_symbol = order.ticket
+                        self.remove_order(src_symbol, destination_order, destination)
 
         # Check if order are triggered on source account
         # and not on destination account or vice versa
@@ -523,7 +526,9 @@ class TradeCopier(object):
         for source_position in source_positions:
             for destination_order in destination_orders:
                 if source_position.ticket == destination_order.magic:
-                    self.remove_order(destination_order, destination)
+                    self.remove_order(
+                        source_position.symbol, destination_order, destination
+                    )
                     if what in ["all", "positions"]:
                         if not self.slippage(source_position, destination):
                             self.copy_new_position(source_position, destination)
@@ -533,7 +538,9 @@ class TradeCopier(object):
         for destination_position in destination_positions:
             for source_order in source_orders:
                 if destination_position.magic == source_order.ticket:
-                    self.remove_position(destination_position, destination)
+                    self.remove_position(
+                        source_order.symbol, destination_position, destination
+                    )
                     if not self.slippage(source_order, destination):
                         self.copy_new_order(source_order, destination)
         Mt5.shutdown()
@@ -569,7 +576,10 @@ class TradeCopier(object):
         source_ids = [pos.ticket for pos in source_positions]
         for destination_position in destination_positions:
             if destination_position.magic not in source_ids:
-                self.remove_position(destination_position, destination)
+                for position in source_positions:
+                    if position.ticket == destination_position.magic:
+                        src_symbol = position.ticket
+                        self.remove_position(src_symbol, destination_position, destination)
         Mt5.shutdown()
 
     def log_error(self, e, symbol=None):
@@ -607,7 +617,7 @@ def RunCopier(
 
 
 def RunMultipleCopier(
-    accounts: List[Dict],
+    accounts: List[dict],
     sleeptime: float = 0.1,
     start_delay: float = 1.0,
     start_time: str = None,
@@ -664,7 +674,7 @@ def config_copier(
     Example:
         ```python
         from pathlib import Path
-        config_file = Path().home() / ".bbstrader" / "copier.ini"
+        config_file = ~/.bbstrader/copier/copier.ini
         source, destinations = config_copier(config_file, "SOURCE", ["DEST1", "DEST2"])
         ```
     """
@@ -675,7 +685,7 @@ def config_copier(
         return dict(item.split(":") for item in string.split(","))
 
     if not inifile:
-        inifile = Path().home() / ".bbstrader" / "copier.ini"
+        inifile = Path().home() / ".bbstrader" / "copier" / "copier.ini"
         if not inifile.exists() or not inifile.is_file():
             raise FileNotFoundError(f"{inifile} not found")
 

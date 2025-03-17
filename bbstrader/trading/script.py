@@ -143,7 +143,7 @@ def execute_strategy(unknown):
     parser.add_argument("-a", "--account", type=str, nargs="*", default=[])
     parser.add_argument("-p", "--path", type=str, default=EXECUTION_PATH)
     parser.add_argument("-c", "--config", type=str, default=CONFIG_PATH)
-    parser.add_argument("-l", "--parallel", type=bool, default=False)
+    parser.add_argument("-l", "--parallel", action="store_true")
     parser.add_argument(
         "-t", "--terminal", type=str, default="MT5", choices=["MT5", "TWS"]
     )

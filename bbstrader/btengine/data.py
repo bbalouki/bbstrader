@@ -175,9 +175,9 @@ class BaseCSVDataHandler(DataHandler):
         new_names = self.columns or default_names
         new_names = [name.strip().lower().replace(" ", "_") for name in new_names]
         self.columns = new_names
-        assert (
-            "adj_close" in new_names or "close" in new_names
-        ), "Column names must contain 'Adj Close' and 'Close' or adj_close and close"
+        assert "adj_close" in new_names or "close" in new_names, (
+            "Column names must contain 'Adj Close' and 'Close' or adj_close and close"
+        )
         comb_index = None
         for s in self.symbol_list:
             # Load the CSV file with no header information,
@@ -207,7 +207,9 @@ class BaseCSVDataHandler(DataHandler):
                 self.columns.append("adj_close")
                 self.symbol_data[s]["adj_close"] = self.symbol_data[s]["close"]
             self.symbol_data[s]["returns"] = (
-                self.symbol_data[s]["adj_close" if "adj_close" in new_names else "close"]
+                self.symbol_data[s][
+                    "adj_close" if "adj_close" in new_names else "close"
+                ]
                 .pct_change()
                 .dropna()
             )
@@ -362,7 +364,7 @@ class CSVDataHandler(BaseCSVDataHandler):
 
         """
         csv_dir = kwargs.get("csv_dir")
-        csv_dir = csv_dir or BBSTRADER_DIR / "csv_data"
+        csv_dir = csv_dir or BBSTRADER_DIR / "data" / "csv_data"
         super().__init__(
             events,
             symbol_list,
@@ -422,7 +424,7 @@ class MT5DataHandler(BaseCSVDataHandler):
         )
 
     def _download_and_cache_data(self, cache_dir: str):
-        data_dir = cache_dir or BBSTRADER_DIR / "mt5" / self.tf
+        data_dir = cache_dir or BBSTRADER_DIR / "data" / "mt5" / self.tf
         data_dir.mkdir(parents=True, exist_ok=True)
         for symbol in self.symbol_list:
             try:
@@ -486,7 +488,7 @@ class YFDataHandler(BaseCSVDataHandler):
 
     def _download_and_cache_data(self, cache_dir: str):
         """Downloads and caches historical data as CSV files."""
-        cache_dir = cache_dir or BBSTRADER_DIR / "yfinance" / "daily"
+        cache_dir = cache_dir or BBSTRADER_DIR / "data" / "yfinance" / "daily"
         os.makedirs(cache_dir, exist_ok=True)
         for symbol in self.symbol_list:
             filepath = os.path.join(cache_dir, f"{symbol}.csv")
@@ -598,7 +600,7 @@ class EODHDataHandler(BaseCSVDataHandler):
 
     def _download_and_cache_data(self, cache_dir: str):
         """Downloads and caches historical data as CSV files."""
-        cache_dir = cache_dir or BBSTRADER_DIR / "eodhd" / self.period
+        cache_dir = cache_dir or BBSTRADER_DIR / "data" / "eodhd" / self.period
         os.makedirs(cache_dir, exist_ok=True)
         for symbol in self.symbol_list:
             filepath = os.path.join(cache_dir, f"{symbol}.csv")
@@ -699,7 +701,7 @@ class FMPDataHandler(BaseCSVDataHandler):
 
     def _download_and_cache_data(self, cache_dir: str):
         """Downloads and caches historical data as CSV files."""
-        cache_dir = cache_dir or BBSTRADER_DIR / "fmp" / self.period
+        cache_dir = cache_dir or BBSTRADER_DIR / "data" / "fmp" / self.period
         os.makedirs(cache_dir, exist_ok=True)
         for symbol in self.symbol_list:
             filepath = os.path.join(cache_dir, f"{symbol}.csv")

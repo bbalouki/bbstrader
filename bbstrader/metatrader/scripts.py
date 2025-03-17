@@ -6,10 +6,10 @@ from bbstrader.metatrader.copier import RunCopier, config_copier
 
 def copier_args(parser: argparse.ArgumentParser):
     parser.add_argument(
-        "-S", "--source", type=str, nargs="?", default=None, help="Source section name"
+        "-s", "--source", type=str, nargs="?", default=None, help="Source section name"
     )
     parser.add_argument(
-        "-D",
+        "-d",
         "--destinations",
         type=str,
         nargs="*",
@@ -17,10 +17,10 @@ def copier_args(parser: argparse.ArgumentParser):
         help="Destination section names",
     )
     parser.add_argument(
-        "-I", "--interval", type=float, default=0.1, help="Update interval in seconds"
+        "-i", "--interval", type=float, default=0.1, help="Update interval in seconds"
     )
     parser.add_argument(
-        "-C",
+        "-c",
         "--config",
         nargs="?",
         default=None,
@@ -28,7 +28,7 @@ def copier_args(parser: argparse.ArgumentParser):
         help="Config file name or path",
     )
     parser.add_argument(
-        "-T",
+        "-t",
         "--start",
         type=str,
         nargs="?",
@@ -36,7 +36,7 @@ def copier_args(parser: argparse.ArgumentParser):
         help="Start time in HH:MM format",
     )
     parser.add_argument(
-        "-E",
+        "-e",
         "--end",
         type=str,
         nargs="?",
