@@ -9,3 +9,6 @@
 
 ## 0.2.093
 - Fix Minor bugs and enhance documentation
+
+## 0.2.094
+- Fix order and position closing bugs in TradeCopier
