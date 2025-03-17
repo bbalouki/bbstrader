@@ -127,15 +127,20 @@ def get_copy_symbols(destination: dict = None):
             return symbols.split()
 
 
-def get_copy_symbol(src_symbol, destination: dict = None):
+def get_copy_symbol(symbol, destination: dict = None, type="destination"):
     symbols = get_copy_symbols(destination)
     if isinstance(symbols, list):
-        if src_symbol in symbols:
-            return src_symbol
+        if symbol in symbols:
+            return symbol
     if isinstance(symbols, dict):
-        if src_symbol in symbols.keys():
-            return symbols[src_symbol]
-    raise ValueError(f"Symbol {src_symbol} not found in destination account")
+        if type == "destination":
+            if symbol in symbols.keys():
+                return symbols[symbol]
+        if type == "source":
+            for k, v in symbols.items():
+                if v == symbol:
+                    return k
+    raise ValueError(f"Symbol {symbol} not found in {type} account")
 
 
 class TradeCopier(object):
@@ -514,10 +519,10 @@ class TradeCopier(object):
         source_ids = [order.ticket for order in source_orders]
         for destination_order in destination_orders:
             if destination_order.magic not in source_ids:
-                for order in source_orders:
-                    if order.ticket == destination_order.magic:
-                        src_symbol = order.ticket
-                        self.remove_order(src_symbol, destination_order, destination)
+                src_symbol = get_copy_symbol(
+                    destination_order.symbol, destination, type="source"
+                )
+                self.remove_order(src_symbol, destination_order, destination)
 
         # Check if order are triggered on source account
         # and not on destination account or vice versa
@@ -576,10 +581,10 @@ class TradeCopier(object):
         source_ids = [pos.ticket for pos in source_positions]
         for destination_position in destination_positions:
             if destination_position.magic not in source_ids:
-                for position in source_positions:
-                    if position.ticket == destination_position.magic:
-                        src_symbol = position.ticket
-                        self.remove_position(src_symbol, destination_position, destination)
+                src_symbol = get_copy_symbol(
+                    destination_position.symbol, destination, type="source"
+                )
+                self.remove_position(src_symbol, destination_position, destination)
         Mt5.shutdown()
 
     def log_error(self, e, symbol=None):
