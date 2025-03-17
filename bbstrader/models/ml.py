@@ -634,14 +634,13 @@ class LightGBModel(object):
 
             # set up cross-validation
             n_splits = int(2 * YEAR / test_length)
-            if verbose:
-                print(
-                    f"Lookahead: {lookahead:2.0f} | "
-                    f"Train: {train_length:3.0f} | "
-                    f"Test: {test_length:2.0f} | "
-                    f"Params: {len(cv_params_):3.0f} | "
-                    f"Train configs: {len(test_params)}"
-                )
+            print(
+                f"Lookahead: {lookahead:2.0f} | "
+                f"Train: {train_length:3.0f} | "
+                f"Test: {test_length:2.0f} | "
+                f"Params: {len(cv_params_):3.0f} | "
+                f"Train configs: {len(test_params)}"
+            )
 
             # time-series cross-validation
             cv = MultipleTimeSeriesCV(
@@ -1235,7 +1234,10 @@ class LightGBModel(object):
             .to_frame("prediction")
         )
         tickers = predictions.index.get_level_values("symbol").unique().tolist()
-        return (predictions.unstack("symbol").prediction.tz_convert("UTC")), tickers
+        try:
+            return (predictions.unstack("symbol").prediction.tz_convert("UTC")), tickers
+        except TypeError:
+            return (predictions.unstack("symbol").prediction.tz_localize("UTC")), tickers
 
     def assert_last_date(self, predictions: pd.DataFrame):
         """
@@ -1243,9 +1245,14 @@ class LightGBModel(object):
         is the previous day, so it predicts today's returns.
         """
         last_date = predictions.index.get_level_values("date").max()
-        if last_date.tzinfo is None:
-            last_date = last_date.tz_localize("UTC")
-        last_date = last_date.normalize()
+        try:
+            if last_date.tzinfo is None:
+                last_date = last_date.tz_localize("UTC")
+            else:
+                last_date = last_date.tz_convert("UTC")
+            last_date = last_date.normalize()
+        except Exception as e:
+            print(f"Error getting last date: {e}")
         try:
             days = 3 if datetime.now().strftime("%A") == "Monday" else 1
             td = (

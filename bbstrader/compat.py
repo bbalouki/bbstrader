@@ -3,7 +3,7 @@ import sys
 
 
 def setup_mock_metatrader():
-    """Mock MetaTrader5 on Linux to prevent import errors."""
+    """Mock MetaTrader5 on Linux and MacOS to prevent import errors."""
     if platform.system() != "Windows":
         from unittest.mock import MagicMock
 

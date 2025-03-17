@@ -20,7 +20,7 @@ def load_module(file_path):
         raise FileNotFoundError(
             f"Strategy file {file_path} not found. Please create it."
         )
-    spec = importlib.util.spec_from_file_location("strategies", file_path)
+    spec = importlib.util.spec_from_file_location("bbstrader.cli", file_path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -66,7 +66,7 @@ def dict_from_ini(file_path, sections: str | List[str] = None) -> Dict[str, Any]
     Returns:
         A dictionary containing the INI file contents with proper data types.
     """
-    config = configparser.ConfigParser()
+    config = configparser.ConfigParser(interpolation=None)
     config.read(file_path)
 
     ini_dict = {}

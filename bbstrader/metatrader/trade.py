@@ -422,6 +422,7 @@ class Trade(RiskManagement):
         price: Optional[float] = None,
         stoplimit: Optional[float] = None,
         mm: bool = True,
+        trail: bool = True,
         id: Optional[int] = None,
         comment: Optional[str] = None,
         symbol: Optional[str] = None,
@@ -440,6 +441,7 @@ class Trade(RiskManagement):
                 The pending order is not passed to the trading system until that moment
             id (int): The strategy id or expert Id
             mm (bool): Weither to put stop loss and tp or not
+            trail (bool): Weither to trail the stop loss or not
             comment (str): The comment for the opening position
         """
         Id = id if id is not None else self.expert_id
@@ -484,7 +486,7 @@ class Trade(RiskManagement):
         if mm:
             request["sl"] = sl or mm_price - stop_loss * point
             request["tp"] = tp or mm_price + take_profit * point
-        self.break_even(mm=mm, id=Id)
+        self.break_even(mm=mm, id=Id, trail=trail)
         if self.check(comment):
             return self.request_result(_price, request, action)
         return False
@@ -510,6 +512,7 @@ class Trade(RiskManagement):
         price: Optional[float] = None,
         stoplimit: Optional[float] = None,
         mm: bool = True,
+        trail: bool = True,
         id: Optional[int] = None,
         comment: Optional[str] = None,
         symbol: Optional[str] = None,
@@ -528,6 +531,7 @@ class Trade(RiskManagement):
                 The pending order is not passed to the trading system until that moment
             id (int): The strategy id or expert Id
             mm (bool): Weither to put stop loss and tp or not
+            trail (bool): Weither to trail the stop loss or not
             comment (str): The comment for the closing position
                         symbol (str): The symbol to trade
             volume (float): The volume (lot) to trade
@@ -576,7 +580,7 @@ class Trade(RiskManagement):
         if mm:
             request["sl"] = sl or mm_price + stop_loss * point
             request["tp"] = tp or mm_price - take_profit * point
-        self.break_even(mm=mm, id=Id)
+        self.break_even(mm=mm, id=Id, trail=trail)
         if self.check(comment):
             return self.request_result(_price, request, action)
         return False
@@ -723,6 +727,7 @@ class Trade(RiskManagement):
         stoplimit: Optional[float] = None,
         id: Optional[int] = None,
         mm: bool = True,
+        trail: bool = True,
         comment: Optional[str] = None,
         symbol: Optional[str] = None,
         volume: Optional[float] = None,
@@ -740,6 +745,7 @@ class Trade(RiskManagement):
                 The pending order is not passed to the trading system until that moment
             id (int): The strategy id or expert Id
             mm (bool): Weither to put stop loss and tp or not
+            trail (bool): Weither to trail the stop loss or not
             comment (str): The comment for the closing position
             symbol (str): The symbol to trade
             volume (float): The volume (lot) to trade
@@ -755,6 +761,7 @@ class Trade(RiskManagement):
                 stoplimit=stoplimit,
                 id=id,
                 mm=mm,
+                trail=trail,
                 comment=comment,
                 symbol=symbol,
                 volume=volume,
@@ -768,9 +775,12 @@ class Trade(RiskManagement):
                 stoplimit=stoplimit,
                 id=id,
                 mm=mm,
+                trail=trail,
                 comment=comment,
                 symbol=symbol,
                 volume=volume,
+                sl=sl,
+                tp=tp,
             )
         else:
             raise ValueError(
@@ -1242,7 +1252,7 @@ class Trade(RiskManagement):
         try:
             min_be = round((fees / risk)) + 2
         except ZeroDivisionError:
-            min_be = self.symbol_info(self.symbol).spread
+            min_be = self.symbol_info.spread
         be = self.get_break_even()
         if th is not None:
             win_be = th

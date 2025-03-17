@@ -326,7 +326,7 @@ class Account(object):
     
     def shutdown(self):
         """Close the connection to the MetaTrader 5 terminal."""
-        mt5.shutdown()
+        shutdown_mt5()
 
     @property
     def broker(self) -> Broker:
@@ -960,7 +960,7 @@ class Account(object):
             symbol (str): Symbol name
 
         Returns:
-        -   AccountInfo in the form of a NamedTuple().
+        -   SymbolInfo in the form of a NamedTuple().
         -   None in case of an error.
 
         Raises:
@@ -1006,7 +1006,7 @@ class Account(object):
             symbol (str): Symbol name
 
         Returns:
-        -   AccountInfo in the form of a NamedTuple().
+        -   TickInfo in the form of a NamedTuple().
         -   None in case of an error.
 
         Raises:
