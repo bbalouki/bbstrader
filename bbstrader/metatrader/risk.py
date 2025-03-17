@@ -220,6 +220,7 @@ class RiskManagement(Account):
 
         self.account_leverage = account_leverage
         self.symbol_info = super().get_symbol_info(self.symbol)
+        self.copy_mode = kwargs.get("copy", False)
 
         self._tf = time_frame
 
@@ -507,7 +508,7 @@ class RiskManagement(Account):
                 symbol = self.symbol.split(".")[0]
             else:
                 symbol = self.symbol
-            if str(symbol) not in supported:
+            if not self.copy_mode and str(symbol) not in supported:
                 raise ValueError(
                     f"Currency risk calculation for '{self.symbol}' is not a currently supported. \n"
                     f"Supported commodity symbols are: {', '.join(supported)}"
@@ -518,7 +519,7 @@ class RiskManagement(Account):
             else:
                 symbol = self.symbol
             supported = _ADMIRAL_MARKETS_FUTURES_ + __PEPPERSTONE_FUTURES__
-            if str(symbol) not in supported:
+            if not self.copy_mode and str(symbol) not in supported:
                 raise ValueError(
                     f"Currency risk calculation for '{self.symbol}' is not a currently supported. \n"
                     f"Supported future symbols are: {', '.join(supported)}"
