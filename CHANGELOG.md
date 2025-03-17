@@ -6,3 +6,6 @@
 - Added support for running backtest and execution from the CLI
 - Added support for running copier from the CLI
 - Added support for running execution and backtest in parallel
+
+## 0.2.093
+- Fix Minor bugs and enhance documentation
