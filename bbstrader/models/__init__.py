@@ -8,3 +8,4 @@ from bbstrader.models.optimization import *  # noqa: F403
 from bbstrader.models.portfolio import *  # noqa: F403
 from bbstrader.models.factors import *  # noqa: F403
 from bbstrader.models.ml import *  # noqa: F403
+from bbstrader.models.nlp import *  # noqa: F403
