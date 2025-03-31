@@ -11,7 +11,7 @@ from bbstrader.config import BBSTRADER_DIR
 from bbstrader.core.utils import TradeAction
 from bbstrader.metatrader.account import Account, check_mt5_connection
 from bbstrader.metatrader.trade import Trade
-from bbstrader.trading.scripts import send_message
+from bbstrader.trading.utils import send_message
 
 try:
     import MetaTrader5 as MT5
@@ -592,6 +592,9 @@ def _mt5_execution(
             )
             _print_exc(debug_mode, msg)
             continue
+        except KeyboardInterrupt:
+            logger.info("Stopping the Execution Engine ...")
+            break
 
 
 def _tws_execution(*args, **kwargs):

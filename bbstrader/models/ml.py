@@ -8,8 +8,8 @@ import lightgbm as lgb
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import pandas_ta as ta
 import seaborn as sns
-
 import yfinance as yf
 from alphalens import performance as perf
 from alphalens import plotting
@@ -21,10 +21,8 @@ from alphalens.utils import (
 )
 from scipy.stats import spearmanr
 from sklearn.preprocessing import LabelEncoder, StandardScaler
-import pandas_ta as ta
 
 warnings.filterwarnings("ignore")
-
 
 __all__ = ["OneStepTimeSeriesSplit", "MultipleTimeSeriesCV", "LightGBModel"]
 
@@ -749,8 +747,8 @@ class LightGBModel(object):
                     index=metric_cols,
                 )
                 if verbose:
-                    msg = f'\t{p:3.0f} | {self.format_time(T)} ({t:3.0f}) | {params["learning_rate"]:5.2f} | '
-                    msg += f'{params["num_leaves"]:3.0f} | {params["feature_fraction"]:3.0%} | {params["min_data_in_leaf"]:4.0f} | '
+                    msg = f"\t{p:3.0f} | {self.format_time(T)} ({t:3.0f}) | {params['learning_rate']:5.2f} | "
+                    msg += f"{params['num_leaves']:3.0f} | {params['feature_fraction']:3.0%} | {params['min_data_in_leaf']:4.0f} | "
                     msg += f" {max(ic):6.2%} | {ic_by_day.mean().max(): 6.2%} | {daily_ic_mean_n: 4.0f} | {ic_by_day.median().max(): 6.2%} | {daily_ic_median_n: 4.0f}"
                     print(msg)
 
@@ -871,7 +869,7 @@ class LightGBModel(object):
             med = data.ic.median()
             rolling.plot(
                 ax=axes[i],
-                title=f"Horizon: {t} Day(s) | IC: Mean={avg*100:.2f}   Median={med*100:.2f}",
+                title=f"Horizon: {t} Day(s) | IC: Mean={avg * 100:.2f}   Median={med * 100:.2f}",
             )
             axes[i].axhline(avg, c="darkred", lw=1)
             axes[i].axhline(0, ls="--", c="k", lw=1)
@@ -1237,7 +1235,9 @@ class LightGBModel(object):
         try:
             return (predictions.unstack("symbol").prediction.tz_convert("UTC")), tickers
         except TypeError:
-            return (predictions.unstack("symbol").prediction.tz_localize("UTC")), tickers
+            return (
+                predictions.unstack("symbol").prediction.tz_localize("UTC")
+            ), tickers
 
     def assert_last_date(self, predictions: pd.DataFrame):
         """
