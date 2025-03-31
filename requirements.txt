@@ -32,4 +32,11 @@ lightgbm
 alphalens-reloaded
 pyfiglet
 colorama
+praw
+tweepy
+beautifulsoup4
+dash
+nltk
+textblob
+vaderSentiment
 

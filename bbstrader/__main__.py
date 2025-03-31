@@ -6,7 +6,7 @@ from colorama import Fore
 
 from bbstrader.btengine.scripts import backtest
 from bbstrader.metatrader.scripts import copy_trades
-from bbstrader.trading.script import execute_strategy
+from bbstrader.trading.scripts import execute_strategy
 
 DESCRIPTION = "BBSTRADER"
 USAGE_TEXT = """
@@ -36,7 +36,7 @@ def main():
     parser.add_argument("--run", type=str, nargs="?", default=None, help="Run a module")
     args, unknown = parser.parse_known_args()
     if ("-h" in sys.argv or "--help" in sys.argv) and args.run is None:
-        print(USAGE_TEXT)
+        print(Fore.WHITE + USAGE_TEXT)
         sys.exit(0)
     if args.run == "copier":
         copy_trades(unknown)
