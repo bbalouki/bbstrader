@@ -66,21 +66,21 @@ class DataHandler(metaclass=ABCMeta):
         """
         Returns the last bar updated.
         """
-        raise NotImplementedError("Should implement get_latest_bar()")
+        pass
 
     @abstractmethod
     def get_latest_bars(self, symbol, N=1, df=True) -> pd.DataFrame | List[pd.Series]:
         """
         Returns the last N bars updated.
         """
-        raise NotImplementedError("Should implement get_latest_bars()")
+        pass
 
     @abstractmethod
     def get_latest_bar_datetime(self, symbol) -> datetime | pd.Timestamp:
         """
         Returns a Python datetime object for the last bar.
         """
-        raise NotImplementedError("Should implement get_latest_bar_datetime()")
+        pass
 
     @abstractmethod
     def get_latest_bar_value(self, symbol, val_type) -> float:
@@ -88,7 +88,7 @@ class DataHandler(metaclass=ABCMeta):
         Returns one of the Open, High, Low, Close, Adj Close, Volume or Returns
         from the last bar.
         """
-        raise NotImplementedError("Should implement get_latest_bar_value()")
+        pass
 
     @abstractmethod
     def get_latest_bars_values(self, symbol, val_type, N=1) -> np.ndarray:
@@ -96,7 +96,7 @@ class DataHandler(metaclass=ABCMeta):
         Returns the last N bar values from the
         latest_symbol list, or N-k if less available.
         """
-        raise NotImplementedError("Should implement get_latest_bars_values()")
+        pass
 
     @abstractmethod
     def update_bars(self):
@@ -105,7 +105,7 @@ class DataHandler(metaclass=ABCMeta):
         in a tuple OHLCVI format: (datetime, Open, High, Low,
         Close, Adj Close, Volume, Retruns).
         """
-        raise NotImplementedError("Should implement update_bars()")
+        pass
 
 
 class BaseCSVDataHandler(DataHandler):
