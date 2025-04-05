@@ -46,7 +46,7 @@ class ExecutionHandler(metaclass=ABCMeta):
         Args:
             event (OrderEvent): Contains an Event object with order information.
         """
-        raise NotImplementedError("Should implement execute_order()")
+        pass
 
 
 class SimExecutionHandler(ExecutionHandler):
