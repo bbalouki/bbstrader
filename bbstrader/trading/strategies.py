@@ -1,5 +1,11 @@
 """
 Strategies module for trading strategies backtesting and execution.
+
+DISCLAIMER: 
+This module is for educational purposes only and should not be
+considered as financial advice. Always consult with a qualified financial advisor before making any investment decisions. 
+The authors and contributors of this module are not responsible for any financial losses or damages incurred as a result of using 
+this module or the information contained herein.
 """
 
 from datetime import datetime
