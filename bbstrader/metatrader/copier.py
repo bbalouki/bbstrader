@@ -607,6 +607,7 @@ class TradeCopier(object):
                         continue
                     self.copy_orders(destination)
                     self.copy_positions(destination)
+                    time.sleep(0.1)
             except Exception as e:
                 self.log_error(e)
             except KeyboardInterrupt:
