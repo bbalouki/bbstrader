@@ -8,9 +8,8 @@ from loguru import logger as log
 
 from bbstrader.btengine.strategy import MT5Strategy, Strategy
 from bbstrader.config import BBSTRADER_DIR
-from bbstrader.core.utils import TradeAction
 from bbstrader.metatrader.account import Account, check_mt5_connection
-from bbstrader.metatrader.trade import Trade
+from bbstrader.metatrader.trade import Trade, TradeAction
 from bbstrader.trading.utils import send_message
 
 try:
@@ -114,6 +113,7 @@ def _mt5_execution(
     comment,
     **kwargs,
 ):
+    global logger
     logger = kwargs.get("logger", log)
 
     def _print_exc(dm, msg):
@@ -168,6 +168,7 @@ def _mt5_execution(
                 if symbol not in weights:
                     continue
                 trade = trades_instances[symbol]
+                assert daily_risk is not None
                 dailydd = round(weights[symbol] * daily_risk, 5)
                 trade.dailydd = dailydd
 
@@ -212,7 +213,9 @@ def _mt5_execution(
         f"Running {STRATEGY} Strategy in {time_frame} Interval ..., ACCOUNT={ACCOUNT}"
     )
 
-    def run_trade_algorithm(signal, symbol, id, trade: Trade, price, stoplimit):
+    def run_trade_algorithm(
+        signal, symbol, id, trade: Trade, price, stoplimit, comment
+    ):
         signal = "BMKT" if signal == "LONG" or signal == "BUY" else signal
         signal = "SMKT" if signal == "SHORT" or signal == "SELL" else signal
         info = f"SIGNAL = {signal}, SYMBOL={symbol}, STRATEGY={STRATEGY}, TIMEFRAME={time_frame} , ACCOUNT={ACCOUNT}"
@@ -242,9 +245,13 @@ def _mt5_execution(
                         if notify:
                             _send_notification(sigmsg, symbol)
                         if position_type in POSITIONS_TYPES:
-                            trade.close_positions(position_type=order_type, id=id)
+                            trade.close_positions(
+                                position_type=order_type, id=id, comment=comment
+                            )
                         else:
-                            trade.close_orders(order_type=order_type, id=id)
+                            trade.close_orders(
+                                order_type=order_type, id=id, comment=comment
+                            )
         elif signal in BUYS and not long_market[symbol]:
             if use_trade_time:
                 if time_intervals % trade_time == 0 or buys[symbol] is None:
@@ -412,6 +419,7 @@ def _mt5_execution(
                                 trade,
                                 signal.price,
                                 signal.stoplimit,
+                                signal.comment or comment,
                             )
                     else:
                         if len(symbols) >= 10:
@@ -822,7 +830,7 @@ def mt5_engine(account_id: str, **kwargs):
 
 def RunMt5Engines(accounts: Dict[str, Dict], start_delay: float = 1.0):
     """Runs multiple MT5 execution engines in parallel using multiprocessing.
-    
+
     Args:
         accounts: Dictionary of accounts to run the execution engines on.
             Keys are the account names or IDs and values are the parameters for the execution engine.

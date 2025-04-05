@@ -68,7 +68,7 @@ class RiskModel(metaclass=ABCMeta):
             such as historical returns or volatility, used to
             assess market conditions.
         """
-        raise NotImplementedError("Should implement which_trade_allowed()")
+        pass
 
     @abstractmethod
     def which_quantity_allowed(self):
@@ -76,7 +76,7 @@ class RiskModel(metaclass=ABCMeta):
         Defines the strategy for asset allocation within
         the portfolio to optimize risk-reward ratio.
         """
-        raise NotImplementedError("Should implement which_quantity_allowed()")
+        pass
 
 
 class HMMRiskManager(RiskModel):
