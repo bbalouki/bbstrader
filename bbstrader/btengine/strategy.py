@@ -12,7 +12,7 @@ from loguru import logger
 from bbstrader.btengine.data import DataHandler
 from bbstrader.btengine.event import FillEvent, SignalEvent
 from bbstrader.config import BBSTRADER_DIR
-from bbstrader.core.utils import TradeSignal
+from bbstrader.metatrader.trade import TradeSignal
 from bbstrader.metatrader.account import (
     Account,
     AdmiralMarktsGroup,
@@ -55,7 +55,7 @@ class Strategy(metaclass=ABCMeta):
 
     @abstractmethod
     def calculate_signals(self, *args, **kwargs) -> List[TradeSignal]:
-        raise NotImplementedError("Should implement calculate_signals()")
+        pass
 
     def check_pending_orders(self, *args, **kwargs): ...
     def get_update_from_portfolio(self, *args, **kwargs): ...
@@ -503,108 +503,96 @@ class MT5Strategy(Strategy):
         """
         Check for pending orders and handle them accordingly.
         """
-        for symbol in self.symbols:
-            dtime = self.data.get_latest_bar_datetime(symbol)
 
-            def logmsg(order, type):
-                return self.logger.info(
-                    f"{type} ORDER EXECUTED: SYMBOL={symbol}, QUANTITY={order.quantity}, "
-                    f"PRICE @ {order.price}",
-                    custom_time=dtime,
+        def logmsg(order, type, symbol, dtime):
+            return self.logger.info(
+                f"{type} ORDER EXECUTED: SYMBOL={symbol}, QUANTITY={order.quantity}, "
+                f"PRICE @ {order.price}",
+                custom_time=dtime,
+            )
+
+        def process_orders(order_type, condition, execute_fn, log_label, symbol, dtime):
+            for order in self._orders[symbol][order_type].copy():
+                if condition(order):
+                    execute_fn(order)
+                    try:
+                        self._orders[symbol][order_type].remove(order)
+                        assert order not in self._orders[symbol][order_type]
+                    except AssertionError:
+                        self._orders[symbol][order_type] = [
+                            o for o in self._orders[symbol][order_type] if o != order
+                        ]
+                    logmsg(order, log_label, symbol, dtime)
+
+            for symbol in self.symbols:
+                dtime = self.data.get_latest_bar_datetime(symbol)
+                latest_close = self.data.get_latest_bar_value(symbol, "close")
+
+                process_orders(
+                    "BLMT",
+                    lambda o: latest_close <= o.price,
+                    lambda o: self.buy_mkt(
+                        o.strategy_id, symbol, o.price, o.quantity, dtime
+                    ),
+                    "BUY LIMIT",
+                    symbol,
+                    dtime,
                 )
 
-            for order in self._orders[symbol]["BLMT"].copy():
-                if self.data.get_latest_bar_value(symbol, "close") <= order.price:
-                    self.buy_mkt(
-                        order.strategy_id, symbol, order.price, order.quantity, dtime
-                    )
-                    try:
-                        self._orders[symbol]["BLMT"].remove(order)
-                        assert order not in self._orders[symbol]["BLMT"]
-                        logmsg(order, "BUY LIMIT")
-                    except AssertionError:
-                        self._orders[symbol]["BLMT"] = [
-                            o for o in self._orders[symbol]["BLMT"] if o != order
-                        ]
-                        logmsg(order, "BUY LIMIT")
-            for order in self._orders[symbol]["SLMT"].copy():
-                if self.data.get_latest_bar_value(symbol, "close") >= order.price:
-                    self.sell_mkt(
-                        order.strategy_id, symbol, order.price, order.quantity, dtime
-                    )
-                    try:
-                        self._orders[symbol]["SLMT"].remove(order)
-                        assert order not in self._orders[symbol]["SLMT"]
-                        logmsg(order, "SELL LIMIT")
-                    except AssertionError:
-                        self._orders[symbol]["SLMT"] = [
-                            o for o in self._orders[symbol]["SLMT"] if o != order
-                        ]
-                        logmsg(order, "SELL LIMIT")
-            for order in self._orders[symbol]["BSTP"].copy():
-                if self.data.get_latest_bar_value(symbol, "close") >= order.price:
-                    self.buy_mkt(
-                        order.strategy_id, symbol, order.price, order.quantity, dtime
-                    )
-                    try:
-                        self._orders[symbol]["BSTP"].remove(order)
-                        assert order not in self._orders[symbol]["BSTP"]
-                        logmsg(order, "BUY STOP")
-                    except AssertionError:
-                        self._orders[symbol]["BSTP"] = [
-                            o for o in self._orders[symbol]["BSTP"] if o != order
-                        ]
-                        logmsg(order, "BUY STOP")
-            for order in self._orders[symbol]["SSTP"].copy():
-                if self.data.get_latest_bar_value(symbol, "close") <= order.price:
-                    self.sell_mkt(
-                        order.strategy_id, symbol, order.price, order.quantity, dtime
-                    )
-                    try:
-                        self._orders[symbol]["SSTP"].remove(order)
-                        assert order not in self._orders[symbol]["SSTP"]
-                        logmsg(order, "SELL STOP")
-                    except AssertionError:
-                        self._orders[symbol]["SSTP"] = [
-                            o for o in self._orders[symbol]["SSTP"] if o != order
-                        ]
-                        logmsg(order, "SELL STOP")
-            for order in self._orders[symbol]["BSTPLMT"].copy():
-                if self.data.get_latest_bar_value(symbol, "close") >= order.price:
-                    self.buy_limit(
-                        order.strategy_id,
-                        symbol,
-                        order.stoplimit,
-                        order.quantity,
-                        dtime,
-                    )
-                    try:
-                        self._orders[symbol]["BSTPLMT"].remove(order)
-                        assert order not in self._orders[symbol]["BSTPLMT"]
-                        logmsg(order, "BUY STOP LIMIT")
-                    except AssertionError:
-                        self._orders[symbol]["BSTPLMT"] = [
-                            o for o in self._orders[symbol]["BSTPLMT"] if o != order
-                        ]
-                        logmsg(order, "BUY STOP LIMIT")
-            for order in self._orders[symbol]["SSTPLMT"].copy():
-                if self.data.get_latest_bar_value(symbol, "close") <= order.price:
-                    self.sell_limit(
-                        order.strategy_id,
-                        symbol,
-                        order.stoplimit,
-                        order.quantity,
-                        dtime,
-                    )
-                    try:
-                        self._orders[symbol]["SSTPLMT"].remove(order)
-                        assert order not in self._orders[symbol]["SSTPLMT"]
-                        logmsg(order, "SELL STOP LIMIT")
-                    except AssertionError:
-                        self._orders[symbol]["SSTPLMT"] = [
-                            o for o in self._orders[symbol]["SSTPLMT"] if o != order
-                        ]
-                        logmsg(order, "SELL STOP LIMIT")
+                process_orders(
+                    "SLMT",
+                    lambda o: latest_close >= o.price,
+                    lambda o: self.sell_mkt(
+                        o.strategy_id, symbol, o.price, o.quantity, dtime
+                    ),
+                    "SELL LIMIT",
+                    symbol,
+                    dtime,
+                )
+
+                process_orders(
+                    "BSTP",
+                    lambda o: latest_close >= o.price,
+                    lambda o: self.buy_mkt(
+                        o.strategy_id, symbol, o.price, o.quantity, dtime
+                    ),
+                    "BUY STOP",
+                    symbol,
+                    dtime,
+                )
+
+                process_orders(
+                    "SSTP",
+                    lambda o: latest_close <= o.price,
+                    lambda o: self.sell_mkt(
+                        o.strategy_id, symbol, o.price, o.quantity, dtime
+                    ),
+                    "SELL STOP",
+                    symbol,
+                    dtime,
+                )
+
+                process_orders(
+                    "BSTPLMT",
+                    lambda o: latest_close >= o.price,
+                    lambda o: self.buy_limit(
+                        o.strategy_id, symbol, o.stoplimit, o.quantity, dtime
+                    ),
+                    "BUY STOP LIMIT",
+                    symbol,
+                    dtime,
+                )
+
+                process_orders(
+                    "SSTPLMT",
+                    lambda o: latest_close <= o.price,
+                    lambda o: self.sell_limit(
+                        o.strategy_id, symbol, o.stoplimit, o.quantity, dtime
+                    ),
+                    "SELL STOP LIMIT",
+                    symbol,
+                    dtime,
+                )
 
     @staticmethod
     def calculate_pct_change(current_price, lh_price):
