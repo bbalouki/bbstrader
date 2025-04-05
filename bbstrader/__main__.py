@@ -26,6 +26,7 @@ FONT = pyfiglet.figlet_format("BBSTRADER", font="big")
 
 def main():
     print(Fore.BLUE + FONT)
+    print(Fore.WHITE + "")
     parser = argparse.ArgumentParser(
         prog="BBSTRADER",
         usage=USAGE_TEXT,

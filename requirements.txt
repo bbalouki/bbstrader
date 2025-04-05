@@ -37,6 +37,7 @@ tweepy
 beautifulsoup4
 dash
 nltk
+spacy
 textblob
 vaderSentiment
 
