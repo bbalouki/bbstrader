@@ -7,7 +7,7 @@ import sys
 from bbstrader.btengine import MT5Strategy, Strategy
 from bbstrader.core.utils import load_class, load_module
 from bbstrader.metatrader.trade import create_trade_instance
-from bbstrader.trading.execution import mt5_engine
+from bbstrader.trading.execution import RunMt5Engine
 
 EXECUTION_PATH = os.path.expanduser("~/.bbstrader/execution/execution.py")
 CONFIG_PATH = os.path.expanduser("~/.bbstrader/execution/execution.json")
@@ -52,10 +52,10 @@ def worker_function(account, args):
         "account": account,
         **config,
     }
-    mt5_engine(account, **kwargs)
+    RunMt5Engine(account, **kwargs)
 
 
-def mt5_terminal(args):
+def RunMt5Terminal(args):
     if args.parallel:
         if len(args.account) == 0:
             raise ValueError(
@@ -82,12 +82,11 @@ def mt5_terminal(args):
                 p.join()
             print("Execution terminated")
     else:
-        worker_function(None, args)
+        worker_function(args.account[0], args)
 
 
-def tws_terminal(args):
-    raise NotImplementedError("TWS terminal is not implemented yet")
-
+def RunTWSTerminal(args):
+    raise NotImplementedError("RunTWSTerminal is not implemented yet")
 
 def execute_strategy(unknown):
     HELP_MSG = """
@@ -128,11 +127,11 @@ def execute_strategy(unknown):
             }
         }
         See bbstrader.metatrader.trade.create_trade_instance for more details on the trades_kwargs.
-        See bbstrader.trading.execution.MT5ExecutionEngine for more details on the other parameters.
+        See bbstrader.trading.execution.Mt5ExecutionEngine for more details on the other parameters.
         
         All other paramaters must be python built-in types. 
         If you have custom type you must set them in your strategy class 
-        or run the MT5ExecutionEngine directly, don't run on CLI.
+        or run the Mt5ExecutionEngine directly, don't run on CLI.
     """
     if "-h" in unknown or "--help" in unknown:
         print(HELP_MSG)
@@ -150,6 +149,6 @@ def execute_strategy(unknown):
     args = parser.parse_args(unknown)
 
     if args.terminal == "MT5":
-        mt5_terminal(args)
+        RunMt5Terminal(args)
     elif args.terminal == "TWS":
-        tws_terminal(args)
+        RunTWSTerminal(args)
