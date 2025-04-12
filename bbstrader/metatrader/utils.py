@@ -286,6 +286,22 @@ class TickInfo(NamedTuple):
     volume_real: float
 
 
+class BookInfo(NamedTuple):
+    """
+    Represents the structure of a book.
+    * type: Type of the order (buy/sell)
+    * price: Price of the order
+    * volume: Volume of the order in lots
+    * volume_dbl: Volume with greater accuracy
+
+    """
+
+    type: int
+    price: float
+    volume: float
+    volume_dbl: float
+
+
 class TradeRequest(NamedTuple):
     """
     Represents a Trade Request Structure
