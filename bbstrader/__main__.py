@@ -16,7 +16,7 @@ USAGE_TEXT = """
     Modules:
         copier: Copy trades from one MetaTrader account to another or multiple accounts
         backtest: Backtest a strategy, see bbstrader.btengine.backtest.run_backtest
-        execution: Execute a strategy, see bbstrader.trading.execution.MT5ExecutionEngine
+        execution: Execute a strategy, see bbstrader.trading.execution.Mt5ExecutionEngine
     
     python -m bbstrader --run <module> --help for more information on the module
 """

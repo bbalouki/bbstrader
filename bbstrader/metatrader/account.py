@@ -9,6 +9,7 @@ from currency_converter import SINGLE_DAY_ECB_URL, CurrencyConverter
 
 from bbstrader.metatrader.utils import (
     AccountInfo,
+    BookInfo,
     InvalidBroker,
     OrderCheckResult,
     OrderSentResult,
@@ -188,10 +189,12 @@ def check_mt5_connection(**kwargs):
     except Exception:
         raise_mt5_error(INIT_MSG)
 
+
 def shutdown_mt5():
     """Close the connection to the MetaTrader 5 terminal."""
     mt5.shutdown()
-    
+
+
 class Broker(object):
     def __init__(self, name: str = None, **kwargs):
         if name is None:
@@ -323,7 +326,7 @@ class Account(object):
                 f"For {supported['FTMO'].name}, See [{ftmo_url}]\n"
             )
             raise InvalidBroker(message=msg)
-    
+
     def shutdown(self):
         """Close the connection to the MetaTrader 5 terminal."""
         shutdown_mt5()
@@ -1037,6 +1040,29 @@ class Account(object):
         """
         self._show_info(self.get_tick_info, "tick", symbol=symbol)
 
+    def get_market_book(self, symbol: str) -> Union[Tuple[BookInfo], None]:
+        """
+        Get the Market Depth content for a specific symbol.
+        Args:
+            symbol (str): Financial instrument name. Required unnamed parameter.
+                The symbol name should be specified in the same format as in the Market Watch window.
+
+        Returns:
+            The Market Depth content as a tuple from BookInfo entries featuring order type, price and volume in lots.
+            Return None in case of an error.
+            
+        Raises:
+            MT5TerminalError: A specific exception based on the error code.
+        """
+        try:
+            book = mt5.market_book_get(symbol)
+            if book is None:
+                return None
+            else:
+                return Tuple([BookInfo(**entry._asdict()) for entry in book])
+        except Exception as e:
+            raise_mt5_error(e)
+
     def calculate_margin(
         self, action: Literal["buy", "sell"], symbol: str, lot: float, price: float
     ) -> float:
@@ -1299,8 +1325,7 @@ class Account(object):
         df.drop(["time_msc", "external_id"], axis=1, inplace=True)
         df.set_index("time", inplace=True)
         if save:
-            file = "trade_history.csv"
-            df.to_csv(file)
+            df.to_csv("trades_history.csv")
         if to_df:
             return df
         else:
@@ -1507,8 +1532,7 @@ class Account(object):
         df["time_done"] = pd.to_datetime(df["time_done"], unit="s")
 
         if save:
-            file = "trade_history.csv"
-            df.to_csv(file)
+            df.to_csv("orders_history.csv")
         if to_df:
             return df
         else:

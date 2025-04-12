@@ -1,6 +1,9 @@
-# Change Log
+# Changes
 
-## ## 0.2.097
+## 0.2.098
+- Enhance the execution module
+
+## 0.2.097
 - Update bbstrader with new features
 
 ## 0.2.096
