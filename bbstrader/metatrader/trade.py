@@ -137,6 +137,20 @@ class TradeSignal:
         )
 
 
+Buys = Literal["BMKT", "BLMT", "BSTP", "BSTPLMT"]
+Sells = Literal["SMKT", "SLMT", "SSTP", "SSTPLMT"]
+Positions = Literal["all", "buy", "sell", "profitable", "losing"]
+Orders = Literal[
+    "all",
+    "buy_stops",
+    "sell_stops",
+    "buy_limits",
+    "sell_limits",
+    "buy_stop_limits",
+    "sell_stop_limits",
+]
+
+
 class Trade(RiskManagement):
     """
     Extends the `RiskManagement` class to include specific trading operations,
@@ -239,15 +253,12 @@ class Trade(RiskManagement):
         See the ``bbstrader.metatrader.risk.RiskManagement`` class for more details on these parameters.
         See `bbstrader.metatrader.account.check_mt5_connection()` for more details on how to connect to MT5 terminal.
         """
-        # Call the parent class constructor first
         super().__init__(
             symbol=symbol,
             start_time=start_time,
             finishing_time=finishing_time,
-            **kwargs,  # Pass kwargs to the parent constructor
+            **kwargs,
         )
-
-        # Initialize Trade-specific attributes
         self.symbol = symbol
         self.expert_name = expert_name
         self.expert_id = expert_id
@@ -260,12 +271,6 @@ class Trade(RiskManagement):
         self.console_log = console_log
         self.tf = kwargs.get("time_frame", "D1")
         self.kwargs = kwargs
-
-        self.start_time_hour, self.start_time_minutes = self.start.split(":")
-        self.finishing_time_hour, self.finishing_time_minutes = self.finishing.split(
-            ":"
-        )
-        self.ending_time_hour, self.ending_time_minutes = self.end.split(":")
 
         self.buy_positions = []
         self.sell_positions = []
@@ -480,18 +485,14 @@ class Trade(RiskManagement):
             session_data, headers=["Statistics", "Values"], tablefmt="outline"
         )
 
-        # Print the formatted statistics
         if self.verbose:
             print("\n[======= Trading Session Statistics =======]")
             print(session_table)
 
-        # Save to CSV if specified
-        if save:
+        if save and stats["deals"] > 0:
             today_date = datetime.now().strftime("%Y%m%d%H%M%S")
-            # Create a dictionary with the statistics
             statistics_dict = {item[0]: item[1] for item in session_data}
             stats_df = pd.DataFrame(statistics_dict, index=[0])
-            # Create the directory if it doesn't exist
             dir = dir or ".sessions"
             os.makedirs(dir, exist_ok=True)
             if "." in self.symbol:
@@ -503,8 +504,6 @@ class Trade(RiskManagement):
             filepath = os.path.join(dir, filename)
             stats_df.to_csv(filepath, index=False)
             LOGGER.info(f"Session statistics saved to {filepath}")
-
-    Buys = Literal["BMKT", "BLMT", "BSTP", "BSTPLMT"]
 
     def open_buy_position(
         self,
@@ -594,8 +593,6 @@ class Trade(RiskManagement):
             "SSTPLMT": (Mt5.ORDER_TYPE_SELL_STOP_LIMIT, "SELL_STOP_LIMIT"),
         }
         return type
-
-    Sells = Literal["SMKT", "SLMT", "SSTP", "SSTPLMT"]
 
     def open_sell_position(
         self,
@@ -1370,13 +1367,16 @@ class Trade(RiskManagement):
         profit = 0.0
         balance = self.get_account_info().balance
         target = round((balance * self.target) / 100, 2)
-        if len(self.opened_positions) != 0:
-            for position in self.opened_positions:
+        opened_positions = self.get_today_deals(group=self.symbol)
+        if len(opened_positions) != 0:
+            for position in opened_positions:
                 time.sleep(0.1)
                 # This return two TradeDeal Object,
                 # The first one is the opening order
                 # The second is the closing order
-                history = self.get_trades_history(position=position, to_df=False)
+                history = self.get_trades_history(
+                    position=position.position_id, to_df=False
+                )
                 if history is not None and len(history) == 2:
                     profit += history[1].profit
                     commission += history[0].commission
@@ -1598,16 +1598,6 @@ class Trade(RiskManagement):
                 f"No {order_type.upper()} {tikets_type.upper()} to close, SYMBOL={self.symbol}."
             )
 
-    Orders = Literal[
-        "all",
-        "buy_stops",
-        "sell_stops",
-        "buy_limits",
-        "sell_limits",
-        "buy_stop_limits",
-        "sell_stop_limits",
-    ]
-
     def close_orders(
         self,
         order_type: Orders,
@@ -1641,8 +1631,6 @@ class Trade(RiskManagement):
         self.bulk_close(
             orders, "orders", self.close_order, order_type, id=id, comment=comment
         )
-
-    Positions = Literal["all", "buy", "sell", "profitable", "losing"]
 
     def close_positions(
         self,
@@ -1689,13 +1677,11 @@ class Trade(RiskManagement):
             List[TradeDeal]: List of today deals
         """
         date_from = datetime.now() - timedelta(days=2)
-        history = self.get_trades_history(date_from=date_from, group=group, to_df=False)
+        history = (
+            self.get_trades_history(date_from=date_from, group=group, to_df=False) or []
+        )
         positions_ids = set(
-            [
-                deal.position_id
-                for deal in history
-                if history is not None and deal.magic == self.expert_id
-            ]
+            [deal.position_id for deal in history if deal.magic == self.expert_id]
         )
         today_deals = []
         for position in positions_ids:
@@ -1715,11 +1701,12 @@ class Trade(RiskManagement):
         :return: bool
         """
         negative_deals = 0
+        max_trades = self.max_trade()
         today_deals = self.get_today_deals(group=self.symbol)
         for deal in today_deals:
             if deal.profit < 0:
                 negative_deals += 1
-        if negative_deals >= self.max_trades:
+        if negative_deals >= max_trades:
             return True
         return False
 
@@ -1800,7 +1787,6 @@ class Trade(RiskManagement):
         The function assumes that the returns are the excess of
         those compared to a benchmark.
         """
-        # Get total history
         import warnings
 
         warnings.filterwarnings("ignore")
@@ -1817,33 +1803,19 @@ class Trade(RiskManagement):
 
     def days_end(self) -> bool:
         """Check if it is the end of the trading day."""
-        current_hour = datetime.now().hour
-        current_minute = datetime.now().minute
-
-        ending_hour = int(self.ending_time_hour)
-        ending_minute = int(self.ending_time_minutes)
-
-        if current_hour > ending_hour or (
-            current_hour == ending_hour and current_minute >= ending_minute
-        ):
+        now = datetime.now()
+        end = datetime.strptime(self.end, "%H:%M").time()
+        if now.time() >= end:
             return True
-        else:
-            return False
+        return False
 
     def trading_time(self):
         """Check if it is time to trade."""
-        if (
-            int(self.start_time_hour)
-            < datetime.now().hour
-            < int(self.finishing_time_hour)
-        ):
+        now = datetime.now()
+        start = datetime.strptime(self.start, "%H:%M").time()
+        end = datetime.strptime(self.finishing, "%H:%M").time()
+        if start <= now.time() <= end:
             return True
-        elif datetime.now().hour == int(self.start_time_hour):
-            if datetime.now().minute >= int(self.start_time_minutes):
-                return True
-        elif datetime.now().hour == int(self.finishing_time_hour):
-            if datetime.now().minute < int(self.finishing_time_minutes):
-                return True
         return False
 
     def sleep_time(self, weekend=False):
