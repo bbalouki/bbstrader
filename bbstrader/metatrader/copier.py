@@ -302,16 +302,11 @@ class TradeCopier(object):
         if self.start_time is None or self.end_time is None:
             return True
         else:
-            start_hour, start_minutes = self.start_time.split(":")
-            end_hour, end_minutes = self.end_time.split(":")
-            if int(start_hour) < datetime.now().hour < int(end_hour):
+            now = datetime.now()
+            start_time = datetime.strptime(self.start_time, "%H:%M").time()
+            end_time = datetime.strptime(self.end_time, "%H:%M").time()
+            if start_time <= now.time() <= end_time:
                 return True
-            elif datetime.now().hour == int(start_hour):
-                if datetime.now().minute >= int(start_minutes):
-                    return True
-            elif datetime.now().hour == int(end_hour):
-                if datetime.now().minute < int(end_minutes):
-                    return True
             return False
 
     def copy_new_trade(
@@ -608,10 +603,10 @@ class TradeCopier(object):
                     self.copy_orders(destination)
                     self.copy_positions(destination)
                     time.sleep(0.1)
-            except Exception as e:
-                self.log_error(e)
             except KeyboardInterrupt:
                 break
+            except Exception as e:
+                self.log_error(e)
             time.sleep(self.sleeptime)
 
 
