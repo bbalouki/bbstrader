@@ -10,7 +10,7 @@ import pytz
 from loguru import logger
 
 from bbstrader.btengine.data import DataHandler
-from bbstrader.btengine.event import FillEvent, SignalEvent
+from bbstrader.btengine.event import Events, FillEvent, SignalEvent
 from bbstrader.config import BBSTRADER_DIR
 from bbstrader.metatrader.account import (
     Account,
@@ -188,7 +188,7 @@ class MT5Strategy(Strategy):
         This method updates the trades for the strategy based on the fill event.
         It is used to keep track of the number of trades executed for each order.
         """
-        if event.type == "FILL":
+        if event.type == Events.FILL:
             if event.order != "EXIT":
                 self._trades[event.symbol][event.order] += 1
             elif event.order == "EXIT" and event.direction == "BUY":
@@ -678,6 +678,12 @@ class MT5Strategy(Strategy):
         if period_count == 0 or period_count is None:
             return True
         return period_count % signal_inverval == 0
+    
+    @staticmethod
+    def stop_time(time_zone: str, stop_time: str) -> bool:
+        now = datetime.now(pytz.timezone(time_zone)).time()
+        stop_time = datetime.strptime(stop_time, "%H:%M").time()
+        return now >= stop_time
 
     def ispositions(
         self, symbol, strategy_id, position, max_trades, one_true=False, account=None
