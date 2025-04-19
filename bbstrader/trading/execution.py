@@ -1,10 +1,10 @@
 import multiprocessing as mp
 import time
-from datetime import datetime
+from datetime import date, datetime
 from typing import Dict, List, Literal, Optional
 
+import pandas as pd
 from loguru import logger as log
-from logging import Logger
 
 from bbstrader.btengine.strategy import MT5Strategy, Strategy
 from bbstrader.config import BBSTRADER_DIR
@@ -18,7 +18,7 @@ except ImportError:
     import bbstrader.compat  # noqa: F401
 
 
-__all__ = ["Mt5ExecutionEngine", "TWSExecutionEngine"]
+__all__ = ["Mt5ExecutionEngine", "RunMt5Engine", "RunMt5Engines", "TWSExecutionEngine"]
 
 _TF_MAPPING = {
     "1m": 1,
@@ -38,6 +38,7 @@ _TF_MAPPING = {
 
 TradingDays = ["monday", "tuesday", "wednesday", "thursday", "friday"]
 WEEK_DAYS = TradingDays + ["saturday", "sunday"]
+FRIDAY = "friday"
 
 BUYS = ["BMKT", "BLMT", "BSTP", "BSTPLMT"]
 SELLS = ["SMKT", "SLMT", "SSTP", "SSTPLMT"]
@@ -181,12 +182,12 @@ class Mt5ExecutionEngine:
         show_positions_orders: bool = False,
         iter_time: int | float = 5,
         use_trade_time: bool = True,
-        period: Literal["day", "week", "month"] = "week",
+        period: Literal["24/7", "day", "week", "month"] = "week",
         period_end_action: Literal["break", "sleep"] = "break",
         closing_pnl: Optional[float] = None,
-        trading_days: Optional[List[str]] = TradingDays,
+        trading_days: Optional[List[str]] = None,
         comment: Optional[str] = None,
-        **kwargs,
+        **kwargs
     ):
         """
         Args:
@@ -199,8 +200,8 @@ class Mt5ExecutionEngine:
             show_positions_orders : Print open positions and orders. Defaults to False.
             iter_time : Interval to check for signals and `mm`. Defaults to 5.
             use_trade_time : Open trades after the time is completed. Defaults to True.
-            period : Period to trade. Defaults to 'week'.
-            period_end_action : Action to take at the end of the period. Defaults to 'break',
+            period : Period to trade ("24/7", "day", "week", "month"). Defaults to 'week'.
+            period_end_action : Action to take at the end of the period ("break", "sleep"). Defaults to 'break',
                 this only applies when period is 'day', 'week'.
             closing_pnl : Minimum profit in percentage of target profit to close positions. Defaults to -0.001.
             trading_days : Trading days in a week. Defaults to monday to friday.
@@ -213,11 +214,12 @@ class Mt5ExecutionEngine:
                 - telegram (bool): Enable telegram notifications. Defaults to False.
                 - bot_token (str): Telegram bot token. Defaults to None.
                 - chat_id (Union[int, str, List] ): Telegram chat id. Defaults to None.
+                - MT5 connection arguments.
 
         Note:
             1. For `trail` , `stop_trail` , `trail_after_points` , `be_plus_points` see `bbstrader.metatrader.trade.Trade.break_even()` .
-            2. All Strategies must inherit from `bbstrader.btengine.strategy.Strategy` or `bbstrader.btengine.strategy.MT5Strategy` class
-            and have a `calculate_signals` method that returns a dictionary of signals for each symbol in symbol_list.
+            2. All Strategies must inherit from `bbstrader.btengine.strategy.MT5Strategy` class
+            and have a `calculate_signals` method that returns a List of ``bbstrader.metatrader.trade.TradingSignal``.
 
             3. All strategies must have the following arguments in their `__init__` method:
                 - bars (DataHandler): DataHandler instance default to None
@@ -245,14 +247,12 @@ class Mt5ExecutionEngine:
         self.show_positions_orders = show_positions_orders
         self.iter_time = iter_time
         self.use_trade_time = use_trade_time
-        self.period = period
+        self.period = period.strip()
         self.period_end_action = period_end_action
         self.closing_pnl = closing_pnl
-        self.trading_days = trading_days
         self.comment = comment
         self.kwargs = kwargs
 
-        self.num_days = 0
         self.time_intervals = 0
         self.time_frame = kwargs.get("time_frame", "15m")
         self.trade_time = _TF_MAPPING[self.time_frame]
@@ -270,7 +270,7 @@ class Mt5ExecutionEngine:
 
     def _initialize_engine(self, **kwargs):
         global logger
-        logger: Logger = kwargs.get("logger", log)
+        logger = kwargs.get("logger", log)
         try:
             self.daily_risk = kwargs.get("daily_risk")
             self.notify = kwargs.get("notify", False)
@@ -280,16 +280,19 @@ class Mt5ExecutionEngine:
             self.STRATEGY = kwargs.get("strategy_name")
             self.ACCOUNT = kwargs.get("account", "MT5 Account")
             self.signal_tickers = kwargs.get("signal_tickers", self.symbols)
-            self.FRIDAY = "friday"
 
             self.expert_ids = self._expert_ids(kwargs.get("expert_ids"))
             self.max_trades = self._max_trades(kwargs.get("max_trades"))
             if self.comment is None:
                 trade = self.trades_instances[self.symbols[0]]
                 self.comment = f"{trade.expert_name}@{trade.version}"
-
-            if self.period.lower() == "24/7":
-                self.trading_days = WEEK_DAYS
+            if kwargs.get("trading_days") is None:
+                if self.period.lower() == "24/7":
+                    self.trading_days = WEEK_DAYS
+                else:
+                    self.trading_days = TradingDays
+            else:
+                self.trading_days = kwargs.get("trading_days")
         except Exception as e:
             self._print_exc(
                 f"Initializing Execution Engine, STRATEGY={self.STRATEGY}, ACCOUNT={self.ACCOUNT}",
@@ -440,24 +443,6 @@ class Mt5ExecutionEngine:
                             {positions_orders[order_type][symbol]}, STRATEGY={self.STRATEGY} , ACCOUNT={self.ACCOUNT}"
                     )
 
-    def _update_risk(self, weights):
-        try:
-            check_mt5_connection(**self.kwargs)
-            if weights is not None:
-                for symbol in self.symbols:
-                    if symbol not in weights:
-                        continue
-                    trade = self.trades_instances[symbol]
-                    assert self.daily_risk is not None
-                    dailydd = round(weights[symbol] * self.daily_risk, 5)
-                    trade.dailydd = dailydd
-        except Exception as e:
-            self._print_exc(
-                f"Updating Risk, STRATEGY={self.STRATEGY} , ACCOUNT={self.ACCOUNT}",
-                e,
-            )
-            pass
-
     def _send_notification(self, signal, symbol):
         telegram = self.kwargs.get("telegram", False)
         bot_token = self.kwargs.get("bot_token")
@@ -488,6 +473,73 @@ class Mt5ExecutionEngine:
     def _sleepmsg(self, sleep_time):
         logger.info(f"{self.ACCOUNT} Sleeping for {sleep_time} minutes ...\n")
 
+    def _sleep_over_night(self, sessionmsg):
+        sleep_time = self.trades_instances[self.symbols[-1]].sleep_time()
+        self._sleepmsg(sleep_time + self.delay)
+        time.sleep(60 * sleep_time + self.delay)
+        logger.info(sessionmsg)
+
+    def _sleep_over_weekend(self, sessionmsg):
+        sleep_time = self.trades_instances[self.symbols[-1]].sleep_time(weekend=True)
+        self._sleepmsg(sleep_time + self.delay)
+        time.sleep(60 * sleep_time + self.delay)
+        logger.info(sessionmsg)
+
+    def _check_is_day_ends(self, trade: Trade, symbol, period_type, today, closing):
+        if trade.days_end():
+            self._logmsgif("Day", symbol) if today != FRIDAY else self._logmsgif(
+                "Week", symbol
+            )
+            if (
+                (
+                    period_type == "month"
+                    and today == FRIDAY
+                    and self._is_month_ends()
+                    and closing
+                )
+                or (period_type == "week" and today == FRIDAY and closing)
+                or (period_type == "day" and closing)
+                or (period_type == "24/7" and closing)
+            ):
+                for id in self.expert_ids:
+                    trade.close_positions(
+                        position_type="all", id=id, comment=self.comment
+                    )
+                trade.statistics(save=True)
+
+    def _is_month_ends(self):
+        today = pd.Timestamp(date.today())
+        last_business_day = today + pd.tseries.offsets.BMonthEnd(0)
+        return today == last_business_day
+
+    def _daily_end_checks(self, today, closing, sessionmsg):
+        self.strategy.perform_period_end_checks()
+        if self.period_end_action == "break" and closing:
+            exit(0)
+        elif self.period_end_action == "sleep" and today != FRIDAY or not closing:
+            self._sleep_over_night(sessionmsg)
+        elif self.period_end_action == "sleep" and today == FRIDAY:
+            self._sleep_over_weekend(sessionmsg)
+
+    def _weekly_end_checks(self, today, closing, sessionmsg):
+        if today != FRIDAY:
+            self._sleep_over_night(sessionmsg)
+        elif today == FRIDAY:
+            self.strategy.perform_period_end_checks()
+            if self.period_end_action == "break" and closing:
+                exit(0)
+            elif self.period_end_action == "sleep" or not closing:
+                self._sleep_over_weekend(sessionmsg)
+
+    def _monthly_end_cheks(self, today, closing, sessionmsg):
+        if today != FRIDAY:
+            self._sleep_over_night(sessionmsg)
+        elif today == FRIDAY and self._is_month_ends() and closing:
+            self.strategy.perform_period_end_checks()
+            exit(0)
+        else:
+            self._sleep_over_weekend(sessionmsg)
+
     def _perform_period_end_actions(
         self,
         today,
@@ -495,107 +547,27 @@ class Mt5ExecutionEngine:
         closing,
         sessionmsg,
     ):
-        period_type = self.period.lower()
-        for symbol in self.symbols:
-            trade = self.trades_instances[symbol]
-
-            if trade.days_end():
-                if period_type in ["weekly", "monthly"] and today != self.FRIDAY:
-                    self._logmsgif("Day", symbol)
-                elif period_type in ["weekly", "monthly"] and today == self.FRIDAY:
-                    self._logmsgif("Week", symbol)
-
-                if (
-                    (
-                        period_type == "monthly"
-                        and today == self.FRIDAY
-                        and self.num_days >= 20
-                        and closing
-                    )
-                    or (period_type == "weekly" and today == self.FRIDAY and closing)
-                    or (period_type == "daily" and closing)
-                    or (period_type == "24/7" and closing)
-                ):
-                    for id in self.expert_ids:
-                        trade.close_positions(
-                            position_type="all", id=id, comment=self.comment
-                        )
-
-                    if period_type == "monthly":
-                        self._logmsgif("Month", symbol)
-                    elif period_type == "weekly":
-                        self._logmsgif("Week", symbol)
-                    else:
-                        self._logmsgif("Day", symbol)
-
-                    trade.statistics(save=True)
+        period = self.period.lower()
+        for symbol, trade in self.trades_instances.items():
+            self._check_is_day_ends(trade, symbol, period, today, closing)
 
         if day_end:
-            if period_type == "24/7":
-                self.strategy.perform_period_end_checks()
-                sleep_time = self.trades_instances[self.symbols[-1]].sleep_time()
-                self._sleepmsg(sleep_time + self.delay)
-                time.sleep(60 * sleep_time + self.delay)
-                logger.info(sessionmsg)
-
-            elif period_type == "daily":
-                self.strategy.perform_period_end_checks()
-                if self.period_end_action == "break" and closing:
-                    exit(0)
-                elif (
-                    self.period_end_action == "sleep"
-                    and today != self.FRIDAY
-                    or not closing
-                ):
-                    sleep_time = self.trades_instances[self.symbols[-1]].sleep_time()
-                    self._sleepmsg(sleep_time + self.delay)
-                    time.sleep(60 * sleep_time + self.delay)
-                    logger.info(sessionmsg)
-                elif self.period_end_action == "sleep" and today == self.FRIDAY:
-                    sleep_time = self.trades_instances[self.symbols[-1]].sleep_time(
-                        weekend=True
-                    )
-                    self._sleepmsg(sleep_time + self.delay)
-                    time.sleep(60 * sleep_time + self.delay)
-                    logger.info(sessionmsg)
-
-            elif period_type == "weekly":
-                if today != self.FRIDAY:
-                    sleep_time = self.trades_instances[self.symbols[-1]].sleep_time()
-                    self._sleepmsg(sleep_time + self.delay)
-                    time.sleep(60 * sleep_time + self.delay)
-                    logger.info(sessionmsg)
-                elif today == self.FRIDAY:
+            self.time_intervals = 0
+            match period:
+                case "24/7":
                     self.strategy.perform_period_end_checks()
-                    if self.period_end_action == "break" and closing:
-                        exit(0)
-                    elif self.period_end_action == "sleep" or not closing:
-                        sleep_time = self.trades_instances[self.symbols[-1]].sleep_time(
-                            weekend=True
-                        )
-                        self._sleepmsg(sleep_time + self.delay)
-                        time.sleep(60 * sleep_time + self.delay)
-                        logger.info(sessionmsg)
+                    self._sleep_over_night(sessionmsg)
 
-            elif period_type == "monthly":
-                if today != self.FRIDAY:
-                    sleep_time = self.trades_instances[self.symbols[-1]].sleep_time()
-                    self._sleepmsg(sleep_time + self.delay)
-                    time.sleep(60 * sleep_time + self.delay)
-                    logger.info(sessionmsg)
-                elif today == self.FRIDAY:
-                    self.strategy.perform_period_end_checks()
-                    if self.period_end_action == "break" and closing:
-                        exit(0)
-                    elif self.period_end_action == "sleep" or not closing:
-                        sleep_time = self.trades_instances[self.symbols[-1]].sleep_time(
-                            weekend=True
-                        )
-                        self._sleepmsg(sleep_time + self.delay)
-                        time.sleep(60 * sleep_time + self.delay)
-                        logger.info(sessionmsg)
+                case "day":
+                    self._daily_end_checks(today, closing, sessionmsg)
 
-        self.time_intervals = 0
+                case "week":
+                    self._weekly_end_checks(today, closing, sessionmsg)
+
+                case "month":
+                    self._monthly_end_cheks(today, closing, sessionmsg)
+                case _:
+                    raise ValueError(f"Invalid period {period}")
 
     def _check(self, buys, sells, symbol):
         if not self.mm:
@@ -608,6 +580,41 @@ class Mt5ExecutionEngine:
                 trail_after_points=self.trail_after_points,
                 be_plus_points=self.be_plus_points,
             )
+
+    def _get_signals_and_weights(self):
+        try:
+            check_mt5_connection(**self.kwargs)
+            signals = self.strategy.calculate_signals()
+            weights = (
+                self.strategy.apply_risk_management(self.optimizer)
+                if hasattr(self.strategy, "apply_risk_management")
+                else None
+            )
+            return signals, weights
+        except Exception as e:
+            self._print_exc(
+                f"Calculating Signals, STRATEGY={self.STRATEGY} , ACCOUNT={self.ACCOUNT}",
+                e,
+            )
+            pass
+
+    def _update_risk(self, weights):
+        try:
+            check_mt5_connection(**self.kwargs)
+            if weights is not None:
+                for symbol in self.symbols:
+                    if symbol not in weights:
+                        continue
+                    trade = self.trades_instances[symbol]
+                    assert self.daily_risk is not None
+                    dailydd = round(weights[symbol] * self.daily_risk, 5)
+                    trade.dailydd = dailydd
+        except Exception as e:
+            self._print_exc(
+                f"Updating Risk, STRATEGY={self.STRATEGY} , ACCOUNT={self.ACCOUNT}",
+                e,
+            )
+            pass
 
     def _open_buy(
         self, signal, symbol, id, trade: Trade, price, stoplimit, sigmsg, msg, comment
@@ -822,23 +829,6 @@ class Mt5ExecutionEngine:
                     f"(e.g., if time_frame is 15m, iter_time must be 1.5, 3, 5, 15 etc)"
                 )
 
-    def _get_signals_and_weights(self):
-        try:
-            check_mt5_connection(**self.kwargs)
-            signals = self.strategy.calculate_signals()
-            weights = (
-                self.strategy.apply_risk_management(self.optimizer)
-                if hasattr(self.strategy, "apply_risk_management")
-                else None
-            )
-            return signals, weights
-        except Exception as e:
-            self._print_exc(
-                f"Calculating Signals, STRATEGY={self.STRATEGY} , ACCOUNT={self.ACCOUNT}",
-                e,
-            )
-            pass
-
     def _handle_signals(self, today, signals, buys, sells):
         try:
             check_mt5_connection(**self.kwargs)
@@ -892,9 +882,6 @@ class Mt5ExecutionEngine:
                 closing,
                 sessionmsg,
             )
-        except KeyboardInterrupt:
-            logger.info("Stopping the Execution Engine ...")
-            quit()
         except Exception as e:
             msg = f"Handling period end actions, STRATEGY={self.STRATEGY} , ACCOUNT={self.ACCOUNT}"
             self._print_exc(msg, e)
@@ -907,18 +894,18 @@ class Mt5ExecutionEngine:
                 positions_orders = self._check_positions_orders()
                 if self.show_positions_orders:
                     self._display_positions_orders(positions_orders)
-                buys = positions_orders["buys"]
-                sells = positions_orders["sells"]
+                buys = positions_orders.get("buys")
+                sells = positions_orders.get("sells")
                 self.long_market, self.short_market = self._long_short_market(
                     buys, sells
                 )
-                signals, weights = self._get_signals_and_weights()
-                self._update_risk(weights)
                 today = datetime.now().strftime("%A").lower()
+                signals, weights = self._get_signals_and_weights()
                 if len(signals) == 0:
                     for symbol in self.symbols:
                         self._check(buys[symbol], sells[symbol], symbol)
                 else:
+                    self._update_risk(weights)
                     self._handle_signals(today, signals, buys, sells)
                 self._sleep()
                 self._handle_period_end_actions(today)
