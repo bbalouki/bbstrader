@@ -4,7 +4,7 @@ from queue import Queue
 from loguru import logger
 
 from bbstrader.btengine.data import DataHandler
-from bbstrader.btengine.event import FillEvent, OrderEvent
+from bbstrader.btengine.event import Events, FillEvent, OrderEvent
 from bbstrader.config import BBSTRADER_DIR
 from bbstrader.metatrader.account import Account
 
@@ -80,7 +80,7 @@ class SimExecutionHandler(ExecutionHandler):
         Args:
             event (OrderEvent): Contains an Event object with order information.
         """
-        if event.type == "ORDER":
+        if event.type == Events.ORDER:
             dtime = self.bardata.get_latest_bar_datetime(event.symbol)
             fill_event = FillEvent(
                 timeindex=dtime,
@@ -233,7 +233,7 @@ class MT5ExecutionHandler(ExecutionHandler):
         Args:
             event (OrderEvent): Contains an Event object with order information.
         """
-        if event.type == "ORDER":
+        if event.type == Events.ORDER:
             symbol = event.symbol
             direction = event.direction
             quantity = event.quantity

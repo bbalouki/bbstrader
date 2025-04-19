@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import List, Literal, Optional
 
 from tabulate import tabulate
-
+from bbstrader.btengine.event import Events
 from bbstrader.btengine.data import DataHandler
 from bbstrader.btengine.execution import ExecutionHandler, SimExecutionHandler
 from bbstrader.btengine.portfolio import Portfolio
@@ -165,19 +165,19 @@ class BacktestEngine(Backtest):
                     break
                 else:
                     if event is not None:
-                        if event.type == "MARKET":
+                        if event.type == Events.MARKET:
                             self.strategy.calculate_signals(event)
                             self.portfolio.update_timeindex(event)
 
-                        elif event.type == "SIGNAL":
+                        elif event.type == Events.SIGNAL:
                             self.signals += 1
                             self.portfolio.update_signal(event)
 
-                        elif event.type == "ORDER":
+                        elif event.type == Events.ORDER:
                             self.orders += 1
                             self.execution_handler.execute_order(event)
 
-                        elif event.type == "FILL":
+                        elif event.type == Events.FILL:
                             self.fills += 1
                             self.portfolio.update_fill(event)
                             self.strategy.update_trades_from_fill(event)
@@ -354,7 +354,7 @@ def run_backtest_with(engine: Literal["bbstrader", "cerebro", "zipline"], **kwar
         )
     elif engine == "cerebro":
         # TODO:
-        pass
+        raise NotImplementedError("cerebro engine is not supported yet")
     elif engine == "zipline":
         # TODO:
-        pass
+        raise NotImplementedError("zipline engine is not supported yet")

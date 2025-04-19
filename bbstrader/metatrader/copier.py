@@ -486,12 +486,7 @@ class TradeCopier(object):
         )
         return source_orders, dest_orders
 
-    def copy_orders(self, destination: dict):
-        assert destination.get("copy", False), "Destination account not set to copy"
-        what = destination.get("copy_what", "all")
-        if what not in ["all", "orders"]:
-            return
-        check_mt5_connection(**destination)
+    def _copy_new_orders(self, destination):
         source_orders, destination_orders = self.get_orders(destination)
         # Check for new orders
         dest_ids = [order.magic for order in destination_orders]
@@ -500,6 +495,7 @@ class TradeCopier(object):
                 if not self.slippage(source_order, destination):
                     self.copy_new_order(source_order, destination)
 
+    def _copy_modified_orders(self, destination):
         # Check for modified orders
         source_orders, destination_orders = self.get_orders(destination)
         for source_order in source_orders:
@@ -509,6 +505,8 @@ class TradeCopier(object):
                         ticket = destination_order.ticket
                         symbol = destination_order.symbol
                         self.modify_order(ticket, symbol, source_order, destination)
+
+    def _copy_closed_orders(self, destination):
         # Check for closed orders
         source_orders, destination_orders = self.get_orders(destination)
         source_ids = [order.ticket for order in source_orders]
@@ -519,8 +517,8 @@ class TradeCopier(object):
                 )
                 self.remove_order(src_symbol, destination_order, destination)
 
-        # Check if order are triggered on source account
-        # and not on destination account or vice versa
+    def _sync_positions(self, what, destination):
+        # Update postions
         source_positions, _ = self.get_positions(destination)
         _, destination_orders = self.get_orders(destination)
         for source_position in source_positions:
@@ -533,6 +531,8 @@ class TradeCopier(object):
                         if not self.slippage(source_position, destination):
                             self.copy_new_position(source_position, destination)
 
+    def _sync_orders(self, destination):
+        # Update orders
         _, destination_positions = self.get_positions(destination)
         source_orders, _ = self.get_orders(destination)
         for destination_position in destination_positions:
@@ -543,16 +543,25 @@ class TradeCopier(object):
                     )
                     if not self.slippage(source_order, destination):
                         self.copy_new_order(source_order, destination)
-        Mt5.shutdown()
 
-    def copy_positions(self, destination: dict):
-        assert destination.get("copy", False), "Destination account not set to copy"
-        what = destination.get("copy_what", "all")
-        if what not in ["all", "positions"]:
+    def _copy_what(self, destination):
+        if not destination.get("copy", False):
+            raise ValueError("Destination account not set to copy mode")
+        return destination.get("copy_what", "all")
+    
+    def copy_orders(self, destination: dict):
+        what = self._copy_what(destination)
+        if what not in ["all", "orders"]:
             return
         check_mt5_connection(**destination)
-        source_positions, destination_positions = self.get_positions(destination)
+        self._copy_new_orders(destination)
+        self._copy_modified_orders(destination)
+        self._copy_closed_orders(destination)
+        self._sync_positions(what, destination)
+        self._sync_orders(destination)
 
+    def _copy_new_positions(self, destination):
+        source_positions, destination_positions = self.get_positions(destination)
         # Check for new positions
         dest_ids = [pos.magic for pos in destination_positions]
         for source_position in source_positions:
@@ -560,6 +569,7 @@ class TradeCopier(object):
                 if not self.slippage(source_position, destination):
                     self.copy_new_position(source_position, destination)
 
+    def _copy_modified_positions(self, destination):
         # Check for modified positions
         source_positions, destination_positions = self.get_positions(destination)
         for source_position in source_positions:
@@ -571,6 +581,8 @@ class TradeCopier(object):
                         self.modify_position(
                             ticket, symbol, source_position, destination
                         )
+
+    def _copy_closed_position(self, destination):
         # Check for closed positions
         source_positions, destination_positions = self.get_positions(destination)
         source_ids = [pos.ticket for pos in source_positions]
@@ -580,7 +592,15 @@ class TradeCopier(object):
                     destination_position.symbol, destination, type="source"
                 )
                 self.remove_position(src_symbol, destination_position, destination)
-        Mt5.shutdown()
+
+    def copy_positions(self, destination: dict):
+        what = self._copy_what(destination)
+        if what not in ["all", "positions"]:
+            return
+        check_mt5_connection(**destination)
+        self._copy_new_positions(destination)
+        self._copy_modified_positions(destination)
+        self._copy_closed_position(destination)
 
     def log_error(self, e, symbol=None):
         error_msg = repr(e)
@@ -602,8 +622,10 @@ class TradeCopier(object):
                         continue
                     self.copy_orders(destination)
                     self.copy_positions(destination)
+                    Mt5.shutdown()
                     time.sleep(0.1)
             except KeyboardInterrupt:
+                logger.info("Stopping the Trade Copier ...")
                 break
             except Exception as e:
                 self.log_error(e)
@@ -656,6 +678,39 @@ def RunMultipleCopier(
         process.join()
 
 
+def _strtodict(string: str) -> dict:
+    string = string.strip().replace("\n", "").replace(" ", "").replace('"""', "")
+    return dict(item.split(":") for item in string.split(","))
+
+
+def _parse_symbols(section):
+    symbols: str = section.get("symbols")
+    symbols = symbols.strip().replace("\n", " ").replace('"""', "")
+    if symbols in ["all", "*"]:
+        section["symbols"] = symbols
+    elif ":" in symbols:
+        symbols = _strtodict(symbols)
+        section["symbols"] = symbols
+    elif " " in symbols and "," not in symbols:
+        symbols = symbols.split()
+        section["symbols"] = symbols
+    elif "," in symbols:
+        symbols = symbols.replace(" ", "").split(",")
+        section["symbols"] = symbols
+    else:
+        raise ValueError("""
+        Invalid symbols format.
+        You can use space or comma separated symbols in one line or multiple lines using triple quotes.
+        You can also use a dictionary to map source symbols to destination symbols as shown below.
+        Or if you want to copy all symbols, use "all" or "*".
+
+        symbols = EURUSD, GBPUSD, USDJPY (space separated)
+        symbols = EURUSD,GBPUSD,USDJPY (comma separated)
+        symbols = EURUSD.s:EURUSD_i, GBPUSD.s:GBPUSD_i, USDJPY.s:USDJPY_i (dictionary) 
+        symbols = all (copy all symbols)
+        symbols = * (copy all symbols) """)
+
+
 def config_copier(
     source_section: str = None,
     dest_sections: str | List[str] = None,
@@ -680,10 +735,6 @@ def config_copier(
         ```
     """
     from bbstrader.core.utils import dict_from_ini
-
-    def strtodict(string: str) -> dict:
-        string = string.strip().replace("\n", "").replace(" ", "").replace('"""', "")
-        return dict(item.split(":") for item in string.split(","))
 
     if not inifile:
         inifile = Path().home() / ".bbstrader" / "copier" / "copier.ini"
@@ -714,33 +765,7 @@ def config_copier(
             raise ValueError(
                 f"Destination section {dest_section} not found in {inifile}"
             )
-        symbols: str = section.get("symbols")
-        symbols = symbols.strip().replace("\n", " ").replace('"""', "")
-        if symbols in ["all", "*"]:
-            section["symbols"] = symbols
-        elif ":" in symbols:
-            symbols = strtodict(symbols)
-            section["symbols"] = symbols
-        elif " " in symbols and "," not in symbols:
-            symbols = symbols.split()
-            section["symbols"] = symbols
-        elif "," in symbols:
-            symbols = symbols.replace(" ", "").split(",")
-            section["symbols"] = symbols
-        else:
-            err_msg = """
-    Invalid symbols format.
-    You can use space or comma separated symbols in one line or multiple lines using triple quotes.
-    You can also use a dictionary to map source symbols to destination symbols as shown below.
-    Or if you want to copy all symbols, use "all" or "*".
-
-    symbols = EURUSD, GBPUSD, USDJPY (space separated)
-    symbols = EURUSD,GBPUSD,USDJPY (comma separated)
-    symbols = EURUSD.s:EURUSD_i, GBPUSD.s:GBPUSD_i, USDJPY.s:USDJPY_i (dictionary) 
-    symbols = all (copy all symbols)
-    symbols = * (copy all symbols) """
-            raise ValueError(err_msg)
-
+        _parse_symbols(section)
         destinations.append(section)
 
     return source, destinations

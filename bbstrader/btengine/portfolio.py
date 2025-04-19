@@ -6,7 +6,7 @@ import pandas as pd
 import quantstats as qs
 
 from bbstrader.btengine.data import DataHandler
-from bbstrader.btengine.event import FillEvent, MarketEvent, OrderEvent, SignalEvent
+from bbstrader.btengine.event import Events, FillEvent, MarketEvent, OrderEvent, SignalEvent
 from bbstrader.btengine.performance import (
     create_drawdowns,
     create_sharpe_ratio,
@@ -282,7 +282,7 @@ class Portfolio(object):
         Updates the portfolio current positions and holdings
         from a FillEvent.
         """
-        if event.type == "FILL":
+        if event.type == Events.FILL:
             self.update_positions_from_fill(event)
             self.update_holdings_from_fill(event)
 
@@ -337,7 +337,7 @@ class Portfolio(object):
         Acts on a SignalEvent to generate new orders
         based on the portfolio logic.
         """
-        if event.type == "SIGNAL":
+        if event.type == Events.SIGNAL:
             order_event = self.generate_order(event)
             self.events.put(order_event)
 

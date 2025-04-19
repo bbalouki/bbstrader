@@ -1059,7 +1059,7 @@ class Account(object):
             if book is None:
                 return None
             else:
-                return Tuple([BookInfo(**entry._asdict()) for entry in book])
+                return tuple([BookInfo(**entry._asdict()) for entry in book])
         except Exception as e:
             raise_mt5_error(e)
 

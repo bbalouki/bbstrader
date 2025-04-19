@@ -1,6 +1,14 @@
 """
 Strategies module for trading strategies backtesting and execution.
 
+# NOTE
+These strategies inherit from the Strategy class, not from MT5Strategy, because we chose to demonstrate the modular approach to building and backtesting strategies using the bbstrader framework.
+
+If these strategies need to be sent to the Mt5ExecutionEngine,
+they must return signals as a list of bbstrader.metatrader.trade.TradingSignal objects.
+
+Later, we will implement the Execution Engine for the Interactive Brokers TWS platform.
+
 DISCLAIMER: 
 This module is for educational purposes only and should not be
 considered as financial advice. Always consult with a qualified financial advisor before making any investment decisions. 
@@ -18,7 +26,7 @@ import yfinance as yf
 
 from bbstrader.btengine.backtest import BacktestEngine
 from bbstrader.btengine.data import DataHandler, MT5DataHandler, YFDataHandler
-from bbstrader.btengine.event import SignalEvent
+from bbstrader.btengine.event import Events, SignalEvent
 from bbstrader.btengine.execution import MT5ExecutionHandler, SimExecutionHandler
 from bbstrader.btengine.strategy import Strategy
 from bbstrader.metatrader.account import Account
@@ -189,7 +197,7 @@ class SMAStrategy(Strategy):
 
     def calculate_signals(self, event=None):
         if self.mode == "backtest" and event is not None:
-            if event.type == "MARKET":
+            if event.type == Events.MARKET:
                 signals = self.create_backtest_signals()
                 for signal in signals.values():
                     if signal is not None:
@@ -377,7 +385,7 @@ class ArimaGarchStrategy(Strategy):
 
     def calculate_signals(self, event=None):
         if self.mode == "backtest" and event is not None:
-            if event.type == "MARKET":
+            if event.type == Events.MARKET:
                 signals = self.create_backtest_signal()
                 for signal in signals.values():
                     if signal is not None:
@@ -560,7 +568,7 @@ class KalmanFilterStrategy(Strategy):
         Calculate the Kalman Filter strategy.
         """
         if self.mode == "backtest" and event is not None:
-            if event.type == "MARKET":
+            if event.type == Events.MARKET:
                 self.calculate_backtest_signals()
         elif self.mode == "live":
             return self.calculate_live_signals()
@@ -744,7 +752,7 @@ class StockIndexSTBOTrading(Strategy):
 
     def calculate_signals(self, event=None) -> Dict[str, Union[str, None]]:
         if self.mode == "backtest" and event is not None:
-            if event.type == "MARKET":
+            if event.type == Events.MARKET:
                 self.calculate_backtest_signals()
         elif self.mode == "live":
             return self.calculate_live_signals()

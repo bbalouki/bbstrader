@@ -16,6 +16,101 @@ __all__ = [
     "search_coint_candidate_pairs",
 ]
 
+def _download_and_process_data(source, tickers, start, end, tf, path, **kwargs):
+    """Download and process data for a list of tickers from the specified source."""
+    data_list = []
+    for ticker in tickers:
+        try:
+            if source == "yf":
+                data = yf.download(
+                    ticker,
+                    start=start,
+                    end=end,
+                    progress=False,
+                    multi_level_index=False,
+                )
+                data = data.drop(columns=["Adj Close"], axis=1)
+            elif source == "mt5":
+                start, end = pd.Timestamp(start), pd.Timestamp(end)
+                data = download_historical_data(
+                    symbol=ticker,
+                    timeframe=tf,
+                    date_from=start,
+                    date_to=end,
+                    **{"path": path},
+                )
+                data = data.drop(columns=["adj_close"], axis=1)
+            elif source in ["fmp", "eodhd"]:
+                handler_class = (
+                    FMPDataHandler if source == "fmp" else EODHDataHandler
+                )
+                handler = handler_class(events=None, symbol_list=[ticker], **kwargs)
+                data = handler.data[ticker]
+            else:
+                raise ValueError(f"Invalid source: {source}")
+
+            data = data.reset_index()
+            data = data.rename(columns=str.lower)
+            data["ticker"] = ticker
+            data_list.append(data)
+
+        except Exception as e:
+            print(f"No Data found for {ticker}: {e}")
+            continue
+
+    return pd.concat(data_list)
+
+def _handle_date_range(start, end, window):
+    """Handle start and end date generation."""
+    if start is None or end is None:
+        end = pd.Timestamp(datetime.now()).strftime("%Y-%m-%d")
+        start = (
+            pd.Timestamp(datetime.now())
+            - pd.DateOffset(years=window)
+            + pd.DateOffset(days=1)
+        ).strftime("%Y-%m-%d")
+    return start, end
+
+def _period_search(start, end, securities, candidates, window, npairs):
+    if window < 3 or (pd.Timestamp(end) - pd.Timestamp(start)).days / 365 < 3:
+        raise ValueError(
+            "The date range must be at least two (2) years for period search."
+        )
+    top_pairs = []
+    p_start = pd.Timestamp(end) - pd.DateOffset(years=1)
+    periods = pd.date_range(start=p_start, end=pd.Timestamp(end), freq="BQE")
+    npairs = max(round(npairs / 2), 1)
+    for period in periods:
+        s_start = period - pd.DateOffset(years=2) + pd.DateOffset(days=1)
+        print(f"Searching for pairs in period: {s_start} - {period}")
+        pairs = find_cointegrated_pairs(
+            securities,
+            candidates,
+            n=npairs,
+            start=str(s_start),
+            stop=str(period),
+            coint=True,
+        )
+        pairs["period"] = period
+        top_pairs.append(pairs)
+    top_pairs = pd.concat(top_pairs)
+    if len(top_pairs.columns) <= 1:
+        raise ValueError(
+            "No pairs found in the specified period."
+            "Please adjust the date range or increase the number of pairs."
+        )
+    return top_pairs.head(npairs * 2)
+
+def _process_asset_data(securities, candidates, universe, rolling_window):
+    """Process and select assets from the data."""
+    securities = select_assets(
+        securities, n=universe, rolling_window=rolling_window
+    )
+    candidates = select_assets(
+        candidates, n=universe, rolling_window=rolling_window
+    )
+    return securities, candidates
+
 
 def search_coint_candidate_pairs(
     securities: pd.DataFrame | List[str] = None,
@@ -145,101 +240,6 @@ def search_coint_candidate_pairs(
 
     """
 
-    def _download_and_process_data(source, tickers, start, end, tf, path, **kwargs):
-        """Download and process data for a list of tickers from the specified source."""
-        data_list = []
-        for ticker in tickers:
-            try:
-                if source == "yf":
-                    data = yf.download(
-                        ticker,
-                        start=start,
-                        end=end,
-                        progress=False,
-                        multi_level_index=False,
-                    )
-                    data = data.drop(columns=["Adj Close"], axis=1)
-                elif source == "mt5":
-                    start, end = pd.Timestamp(start), pd.Timestamp(end)
-                    data = download_historical_data(
-                        symbol=ticker,
-                        timeframe=tf,
-                        date_from=start,
-                        date_to=end,
-                        **{"path": path},
-                    )
-                    data = data.drop(columns=["adj_close"], axis=1)
-                elif source in ["fmp", "eodhd"]:
-                    handler_class = (
-                        FMPDataHandler if source == "fmp" else EODHDataHandler
-                    )
-                    handler = handler_class(events=None, symbol_list=[ticker], **kwargs)
-                    data = handler.data[ticker]
-                else:
-                    raise ValueError(f"Invalid source: {source}")
-
-                data = data.reset_index()
-                data = data.rename(columns=str.lower)
-                data["ticker"] = ticker
-                data_list.append(data)
-
-            except Exception as e:
-                print(f"No Data found for {ticker}: {e}")
-                continue
-
-        return pd.concat(data_list)
-
-    def _handle_date_range(start, end, window):
-        """Handle start and end date generation."""
-        if start is None or end is None:
-            end = pd.Timestamp(datetime.now()).strftime("%Y-%m-%d")
-            start = (
-                pd.Timestamp(datetime.now())
-                - pd.DateOffset(years=window)
-                + pd.DateOffset(days=1)
-            ).strftime("%Y-%m-%d")
-        return start, end
-
-    def _period_search(start, end, securities, candidates, npairs=npairs):
-        if window < 3 or (pd.Timestamp(end) - pd.Timestamp(start)).days / 365 < 3:
-            raise ValueError(
-                "The date range must be at least two (2) years for period search."
-            )
-        top_pairs = []
-        p_start = pd.Timestamp(end) - pd.DateOffset(years=1)
-        periods = pd.date_range(start=p_start, end=pd.Timestamp(end), freq="BQE")
-        npairs = max(round(npairs / 2), 1)
-        for period in periods:
-            s_start = period - pd.DateOffset(years=2) + pd.DateOffset(days=1)
-            print(f"Searching for pairs in period: {s_start} - {period}")
-            pairs = find_cointegrated_pairs(
-                securities,
-                candidates,
-                n=npairs,
-                start=str(s_start),
-                stop=str(period),
-                coint=True,
-            )
-            pairs["period"] = period
-            top_pairs.append(pairs)
-        top_pairs = pd.concat(top_pairs)
-        if len(top_pairs.columns) <= 1:
-            raise ValueError(
-                "No pairs found in the specified period."
-                "Please adjust the date range or increase the number of pairs."
-            )
-        return top_pairs.head(npairs * 2)
-
-    def _process_asset_data(securities, candidates, universe, rolling_window):
-        """Process and select assets from the data."""
-        securities = select_assets(
-            securities, n=universe, rolling_window=rolling_window
-        )
-        candidates = select_assets(
-            candidates, n=universe, rolling_window=rolling_window
-        )
-        return securities, candidates
-
     if (
         securities is not None
         and candidates is not None
@@ -255,7 +255,7 @@ def search_coint_candidate_pairs(
         if period_search:
             start = securities.index.get_level_values("date").min()
             end = securities.index.get_level_values("date").max()
-            top_pairs = _period_search(start, end, securities, candidates)
+            top_pairs = _period_search(start, end, securities, candidates, window, npairs)
         else:
             top_pairs = find_cointegrated_pairs(
                 securities, candidates, n=npairs, coint=True
@@ -291,7 +291,7 @@ def search_coint_candidate_pairs(
         )
         if period_search:
             top_pairs = _period_search(
-                start, end, securities_data, candidates_data
+                start, end, securities_data, candidates_data, window, npairs
             ).head(npairs)
         else:
             top_pairs = find_cointegrated_pairs(
