@@ -1,4 +1,5 @@
 from datetime import datetime
+from enum import Enum
 from typing import Literal
 
 __all__ = ["Event", "MarketEvent", "SignalEvent", "OrderEvent", "FillEvent"]
@@ -18,6 +19,13 @@ class Event(object):
     ...
 
 
+class Events(Enum):
+    MARKET = "MARKET"
+    SIGNAL = "SIGNAL"
+    ORDER = "ORDER"
+    FILL = "FILL"
+
+
 class MarketEvent(Event):
     """
     Market Events are triggered when the outer while loop of the backtesting
@@ -32,7 +40,7 @@ class MarketEvent(Event):
         """
         Initialises the MarketEvent.
         """
-        self.type = "MARKET"
+        self.type = Events.MARKET
 
 
 class SignalEvent(Event):
@@ -72,7 +80,7 @@ class SignalEvent(Event):
             price (int | float): An optional price to be used when the signal is generated.
             stoplimit (int | float): An optional stop-limit price for the signal
         """
-        self.type = "SIGNAL"
+        self.type = Events.SIGNAL
         self.strategy_id = strategy_id
         self.symbol = symbol
         self.datetime = datetime
@@ -118,7 +126,7 @@ class OrderEvent(Event):
             price (int | float): The price at which to order.
             signal (str): The signal that generated the order.
         """
-        self.type = "ORDER"
+        self.type = Events.ORDER
         self.symbol = symbol
         self.order_type = order_type
         self.quantity = quantity
@@ -191,7 +199,7 @@ class FillEvent(Event):
             commission (float | None): An optional commission sent from IB.
             order (str): The order that this fill is related
         """
-        self.type = "FILL"
+        self.type = Events.FILL
         self.timeindex = timeindex
         self.symbol = symbol
         self.exchange = exchange
