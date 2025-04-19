@@ -150,6 +150,7 @@ Orders = Literal[
     "sell_stop_limits",
 ]
 
+EXPERT_ID = 98181105
 
 class Trade(RiskManagement):
     """
@@ -209,7 +210,7 @@ class Trade(RiskManagement):
         self,
         symbol: str = "EURUSD",
         expert_name: str = "bbstrader",
-        expert_id: int = 9818,
+        expert_id: int = EXPERT_ID,
         version: str = "2.0",
         target: float = 5.0,
         start_time: str = "0:00",
@@ -376,21 +377,18 @@ class Trade(RiskManagement):
 
     def summary(self):
         """Show a brief description about the trading program"""
+        start = datetime.strptime(self.start, "%H:%M").time()
+        finish = datetime.strptime(self.finishing, "%H:%M").time()
+        end = datetime.strptime(self.end, "%H:%M").time()
         summary_data = [
             ["Expert Advisor Name", f"@{self.expert_name}"],
             ["Expert Advisor Version", f"@{self.version}"],
             ["Expert | Strategy ID", self.expert_id],
             ["Trading Symbol", self.symbol],
             ["Trading Time Frame", self.tf],
-            ["Start Trading Time", f"{self.start_time_hour}:{self.start_time_minutes}"],
-            [
-                "Finishing Trading Time",
-                f"{self.finishing_time_hour}:{self.finishing_time_minutes}",
-            ],
-            [
-                "Closing Position After",
-                f"{self.ending_time_hour}:{self.ending_time_minutes}",
-            ],
+            ["Start Trading Time", f"{start}"],
+            ["Finishing Trading Time", f"{finish}"],
+            ["Closing Position After", f"{end}"],
         ]
         # Custom table format
         summary_table = tabulate(
@@ -520,7 +518,7 @@ class Trade(RiskManagement):
         tp: Optional[float] = None,
     ):
         """
-        Open a Buy positin
+        Open a Buy position
 
         Args:
             action (str): `BMKT` for Market orders or `BLMT`,
@@ -533,6 +531,8 @@ class Trade(RiskManagement):
             mm (bool): Weither to put stop loss and tp or not
             trail (bool): Weither to trail the stop loss or not
             comment (str): The comment for the opening position
+            sl (float): The stop loss price
+            tp (float): The take profit price
         """
         Id = id if id is not None else self.expert_id
         point = self.get_symbol_info(self.symbol).point
@@ -582,7 +582,7 @@ class Trade(RiskManagement):
         return False
 
     def _order_type(self):
-        type = {
+        return {
             "BMKT": (Mt5.ORDER_TYPE_BUY, "BUY"),
             "SMKT": (Mt5.ORDER_TYPE_BUY, "SELL"),
             "BLMT": (Mt5.ORDER_TYPE_BUY_LIMIT, "BUY_LIMIT"),
@@ -592,7 +592,6 @@ class Trade(RiskManagement):
             "BSTPLMT": (Mt5.ORDER_TYPE_BUY_STOP_LIMIT, "BUY_STOP_LIMIT"),
             "SSTPLMT": (Mt5.ORDER_TYPE_SELL_STOP_LIMIT, "SELL_STOP_LIMIT"),
         }
-        return type
 
     def open_sell_position(
         self,
@@ -609,7 +608,7 @@ class Trade(RiskManagement):
         tp: Optional[float] = None,
     ):
         """
-        Open a sell positin
+        Open a sell position
 
         Args:
             action (str): `SMKT` for Market orders
@@ -624,8 +623,8 @@ class Trade(RiskManagement):
             comment (str): The comment for the closing position
                         symbol (str): The symbol to trade
             volume (float): The volume (lot) to trade
-            sl (float): The stop loss in points
-            tp (float): The take profit in points
+            sl (float): The stop loss price
+            tp (float): The take profit price
         """
         Id = id if id is not None else self.expert_id
         point = self.get_symbol_info(self.symbol).point
@@ -691,11 +690,11 @@ class Trade(RiskManagement):
             LOGGER.info(f"Not Trading time, SYMBOL={self.symbol}")
             return False
         elif not self.is_risk_ok():
-            LOGGER.error(f"Account Risk not allowed, SYMBOL={self.symbol}")
+            LOGGER.warning(f"Account Risk not allowed, SYMBOL={self.symbol}")
             self._check(comment)
             return False
         elif self.is_max_trades_reached():
-            LOGGER.error(f"Maximum trades reached for Today, SYMBOL={self.symbol}")
+            LOGGER.warning(f"Maximum trades reached for Today, SYMBOL={self.symbol}")
             return False
         elif self.profit_target():
             self._check(f"Profit target Reached !!! SYMBOL={self.symbol}")
@@ -835,7 +834,8 @@ class Trade(RiskManagement):
             action (str): (`'BMKT'`, `'SMKT'`) for Market orders
                 or (`'BLMT', 'SLMT', 'BSTP', 'SSTP', 'BSTPLMT', 'SSTPLMT'`) for pending orders
             price (float): The price at which to open an order
-            stoplimit (float): A price a pending Limit order is set at when the price reaches the 'price' value (this condition is mandatory).
+            stoplimit (float): A price a pending Limit order is set at 
+                when the price reaches the 'price' value (this condition is mandatory).
                 The pending order is not passed to the trading system until that moment
             id (int): The strategy id or expert Id
             mm (bool): Weither to put stop loss and tp or not
@@ -843,43 +843,32 @@ class Trade(RiskManagement):
             comment (str): The comment for the closing position
             symbol (str): The symbol to trade
             volume (float): The volume (lot) to trade
-            sl (float): The stop loss in points
-            tp (float): The take profit in points
+            sl (float): The stop loss price
+            tp (float): The take profit price
         """
         BUYS = ["BMKT", "BLMT", "BSTP", "BSTPLMT"]
         SELLS = ["SMKT", "SLMT", "SSTP", "SSTPLMT"]
         if action in BUYS:
-            return self.open_buy_position(
-                action=action,
-                price=price,
-                stoplimit=stoplimit,
-                id=id,
-                mm=mm,
-                trail=trail,
-                comment=comment,
-                symbol=symbol,
-                volume=volume,
-                sl=sl,
-                tp=tp,
-            )
+            open_position = self.open_buy_position
         elif action in SELLS:
-            return self.open_sell_position(
-                action=action,
-                price=price,
-                stoplimit=stoplimit,
-                id=id,
-                mm=mm,
-                trail=trail,
-                comment=comment,
-                symbol=symbol,
-                volume=volume,
-                sl=sl,
-                tp=tp,
-            )
+            open_position = self.open_sell_position
         else:
             raise ValueError(
                 f"Invalid action type '{action}', must be {', '.join(BUYS + SELLS)}"
             )
+        return open_position(
+            action=action,
+            price=price,
+            stoplimit=stoplimit,
+            id=id,
+            mm=mm,
+            trail=trail,
+            comment=comment,
+            symbol=symbol,
+            volume=volume,
+            sl=sl,
+            tp=tp,
+        )
 
     @property
     def orders(self):
@@ -1134,9 +1123,9 @@ class Trade(RiskManagement):
         be = self.get_break_even()
         if trail_after_points is not None:
             if isinstance(trail_after_points, int):
-                assert trail_after_points > be, (
-                    "trail_after_points must be greater than break even or set to None"
-                )
+                assert (
+                    trail_after_points > be
+                ), "trail_after_points must be greater than break even or set to None"
             trail_after_points = self._get_trail_after_points(trail_after_points)
         if positions is not None:
             for position in positions:
@@ -1225,7 +1214,8 @@ class Trade(RiskManagement):
         Sets the break-even level for a given trading position.
 
         Args:
-            position (TradePosition): The trading position for which the break-even is to be set. This is the value return by `mt5.positions_get()`.
+            position (TradePosition): The trading position for which the break-even is to be set. 
+                This is the value return by `mt5.positions_get()`.
             be (int): The break-even level in points.
             level (float): The break-even level in price, if set to None , it will be calated automaticaly.
             price (float): The break-even price, if set to None , it will be calated automaticaly.
@@ -1456,7 +1446,8 @@ class Trade(RiskManagement):
         Args:
             ticket (int): Order ticket to modify (e.g TradeOrder.ticket)
             price (float): The price at which to modify the order
-            stoplimit (float): A price a pending Limit order is set at when the price reaches the 'price' value (this condition is mandatory).
+            stoplimit (float): A price a pending Limit order is set at 
+                when the price reaches the 'price' value (this condition is mandatory).
                 The pending order is not passed to the trading system until that moment
             sl (float): The stop loss in points
             tp (float): The take profit in points
@@ -1606,7 +1597,8 @@ class Trade(RiskManagement):
     ):
         """
         Args:
-            order_type (str): Type of orders to close ('all', 'buy_stops', 'sell_stops', 'buy_limits', 'sell_limits', 'buy_stop_limits', 'sell_stop_limits')
+            order_type (str): Type of orders to close 
+                ('all', 'buy_stops', 'sell_stops', 'buy_limits', 'sell_limits', 'buy_stop_limits', 'sell_stop_limits')
             id (int): The unique ID of the Expert or Strategy
             comment (str): Comment for the closing position
         """
@@ -1915,7 +1907,7 @@ def create_trade_instance(
                 if ids is not None and isinstance(ids, (int, float))
                 else params["expert_id"]
                 if "expert_id" in params
-                else None
+                else EXPERT_ID
             )
             params["pchange_sl"] = (
                 pchange_sl[symbol]
