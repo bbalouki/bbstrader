@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Literal
 
-__all__ = ["Event", "MarketEvent", "SignalEvent", "OrderEvent", "FillEvent"]
+__all__ = ["Event", "Events",  "MarketEvent", "SignalEvent", "OrderEvent", "FillEvent"]
 
 
 class Event(object):
@@ -134,20 +134,21 @@ class OrderEvent(Event):
         self.price = price
         self.signal = signal
 
-        def print_order(self):
-            """
-            Outputs the values within the Order.
-            """
-            print(
-                "Order: Symbol=%s, Type=%s, Quantity=%s, Direction=%s, Price=%s"
-                % (
-                    self.symbol,
-                    self.order_type,
-                    self.quantity,
-                    self.direction,
-                    self.price,
-                )
+    def print_order(self):
+        """
+        Outputs the values within the Order.
+        """
+        print(
+            "Order: Symbol=%s, Type=%s, Quantity=%s, Direction=%s, Price=%s"
+            % (
+                self.symbol,
+                self.order_type,
+                self.quantity,
+                self.direction,
+                self.price,
             )
+        )
+
 
 
 class FillEvent(Event):

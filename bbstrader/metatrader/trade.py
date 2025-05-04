@@ -531,6 +531,7 @@ class Trade(RiskManagement):
             mm (bool): Weither to put stop loss and tp or not
             trail (bool): Weither to trail the stop loss or not
             comment (str): The comment for the opening position
+            volume (float): The volume (lot) to trade
             sl (float): The stop loss price
             tp (float): The take profit price
         """
@@ -621,7 +622,6 @@ class Trade(RiskManagement):
             mm (bool): Weither to put stop loss and tp or not
             trail (bool): Weither to trail the stop loss or not
             comment (str): The comment for the closing position
-                        symbol (str): The symbol to trade
             volume (float): The volume (lot) to trade
             sl (float): The stop loss price
             tp (float): The take profit price

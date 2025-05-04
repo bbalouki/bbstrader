@@ -506,6 +506,7 @@ class SentimentAnalyzer(object):
             reddit_posts = news.get_reddit_posts(
                 ticker, n_posts=top_news, **{k: kwargs.get(k) for k in rd_params}
             )
+            coindesk_news = news.get_coindesk_news(query=ticker, list_of_str=True)
             fmp_source_news = []
             fmp_news = news.get_fmp_news(kwargs.get("fmp_api"))
             for source in ["articles"]:  # , "releases", asset_type]:
@@ -518,7 +519,7 @@ class SentimentAnalyzer(object):
                     source_news = []
             if any([len(s) > 0 for s in [yahoo_news, google_news]]):
                 sources += 1
-            for source in [reddit_posts, fmp_source_news]:
+            for source in [reddit_posts, fmp_source_news, coindesk_news]:
                 if len(source) > 0:
                     sources += 1
             # Compute sentiment
@@ -531,11 +532,17 @@ class SentimentAnalyzer(object):
             fmp_sentiment = self.analyze_sentiment(
                 fmp_source_news, lexicon=lexicon, textblob=True
             )
+            coindesk_sentiment = self.analyze_sentiment(
+                coindesk_news, lexicon=lexicon, textblob=True
+            )
 
             # Weighted average sentiment score
             if sources != 0:
                 overall_sentiment = (
-                    news_sentiment + reddit_sentiment + fmp_sentiment
+                    news_sentiment
+                    + reddit_sentiment
+                    + fmp_sentiment
+                    + coindesk_sentiment
                 ) / sources
             else:
                 overall_sentiment = 0.0
