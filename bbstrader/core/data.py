@@ -2,7 +2,7 @@ import json
 import re
 import ssl
 from datetime import datetime
-from typing import List
+from typing import List, Literal
 from urllib.request import urlopen
 
 import certifi
@@ -18,7 +18,7 @@ __all__ = ["FmpData", "FmpNews", "FinancialNews"]
 
 
 def _get_search_query(query: str) -> str:
-    if " " in query:
+    if " " in query or query == "":
         return query
     try:
         name = yf.Ticker(query).info["shortName"]
@@ -421,6 +421,102 @@ class FinancialNews(object):
 
     def get_fmp_news(self, api=None) -> FmpNews:
         return FmpNews(api=api)
+
+    def get_coindesk_news(
+        self,
+        query="",
+        lang: Literal["EN", "ES", "TR", "FR", "JP", "PT"] = "EN",
+        limit=50,
+        list_of_str=False,
+    ) -> List[str] | List[dict]:
+        """
+        Fetches and filters recent news articles from CoinDesk's News API.
+
+        Args:
+            query : str, optional
+                A search term to filter articles by title, body, or keywords.
+                If empty, all articles are returned without filtering (default is "").
+
+            lang : Literal["EN", "ES", "TR", "FR", "JP", "PT"], optional
+                Language in which to fetch news articles. Supported languages:
+                English (EN), Spanish (ES), Turkish (TR), French (FR), Japanese (JP), and Portuguese (PT).
+                Default is "EN".
+
+            limit : int, optional
+                Maximum number of articles to retrieve. Default is 50.
+
+            list_of_str : bool, optional
+                If True, returns a list of strings (concatenated article content).
+                If False, returns a list of filtered article dictionaries.
+                Default is False.
+
+        Returns:
+            List[str] | List[dict]
+                - If `query` is empty: returns a list of filtered article dictionaries.
+                - If `query` is provided:
+                    - Returns a list of strings if `list_of_str=True`.
+                    - Returns a list of filtered article dictionaries otherwise.
+
+        Each article dictionary contains the following fields:
+            - 'published_on': datetime of publication
+            - 'title': article headline
+            - 'subtitle': secondary headline
+            - 'url': direct link to the article
+            - 'body': article content
+            - 'keywords': associated tags
+            - 'sentiment': sentiment label
+            - 'status': publication status
+
+        Notes:
+            - Articles marked as sponsored are automatically excluded.
+        """
+        maximum = 100
+        if limit > maximum:
+            raise ValueError(f"Number of total news articles allowed is {maximum}")
+
+        response = requests.get(
+            "https://data-api.coindesk.com/news/v1/article/list",
+            params={"lang": lang, "limit": limit},
+            headers={"Content-type": "application/json; charset=UTF-8"},
+        )
+        json_response = response.json()
+        articles = json_response["Data"]
+        if len(articles) == 0:
+            return []
+        to_keep = [
+            "PUBLISHED_ON",
+            "TITLE",
+            "SUBTITLE",
+            "URL",
+            "BODY",
+            "KEYWORDS",
+            "SENTIMENT",
+            "STATUS",
+        ]
+        filtered_articles = []
+        for article in articles:
+            filtered_articles.append(
+                {
+                    k.lower(): article[k]
+                    if k in article and k != "PUBLISHED_ON"
+                    else datetime.fromtimestamp(article[k])
+                    for k in to_keep
+                    if article[k] is not None and "sponsored" not in str(article[k])
+                }
+            )
+        if query == "" or len(filtered_articles) == 0:
+            return filtered_articles
+        to_return = []
+        query = _get_search_query(query)
+        for article in filtered_articles:
+            if not all(k in article for k in ("title", "body", "keywords")):
+                continue
+            text = article["title"] + " " + article["body"] + " " + article["keywords"]
+            if list_of_str and _find_news(query, text=text):
+                to_return.append(text)
+            if not list_of_str and _find_news(query, text=text):
+                to_return.append(article)
+        return to_return
 
 
 class FmpData(Toolkit):
