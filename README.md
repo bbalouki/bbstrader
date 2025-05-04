@@ -1,6 +1,4 @@
 # Simplified Investment & Trading Toolkit
-![bbstrader](https://github.com/bbalouki/bbstrader/blob/main/assets/bbstrader_logo.png?raw=true)
-
 [![Documentation Status](https://readthedocs.org/projects/bbstrader/badge/?version=latest)](https://bbstrader.readthedocs.io/en/latest/?badge=latest)
 [![PYPI Version](https://img.shields.io/pypi/v/bbstrader)](https://pypi.org/project/bbstrader/)
 [![PyPi status](https://img.shields.io/pypi/status/bbstrader.svg?maxAge=60)](https://pypi.python.org/pypi/bbstrader)
