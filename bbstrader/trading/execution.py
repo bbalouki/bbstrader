@@ -307,7 +307,7 @@ class Mt5ExecutionEngine:
         if self.debug_mode:
             raise ValueError(msg).with_traceback(e.__traceback__)
         else:
-            logger.error(msg)
+            logger.error(msg, e)
 
     def _max_trades(self, mtrades):
         max_trades = {

@@ -21,6 +21,8 @@ from bbstrader.metatrader.rates import Rates
 from bbstrader.metatrader.trade import TradeSignal
 from bbstrader.models.optimization import optimized_weights
 
+LIVE_MODE = "live"
+
 __all__ = ["Strategy", "MT5Strategy"]
 
 logger.add(
@@ -105,29 +107,45 @@ class MT5Strategy(Strategy):
             self._initialize_portfolio()
         self.kwargs = kwargs
         self.periodes = 0
+    
+    @property 
+    def account(self):
+        return Account(**self.kwargs)
 
     @property
     def cash(self) -> float:
+        if self.mode == LIVE_MODE:
+            return self.account.balance
         return self._porfolio_value
 
     @cash.setter
     def cash(self, value):
+        if self.mode == LIVE_MODE:
+            raise ValueError("Cannot set the account cash in live mode")
         self._porfolio_value = value
 
     @property
-    def orders(self) -> Dict[str, Dict[str, List[SignalEvent]]]:
+    def orders(self):
+        if self.mode == LIVE_MODE:
+            return self.account.get_orders()
         return self._orders
 
     @property
     def trades(self) -> Dict[str, Dict[str, int]]:
+        if self.mode == LIVE_MODE:
+            raise ValueError("Cannot call this methode in live mode")
         return self._trades
 
     @property
-    def positions(self) -> Dict[str, Dict[str, int | float]]:
+    def positions(self):
+        if self.mode == LIVE_MODE:
+            return self.account.get_positions()
         return self._positions
 
     @property
     def holdings(self) -> Dict[str, float]:
+        if self.mode == LIVE_MODE:
+            raise ValueError("Cannot call this methode in live mode")
         return self._holdings
 
     def _check_risk_budget(self, **kwargs):
@@ -704,7 +722,7 @@ class MT5Strategy(Strategy):
         Returns:
             bool : True if there are open positions, False otherwise
         """
-        account = account or Account(**self.kwargs)
+        account = account or self.account
         positions = account.get_positions(symbol=symbol)
         if positions is not None:
             open_positions = [
@@ -730,7 +748,7 @@ class MT5Strategy(Strategy):
         Returns:
             prices : numpy array of buy or sell prices for open positions if any or an empty array.
         """
-        account = account or Account(**self.kwargs)
+        account = account or self.account
         positions = account.get_positions(symbol=symbol)
         if positions is not None:
             prices = np.array(
