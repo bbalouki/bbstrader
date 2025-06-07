@@ -514,9 +514,8 @@ def get_corr(tickers: Union[List[str], Tuple[str, ...]], start: str, end: str) -
     >>> get_corr(['AAPL', 'MSFT', 'GOOG'], '2023-01-01', '2023-12-31')
     """
     # Download historical data
-    data = yf.download(tickers, start=start, end=end, multi_level_index=False)[
-        "Adj Close"
-    ]
+    data = yf.download(tickers, start=start, end=end, multi_level_index=False, auto_adjust=True)
+    data = data["Adj Close"] if "Adj Close" in data.columns else data["Close"]
 
     # Calculate correlation matrix
     correlation_matrix = data.corr()
@@ -685,8 +684,8 @@ def run_cadf_test(
         auto_adjust=True,
     )
     df = pd.DataFrame(index=_p0.index)
-    df[p0] = _p0["Adj Close"]
-    df[p1] = _p1["Adj Close"]
+    df[p0] = _p0["Close"]
+    df[p1] = _p1["Close"]
     df = df.dropna()
 
     # Calculate optimal hedge ratio "beta"
@@ -784,7 +783,7 @@ def run_hurst_test(symbol: str, start: str, end: str):
     print(f"\nHurst(GBM):  {_hurst(gbm)}")
     print(f"Hurst(MR):   {_hurst(mr)}")
     print(f"Hurst(TR):   {_hurst(tr)}")
-    print(f"Hurst({symbol}): {hurst(data['Adj Close'])}\n")
+    print(f"Hurst({symbol}): {hurst(data['Close'])}\n")
 
 
 def test_cointegration(ticker1, ticker2, start, end):
@@ -796,7 +795,7 @@ def test_cointegration(ticker1, ticker2, start, end):
         progress=False,
         multi_level_index=False,
         auto_adjust=True,
-    )["Adj Close"].dropna()
+    )["Close"].dropna()
 
     # Perform Johansen cointegration test
     result = coint_johansen(stock_data_pair, det_order=0, k_ar_diff=1)
@@ -947,8 +946,8 @@ def run_kalman_filter(
     )
 
     prices = pd.DataFrame(index=etf_df1.index)
-    prices[etfs[0]] = etf_df1["Adj Close"]
-    prices[etfs[1]] = etf_df2["Adj Close"]
+    prices[etfs[0]] = etf_df1["Close"]
+    prices[etfs[1]] = etf_df2["Close"]
 
     draw_date_coloured_scatterplot(etfs, prices)
     state_means, state_covs = calc_slope_intercept_kalman(etfs, prices)
