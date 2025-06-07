@@ -70,27 +70,31 @@ class TimeFrame(Enum):
     Rrepresent a time frame object
     """
 
-    M1 = "1m"
-    M2 = "2m"
-    M3 = "3m"
-    M4 = "4m"
-    M5 = "5m"
-    M6 = "6m"
-    M10 = "10m"
-    M12 = "12m"
-    M15 = "15m"
-    M20 = "20m"
-    M30 = "30m"
-    H1 = "1h"
-    H2 = "2h"
-    H3 = "3h"
-    H4 = "4h"
-    H6 = "6h"
-    H8 = "8h"
-    H12 = "12h"
-    D1 = "D1"
-    W1 = "W1"
-    MN1 = "MN1"
+    M1 = TIMEFRAMES["1m"]
+    M2 = TIMEFRAMES["2m"]
+    M3 = TIMEFRAMES["3m"]
+    M4 = TIMEFRAMES["4m"]
+    M5 = TIMEFRAMES["5m"]
+    M6 = TIMEFRAMES["6m"]
+    M10 = TIMEFRAMES["10m"]
+    M12 = TIMEFRAMES["12m"]
+    M15 = TIMEFRAMES["15m"]
+    M20 = TIMEFRAMES["20m"]
+    M30 = TIMEFRAMES["30m"]
+    H1 = TIMEFRAMES["1h"]
+    H2 = TIMEFRAMES["2h"]
+    H3 = TIMEFRAMES["3h"]
+    H4 = TIMEFRAMES["4h"]
+    H6 = TIMEFRAMES["6h"]
+    H8 = TIMEFRAMES["8h"]
+    H12 = TIMEFRAMES["12h"]
+    D1 = TIMEFRAMES["D1"]
+    W1 = TIMEFRAMES["W1"]
+    MN1 = TIMEFRAMES["MN1"]
+
+    def __str__(self):
+        """Return the string representation of the time frame."""
+        return self.name
 
 
 class TerminalInfo(NamedTuple):
@@ -261,6 +265,23 @@ class SymbolInfo(NamedTuple):
     name: str
     page: str
     path: str
+
+
+class SymbolType(Enum):
+    """
+    Represents the type of a symbol.
+    """
+
+    FOREX = "FOREX"  # Forex currency pairs
+    FUTURES = "FUTURES"  # Futures contracts
+    STOCKS = "STOCKS"  # Stocks and shares
+    BONDS = "BONDS"  # Bonds
+    CRYPTO = "CRYPTO"  # Cryptocurrencies
+    ETFs = "ETFs"  # Exchange-Traded Funds
+    INDICES = "INDICES"  # Market indices
+    COMMODITIES = "COMMODITIES"  # Commodities
+    OPTIONS = "OPTIONS"  # Options contracts
+    unknown = "UNKNOWN"  # Unknown or unsupported type
 
 
 class TickInfo(NamedTuple):
