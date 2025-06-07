@@ -250,12 +250,13 @@ class LightGBModel(object):
         data = pd.concat(data)
         data = (
             data.rename(columns={s: s.lower().replace(" ", "_") for s in data.columns})
-            .drop(columns=["adj_close"])
             .set_index("symbol", append=True)
             .swaplevel()
             .sort_index()
             .dropna()
         )
+        if "adj_close" in data.columns:
+            data = data.drop(columns=["adj_close"])
         return data
 
     def download_metadata(self, tickers):
