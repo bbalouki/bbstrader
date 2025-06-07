@@ -33,12 +33,6 @@ __all__ = [
     "create_trade_instance",
 ]
 
-FILLING_TYPE = [
-    Mt5.ORDER_FILLING_IOC,
-    Mt5.ORDER_FILLING_RETURN,
-    Mt5.ORDER_FILLING_BOC,
-]
-
 log.add(
     f"{BBSTRADER_DIR}/logs/trade.log",
     enqueue=True,
@@ -48,6 +42,13 @@ log.add(
 
 global LOGGER
 LOGGER = log
+
+
+FILLING_TYPE = [
+    Mt5.ORDER_FILLING_IOC,
+    Mt5.ORDER_FILLING_RETURN,
+    Mt5.ORDER_FILLING_BOC,
+]
 
 
 class TradeAction(Enum):
@@ -136,6 +137,15 @@ class TradeSignal:
             f"price={self.price}, stoplimit={self.stoplimit}), comment='{self.comment}'"
         )
 
+class TradingMode(Enum):
+    BACKTEST = "BACKTEST"
+    LIVE = "LIVE"
+
+    def isbacktest(self) -> bool:
+        return self == TradingMode.BACKTEST
+    def islive(self) -> bool:
+        return self == TradingMode.LIVE
+
 
 Buys = Literal["BMKT", "BLMT", "BSTP", "BSTPLMT"]
 Sells = Literal["SMKT", "SLMT", "SSTP", "SSTPLMT"]
@@ -151,6 +161,7 @@ Orders = Literal[
 ]
 
 EXPERT_ID = 98181105
+
 
 class Trade(RiskManagement):
     """
@@ -834,7 +845,7 @@ class Trade(RiskManagement):
             action (str): (`'BMKT'`, `'SMKT'`) for Market orders
                 or (`'BLMT', 'SLMT', 'BSTP', 'SSTP', 'BSTPLMT', 'SSTPLMT'`) for pending orders
             price (float): The price at which to open an order
-            stoplimit (float): A price a pending Limit order is set at 
+            stoplimit (float): A price a pending Limit order is set at
                 when the price reaches the 'price' value (this condition is mandatory).
                 The pending order is not passed to the trading system until that moment
             id (int): The strategy id or expert Id
@@ -873,30 +884,30 @@ class Trade(RiskManagement):
     @property
     def orders(self):
         """Return all opened order's tickets"""
-        if len(self.opened_orders) != 0:
-            return self.opened_orders
-        return None
+        current_orders = self.get_current_orders() or []
+        opened_orders = set(current_orders + self.opened_orders)
+        return opened_orders if len(opened_orders) != 0 else None
 
     @property
     def positions(self):
         """Return all opened position's tickets"""
-        if len(self.opened_positions) != 0:
-            return self.opened_positions
-        return None
+        current_positions = self.get_current_positions() or []
+        opened_positions = set(current_positions + self.opened_positions)
+        return opened_positions if len(opened_positions) != 0 else None
 
     @property
     def buypos(self):
         """Return all buy  opened position's tickets"""
-        if len(self.buy_positions) != 0:
-            return self.buy_positions
-        return None
+        buy_positions = self.get_current_buys() or []
+        buy_positions = set(buy_positions + self.buy_positions)
+        return buy_positions if len(buy_positions) != 0 else None
 
     @property
     def sellpos(self):
         """Return all sell  opened position's tickets"""
-        if len(self.sell_positions) != 0:
-            return self.sell_positions
-        return None
+        sell_positions = self.get_current_sells() or []
+        sell_positions = set(sell_positions + self.sell_positions)
+        return sell_positions if len(sell_positions) != 0 else None
 
     @property
     def bepos(self):
@@ -1214,7 +1225,7 @@ class Trade(RiskManagement):
         Sets the break-even level for a given trading position.
 
         Args:
-            position (TradePosition): The trading position for which the break-even is to be set. 
+            position (TradePosition): The trading position for which the break-even is to be set.
                 This is the value return by `mt5.positions_get()`.
             be (int): The break-even level in points.
             level (float): The break-even level in price, if set to None , it will be calated automaticaly.
@@ -1446,7 +1457,7 @@ class Trade(RiskManagement):
         Args:
             ticket (int): Order ticket to modify (e.g TradeOrder.ticket)
             price (float): The price at which to modify the order
-            stoplimit (float): A price a pending Limit order is set at 
+            stoplimit (float): A price a pending Limit order is set at
                 when the price reaches the 'price' value (this condition is mandatory).
                 The pending order is not passed to the trading system until that moment
             sl (float): The stop loss in points
@@ -1597,7 +1608,7 @@ class Trade(RiskManagement):
     ):
         """
         Args:
-            order_type (str): Type of orders to close 
+            order_type (str): Type of orders to close
                 ('all', 'buy_stops', 'sell_stops', 'buy_limits', 'sell_limits', 'buy_stop_limits', 'sell_stop_limits')
             id (int): The unique ID of the Expert or Strategy
             comment (str): Comment for the closing position

@@ -302,10 +302,9 @@ class TradeCopier(object):
         if self.start_time is None or self.end_time is None:
             return True
         else:
-            now = datetime.now()
             start_time = datetime.strptime(self.start_time, "%H:%M").time()
             end_time = datetime.strptime(self.end_time, "%H:%M").time()
-            if start_time <= now.time() <= end_time:
+            if start_time <= datetime.now().time() <= end_time:
                 return True
             return False
 
@@ -327,7 +326,7 @@ class TradeCopier(object):
             dest_eqty=Account(**destination).get_account_info().margin_free,
         )
 
-        trade_instance = Trade(symbol=symbol, **destination, max_risk=100.0)
+        trade_instance = Trade(symbol=symbol, **destination, max_risk=100.0, logger=None)
         try:
             action = action_type[trade.type]
         except KeyError:
@@ -395,7 +394,7 @@ class TradeCopier(object):
 
     def remove_order(self, src_symbol, order: TradeOrder, destination: dict):
         check_mt5_connection(**destination)
-        trade = Trade(symbol=order.symbol, **destination)
+        trade = Trade(symbol=order.symbol, **destination, logger=None)
         if trade.close_order(order.ticket, id=order.magic):
             logger.info(
                 f"Close Order #{order.ticket} on @{destination.get('login')}::{order.symbol}, "
@@ -438,7 +437,7 @@ class TradeCopier(object):
 
     def remove_position(self, src_symbol, position: TradePosition, destination: dict):
         check_mt5_connection(**destination)
-        trade = Trade(symbol=position.symbol, **destination)
+        trade = Trade(symbol=position.symbol, **destination, logger=None)
         if trade.close_position(position.ticket, id=position.magic):
             logger.info(
                 f"Close Position #{position.ticket} on @{destination.get('login')}::{position.symbol}, "
@@ -626,7 +625,7 @@ class TradeCopier(object):
                     time.sleep(0.1)
             except KeyboardInterrupt:
                 logger.info("Stopping the Trade Copier ...")
-                break
+                exit(0)
             except Exception as e:
                 self.log_error(e)
             time.sleep(self.sleeptime)

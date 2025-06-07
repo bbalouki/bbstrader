@@ -7,6 +7,7 @@ from bbstrader.btengine.data import DataHandler
 from bbstrader.btengine.event import Events, FillEvent, OrderEvent
 from bbstrader.config import BBSTRADER_DIR
 from bbstrader.metatrader.account import Account
+from bbstrader.metatrader.utils import SymbolType
 
 __all__ = ["ExecutionHandler", "SimExecutionHandler", "MT5ExecutionHandler"]
 
@@ -71,6 +72,8 @@ class SimExecutionHandler(ExecutionHandler):
         self.events = events
         self.bardata = data
         self.logger = kwargs.get("logger") or logger
+        self.commissions = kwargs.get("commission")
+        self.exchange = kwargs.get("exchange", "ARCA")
 
     def execute_order(self, event: OrderEvent):
         """
@@ -85,11 +88,11 @@ class SimExecutionHandler(ExecutionHandler):
             fill_event = FillEvent(
                 timeindex=dtime,
                 symbol=event.symbol,
-                exchange="ARCA",
+                exchange=self.exchange,
                 quantity=event.quantity,
                 direction=event.direction,
                 fill_cost=None,
-                commission=None,
+                commission=self.commissions,
                 order=event.signal,
             )
             self.events.put(fill_event)
@@ -135,6 +138,8 @@ class MT5ExecutionHandler(ExecutionHandler):
         self.events = events
         self.bardata = data
         self.logger = kwargs.get("logger") or logger
+        self.commissions = kwargs.get("commission")
+        self.exchange = kwargs.get("exchange", "MT5")
         self.__account = Account(**kwargs)
 
     def _calculate_lot(self, symbol, quantity, price):
@@ -145,9 +150,13 @@ class MT5ExecutionHandler(ExecutionHandler):
         lot = (quantity * price) / (contract_size * price)
         if contract_size == 1:
             lot = quantity
-        if symbol_type in ["COMD", "FUT", "CRYPTO"] and contract_size > 1:
+        if (
+            symbol_type
+            in (SymbolType.COMMODITIES, SymbolType.FUTURES, SymbolType.CRYPTO)
+            and contract_size > 1
+        ):
             lot = quantity / contract_size
-        if symbol_type == "FX":
+        if symbol_type == SymbolType.FOREX:
             lot = quantity * price / contract_size
         return self._check_lot(symbol, lot)
 
@@ -161,17 +170,17 @@ class MT5ExecutionHandler(ExecutionHandler):
 
     def _estimate_total_fees(self, symbol, lot, qty, price):
         symbol_type = self.__account.get_symbol_type(symbol)
-        if symbol_type in ["STK", "ETF"]:
+        if symbol_type in (SymbolType.STOCKS, SymbolType.ETFs):
             return self._estimate_stock_commission(symbol, qty, price)
-        elif symbol_type == "FX":
+        elif symbol_type == SymbolType.FOREX:
             return self._estimate_forex_commission(lot)
-        elif symbol_type == "COMD":
+        elif symbol_type == SymbolType.COMMODITIES:
             return self._estimate_commodity_commission(lot)
-        elif symbol_type == "IDX":
+        elif symbol_type == SymbolType.INDICES:
             return self._estimate_index_commission(lot)
-        elif symbol_type == "FUT":
+        elif symbol_type == SymbolType.FUTURES:
             return self._estimate_futures_commission()
-        elif symbol_type == "CRYPTO":
+        elif symbol_type == SymbolType.CRYPTO:
             return self._estimate_crypto_commission()
         else:
             return 0.0
@@ -187,7 +196,7 @@ class MT5ExecutionHandler(ExecutionHandler):
         eu_asia_cm = 0.0015  # percent
         if (
             symbol in self.__account.get_stocks_from_country("USA")
-            or self.__account.get_symbol_type(symbol) == "ETF"
+            or self.__account.get_symbol_type(symbol) == SymbolType.ETFs
             and self.__account.get_currency_rates(symbol)["mc"] == "USD"
         ):
             return max(min_com, qty * us_com)
@@ -195,7 +204,7 @@ class MT5ExecutionHandler(ExecutionHandler):
             symbol in self.__account.get_stocks_from_country("GBR")
             or symbol in self.__account.get_stocks_from_country("FRA")
             or symbol in self.__account.get_stocks_from_country("DEU")
-            or self.__account.get_symbol_type(symbol) == "ETF"
+            or self.__account.get_symbol_type(symbol) == SymbolType.ETFs
             and self.__account.get_currency_rates(symbol)["mc"] in ["GBP", "EUR"]
         ):
             return max(min_com, qty * price * ger_fr_uk_cm)
@@ -241,14 +250,15 @@ class MT5ExecutionHandler(ExecutionHandler):
             lot = self._calculate_lot(symbol, quantity, price)
             fees = self._estimate_total_fees(symbol, lot, quantity, price)
             dtime = self.bardata.get_latest_bar_datetime(symbol)
+            commission = self.commissions or fees
             fill_event = FillEvent(
                 timeindex=dtime,
                 symbol=symbol,
-                exchange="MT5",
+                exchange=self.exchange,
                 quantity=quantity,
                 direction=direction,
                 fill_cost=None,
-                commission=fees,
+                commission=commission,
                 order=event.signal,
             )
             self.events.put(fill_event)
