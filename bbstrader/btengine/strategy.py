@@ -17,11 +17,11 @@ from bbstrader.metatrader.account import (
     AdmiralMarktsGroup,
     PepperstoneGroupLimited,
 )
+from bbstrader.metatrader.utils import SymbolType
 from bbstrader.metatrader.rates import Rates
-from bbstrader.metatrader.trade import TradeSignal
+from bbstrader.metatrader.trade import TradeSignal, TradingMode
 from bbstrader.models.optimization import optimized_weights
 
-LIVE_MODE = "live"
 
 __all__ = ["Strategy", "MT5Strategy"]
 
@@ -78,7 +78,7 @@ class MT5Strategy(Strategy):
         events: Queue = None,
         symbol_list: List[str] = None,
         bars: DataHandler = None,
-        mode: str = None,
+        mode: TradingMode = None,
         **kwargs,
     ):
         """
@@ -88,7 +88,7 @@ class MT5Strategy(Strategy):
             events : The event queue.
             symbol_list : The list of symbols for the strategy.
             bars : The data handler object.
-            mode : The mode of operation for the strategy (backtest or live).
+            mode (TradingMode): The mode of operation for the strategy.
             **kwargs : Additional keyword arguments for other classes (e.g, Portfolio, ExecutionHandler).
                 - max_trades : The maximum number of trades allowed per symbol.
                 - time_frame : The time frame for the strategy.
@@ -103,7 +103,7 @@ class MT5Strategy(Strategy):
         self.max_trades = kwargs.get("max_trades", {s: 1 for s in self.symbols})
         self.tf = kwargs.get("time_frame", "D1")
         self.logger = kwargs.get("logger") or logger
-        if self.mode == "backtest":
+        if self.mode == TradingMode.BACKTEST:
             self._initialize_portfolio()
         self.kwargs = kwargs
         self.periodes = 0
@@ -114,37 +114,37 @@ class MT5Strategy(Strategy):
 
     @property
     def cash(self) -> float:
-        if self.mode == LIVE_MODE:
+        if self.mode == TradingMode.LIVE:
             return self.account.balance
         return self._porfolio_value
 
     @cash.setter
     def cash(self, value):
-        if self.mode == LIVE_MODE:
+        if self.mode == TradingMode.LIVE:
             raise ValueError("Cannot set the account cash in live mode")
         self._porfolio_value = value
 
     @property
     def orders(self):
-        if self.mode == LIVE_MODE:
+        if self.mode == TradingMode.LIVE:
             return self.account.get_orders()
         return self._orders
 
     @property
     def trades(self) -> Dict[str, Dict[str, int]]:
-        if self.mode == LIVE_MODE:
+        if self.mode == TradingMode.LIVE:
             raise ValueError("Cannot call this methode in live mode")
         return self._trades
 
     @property
     def positions(self):
-        if self.mode == LIVE_MODE:
+        if self.mode == TradingMode.LIVE:
             return self.account.get_positions()
         return self._positions
 
     @property
     def holdings(self) -> Dict[str, float]:
-        if self.mode == LIVE_MODE:
+        if self.mode == TradingMode.LIVE:
             raise ValueError("Cannot call this methode in live mode")
         return self._holdings
 
@@ -624,7 +624,7 @@ class MT5Strategy(Strategy):
         value_type: str = "returns",
         array: bool = True,
         bars: DataHandler = None,
-        mode: Literal["backtest", "live"] = "backtest",
+        mode: TradingMode = TradingMode.BACKTEST,
         tf: str = "D1",
         error: Literal["ignore", "raise"] = None,
     ) -> Dict[str, np.ndarray | pd.Series] | None:
@@ -652,7 +652,7 @@ class MT5Strategy(Strategy):
         if mode not in ["backtest", "live"]:
             raise ValueError("Mode must be either backtest or live.")
         asset_values = {}
-        if mode == "backtest":
+        if mode == TradingMode.BACKTEST:
             if bars is None:
                 raise ValueError("DataHandler is required for backtest mode.")
             for asset in symbol_list:
@@ -662,11 +662,11 @@ class MT5Strategy(Strategy):
                 else:
                     values = bars.get_latest_bars(asset, N=window)
                     asset_values[asset] = getattr(values, value_type)
-        elif mode == "live":
+        elif mode == TradingMode.LIVE:
             for asset in symbol_list:
                 rates = Rates(asset, timeframe=tf, count=window + 1, **self.kwargs)
                 if array:
-                    values = getattr(rates, value_type).values
+                    values = getattr(rates, value_type).to_numpy()
                     asset_values[asset] = values[~np.isnan(values)]
                 else:
                     values = getattr(rates, value_type)
@@ -796,21 +796,21 @@ class MT5Strategy(Strategy):
         return dt_to
 
     @staticmethod
-    def get_mt5_equivalent(symbols, type="STK", **kwargs) -> List[str]:
+    def get_mt5_equivalent(symbols, symbol_type: str | SymbolType = SymbolType.STOCKS, **kwargs) -> List[str]:
         """
         Get the MetaTrader 5 equivalent symbols for the symbols in the list.
         This method is used to get the symbols that are available on the MetaTrader 5 platform.
 
         Args:
             symbols : The list of symbols to get the MetaTrader 5 equivalent symbols for.
-            type : The type of symbols to get (e.g., STK, CFD, etc.).
+            symbol_type : The type of symbols to get (See `bbstrader.metatrader.utils.SymbolType`).
             **kwargs : Additional keyword arguments for the `bbstrader.metatrader.Account` object.
 
         Returns:
             mt5_equivalent : The MetaTrader 5 equivalent symbols for the symbols in the list.
         """
         account = Account(**kwargs)
-        mt5_symbols = account.get_symbols(symbol_type=type)
+        mt5_symbols = account.get_symbols(symbol_type=symbol_type)
         mt5_equivalent = []
         if account.broker == AdmiralMarktsGroup():
             for s in mt5_symbols:
