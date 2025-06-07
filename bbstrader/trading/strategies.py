@@ -31,6 +31,7 @@ from bbstrader.btengine.execution import MT5ExecutionHandler, SimExecutionHandle
 from bbstrader.btengine.strategy import Strategy
 from bbstrader.metatrader.account import Account
 from bbstrader.metatrader.rates import Rates
+from bbstrader.metatrader.trade import TradingMode
 from bbstrader.models.risk import build_hmm_models
 from bbstrader.tseries import ArimaGarchModel, KalmanFilterModel
 
@@ -73,7 +74,7 @@ class SMAStrategy(Strategy):
         bars: DataHandler = None,
         events: Queue = None,
         symbol_list: List[str] = None,
-        mode: Literal["backtest", "live"] = "backtest",
+        mode: TradingMode = TradingMode.BACKTEST,
         **kwargs,
     ):
         """
@@ -81,7 +82,7 @@ class SMAStrategy(Strategy):
             bars (DataHandler): A data handler object that provides market data.
             events (Queue): An event queue object where generated signals are placed.
             symbol_list (List[str]): A list of symbols to consider for trading.
-            mode (Literal['backtest', 'live']): The mode of operation for the strategy.
+            mode TradingMode: The mode of operation for the strategy.
             short_window (int, optional): The period for the short moving average.
             long_window (int, optional): The period for the long moving average.
             time_frame (str, optional): The time frame for the data.
@@ -196,13 +197,13 @@ class SMAStrategy(Strategy):
         return signals
 
     def calculate_signals(self, event=None):
-        if self.mode == "backtest" and event is not None:
+        if self.mode == TradingMode.BACKTEST and event is not None:
             if event.type == Events.MARKET:
                 signals = self.create_backtest_signals()
                 for signal in signals.values():
                     if signal is not None:
                         self.events.put(signal)
-        elif self.mode == "live":
+        elif self.mode == TradingMode.LIVE:
             signals = self.create_live_signals()
             return signals
 
@@ -238,7 +239,7 @@ class ArimaGarchStrategy(Strategy):
         bars: DataHandler = None,
         events: Queue = None,
         symbol_list: List[str] = None,
-        mode: Literal["backtest", "live"] = "backtest",
+        mode: TradingMode = TradingMode.BACKTEST,
         **kwargs,
     ):
         """
@@ -384,13 +385,13 @@ class ArimaGarchStrategy(Strategy):
         return signals
 
     def calculate_signals(self, event=None):
-        if self.mode == "backtest" and event is not None:
+        if self.mode == TradingMode.BACKTEST and event is not None:
             if event.type == Events.MARKET:
                 signals = self.create_backtest_signal()
                 for signal in signals.values():
                     if signal is not None:
                         self.events.put(signal)
-        elif self.mode == "live":
+        elif self.mode == TradingMode.LIVE:
             return self.create_live_signals()
 
 
@@ -408,7 +409,7 @@ class KalmanFilterStrategy(Strategy):
         bars: DataHandler = None,
         events: Queue = None,
         symbol_list: List[str] = None,
-        mode: Literal["backtest", "live"] = "backtest",
+        mode: TradingMode = TradingMode.BACKTEST,
         **kwargs,
     ):
         """
@@ -567,10 +568,10 @@ class KalmanFilterStrategy(Strategy):
         """
         Calculate the Kalman Filter strategy.
         """
-        if self.mode == "backtest" and event is not None:
+        if self.mode == TradingMode.BACKTEST and event is not None:
             if event.type == Events.MARKET:
                 self.calculate_backtest_signals()
-        elif self.mode == "live":
+        elif self.mode == TradingMode.LIVE:
             return self.calculate_live_signals()
 
 
@@ -589,7 +590,7 @@ class StockIndexSTBOTrading(Strategy):
         bars: DataHandler = None,
         events: Queue = None,
         symbol_list: List[str] = None,
-        mode: Literal["backtest", "live"] = "backtest",
+        mode: TradingMode = TradingMode.BACKTEST,
         **kwargs,
     ):
         """
@@ -632,7 +633,7 @@ class StockIndexSTBOTrading(Strategy):
         self.heightest_price = {index: None for index in symbols}
         self.lowerst_price = {index: None for index in symbols}
 
-        if self.mode == "backtest":
+        if self.mode == TradingMode.BACKTEST:
             self.qty = get_quantities(quantities, symbols)
             self.num_buys = {index: 0 for index in symbols}
             self.buy_prices = {index: [] for index in symbols}
@@ -751,10 +752,10 @@ class StockIndexSTBOTrading(Strategy):
                     self.buy_prices[index] = []
 
     def calculate_signals(self, event=None) -> Dict[str, Union[str, None]]:
-        if self.mode == "backtest" and event is not None:
+        if self.mode == TradingMode.BACKTEST and event is not None:
             if event.type == Events.MARKET:
                 self.calculate_backtest_signals()
-        elif self.mode == "live":
+        elif self.mode == TradingMode.LIVE:
             return self.calculate_live_signals()
 
 
