@@ -28,8 +28,10 @@ def _download_and_process_data(source, tickers, start, end, tf, path, **kwargs):
                     end=end,
                     progress=False,
                     multi_level_index=False,
+                    auto_adjust=True,
                 )
-                data = data.drop(columns=["Adj Close"], axis=1)
+                if "Adj Close" in data.columns:
+                    data = data.drop(columns=["Adj Close"], axis=1)
             elif source == "mt5":
                 start, end = pd.Timestamp(start), pd.Timestamp(end)
                 data = download_historical_data(
