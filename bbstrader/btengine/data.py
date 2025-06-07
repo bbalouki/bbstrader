@@ -5,6 +5,7 @@ from queue import Queue
 from typing import Dict, List
 
 import numpy as np
+from numpy.typing import NDArray
 import pandas as pd
 import yfinance as yf
 from eodhd import APIClient
@@ -91,7 +92,7 @@ class DataHandler(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def get_latest_bars_values(self, symbol, val_type, N=1) -> np.ndarray:
+    def get_latest_bars_values(self, symbol, val_type, N=1) -> NDArray:
         """
         Returns the last N bar values from the
         latest_symbol list, or N-k if less available.
@@ -301,7 +302,7 @@ class BaseCSVDataHandler(DataHandler):
                 )
                 raise
 
-    def get_latest_bars_values(self, symbol: str, val_type: str, N=1) -> np.ndarray:
+    def get_latest_bars_values(self, symbol: str, val_type: str, N=1) -> NDArray:
         """
         Returns the last N bar values from the
         latest_symbol list, or N-k if less available.
@@ -413,6 +414,7 @@ class MT5DataHandler(BaseCSVDataHandler):
         self.data_dir = kwargs.get("data_dir")
         self.symbol_list = symbol_list
         self.kwargs = kwargs
+        self.kwargs["backtest"] = True # Ensure backtest mode is set to avoid InvalidBroker errors
 
         csv_dir = self._download_and_cache_data(self.data_dir)
         super().__init__(
