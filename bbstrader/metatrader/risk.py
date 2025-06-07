@@ -6,7 +6,7 @@ from scipy.stats import norm
 
 from bbstrader.metatrader.account import Account
 from bbstrader.metatrader.rates import Rates
-from bbstrader.metatrader.utils import TIMEFRAMES, TimeFrame
+from bbstrader.metatrader.utils import TIMEFRAMES, TimeFrame, SymbolType
 
 try:
     import MetaTrader5 as Mt5
@@ -498,10 +498,10 @@ class RiskManagement(Account):
         av_price = (s_info.bid + s_info.ask) / 2
         trade_risk = self.get_trade_risk()
         symbol_type = self.get_symbol_type(self.symbol)
-        FX = symbol_type == "FX"
-        COMD = symbol_type == "COMD"
-        FUT = symbol_type == "FUT"
-        CRYPTO = symbol_type == "CRYPTO"
+        FX = symbol_type == SymbolType.FOREX
+        COMD = symbol_type == SymbolType.COMMODITIES
+        FUT = symbol_type == SymbolType.FUTURES
+        CRYPTO = symbol_type == SymbolType.CRYPTO
         if COMD:
             supported = _COMMD_SUPPORTED_
             if "." in self.symbol:
@@ -652,14 +652,14 @@ class RiskManagement(Account):
         lot = self._check_lot(_lot)
 
         volume = round(lot * size * av_price)
-        if self.get_symbol_type(self.symbol) == "FX":
+        if self.get_symbol_type(self.symbol) == SymbolType.FOREX:
             volume = round((trade_loss * size) / loss)
             __lot = round((volume / size), 2)
             lot = self._check_lot(__lot)
 
         if (
-            self.get_symbol_type(self.symbol) == "COMD"
-            or self.get_symbol_type(self.symbol) == "CRYPTO"
+            self.get_symbol_type(self.symbol) == SymbolType.COMMODITIES
+            or self.get_symbol_type(self.symbol) == SymbolType.CRYPTO
             and size > 1
         ):
             lot = currency_risk / (sl * loss * size)
@@ -705,7 +705,7 @@ class RiskManagement(Account):
         if account:
             return AL
 
-        if self.get_symbol_type(self.symbol) == "FX":
+        if self.get_symbol_type(self.symbol) == SymbolType.FOREX:
             return AL
         else:
             s_info = self.symbol_info
