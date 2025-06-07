@@ -7,7 +7,7 @@ from pandas.tseries.holiday import USFederalHolidayCalendar
 from pandas.tseries.offsets import CustomBusinessDay
 
 from bbstrader.metatrader.account import AMG_EXCHANGES, Account, check_mt5_connection
-from bbstrader.metatrader.utils import TIMEFRAMES, TimeFrame, raise_mt5_error
+from bbstrader.metatrader.utils import TIMEFRAMES, TimeFrame, raise_mt5_error, SymbolType
 
 try:
     import MetaTrader5 as Mt5
@@ -46,13 +46,13 @@ COMD_CALENDARS = {
 }
 
 CALENDARS = {
-    "FX": "us_futures",
-    "STK": AMG_EXCHANGES,
-    "ETF": AMG_EXCHANGES,
-    "IDX": IDX_CALENDARS,
-    "COMD": COMD_CALENDARS,
-    "CRYPTO": "24/7",
-    "FUT": None,
+    SymbolType.FOREX: "us_futures",
+    SymbolType.STOCKS: AMG_EXCHANGES,
+    SymbolType.ETFs: AMG_EXCHANGES,
+    SymbolType.INDICES: IDX_CALENDARS,
+    SymbolType.COMMODITIES: COMD_CALENDARS,
+    SymbolType.CRYPTO: "24/7",
+    SymbolType.FUTURES: None,
 }
 
 SESSION_TIMEFRAMES = [
@@ -206,6 +206,7 @@ class Rates(object):
     ) -> Union[pd.DataFrame, None]:
         """Fetches data from MT5 and returns a DataFrame or None."""
         try:
+            rates = None
             if isinstance(start, int) and isinstance(count, int):
                 rates = Mt5.copy_rates_from_pos(
                     self.symbol, self.time_frame, start, count
@@ -248,7 +249,7 @@ class Rates(object):
         currencies = self.__account.get_currency_rates(self.symbol)
         s_info = self.__account.get_symbol_info(self.symbol)
         if symbol_type in CALENDARS:
-            if symbol_type == "STK" or symbol_type == "ETF":
+            if symbol_type == SymbolType.STOCKS or symbol_type == SymbolType.ETFs:
                 for exchange in CALENDARS[symbol_type]:
                     if exchange in get_calendar_names():
                         symbols = self.__account.get_stocks_from_exchange(
@@ -257,20 +258,20 @@ class Rates(object):
                         if self.symbol in symbols:
                             calendar = get_calendar(exchange, side="right")
                             break
-            elif symbol_type == "IDX":
+            elif symbol_type == SymbolType.INDICES:
                 calendar = get_calendar(
                     CALENDARS[symbol_type][currencies["mc"]], side="right"
                 )
-            elif symbol_type == "COMD":
+            elif symbol_type == SymbolType.COMMODITIES:
                 for commodity in CALENDARS[symbol_type]:
                     if commodity in s_info.path:
                         calendar = get_calendar(
                             CALENDARS[symbol_type][commodity], side="right"
                         )
-            elif symbol_type == "FUT":
+            elif symbol_type == SymbolType.FUTURES:
                 if "Index" in s_info.path:
                     calendar = get_calendar(
-                        CALENDARS["IDX"][currencies["mc"]], side="right"
+                        CALENDARS[SymbolType.INDICES][currencies["mc"]], side="right"
                     )
                 else:
                     for commodity, cal in COMD_CALENDARS.items():
