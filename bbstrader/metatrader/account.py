@@ -14,6 +14,7 @@ from bbstrader.metatrader.utils import (
     OrderCheckResult,
     OrderSentResult,
     SymbolInfo,
+    SymbolType,
     TerminalInfo,
     TickInfo,
     TradeDeal,
@@ -84,14 +85,14 @@ ftmo_url = _FTMO_URL_
 
 
 _SYMBOLS_TYPE_ = {
-    "ETF": r"\b(ETFs?)\b",
-    "BOND": r"\b(Treasuries?)\b",
-    "FX": r"\b(Forex|Exotics?)\b",
-    "FUT": r"\b(Futures?|Forwards)\b",
-    "STK": r"\b(Stocks?|Equities?|Shares?)\b",
-    "IDX": r"\b(?:Indices?|Cash|Index)\b(?!.*\\(?:UKOIL|USOIL))",
-    "COMD": r"\b(Commodity|Commodities?|Metals?|Agricultures?|Energies?|OIL|Oil|USOIL|UKOIL)\b",
-    "CRYPTO": r"\b(Cryptos?|Cryptocurrencies|Cryptocurrency)\b",
+    SymbolType.ETFs: r"\b(ETFs?)\b",
+    SymbolType.BONDS: r"\b(Treasuries?)\b",
+    SymbolType.FOREX: r"\b(Forex|Exotics?)\b",
+    SymbolType.FUTURES: r"\b(Futures?|Forwards)\b",
+    SymbolType.STOCKS: r"\b(Stocks?|Equities?|Shares?)\b",
+    SymbolType.INDICES: r"\b(?:Indices?|Cash|Index)\b(?!.*\\(?:UKOIL|USOIL))",
+    SymbolType.COMMODITIES: r"\b(Commodity|Commodities?|Metals?|Agricultures?|Energies?|OIL|Oil|USOIL|UKOIL)\b",
+    SymbolType.CRYPTO: r"\b(Cryptos?|Cryptocurrencies|Cryptocurrency)\b",
 }
 
 _COUNTRY_MAP_ = {
@@ -222,7 +223,7 @@ class Broker(object):
 
 class AdmiralMarktsGroup(Broker):
     def __init__(self, **kwargs):
-        super().__init__("Admirals Group AS", **kwargs)
+        super().__init__(__BROKERS__["AMG"], **kwargs)
 
     @property
     def timezone(self) -> str:
@@ -231,7 +232,7 @@ class AdmiralMarktsGroup(Broker):
 
 class JustGlobalMarkets(Broker):
     def __init__(self, **kwargs):
-        super().__init__("Just Global Markets Ltd.", **kwargs)
+        super().__init__(__BROKERS__["JGM"], **kwargs)
 
     @property
     def timezone(self) -> str:
@@ -240,7 +241,7 @@ class JustGlobalMarkets(Broker):
 
 class FTMO(Broker):
     def __init__(self, **kwargs):
-        super().__init__("FTMO S.R.O.", **kwargs)
+        super().__init__(__BROKERS__["FTMO"], **kwargs)
 
     @property
     def timezone(self) -> str:
@@ -249,7 +250,7 @@ class FTMO(Broker):
 
 class PepperstoneGroupLimited(Broker):
     def __init__(self, **kwargs):
-        super().__init__("Pepperstone Group Limited", **kwargs)
+        super().__init__(__BROKERS__["PGL"], **kwargs)
 
     @property
     def timezone(self) -> str:
@@ -315,6 +316,8 @@ class Account(object):
 
     def _check_brokers(self, **kwargs):
         if kwargs.get("copy", False):
+            return
+        if kwargs.get("backtest", False):
             return
         supported = BROKERS.copy()
         if self.broker not in supported.values():
@@ -574,7 +577,7 @@ class Account(object):
 
     def get_symbols(
         self,
-        symbol_type="ALL",
+        symbol_type: SymbolType | str = "ALL",
         check_etf=False,
         save=False,
         file_name="symbols",
@@ -585,16 +588,9 @@ class Account(object):
         Get all specified financial instruments from the MetaTrader 5 terminal.
 
         Args:
-            symbol_type (str) The category of instrument to get
+            symbol_type (SymbolType | str): The type of financial instruments to retrieve.
             - `ALL`: For all available symbols
-            - `STK`: Stocks (e.g., 'GOOGL')
-            - `ETF`: ETFs (e.g., 'QQQ')
-            - `IDX`: Indices (e.g., 'SP500')
-            - `FX`: Forex pairs (e.g., 'EURUSD')
-            - `COMD`: Commodities (e.g., 'CRUDOIL', 'GOLD')
-            - `FUT`: Futures (e.g., 'USTNote_U4'),
-            - `CRYPTO`: Cryptocurrencies (e.g., 'BTC', 'ETH')
-            - `BOND`: Bonds (e.g., 'USTN10YR')
+            - See `bbstrader.metatrader.utils.SymbolType` for more details.
 
             check_etf (bool): If True and symbol_type is 'etf', check if the
                 ETF description contains 'ETF'.
@@ -621,7 +617,7 @@ class Account(object):
         patterns = _SYMBOLS_TYPE_
 
         if symbol_type != "ALL":
-            if symbol_type not in patterns:
+            if not isinstance(symbol_type, SymbolType) or symbol_type not in patterns:
                 raise ValueError(f"Unsupported symbol type: {symbol_type}")
 
         if save:
@@ -638,7 +634,7 @@ class Account(object):
                         match = re.search(pattern, info.path)
                         if match:
                             if (
-                                symbol_type == "ETF"
+                                symbol_type == SymbolType.ETFs
                                 and check_etf
                                 and "ETF" not in info.description
                             ):
@@ -659,7 +655,7 @@ class Account(object):
                     match = re.search(pattern, info.path)
                     if match:
                         if (
-                            symbol_type == "ETF"
+                            symbol_type == SymbolType.ETFs
                             and check_etf
                             and "ETF" not in info.description
                         ):
@@ -671,18 +667,11 @@ class Account(object):
 
         # Print a summary of the retrieved symbols
         if display_total:
-            names = {
-                "ALL": "Symbols",
-                "STK": "Stocks",
-                "ETF": "ETFs",
-                "IDX": "Indices",
-                "FX": "Forex Paires",
-                "COMD": "Commodities",
-                "FUT": "Futures",
-                "CRYPTO": "Cryptos Assets",
-                "BOND": "Bonds",
-            }
-            print(f"Total {names[symbol_type]}: {len(symbol_list)}")
+            name = symbol_type if isinstance(symbol_type, str) else symbol_type.name
+            if symbol_type == "ALL":
+                print(f"Total number of symbols: {len(symbol_list)}")
+            else:
+                print(f"Total number of {name} symbols: {len(symbol_list)}")
 
         return symbol_list
 
@@ -694,9 +683,7 @@ class Account(object):
         else:
             file.write(info.name + "\n")
 
-    def get_symbol_type(
-        self, symbol: str
-    ) -> Literal["STK", "ETF", "IDX", "FX", "COMD", "FUT", "CRYPTO", "BOND", "unknown"]:
+    def get_symbol_type(self, symbol: str) -> SymbolType:
         """
         Determines the type of a given financial instrument symbol.
 
@@ -704,41 +691,41 @@ class Account(object):
             symbol (str): The symbol of the financial instrument (e.g., `GOOGL`, `EURUSD`).
 
         Returns:
-            Literal["STK", "ETF", "IDX", "FX", "COMD", "FUT", "CRYPTO", "BOND", "unknown"]:
-            The type of the financial instrument, one of the following:
+            SymbolType: The type of the financial instrument, one of the following:
+            - `SymbolType.ETFs`
+            - `SymbolType.BONDS`
+            - `SymbolType.FOREX`
+            - `SymbolType.FUTURES`
+            - `SymbolType.STOCKS`
+            - `SymbolType.INDICES`
+            - `SymbolType.COMMODITIES`
+            - `SymbolType.CRYPTO`
+        - `SymbolType.unknown` if the type cannot be determined.
 
-            - `STK`: For Stocks (e.g., `GOOGL`)
-            - `ETF`: For ETFs (e.g., `QQQ`)
-            - `IDX`: For Indices (e.g., `SP500`)
-            - `FX` : For Forex pairs (e.g., `EURUSD`)
-            - `COMD`: For Commodities (e.g., `CRUDOIL`, `GOLD`)
-            - `FUT` : For Futures (e.g., `USTNote_U4`)
-            - `CRYPTO`: For Cryptocurrencies (e.g., `BTC`, `ETH`)
-            - `BOND`: For Bonds (e.g., `USTN10YR`)
-
-            Returns `unknown` if the type cannot be determined.
         """
 
         patterns = _SYMBOLS_TYPE_
         info = self.get_symbol_info(symbol)
-        indices = self.get_symbols(symbol_type="IDX")
-        commodity = self.get_symbols(symbol_type="COMD")
+        indices = self.get_symbols(symbol_type=SymbolType.INDICES)
+        commodity = self.get_symbols(symbol_type=SymbolType.COMMODITIES)
         if info is not None:
             for symbol_type, pattern in patterns.items():
                 if (
-                    symbol_type in ["IDX", "COMD"]
+                    symbol_type in [SymbolType.COMMODITIES, SymbolType.INDICES]
                     and self.broker == PepperstoneGroupLimited()
                     and info.name.endswith("-F")
                     and info.name in indices + commodity
                 ):
-                    symbol_type = "FUT"
+                    symbol_type = SymbolType.FUTURES
                     pattern = r"\b(Forwards?)\b"
                 search = re.compile(pattern)
                 if re.search(search, info.path):
                     return symbol_type
-        return "unknown"
+        return SymbolType.unknown
 
-    def _get_symbols_by_category(self, symbol_type, category, category_map):
+    def _get_symbols_by_category(
+        self, symbol_type: SymbolType | str, category, category_map
+    ):
         if category not in category_map:
             raise ValueError(
                 f"Unsupported category: {category}. Choose from: {', '.join(category_map)}"
@@ -778,7 +765,7 @@ class Account(object):
             For other brokers use `get_symbols()` or this method will use it by default.
         """
         if self.broker not in [AdmiralMarktsGroup(), PepperstoneGroupLimited()]:
-            return self.get_symbols(symbol_type="FX")
+            return self.get_symbols(symbol_type=SymbolType.FOREX)
         else:
             fx_categories = {
                 "majors": r"\b(Majors?)\b",
@@ -787,7 +774,9 @@ class Account(object):
                 "crosses": r"\b(Crosses?)\b",
                 "ndfs": r"\b(NDFs?)\b",
             }
-            return self._get_symbols_by_category("FX", category, fx_categories)
+            return self._get_symbols_by_category(
+                SymbolType.FOREX, category, fx_categories
+            )
 
     def get_stocks_from_country(
         self, country_code: str = "USA", etf=False
@@ -830,13 +819,17 @@ class Account(object):
         """
 
         if self.broker not in [AdmiralMarktsGroup(), PepperstoneGroupLimited()]:
-            stocks = self.get_symbols(symbol_type="STK")
+            stocks = self.get_symbols(symbol_type=SymbolType.STOCKS)
             return stocks
         else:
             country_map = _COUNTRY_MAP_
-            stocks = self._get_symbols_by_category("STK", country_code, country_map)
+            stocks = self._get_symbols_by_category(
+                SymbolType.STOCKS, country_code, country_map
+            )
             if etf:
-                etfs = self._get_symbols_by_category("ETF", country_code, country_map)
+                etfs = self._get_symbols_by_category(
+                    SymbolType.ETFs, country_code, country_map
+                )
                 return stocks + etfs
             return stocks
 
@@ -882,13 +875,17 @@ class Account(object):
             For other brokers use `get_symbols()` or this method will use it by default.
         """
         if self.broker != AdmiralMarktsGroup():
-            stocks = self.get_symbols(symbol_type="STK")
+            stocks = self.get_symbols(symbol_type=SymbolType.STOCKS)
             return stocks
         else:
             exchange_map = AMG_EXCHANGES
-            stocks = self._get_symbols_by_category("STK", exchange_code, exchange_map)
+            stocks = self._get_symbols_by_category(
+                SymbolType.STOCKS, exchange_code, exchange_map
+            )
             if etf:
-                etfs = self._get_symbols_by_category("ETF", exchange_code, exchange_map)
+                etfs = self._get_symbols_by_category(
+                    SymbolType.ETFs, exchange_code, exchange_map
+                )
                 return stocks + etfs
             return stocks
 
@@ -913,48 +910,42 @@ class Account(object):
         """
         category = category.lower()
         if self.broker != AdmiralMarktsGroup():
-            return self.get_symbols(symbol_type="FUT")
+            return self.get_symbols(symbol_type=SymbolType.FUTURES)
         elif category in ["all", "index"]:
             categories = {
                 "all": r"\b(Futures?)\b",
                 "index": r"\b(Index)\b",
             }
-            return self._get_symbols_by_category("FUT", category, categories)
+            return self._get_symbols_by_category(
+                SymbolType.FUTURES, category, categories
+            )
         else:
-            metals = []
-            energies = []
-            agricultures = []
-            bonds = []
-            commodities = self.get_symbols(symbol_type="COMD")
-            futures = self.get_symbols(symbol_type="FUT")
+            futures_types = {}
+            for future_type in ("metals", "energies", "agricultures", "bonds"):
+                futures_types[future_type] = []
+            commodities = self.get_symbols(symbol_type=SymbolType.COMMODITIES)
+            futures = self.get_symbols(symbol_type=SymbolType.FUTURES)
             for symbol in futures:
                 info = self.get_symbol_info(symbol)
                 if info.name.startswith("_"):
                     if "XAU" in info.name:
-                        metals.append(info.name)
+                        future_type["metals"].append(info.name)
                     if "oil" in info.name.lower():
-                        energies.append(info.name)
+                        future_type["energies"].append(info.name)
                     name = info.name.split("_")[1]
                     if name in commodities:
                         _info = self.get_symbol_info(name)
                         if "Metals" in _info.path:
-                            metals.append(info.name)
+                            future_type["metals"].append(info.name)
                         elif "Energies" in _info.path:
-                            energies.append(info.name)
+                            future_type["energies"].append(info.name)
                         elif "Agricultures" in _info.path:
-                            agricultures.append(info.name)
+                            future_type["agricultures"].append(info.name)
 
                 elif info.name.startswith("#"):
                     if "Index" not in info.path:
-                        bonds.append(info.name)
-            if category == "metals":
-                return metals
-            elif category == "energies":
-                return energies
-            elif category == "agricultures":
-                return agricultures
-            elif category == "bonds":
-                return bonds
+                        future_type["bonds"].append(info.name)
+            return futures_types[category]
 
     def get_symbol_info(self, symbol: str) -> Union[SymbolInfo, None]:
         """Get symbol properties
@@ -1050,16 +1041,17 @@ class Account(object):
         Returns:
             The Market Depth content as a tuple from BookInfo entries featuring order type, price and volume in lots.
             Return None in case of an error.
-            
+
         Raises:
             MT5TerminalError: A specific exception based on the error code.
         """
         try:
             book = mt5.market_book_get(symbol)
-            if book is None:
-                return None
-            else:
-                return tuple([BookInfo(**entry._asdict()) for entry in book])
+            return (
+                None
+                if book is None
+                else tuple([BookInfo(**entry._asdict()) for entry in book])
+            )
         except Exception as e:
             raise_mt5_error(e)
 
@@ -1083,10 +1075,7 @@ class Account(object):
         """
         actions = {"buy": mt5.ORDER_TYPE_BUY, "sell": mt5.ORDER_TYPE_SELL}
         try:
-            margin = mt5.order_calc_margin(actions[action], symbol, lot, price)
-            if margin is None:
-                return None
-            return margin
+            return mt5.order_calc_margin(actions[action], symbol, lot, price)
         except Exception as e:
             raise_mt5_error(e)
 
