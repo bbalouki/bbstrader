@@ -198,7 +198,7 @@ class FmpNews(object):
 class FinancialNews(object):
     """
     The FinancialNews class provides methods to fetch financial news, articles, and discussions
-    from various sources such as Yahoo Finance, Google Finance, Reddit, and Twitter.
+    from various sources such as Yahoo Finance, Google Finance, Reddit, Coindesk and Twitter.
     It also supports retrieving news using Financial Modeling Prep (FMP).
 
     """
