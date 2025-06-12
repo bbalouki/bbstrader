@@ -232,80 +232,80 @@ class TestTrade(unittest.TestCase):
         expected_repr_sl = "TradeSignal(id=2, symbol='GBPUSD', action='SSTP', price=1.25, stoplimit=1.24), comment='Sell Stop'"
         self.assertEqual(repr(signal_sl), expected_repr_sl)
 
-    # def test_trade_initialization_defaults(self):
-    #     # Test with minimal parameters, relying on defaults
-    #     # Class-level patches for check_mt5_connection and raise_mt5_error are active.
-    #     # If a specific test needs to override them, it can use its own @patch decorator.
-    #     trade = Trade(symbol="EURUSD", logger=mock_logger, verbose=False)
-    #     self.assertEqual(trade.symbol, "EURUSD")
-    #     self.assertEqual(trade.expert_name, "bbstrader") # Default
-    #     self.assertEqual(trade.expert_id, 98181105) # Default
-    #     self.assertFalse(trade.verbose)
-    #     self.assertEqual(trade.logger, mock_logger)
-    #     # Check if MT5 interaction methods were called
-    #     # These assertions will now rely on the mock_mt5 that is configured in setUp,
-    #     # which is the global mock_mt5 because of the class-level patch.
-    #     mock_mt5.initialize.assert_called_once()
-    #     mock_mt5.symbol_select.assert_called_once_with("EURUSD", True)
-    #     mock_mt5.symbol_info.assert_called_with("EURUSD") # prepare_symbol calls it
-    #     # Check RiskManagement defaults (a few examples)
-    #     self.assertEqual(trade.kwargs.get("max_risk"), 10.0) # Default from RiskManagement
-    #     self.assertEqual(trade.kwargs.get("rr"), 1.5) # Default from RiskManagement
+    def test_trade_initialization_defaults(self):
+        # Test with minimal parameters, relying on defaults
+        # Class-level patches for check_mt5_connection and raise_mt5_error are active.
+        # If a specific test needs to override them, it can use its own @patch decorator.
+        trade = Trade(symbol="EURUSD", logger=mock_logger, verbose=False)
+        self.assertEqual(trade.symbol, "EURUSD")
+        self.assertEqual(trade.expert_name, "bbstrader") # Default
+        self.assertEqual(trade.expert_id, 98181105) # Default
+        self.assertFalse(trade.verbose)
+        self.assertEqual(trade.logger, mock_logger)
+        # Check if MT5 interaction methods were called
+        # These assertions will now rely on the mock_mt5 that is configured in setUp,
+        # which is the global mock_mt5 because of the class-level patch.
+        mock_mt5.initialize.assert_called_once()
+        mock_mt5.symbol_select.assert_called_once_with("EURUSD", True)
+        mock_mt5.symbol_info.assert_called_with("EURUSD") # prepare_symbol calls it
+        # Check RiskManagement defaults (a few examples)
+        self.assertEqual(trade.kwargs.get("max_risk"), 10.0) # Default from RiskManagement
+        self.assertEqual(trade.kwargs.get("rr"), 1.5) # Default from RiskManagement
 
 
-    # def test_trade_initialization_custom_params(self):
-    #     # Class-level patches active.
-    #     params = self.default_params.copy()
-    #     trade = Trade(**params)
-    #     self.assertEqual(trade.symbol, "EURUSD")
-    #     self.assertEqual(trade.expert_name, "TestExpert")
-    #     self.assertEqual(trade.expert_id, 12345)
-    #     self.assertEqual(trade.version, "1.0")
-    #     self.assertEqual(trade.target, 5.0)
-    #     self.assertEqual(trade.start, "09:00")
-    #     self.assertEqual(trade.finishing, "17:00")
-    #     self.assertEqual(trade.end, "17:30")
-    #     self.assertFalse(trade.verbose)
-    #     self.assertFalse(trade.console_log)
-    #     self.assertEqual(trade.logger, mock_logger)
-    #     self.assertEqual(trade.tf, "D1") # Default from RiskManagement as time_frame is not in params
+    def test_trade_initialization_custom_params(self):
+        # Class-level patches active.
+        params = self.default_params.copy()
+        trade = Trade(**params)
+        self.assertEqual(trade.symbol, "EURUSD")
+        self.assertEqual(trade.expert_name, "TestExpert")
+        self.assertEqual(trade.expert_id, 12345)
+        self.assertEqual(trade.version, "1.0")
+        self.assertEqual(trade.target, 5.0)
+        self.assertEqual(trade.start, "09:00")
+        self.assertEqual(trade.finishing, "17:00")
+        self.assertEqual(trade.end, "17:30")
+        self.assertFalse(trade.verbose)
+        self.assertFalse(trade.console_log)
+        self.assertEqual(trade.logger, mock_logger)
+        self.assertEqual(trade.tf, "D1") # Default from RiskManagement as time_frame is not in params
 
-    #     # Check RiskManagement params
-    #     self.assertEqual(trade.kwargs.get("max_risk"), 2.0)
-    #     self.assertEqual(trade.kwargs.get("daily_risk"), 1.0)
-    #     self.assertEqual(trade.kwargs.get("max_trades"), 5)
-    #     self.assertEqual(trade.kwargs.get("rr"), 2.0)
-    #     self.assertTrue(trade.kwargs.get("account_leverage"))
-    #     self.assertTrue(trade.kwargs.get("std_stop"))
-    #     self.assertEqual(trade.kwargs.get("sl"), 20)
-    #     self.assertEqual(trade.kwargs.get("tp"), 40)
-    #     self.assertEqual(trade.kwargs.get("be"), 10)
+        # Check RiskManagement params
+        self.assertEqual(trade.kwargs.get("max_risk"), 2.0)
+        self.assertEqual(trade.kwargs.get("daily_risk"), 1.0)
+        self.assertEqual(trade.kwargs.get("max_trades"), 5)
+        self.assertEqual(trade.kwargs.get("rr"), 2.0)
+        self.assertTrue(trade.kwargs.get("account_leverage"))
+        self.assertTrue(trade.kwargs.get("std_stop"))
+        self.assertEqual(trade.kwargs.get("sl"), 20)
+        self.assertEqual(trade.kwargs.get("tp"), 40)
+        self.assertEqual(trade.kwargs.get("be"), 10)
         
-    #     # Check if MT5 interaction methods were called
-    #     mock_mt5.initialize.assert_called_once()
-    #     mock_mt5.symbol_select.assert_called_once_with("EURUSD", True)
-    #     # prepare_symbol calls symbol_info
-    #     mock_mt5.symbol_info.assert_called_with("EURUSD")
+        # Check if MT5 interaction methods were called
+        mock_mt5.initialize.assert_called_once()
+        mock_mt5.symbol_select.assert_called_once_with("EURUSD", True)
+        # prepare_symbol calls symbol_info
+        mock_mt5.symbol_info.assert_called_with("EURUSD")
 
 
-    # def test_trade_initialization_verbose_mode(self):
-    #     # Test verbose mode calls summary and risk_managment
-    #     # We need to mock summary and risk_managment to prevent actual printing
-    #     # Class-level patches active for check_mt5_connection and raise_mt5_error.
-    #     with patch.object(Trade, 'summary', return_value=None) as mock_summary, \
-    #          patch.object(Trade, 'risk_managment', return_value=None) as mock_risk_managment:
+    def test_trade_initialization_verbose_mode(self):
+        # Test verbose mode calls summary and risk_managment
+        # We need to mock summary and risk_managment to prevent actual printing
+        # Class-level patches active for check_mt5_connection and raise_mt5_error.
+        with patch.object(Trade, 'summary', return_value=None) as mock_summary, \
+             patch.object(Trade, 'risk_managment', return_value=None) as mock_risk_managment:
             
-    #         params = self.default_params.copy()
-    #         params["verbose"] = True
-    #         trade = Trade(**params)
+            params = self.default_params.copy()
+            params["verbose"] = True
+            trade = Trade(**params)
             
-    #         self.assertTrue(trade.verbose)
-    #         mock_summary.assert_called_once()
-    #         mock_risk_managment.assert_called_once()
-    #         # Check if MT5 interaction methods were called
-    #         mock_mt5.initialize.assert_called_once()
-    #         mock_mt5.symbol_select.assert_called_once_with("EURUSD", True)
-    #         mock_mt5.symbol_info.assert_called_with("EURUSD")
+            self.assertTrue(trade.verbose)
+            mock_summary.assert_called_once()
+            mock_risk_managment.assert_called_once()
+            # Check if MT5 interaction methods were called
+            mock_mt5.initialize.assert_called_once()
+            mock_mt5.symbol_select.assert_called_once_with("EURUSD", True)
+            mock_mt5.symbol_info.assert_called_with("EURUSD")
 
 
     def test_trade_initialization_logger_string(self):
@@ -535,117 +535,117 @@ class TestTrade(unittest.TestCase):
         # For now, assume they use the values from self.default_params or global mocks.
         # Example: if get_lot was mocked: self.mock_get_lot.reset_mock()
 
-    # @patch.object(Trade, 'check', return_value=True) # Assume checks pass by default
-    # @patch.object(Trade, 'request_result', return_value=True) # Assume request_result is successful
-    # @patch.object(Trade, 'get_lot', return_value=0.01)
-    # @patch.object(Trade, 'get_stop_loss', return_value=20) # in points
-    # @patch.object(Trade, 'get_take_profit', return_value=40) # in points
-    # @patch.object(Trade, 'get_deviation', return_value=5) # in points
-    # def test_open_buy_position_market_order_mm(self, mock_get_dev, mock_get_tp, mock_get_sl, mock_get_lot, mock_req_res, mock_check):
-    #     self._reset_position_opening_mocks()
-    #     trade = Trade(**self.default_params)
-    #     mock_mt5.symbol_info_tick.return_value.ask = 1.10000 # Set current ask price
+    @patch.object(Trade, 'check', return_value=True) # Assume checks pass by default
+    @patch.object(Trade, 'request_result', return_value=True) # Assume request_result is successful
+    @patch.object(Trade, 'get_lot', return_value=0.01)
+    @patch.object(Trade, 'get_stop_loss', return_value=20) # in points
+    @patch.object(Trade, 'get_take_profit', return_value=40) # in points
+    @patch.object(Trade, 'get_deviation', return_value=5) # in points
+    def test_open_buy_position_market_order_mm(self, mock_get_dev, mock_get_tp, mock_get_sl, mock_get_lot, mock_req_res, mock_check):
+        self._reset_position_opening_mocks()
+        trade = Trade(**self.default_params)
+        mock_mt5.symbol_info_tick.return_value.ask = 1.10000 # Set current ask price
         
-    #     result = trade.open_buy_position(action="BMKT", mm=True, comment="Test Buy Market")
+        result = trade.open_buy_position(action="BMKT", mm=True, comment="Test Buy Market")
         
-    #     self.assertTrue(result)
-    #     mock_check.assert_called_once_with("Test Buy Market")
+        self.assertTrue(result)
+        mock_check.assert_called_once_with("Test Buy Market")
         
-    #     expected_price = 1.10000
-    #     point = MockSymbolInfo.point
-    #     expected_sl = round(expected_price - mock_get_sl.return_value * point, MockSymbolInfo.digits)
-    #     expected_tp = round(expected_price + mock_get_tp.return_value * point, MockSymbolInfo.digits)
+        expected_price = 1.10000
+        point = MockSymbolInfo.point
+        expected_sl = round(expected_price - mock_get_sl.return_value * point, MockSymbolInfo.digits)
+        expected_tp = round(expected_price + mock_get_tp.return_value * point, MockSymbolInfo.digits)
 
-    #     expected_request = {
-    #         "action": mock_mt5.TRADE_ACTION_DEAL,
-    #         "symbol": self.default_params["symbol"],
-    #         "volume": mock_get_lot.return_value,
-    #         "type": mock_mt5.ORDER_TYPE_BUY,
-    #         "price": expected_price,
-    #         "deviation": mock_get_dev.return_value,
-    #         "magic": self.default_params["expert_id"],
-    #         "comment": "Test Buy Market",
-    #         "type_time": mock_mt5.ORDER_TIME_GTC,
-    #         "type_filling": mock_mt5.ORDER_FILLING_FOK,
-    #         "sl": expected_sl,
-    #         "tp": expected_tp,
-    #     }
-    #     mock_req_res.assert_called_once_with(expected_price, expected_request, "BMKT")
-    #     self.assertIn(trade.expert_id, trade.break_even_points) # From break_even call
+        expected_request = {
+            "action": mock_mt5.TRADE_ACTION_DEAL,
+            "symbol": self.default_params["symbol"],
+            "volume": mock_get_lot.return_value,
+            "type": mock_mt5.ORDER_TYPE_BUY,
+            "price": expected_price,
+            "deviation": mock_get_dev.return_value,
+            "magic": self.default_params["expert_id"],
+            "comment": "Test Buy Market",
+            "type_time": mock_mt5.ORDER_TIME_GTC,
+            "type_filling": mock_mt5.ORDER_FILLING_FOK,
+            "sl": expected_sl,
+            "tp": expected_tp,
+        }
+        mock_req_res.assert_called_once_with(expected_price, expected_request, "BMKT")
+        self.assertIn(trade.expert_id, trade.break_even_points) # From break_even call
 
-    # @patch.object(Trade, 'check', return_value=True)
-    # @patch.object(Trade, 'request_result', return_value=True)
-    # @patch.object(Trade, 'get_lot', return_value=0.01)
-    # @patch.object(Trade, 'get_deviation', return_value=5)
-    # def test_open_buy_position_market_order_no_mm(self, mock_get_dev, mock_get_lot, mock_req_res, mock_check):
-    #     self._reset_position_opening_mocks()
-    #     trade = Trade(**self.default_params)
-    #     mock_mt5.symbol_info_tick.return_value.ask = 1.10000
+    @patch.object(Trade, 'check', return_value=True)
+    @patch.object(Trade, 'request_result', return_value=True)
+    @patch.object(Trade, 'get_lot', return_value=0.01)
+    @patch.object(Trade, 'get_deviation', return_value=5)
+    def test_open_buy_position_market_order_no_mm(self, mock_get_dev, mock_get_lot, mock_req_res, mock_check):
+        self._reset_position_opening_mocks()
+        trade = Trade(**self.default_params)
+        mock_mt5.symbol_info_tick.return_value.ask = 1.10000
         
-    #     result = trade.open_buy_position(action="BMKT", mm=False, comment="Test Buy Market No MM")
+        result = trade.open_buy_position(action="BMKT", mm=False, comment="Test Buy Market No MM")
         
-    #     self.assertTrue(result)
-    #     mock_check.assert_called_once_with("Test Buy Market No MM")
+        self.assertTrue(result)
+        mock_check.assert_called_once_with("Test Buy Market No MM")
         
-    #     expected_request_no_mm = {
-    #         "action": mock_mt5.TRADE_ACTION_DEAL,
-    #         "symbol": self.default_params["symbol"],
-    #         "volume": mock_get_lot.return_value,
-    #         "type": mock_mt5.ORDER_TYPE_BUY,
-    #         "price": 1.10000,
-    #         "deviation": mock_get_dev.return_value,
-    #         "magic": self.default_params["expert_id"],
-    #         "comment": "Test Buy Market No MM",
-    #         "type_time": mock_mt5.ORDER_TIME_GTC,
-    #         "type_filling": mock_mt5.ORDER_FILLING_FOK,
-    #         # No sl or tp
-    #     }
-    #     mock_req_res.assert_called_once_with(1.10000, expected_request_no_mm, "BMKT")
-    #     # break_even is still called, but mm=False means it won't set SL/TP in request
-    #     self.assertNotIn(trade.expert_id, trade.break_even_points) # mm=False for open_buy_position
+        expected_request_no_mm = {
+            "action": mock_mt5.TRADE_ACTION_DEAL,
+            "symbol": self.default_params["symbol"],
+            "volume": mock_get_lot.return_value,
+            "type": mock_mt5.ORDER_TYPE_BUY,
+            "price": 1.10000,
+            "deviation": mock_get_dev.return_value,
+            "magic": self.default_params["expert_id"],
+            "comment": "Test Buy Market No MM",
+            "type_time": mock_mt5.ORDER_TIME_GTC,
+            "type_filling": mock_mt5.ORDER_FILLING_FOK,
+            # No sl or tp
+        }
+        mock_req_res.assert_called_once_with(1.10000, expected_request_no_mm, "BMKT")
+        # break_even is still called, but mm=False means it won't set SL/TP in request
+        self.assertNotIn(trade.expert_id, trade.break_even_points) # mm=False for open_buy_position
 
-    # @patch.object(Trade, 'check', return_value=True)
-    # @patch.object(Trade, 'request_result', return_value=True)
-    # @patch.object(Trade, 'get_lot', return_value=0.01)
-    # @patch.object(Trade, 'get_stop_loss', return_value=20)
-    # @patch.object(Trade, 'get_take_profit', return_value=40)
-    # def test_open_buy_position_limit_order(self, mock_get_tp, mock_get_sl, mock_get_lot, mock_req_res, mock_check):
-    #     self._reset_position_opening_mocks()
-    #     trade = Trade(**self.default_params)
+    @patch.object(Trade, 'check', return_value=True)
+    @patch.object(Trade, 'request_result', return_value=True)
+    @patch.object(Trade, 'get_lot', return_value=0.01)
+    @patch.object(Trade, 'get_stop_loss', return_value=20)
+    @patch.object(Trade, 'get_take_profit', return_value=40)
+    def test_open_buy_position_limit_order(self, mock_get_tp, mock_get_sl, mock_get_lot, mock_req_res, mock_check):
+        self._reset_position_opening_mocks()
+        trade = Trade(**self.default_params)
         
-    #     order_price = 1.09000
-    #     result = trade.open_buy_position(action="BLMT", price=order_price, mm=True, comment="Test Buy Limit")
+        order_price = 1.09000
+        result = trade.open_buy_position(action="BLMT", price=order_price, mm=True, comment="Test Buy Limit")
         
-    #     self.assertTrue(result)
-    #     mock_check.assert_called_once_with("Test Buy Limit")
+        self.assertTrue(result)
+        mock_check.assert_called_once_with("Test Buy Limit")
 
-    #     point = MockSymbolInfo.point
-    #     expected_sl = round(order_price - mock_get_sl.return_value * point, MockSymbolInfo.digits)
-    #     expected_tp = round(order_price + mock_get_tp.return_value * point, MockSymbolInfo.digits)
+        point = MockSymbolInfo.point
+        expected_sl = round(order_price - mock_get_sl.return_value * point, MockSymbolInfo.digits)
+        expected_tp = round(order_price + mock_get_tp.return_value * point, MockSymbolInfo.digits)
 
-    #     expected_request = {
-    #         "action": mock_mt5.TRADE_ACTION_PENDING,
-    #         "symbol": self.default_params["symbol"],
-    #         "volume": mock_get_lot.return_value,
-    #         "type": mock_mt5.ORDER_TYPE_BUY_LIMIT,
-    #         "price": order_price,
-    #         # No deviation for pending orders in this structure, but it's in the original request for market
-    #         "magic": self.default_params["expert_id"],
-    #         "comment": "Test Buy Limit",
-    #         "type_time": mock_mt5.ORDER_TIME_GTC,
-    #         "type_filling": mock_mt5.ORDER_FILLING_FOK,
-    #         "sl": expected_sl,
-    #         "tp": expected_tp,
-    #     }
-    #     # Deviation is not part of the expected request for pending orders in this simplified check
-    #     # The actual implementation might add it if not None, so we check what's passed to request_result
-    #     args, _ = mock_req_res.call_args
-    #     self.assertEqual(args[0], order_price)
-    #     self.assertEqual(args[2], "BLMT")
-    #     # Compare relevant parts of the request dict
-    #     for key, value in expected_request.items():
-    #         self.assertEqual(args[1][key], value, f"Mismatch for key {key}")
-    #     self.assertNotIn("deviation", args[1]) # Deviation should not be in pending order request like this
+        expected_request = {
+            "action": mock_mt5.TRADE_ACTION_PENDING,
+            "symbol": self.default_params["symbol"],
+            "volume": mock_get_lot.return_value,
+            "type": mock_mt5.ORDER_TYPE_BUY_LIMIT,
+            "price": order_price,
+            # No deviation for pending orders in this structure, but it's in the original request for market
+            "magic": self.default_params["expert_id"],
+            "comment": "Test Buy Limit",
+            "type_time": mock_mt5.ORDER_TIME_GTC,
+            "type_filling": mock_mt5.ORDER_FILLING_FOK,
+            "sl": expected_sl,
+            "tp": expected_tp,
+        }
+        # Deviation is not part of the expected request for pending orders in this simplified check
+        # The actual implementation might add it if not None, so we check what's passed to request_result
+        args, _ = mock_req_res.call_args
+        self.assertEqual(args[0], order_price)
+        self.assertEqual(args[2], "BLMT")
+        # Compare relevant parts of the request dict
+        for key, value in expected_request.items():
+            self.assertEqual(args[1][key], value, f"Mismatch for key {key}")
+        self.assertNotIn("deviation", args[1]) # Deviation should not be in pending order request like this
 
     def test_open_buy_position_pending_order_no_price(self):
         self._reset_position_opening_mocks()
@@ -679,42 +679,42 @@ class TestTrade(unittest.TestCase):
             trade.open_buy_position(action="BSTPLMT", price=1.10000, stoplimit=1.10100, mm=False)
 
 
-    # @patch.object(Trade, 'check', return_value=True)
-    # @patch.object(Trade, 'request_result', return_value=True)
-    # @patch.object(Trade, 'get_lot', return_value=0.01)
-    # @patch.object(Trade, 'get_stop_loss', return_value=20)
-    # @patch.object(Trade, 'get_take_profit', return_value=40)
-    # @patch.object(Trade, 'get_deviation', return_value=5)
-    # def test_open_sell_position_market_order_mm(self, mock_get_dev, mock_get_tp, mock_get_sl, mock_get_lot, mock_req_res, mock_check):
-    #     self._reset_position_opening_mocks()
-    #     trade = Trade(**self.default_params)
-    #     mock_mt5.symbol_info_tick.return_value.bid = 1.09990 # Set current bid price
+    @patch.object(Trade, 'check', return_value=True)
+    @patch.object(Trade, 'request_result', return_value=True)
+    @patch.object(Trade, 'get_lot', return_value=0.01)
+    @patch.object(Trade, 'get_stop_loss', return_value=20)
+    @patch.object(Trade, 'get_take_profit', return_value=40)
+    @patch.object(Trade, 'get_deviation', return_value=5)
+    def test_open_sell_position_market_order_mm(self, mock_get_dev, mock_get_tp, mock_get_sl, mock_get_lot, mock_req_res, mock_check):
+        self._reset_position_opening_mocks()
+        trade = Trade(**self.default_params)
+        mock_mt5.symbol_info_tick.return_value.bid = 1.09990 # Set current bid price
         
-    #     result = trade.open_sell_position(action="SMKT", mm=True, comment="Test Sell Market")
+        result = trade.open_sell_position(action="SMKT", mm=True, comment="Test Sell Market")
         
-    #     self.assertTrue(result)
-    #     mock_check.assert_called_once_with("Test Sell Market")
+        self.assertTrue(result)
+        mock_check.assert_called_once_with("Test Sell Market")
 
-    #     expected_price = 1.09990
-    #     point = MockSymbolInfo.point
-    #     expected_sl = round(expected_price + mock_get_sl.return_value * point, MockSymbolInfo.digits)
-    #     expected_tp = round(expected_price - mock_get_tp.return_value * point, MockSymbolInfo.digits)
+        expected_price = 1.09990
+        point = MockSymbolInfo.point
+        expected_sl = round(expected_price + mock_get_sl.return_value * point, MockSymbolInfo.digits)
+        expected_tp = round(expected_price - mock_get_tp.return_value * point, MockSymbolInfo.digits)
         
-    #     expected_request = {
-    #         "action": mock_mt5.TRADE_ACTION_DEAL,
-    #         "symbol": self.default_params["symbol"],
-    #         "volume": mock_get_lot.return_value,
-    #         "type": mock_mt5.ORDER_TYPE_SELL,
-    #         "price": expected_price,
-    #         "deviation": mock_get_dev.return_value,
-    #         "magic": self.default_params["expert_id"],
-    #         "comment": "Test Sell Market",
-    #         "type_time": mock_mt5.ORDER_TIME_GTC,
-    #         "type_filling": mock_mt5.ORDER_FILLING_FOK,
-    #         "sl": expected_sl,
-    #         "tp": expected_tp,
-    #     }
-    #     mock_req_res.assert_called_once_with(expected_price, expected_request, "SMKT")
+        expected_request = {
+            "action": mock_mt5.TRADE_ACTION_DEAL,
+            "symbol": self.default_params["symbol"],
+            "volume": mock_get_lot.return_value,
+            "type": mock_mt5.ORDER_TYPE_SELL,
+            "price": expected_price,
+            "deviation": mock_get_dev.return_value,
+            "magic": self.default_params["expert_id"],
+            "comment": "Test Sell Market",
+            "type_time": mock_mt5.ORDER_TIME_GTC,
+            "type_filling": mock_mt5.ORDER_FILLING_FOK,
+            "sl": expected_sl,
+            "tp": expected_tp,
+        }
+        mock_req_res.assert_called_once_with(expected_price, expected_request, "SMKT")
 
     # Similar tests for open_sell_position (limit, stop, stop_limit, no_mm, errors) would follow...
     # For brevity, only showing one sell market example.
@@ -953,65 +953,65 @@ class TestTrade(unittest.TestCase):
         self.assertIsNone(trade.get_filtered_tickets(filter_type="positions"))
         self.assertIsNone(trade.get_filtered_tickets(filter_type="orders"))
 
-    # def test_get_filtered_tickets_positions_by_magic_id(self):
-    #     trade = Trade(**self.default_params) # expert_id = 12345
-    #     mock_pos1 = self._create_mock_position(1, 12345, 0, 10)
-    #     mock_pos2 = self._create_mock_position(2, 67890, 0, 5)
-    #     mock_pos3 = self._create_mock_position(3, 12345, 1, -5)
-    #     mock_mt5.positions_get.return_value = [mock_pos1, mock_pos2, mock_pos3]
+    def test_get_filtered_tickets_positions_by_magic_id(self):
+        trade = Trade(**self.default_params) # expert_id = 12345
+        mock_pos1 = self._create_mock_position(1, 12345, 0, 10)
+        mock_pos2 = self._create_mock_position(2, 67890, 0, 5)
+        mock_pos3 = self._create_mock_position(3, 12345, 1, -5)
+        mock_mt5.positions_get.return_value = [mock_pos1, mock_pos2, mock_pos3]
         
-    #     # Test with default expert_id
-    #     result = trade.get_filtered_tickets(filter_type="positions")
-    #     self.assertEqual(sorted(result), [1, 3])
+        # Test with default expert_id
+        result = trade.get_filtered_tickets(filter_type="positions")
+        self.assertEqual(sorted(result), [1, 3])
         
-    #     # Test with a specific id
-    #     result_custom_id = trade.get_filtered_tickets(id=67890, filter_type="positions")
-    #     self.assertEqual(result_custom_id, [2])
+        # Test with a specific id
+        result_custom_id = trade.get_filtered_tickets(id=67890, filter_type="positions")
+        self.assertEqual(result_custom_id, [2])
 
-    # def test_get_filtered_tickets_filter_types_positions(self):
-    #     trade = Trade(**self.default_params) # expert_id = 12345
-    #     mock_buy_profit = self._create_mock_position(10, 12345, 0, 20) # Buy, profitable
-    #     mock_buy_loss = self._create_mock_position(11, 12345, 0, -5)  # Buy, losing
-    #     mock_sell_profit = self._create_mock_position(12, 12345, 1, 15) # Sell, profitable
-    #     mock_sell_loss = self._create_mock_position(13, 12345, 1, -10) # Sell, losing
-    #     mock_other_magic = self._create_mock_position(14, 67890, 0, 10)
+    def test_get_filtered_tickets_filter_types_positions(self):
+        trade = Trade(**self.default_params) # expert_id = 12345
+        mock_buy_profit = self._create_mock_position(10, 12345, 0, 20) # Buy, profitable
+        mock_buy_loss = self._create_mock_position(11, 12345, 0, -5)  # Buy, losing
+        mock_sell_profit = self._create_mock_position(12, 12345, 1, 15) # Sell, profitable
+        mock_sell_loss = self._create_mock_position(13, 12345, 1, -10) # Sell, losing
+        mock_other_magic = self._create_mock_position(14, 67890, 0, 10)
         
-    #     all_positions = [mock_buy_profit, mock_buy_loss, mock_sell_profit, mock_sell_loss, mock_other_magic]
-    #     mock_mt5.positions_get.return_value = all_positions
+        all_positions = [mock_buy_profit, mock_buy_loss, mock_sell_profit, mock_sell_loss, mock_other_magic]
+        mock_mt5.positions_get.return_value = all_positions
 
-    #     # Mock win_trade for 'profitables'
-    #     # win_trade checks if profit in points is >= some threshold (min_be or 0.1*be)
-    #     # For simplicity, assume win_trade returns True if position.profit > 0 for these tests
-    #     with patch.object(Trade, 'win_trade') as mock_win_trade:
-    #         # Configure win_trade: True if pos.profit > 0, False otherwise for this test's purpose
-    #         def win_trade_side_effect(position, th=None):
-    #             return position.profit > 0
-    #         mock_win_trade.side_effect = win_trade_side_effect
+        # Mock win_trade for 'profitables'
+        # win_trade checks if profit in points is >= some threshold (min_be or 0.1*be)
+        # For simplicity, assume win_trade returns True if position.profit > 0 for these tests
+        with patch.object(Trade, 'win_trade') as mock_win_trade:
+            # Configure win_trade: True if pos.profit > 0, False otherwise for this test's purpose
+            def win_trade_side_effect(position, th=None):
+                return position.profit > 0
+            mock_win_trade.side_effect = win_trade_side_effect
 
-    #         self.assertEqual(trade.get_filtered_tickets(filter_type="buys"), None)
-    #         self.assertEqual(trade.get_filtered_tickets(filter_type="sells"), [12, 13])
-    #         self.assertEqual(trade.get_filtered_tickets(filter_type="losings"), [11, 13])
-    #         self.assertEqual(trade.get_filtered_tickets(filter_type="profitables", th=1), [10, 12]) # th is passed to win_trade
-    #         mock_win_trade.assert_any_call(mock_buy_profit, th=1)
-    #         mock_win_trade.assert_any_call(mock_sell_profit, th=1)
-    #         self.assertEqual(trade.get_filtered_tickets(filter_type="positions"), [10, 11, 12, 13])
+            self.assertEqual(trade.get_filtered_tickets(filter_type="buys"), None)
+            self.assertEqual(trade.get_filtered_tickets(filter_type="sells"), [12, 13])
+            self.assertEqual(trade.get_filtered_tickets(filter_type="losings"), [11, 13])
+            self.assertEqual(trade.get_filtered_tickets(filter_type="profitables", th=1), [10, 12]) # th is passed to win_trade
+            mock_win_trade.assert_any_call(mock_buy_profit, th=1)
+            mock_win_trade.assert_any_call(mock_sell_profit, th=1)
+            self.assertEqual(trade.get_filtered_tickets(filter_type="positions"), [10, 11, 12, 13])
 
 
-    # def test_get_filtered_tickets_filter_types_orders(self):
-    #     trade = Trade(**self.default_params) # expert_id = 12345
-    #     mock_buy_stop = self._create_mock_order(20, 12345, mock_mt5.ORDER_TYPE_BUY_STOP)
-    #     mock_sell_limit = self._create_mock_order(21, 12345, mock_mt5.ORDER_TYPE_SELL_LIMIT)
-    #     mock_buy_sl = self._create_mock_order(22, 12345, mock_mt5.ORDER_TYPE_BUY_STOP_LIMIT)
-    #     mock_other_magic = self._create_mock_order(23, 67890, mock_mt5.ORDER_TYPE_BUY_STOP)
+    def test_get_filtered_tickets_filter_types_orders(self):
+        trade = Trade(**self.default_params) # expert_id = 12345
+        mock_buy_stop = self._create_mock_order(20, 12345, mock_mt5.ORDER_TYPE_BUY_STOP)
+        mock_sell_limit = self._create_mock_order(21, 12345, mock_mt5.ORDER_TYPE_SELL_LIMIT)
+        mock_buy_sl = self._create_mock_order(22, 12345, mock_mt5.ORDER_TYPE_BUY_STOP_LIMIT)
+        mock_other_magic = self._create_mock_order(23, 67890, mock_mt5.ORDER_TYPE_BUY_STOP)
         
-    #     all_orders = [mock_buy_stop, mock_sell_limit, mock_buy_sl, mock_other_magic]
-    #     mock_mt5.orders_get.return_value = all_orders
+        all_orders = [mock_buy_stop, mock_sell_limit, mock_buy_sl, mock_other_magic]
+        mock_mt5.orders_get.return_value = all_orders
         
-    #     self.assertEqual(trade.get_filtered_tickets(filter_type="orders"), None)
-    #     self.assertEqual(trade.get_filtered_tickets(filter_type="buy_stops"), [20])
-    #     self.assertEqual(trade.get_filtered_tickets(filter_type="sell_limits"), [21])
-    #     self.assertEqual(trade.get_filtered_tickets(filter_type="buy_stop_limits"), [22])
-    #     self.assertIsNone(trade.get_filtered_tickets(filter_type="sell_stops")) # No sell stops
+        self.assertEqual(trade.get_filtered_tickets(filter_type="orders"), None)
+        self.assertEqual(trade.get_filtered_tickets(filter_type="buy_stops"), [20])
+        self.assertEqual(trade.get_filtered_tickets(filter_type="sell_limits"), [21])
+        self.assertEqual(trade.get_filtered_tickets(filter_type="buy_stop_limits"), [22])
+        self.assertIsNone(trade.get_filtered_tickets(filter_type="sell_stops")) # No sell stops
 
 
     @patch('bbstrader.metatrader.trade.datetime')
@@ -1102,89 +1102,89 @@ class TestTrade(unittest.TestCase):
         mock_symbol_info_method.return_value = info
         return info
 
-    # @patch.object(Trade, 'get_symbol_info')
-    # @patch.object(Trade, 'currency_risk') # currency_risk returns {'trade_profit': value_per_point}
-    # @patch.object(Trade, 'get_stats') # For average_fee
-    # @patch.object(Trade, 'get_break_even', return_value=10) # BE points = 10
-    # def test_win_trade(self, mock_get_be, mock_get_stats, mock_currency_risk, mock_get_sym_info):
-    #     trade = Trade(**self.default_params)
-    #     mock_sym_info_instance = self._setup_symbol_info_for_be_tests(mock_get_sym_info)
+    @patch.object(Trade, 'get_symbol_info')
+    @patch.object(Trade, 'currency_risk') # currency_risk returns {'trade_profit': value_per_point}
+    @patch.object(Trade, 'get_stats') # For average_fee
+    @patch.object(Trade, 'get_break_even', return_value=10) # BE points = 10
+    def test_win_trade(self, mock_get_be, mock_get_stats, mock_currency_risk, mock_get_sym_info):
+        trade = Trade(**self.default_params)
+        mock_sym_info_instance = self._setup_symbol_info_for_be_tests(mock_get_sym_info)
         
-    #     # Mock currency_risk to control profit calculation: profit_per_tick_for_volume_calc
-    #     # Let's say 1 point profit for 0.1 vol = $1. So trade_tick_value / trade_tick_size = $1 / 0.00001 = 100000
-    #     # If trade_tick_value = 1, then trade_tick_size should be 1 for points to be profit directly if volume=1
-    #     # The formula is: points = position.profit * (size / value / position.volume)
-    #     # Let size/value = 1 for simplicity, so points = profit / volume
-    #     # If profit = 2, vol = 0.1, points = 20.
-    #     # currency_risk()['trade_profit'] is used for fees_points: fees / risk
-    #     mock_currency_risk.return_value = {"trade_profit": 1.0} # Profit of 1 currency unit per point
-    #     mock_get_stats.return_value = ({"average_fee": -0.5}, {}) # Avg fee = -0.5 currency units
+        # Mock currency_risk to control profit calculation: profit_per_tick_for_volume_calc
+        # Let's say 1 point profit for 0.1 vol = $1. So trade_tick_value / trade_tick_size = $1 / 0.00001 = 100000
+        # If trade_tick_value = 1, then trade_tick_size should be 1 for points to be profit directly if volume=1
+        # The formula is: points = position.profit * (size / value / position.volume)
+        # Let size/value = 1 for simplicity, so points = profit / volume
+        # If profit = 2, vol = 0.1, points = 20.
+        # currency_risk()['trade_profit'] is used for fees_points: fees / risk
+        mock_currency_risk.return_value = {"trade_profit": 1.0} # Profit of 1 currency unit per point
+        mock_get_stats.return_value = ({"average_fee": -0.5}, {}) # Avg fee = -0.5 currency units
 
-    #     # Expected min_be = round( (-0.5 / 1.0) ) + 2 = round(-0.5) + 2 = 0 + 2 = 2 points if spread is less.
-    #     # If spread = 2, then min_be = max(spread, calculated_fee_points)
-    #     # min_be = max(2, 0+2) = 2
-    #     # win_be threshold = max(min_be, round(0.1 * be_points)) = max(2, round(0.1*10)) = max(2,1) = 2 points
+        # Expected min_be = round( (-0.5 / 1.0) ) + 2 = round(-0.5) + 2 = 0 + 2 = 2 points if spread is less.
+        # If spread = 2, then min_be = max(spread, calculated_fee_points)
+        # min_be = max(2, 0+2) = 2
+        # win_be threshold = max(min_be, round(0.1 * be_points)) = max(2, round(0.1*10)) = max(2,1) = 2 points
 
-    #     # Scenario 1: Profitable enough (profit makes points > win_be)
-    #     # points = 10 (profit) * (0.00001 / 1.0 / 0.1) = 10 * 0.0001 / 0.1 = 10 * 0.001 = 0.01 -- This is too small.
-    #     # Let's adjust mock_sym_info_instance:
-    #     mock_sym_info_instance.trade_tick_value = 0.1 # 0.1 USD per point for contract size of 1
-    #     mock_sym_info_instance.trade_tick_size = 0.00001 # Standard point
-    #     # This means 1 point movement for 1 lot = (0.1 / 0.00001) * 0.00001 = $0.1 (if contract size is 1)
-    #     # Let's use the formula: points_profit = position.profit / (position.volume * mock_sym_info_instance.trade_tick_value)
-    #     # if trade_tick_value is value of 1 point for 1 lot.
-    #     # The code uses: points = position.profit * (size / value / position.volume)
-    #     # Let size/value = 1 for simplicity. points = profit / volume.
-    #     # Example: profit=$2, volume=0.1 -> 20 points.
+        # Scenario 1: Profitable enough (profit makes points > win_be)
+        # points = 10 (profit) * (0.00001 / 1.0 / 0.1) = 10 * 0.0001 / 0.1 = 10 * 0.001 = 0.01 -- This is too small.
+        # Let's adjust mock_sym_info_instance:
+        mock_sym_info_instance.trade_tick_value = 0.1 # 0.1 USD per point for contract size of 1
+        mock_sym_info_instance.trade_tick_size = 0.00001 # Standard point
+        # This means 1 point movement for 1 lot = (0.1 / 0.00001) * 0.00001 = $0.1 (if contract size is 1)
+        # Let's use the formula: points_profit = position.profit / (position.volume * mock_sym_info_instance.trade_tick_value)
+        # if trade_tick_value is value of 1 point for 1 lot.
+        # The code uses: points = position.profit * (size / value / position.volume)
+        # Let size/value = 1 for simplicity. points = profit / volume.
+        # Example: profit=$2, volume=0.1 -> 20 points.
         
-    #     mock_pos_profit = self._create_mock_position(1, 12345, 0, profit=2.0) # profit of $2
-    #     mock_pos_profit.volume = 0.1
-    #     # With size/value=1, points = 2.0 / 0.1 = 20 points. 20 >= win_be (2). So True.
-    #     with patch.object(mock_sym_info_instance, 'trade_tick_size', 1), patch.object(mock_sym_info_instance, 'trade_tick_value', 1):
-    #          self.assertTrue(trade.win_trade(mock_pos_profit, th=None)) # th=None uses default win_be
+        mock_pos_profit = self._create_mock_position(1, 12345, 0, profit=2.0) # profit of $2
+        mock_pos_profit.volume = 0.1
+        # With size/value=1, points = 2.0 / 0.1 = 20 points. 20 >= win_be (2). So True.
+        with patch.object(mock_sym_info_instance, 'trade_tick_size', 1), patch.object(mock_sym_info_instance, 'trade_tick_value', 1):
+             self.assertTrue(trade.win_trade(mock_pos_profit, th=None)) # th=None uses default win_be
 
-    #     # Scenario 2: Not profitable enough (profit makes points < win_be)
-    #     mock_pos_small_profit = self._create_mock_position(2, 12345, 0, profit=0.1) # profit of $0.1
-    #     mock_pos_small_profit.volume = 0.1
-    #     # points = 0.1 / 0.1 = 1 point. 1 < win_be (2). So False.
-    #     with patch.object(mock_sym_info_instance, 'trade_tick_size', 1), patch.object(mock_sym_info_instance, 'trade_tick_value', 1):
-    #         self.assertFalse(trade.win_trade(mock_pos_small_profit, th=None))
+        # Scenario 2: Not profitable enough (profit makes points < win_be)
+        mock_pos_small_profit = self._create_mock_position(2, 12345, 0, profit=0.1) # profit of $0.1
+        mock_pos_small_profit.volume = 0.1
+        # points = 0.1 / 0.1 = 1 point. 1 < win_be (2). So False.
+        with patch.object(mock_sym_info_instance, 'trade_tick_size', 1), patch.object(mock_sym_info_instance, 'trade_tick_value', 1):
+            self.assertFalse(trade.win_trade(mock_pos_small_profit, th=None))
 
-    #     # Scenario 3: Using custom threshold 'th'
-    #     # points = 20. th = 25. 20 < 25. So False.
-    #     with patch.object(mock_sym_info_instance, 'trade_tick_size', 1), patch.object(mock_sym_info_instance, 'trade_tick_value', 1):
-    #         self.assertFalse(trade.win_trade(mock_pos_profit, th=25)) # win_be becomes 25
+        # Scenario 3: Using custom threshold 'th'
+        # points = 20. th = 25. 20 < 25. So False.
+        with patch.object(mock_sym_info_instance, 'trade_tick_size', 1), patch.object(mock_sym_info_instance, 'trade_tick_value', 1):
+            self.assertFalse(trade.win_trade(mock_pos_profit, th=25)) # win_be becomes 25
 
-    #     # Scenario 4: Position already has break-even set (should be False, as it's for pre-BE check)
-    #     trade.break_even_status = [mock_pos_profit.ticket]
-    #     with patch.object(mock_sym_info_instance, 'trade_tick_size', 1), patch.object(mock_sym_info_instance, 'trade_tick_value', 1):
-    #         self.assertFalse(trade.win_trade(mock_pos_profit, th=None))
-    #     trade.break_even_status = [] # Reset for other tests
+        # Scenario 4: Position already has break-even set (should be False, as it's for pre-BE check)
+        trade.break_even_status = [mock_pos_profit.ticket]
+        with patch.object(mock_sym_info_instance, 'trade_tick_size', 1), patch.object(mock_sym_info_instance, 'trade_tick_value', 1):
+            self.assertFalse(trade.win_trade(mock_pos_profit, th=None))
+        trade.break_even_status = [] # Reset for other tests
 
 
-    # @patch.object(Trade, 'get_positions')
-    # @patch.object(Trade, 'get_symbol_info')
-    # @patch.object(Trade, 'get_break_even', return_value=10) # BE points
-    # @patch.object(Trade, 'set_break_even') # Mock the method that sends the order
-    # def test_break_even_set_first_time(self, mock_set_be, mock_get_be_val, mock_get_sym_info, mock_get_positions):
-    #     trade = Trade(**self.default_params) # expert_id = 12345
-    #     mock_sym_info = self._setup_symbol_info_for_be_tests(mock_get_sym_info)
+    @patch.object(Trade, 'get_positions')
+    @patch.object(Trade, 'get_symbol_info')
+    @patch.object(Trade, 'get_break_even', return_value=10) # BE points
+    @patch.object(Trade, 'set_break_even') # Mock the method that sends the order
+    def test_break_even_set_first_time(self, mock_set_be, mock_get_be_val, mock_get_sym_info, mock_get_positions):
+        trade = Trade(**self.default_params) # expert_id = 12345
+        mock_sym_info = self._setup_symbol_info_for_be_tests(mock_get_sym_info)
         
-    #     # Simulate a position that has moved enough for break-even
-    #     # profit_points = position.profit * (size / value / position.volume)
-    #     # Let size/value = 1. profit_points = profit / volume
-    #     # We need profit_points >= be_points (10)
-    #     # If profit = 2, volume = 0.1 => 20 points. 20 >= 10.
-    #     mock_pos = self._create_mock_position(1, 12345, 0, profit=2.0) # BUY position
-    #     mock_pos.volume = 0.1
-    #     mock_get_positions.return_value = [mock_pos]
+        # Simulate a position that has moved enough for break-even
+        # profit_points = position.profit * (size / value / position.volume)
+        # Let size/value = 1. profit_points = profit / volume
+        # We need profit_points >= be_points (10)
+        # If profit = 2, volume = 0.1 => 20 points. 20 >= 10.
+        mock_pos = self._create_mock_position(1, 12345, 0, profit=2.0) # BUY position
+        mock_pos.volume = 0.1
+        mock_get_positions.return_value = [mock_pos]
         
-    #     with patch.object(mock_sym_info, 'trade_tick_size', 1), patch.object(mock_sym_info, 'trade_tick_value', 1):
-    #         trade.break_even(mm=True, id=12345, trail=False) # trail=False for this test
+        with patch.object(mock_sym_info, 'trade_tick_size', 1), patch.object(mock_sym_info, 'trade_tick_value', 1):
+            trade.break_even(mm=True, id=12345, trail=False) # trail=False for this test
 
-    #     mock_set_be.assert_called_once_with(mock_pos, 10, price=None) # price=None means auto-calc
-    #     self.assertIn(mock_pos.ticket, trade.break_even_status)
-    #     self.assertEqual(trade.break_even_points[mock_pos.ticket], 10)
+        mock_set_be.assert_called_once_with(mock_pos, 10, price=None) # price=None means auto-calc
+        self.assertIn(mock_pos.ticket, trade.break_even_status)
+        self.assertEqual(trade.break_even_points[mock_pos.ticket], 10)
 
 
     @patch.object(Trade, 'get_positions')
@@ -1223,179 +1223,179 @@ class TestTrade(unittest.TestCase):
         expected_new_level = round(1.10000 + (11 * 0.00001), 5)
         mock_set_be.assert_called_once_with(mock_pos, 10, price=expected_new_sl_price, level=expected_new_level)
 
-    # @patch.object(Trade, 'get_symbol_info')
-    # @patch.object(Trade, 'get_tick_info')
-    # @patch.object(Trade, 'get_stats')
-    # @patch.object(Trade, 'break_even_request') # Mock the actual order sending part
-    # def test_set_break_even_buy_position(self, mock_be_request, mock_get_stats, mock_get_tick, mock_get_sym_info):
-    #     trade = Trade(**self.default_params)
-    #     mock_sym_info = self._setup_symbol_info_for_be_tests(mock_get_sym_info)
-    #     mock_get_stats.return_value = ({"average_fee": -0.2}, {}) # fee = -0.2
-    #     # currency_risk is part of RiskManagement, assume it's set up to return trade_profit > 0
-    #     with patch.object(trade, 'currency_risk', return_value = {"trade_profit": 0.1}): # profit of 0.1 per point
-    #         # fees_points = round(-0.2 / 0.1) = -2 points.
-    #         # mock_sym_info.spread = 2 points
+    @patch.object(Trade, 'get_symbol_info')
+    @patch.object(Trade, 'get_tick_info')
+    @patch.object(Trade, 'get_stats')
+    @patch.object(Trade, 'break_even_request') # Mock the actual order sending part
+    def test_set_break_even_buy_position(self, mock_be_request, mock_get_stats, mock_get_tick, mock_get_sym_info):
+        trade = Trade(**self.default_params)
+        mock_sym_info = self._setup_symbol_info_for_be_tests(mock_get_sym_info)
+        mock_get_stats.return_value = ({"average_fee": -0.2}, {}) # fee = -0.2
+        # currency_risk is part of RiskManagement, assume it's set up to return trade_profit > 0
+        with patch.object(trade, 'currency_risk', return_value = {"trade_profit": 0.1}): # profit of 0.1 per point
+            # fees_points = round(-0.2 / 0.1) = -2 points.
+            # mock_sym_info.spread = 2 points
             
-    #         mock_tick = MagicMock(ask=1.10150) # Current ask price > break_even_level
-    #         mock_get_tick.return_value = mock_tick
+            mock_tick = MagicMock(ask=1.10150) # Current ask price > break_even_level
+            mock_get_tick.return_value = mock_tick
 
-    #         # Buy position, current price > open price
-    #         mock_pos = self._create_mock_position(1, 12345, 0, profit=1.5) # Type 0 = BUY
-    #         mock_pos.price_open = 1.10000
-    #         mock_pos.price_current = 1.10150 # Matches tick.ask
-    #         mock_pos.tp = 1.10500
+            # Buy position, current price > open price
+            mock_pos = self._create_mock_position(1, 12345, 0, profit=1.5) # Type 0 = BUY
+            mock_pos.price_open = 1.10000
+            mock_pos.price_current = 1.10150 # Matches tick.ask
+            mock_pos.tp = 1.10500
 
-    #         be_points = 10 # from @patch on test_win_trade, but here it's direct arg
+            be_points = 10 # from @patch on test_win_trade, but here it's direct arg
             
-    #         # Expected break_even_level = 1.10000 + (10 * 0.00001) = 1.10100
-    #         # Expected break_even_price (initial SL) = 1.10000 + ((-2 + 2) * 0.00001) = 1.10000
+            # Expected break_even_level = 1.10000 + (10 * 0.00001) = 1.10100
+            # Expected break_even_price (initial SL) = 1.10000 + ((-2 + 2) * 0.00001) = 1.10000
             
-    #         trade.set_break_even(mock_pos, be_points, price=None, level=None)
+            trade.set_break_even(mock_pos, be_points, price=None, level=None)
 
-    #         expected_sl_price = round(1.10000 + ((-2 + mock_sym_info.spread) * mock_sym_info.point), mock_sym_info.digits)
-    #         expected_request = {
-    #             "action": mock_mt5.TRADE_ACTION_SLTP,
-    #             "position": mock_pos.ticket,
-    #             "sl": expected_sl_price,
-    #             "tp": mock_pos.tp,
-    #         }
-    #         mock_be_request.assert_called_once_with(mock_pos.ticket, expected_sl_price, expected_request)
+            expected_sl_price = round(1.10000 + ((-2 + mock_sym_info.spread) * mock_sym_info.point), mock_sym_info.digits)
+            expected_request = {
+                "action": mock_mt5.TRADE_ACTION_SLTP,
+                "position": mock_pos.ticket,
+                "sl": expected_sl_price,
+                "tp": mock_pos.tp,
+            }
+            mock_be_request.assert_called_once_with(mock_pos.ticket, expected_sl_price, expected_request)
 
-    # @patch.object(Trade, 'check_order') # from RiskManagement
-    # @patch.object(Trade, 'send_order')   # from RiskManagement
-    # def test_break_even_request_success(self, mock_send_order, mock_check_order):
-    #     trade = Trade(**self.default_params)
-    #     mock_send_order.return_value = MagicMock(retcode=mock_mt5.TRADE_RETCODE_DONE)
+    @patch.object(Trade, 'check_order') # from RiskManagement
+    @patch.object(Trade, 'send_order')   # from RiskManagement
+    def test_break_even_request_success(self, mock_send_order, mock_check_order):
+        trade = Trade(**self.default_params)
+        mock_send_order.return_value = MagicMock(retcode=mock_mt5.TRADE_RETCODE_DONE)
         
-    #     ticket = 123
-    #     price = 1.10050
-    #     request_dict = {"action": mock_mt5.TRADE_ACTION_SLTP, "position": ticket, "sl": price, "tp": 1.10500}
+        ticket = 123
+        price = 1.10050
+        request_dict = {"action": mock_mt5.TRADE_ACTION_SLTP, "position": ticket, "sl": price, "tp": 1.10500}
         
-    #     trade.break_even_request(ticket, price, request_dict)
+        trade.break_even_request(ticket, price, request_dict)
         
-    #     mock_check_order.assert_called_once_with(request_dict)
-    #     mock_send_order.assert_called_once_with(request_dict)
-    #     mock_logger.info.assert_any_call(f"Break-Even Order {trade_retcode_message(mock_mt5.TRADE_RETCODE_DONE)}, SYMBOL={trade.symbol}")
-    #     mock_logger.info.assert_any_call(f"Stop loss set to Break-even, Position: #{ticket}, Symbol: {trade.symbol}, Price: @{price}")
-    #     self.assertIn(ticket, trade.break_even_status)
+        mock_check_order.assert_called_once_with(request_dict)
+        mock_send_order.assert_called_once_with(request_dict)
+        mock_logger.info.assert_any_call(f"Break-Even Order {trade_retcode_message(mock_mt5.TRADE_RETCODE_DONE)}, SYMBOL={trade.symbol}")
+        mock_logger.info.assert_any_call(f"Stop loss set to Break-even, Position: #{ticket}, Symbol: {trade.symbol}, Price: @{price}")
+        self.assertIn(ticket, trade.break_even_status)
 
-    # @patch.object(Trade, 'check_order')
-    # @patch.object(Trade, 'send_order')
-    # def test_break_even_request_failure_no_changes(self, mock_send_order, mock_check_order):
-    #     trade = Trade(**self.default_params)
-    #     # Simulate no changes retcode, then other failure, then timeout, then success
-    #     # Ensure mock_mt5 has this attribute if it's specific
-    #     if not hasattr(mock_mt5, 'TRADE_RETCODE_NO_CHANGES'): # Define if not present on global mock
-    #         mock_mt5.TRADE_RETCODE_NO_CHANGES = 10026 
+    @patch.object(Trade, 'check_order')
+    @patch.object(Trade, 'send_order')
+    def test_break_even_request_failure_no_changes(self, mock_send_order, mock_check_order):
+        trade = Trade(**self.default_params)
+        # Simulate no changes retcode, then other failure, then timeout, then success
+        # Ensure mock_mt5 has this attribute if it's specific
+        if not hasattr(mock_mt5, 'TRADE_RETCODE_NO_CHANGES'): # Define if not present on global mock
+            mock_mt5.TRADE_RETCODE_NO_CHANGES = 10026 
             
-    #     mock_send_order.return_value = MagicMock(retcode=mock_mt5.TRADE_RETCODE_NO_CHANGES)
+        mock_send_order.return_value = MagicMock(retcode=mock_mt5.TRADE_RETCODE_NO_CHANGES)
         
-    #     ticket = 124
-    #     price = 1.10060
-    #     request_dict = {"action": mock_mt5.TRADE_ACTION_SLTP, "position": ticket, "sl": price, "tp": 1.10500}
+        ticket = 124
+        price = 1.10060
+        request_dict = {"action": mock_mt5.TRADE_ACTION_SLTP, "position": ticket, "sl": price, "tp": 1.10500}
 
-    #     trade.break_even_request(ticket, price, request_dict)
+        trade.break_even_request(ticket, price, request_dict)
         
-    #     mock_send_order.assert_called_once() # Called once, returns NO_CHANGES, loop breaks.
-    #     # Logger should not log error for NO_CHANGES, but also no success message.
-    #     # And ticket should not be added to break_even_status if no actual change.
-    #     # The code currently adds to break_even_status if retcode is DONE, which NO_CHANGES isn't.
-    #     # However, the log messages for "Break-Even Order" and "Stop loss set" are only for DONE.
-    #     # Let's check that no error was logged and no success info was logged.
-    #     for call_args in mock_logger.error.call_args_list:
-    #         self.assertNotIn(f"Position: #{ticket}", call_args[0][0]) 
-    #     for call_args in mock_logger.info.call_args_list: # Check specific success messages
-    #          self.assertNotIn(f"Stop loss set to Break-even, Position: #{ticket}", call_args[0][0])
-    #     self.assertNotIn(ticket, trade.break_even_status)
+        mock_send_order.assert_called_once() # Called once, returns NO_CHANGES, loop breaks.
+        # Logger should not log error for NO_CHANGES, but also no success message.
+        # And ticket should not be added to break_even_status if no actual change.
+        # The code currently adds to break_even_status if retcode is DONE, which NO_CHANGES isn't.
+        # However, the log messages for "Break-Even Order" and "Stop loss set" are only for DONE.
+        # Let's check that no error was logged and no success info was logged.
+        for call_args in mock_logger.error.call_args_list:
+            self.assertNotIn(f"Position: #{ticket}", call_args[0][0]) 
+        for call_args in mock_logger.info.call_args_list: # Check specific success messages
+             self.assertNotIn(f"Stop loss set to Break-even, Position: #{ticket}", call_args[0][0])
+        self.assertNotIn(ticket, trade.break_even_status)
 
-    # Tests for order/position closing and modification methods
+    #Tests for order/position closing and modification methods
 
-    # @patch.object(Trade, 'check_order')
-    # @patch.object(Trade, 'send_order')
-    # def test_close_request_position_success(self, mock_send_order, mock_check_order):
-        # trade = Trade(**self.default_params)
-        # mock_send_order.return_value = MagicMock(retcode=mock_mt5.TRADE_RETCODE_DONE)
+    @patch.object(Trade, 'check_order')
+    @patch.object(Trade, 'send_order')
+    def test_close_request_position_success(self, mock_send_order, mock_check_order):
+        trade = Trade(**self.default_params)
+        mock_send_order.return_value = MagicMock(retcode=mock_mt5.TRADE_RETCODE_DONE)
         
-        # request_data = {
-        #     "action": mock_mt5.TRADE_ACTION_DEAL, "symbol": "EURUSD", "volume": 0.1,
-        #     "type": mock_mt5.ORDER_TYPE_SELL, "position": 123, "price": 1.1000,
-        #     "deviation": 5, "magic": trade.expert_id, "comment": f"@{trade.expert_name}",
-        #     "type_time": mock_mt5.ORDER_TIME_GTC, "type_filling": mock_mt5.ORDER_FILLING_FOK,
-        # }
+        request_data = {
+            "action": mock_mt5.TRADE_ACTION_DEAL, "symbol": "EURUSD", "volume": 0.1,
+            "type": mock_mt5.ORDER_TYPE_SELL, "position": 123, "price": 1.1000,
+            "deviation": 5, "magic": trade.expert_id, "comment": f"@{trade.expert_name}",
+            "type_time": mock_mt5.ORDER_TIME_GTC, "type_filling": mock_mt5.ORDER_FILLING_FOK,
+        }
         
-        # result = trade.close_request(request_data, type="position")
-        # self.assertTrue(result)
-        # mock_check_order.assert_called_once_with(request_data)
-        # mock_send_order.assert_called_once_with(request_data)
-        # mock_logger.info.assert_any_call(f"Closing Order {trade_retcode_message(mock_mt5.TRADE_RETCODE_DONE)}, SYMBOL=EURUSD")
-        # mock_logger.info.assert_any_call(f"Position #{request_data['position']} closed, Symbol: EURUSD, Price: @{request_data['price']}")
+        result = trade.close_request(request_data, type="position")
+        self.assertTrue(result)
+        mock_check_order.assert_called_once_with(request_data)
+        mock_send_order.assert_called_once_with(request_data)
+        mock_logger.info.assert_any_call(f"Closing Order {trade_retcode_message(mock_mt5.TRADE_RETCODE_DONE)}, SYMBOL=EURUSD")
+        mock_logger.info.assert_any_call(f"Position #{request_data['position']} closed, Symbol: EURUSD, Price: @{request_data['price']}")
 
-    # @patch.object(Trade, 'check_order')
-    # @patch.object(Trade, 'send_order')
-    # def test_close_request_order_failure_with_retry(self, mock_send_order, mock_check_order):
-    #     trade = Trade(**self.default_params)
-    #     # Ensure these are defined on the global mock_mt5 if not already
-    #     if not hasattr(mock_mt5, 'TRADE_RETCODE_INVALID_FILL'): mock_mt5.TRADE_RETCODE_INVALID_FILL = 10030 
-    #     if not hasattr(mock_mt5, 'ORDER_FILLING_IOC'): mock_mt5.ORDER_FILLING_IOC = 1
-    #     if not hasattr(mock_mt5, 'ORDER_FILLING_RETURN'): mock_mt5.ORDER_FILLING_RETURN = 2
-    #     if not hasattr(mock_mt5, 'ORDER_FILLING_BOC'): mock_mt5.ORDER_FILLING_BOC = 3
+    @patch.object(Trade, 'check_order')
+    @patch.object(Trade, 'send_order')
+    def test_close_request_order_failure_with_retry(self, mock_send_order, mock_check_order):
+        trade = Trade(**self.default_params)
+        # Ensure these are defined on the global mock_mt5 if not already
+        if not hasattr(mock_mt5, 'TRADE_RETCODE_INVALID_FILL'): mock_mt5.TRADE_RETCODE_INVALID_FILL = 10030 
+        if not hasattr(mock_mt5, 'ORDER_FILLING_IOC'): mock_mt5.ORDER_FILLING_IOC = 1
+        if not hasattr(mock_mt5, 'ORDER_FILLING_RETURN'): mock_mt5.ORDER_FILLING_RETURN = 2
+        if not hasattr(mock_mt5, 'ORDER_FILLING_BOC'): mock_mt5.ORDER_FILLING_BOC = 3
 
         
-    #     # First call fails with INVALID_FILL, second with another error, third succeeds after changing filling type
-    #     mock_send_order.side_effect = [
-    #         MagicMock(retcode=mock_mt5.TRADE_RETCODE_INVALID_FILL), # Fails, triggers retry, tries FILLING_TYPE[0] (IOC)
-    #         MagicMock(retcode=mock_mt5.TRADE_RETCODE_INVALID_FILL), # Fails again, tries FILLING_TYPE[1] (RETURN)
-    #         MagicMock(retcode=mock_mt5.TRADE_RETCODE_DONE) # Succeeds on FILLING_TYPE[1]
-    #     ]
+        # First call fails with INVALID_FILL, second with another error, third succeeds after changing filling type
+        mock_send_order.side_effect = [
+            MagicMock(retcode=mock_mt5.TRADE_RETCODE_INVALID_FILL), # Fails, triggers retry, tries FILLING_TYPE[0] (IOC)
+            MagicMock(retcode=mock_mt5.TRADE_RETCODE_INVALID_FILL), # Fails again, tries FILLING_TYPE[1] (RETURN)
+            MagicMock(retcode=mock_mt5.TRADE_RETCODE_DONE) # Succeeds on FILLING_TYPE[1]
+        ]
         
-    #     request_data = {
-    #         "action": mock_mt5.TRADE_ACTION_REMOVE, "symbol": "EURUSD", "order": 456,
-    #         "magic": trade.expert_id, "comment": f"@{trade.expert_name}",
-    #         "type_filling": mock_mt5.ORDER_FILLING_FOK # Initial filling type
-    #     }
+        request_data = {
+            "action": mock_mt5.TRADE_ACTION_REMOVE, "symbol": "EURUSD", "order": 456,
+            "magic": trade.expert_id, "comment": f"@{trade.expert_name}",
+            "type_filling": mock_mt5.ORDER_FILLING_FOK # Initial filling type
+        }
         
-    #     result = trade.close_request(request_data, type="order")
-    #     self.assertTrue(result)
-    #     self.assertEqual(mock_send_order.call_count, 3)
-    #     # The request_data dict is modified in-place.
-    #     # After 1st fail (FOK), it tries FILLING_TYPE[0] (IOC).
-    #     # After 2nd fail (IOC), it tries FILLING_TYPE[1] (RETURN).
-    #     # The 3rd call uses FILLING_TYPE[1] (RETURN) and succeeds.
-    #     self.assertEqual(request_data["type_filling"], mock_mt5.ORDER_FILLING_RETURN) 
+        result = trade.close_request(request_data, type="order")
+        self.assertTrue(result)
+        self.assertEqual(mock_send_order.call_count, 3)
+        # The request_data dict is modified in-place.
+        # After 1st fail (FOK), it tries FILLING_TYPE[0] (IOC).
+        # After 2nd fail (IOC), it tries FILLING_TYPE[1] (RETURN).
+        # The 3rd call uses FILLING_TYPE[1] (RETURN) and succeeds.
+        self.assertEqual(request_data["type_filling"], mock_mt5.ORDER_FILLING_RETURN) 
 
-    # @patch.object(Trade, 'get_orders')
-    # @patch.object(Trade, 'check_order')
-    # @patch.object(Trade, 'send_order')
-    # def test_modify_order_success(self, mock_send_order, mock_check_order, mock_get_orders):
-    #     trade = Trade(**self.default_params)
+    @patch.object(Trade, 'get_orders')
+    @patch.object(Trade, 'check_order')
+    @patch.object(Trade, 'send_order')
+    def test_modify_order_success(self, mock_send_order, mock_check_order, mock_get_orders):
+        trade = Trade(**self.default_params)
         
-    #     mock_existing_order = self._create_mock_order(789, trade.expert_id, mock_mt5.ORDER_TYPE_BUY_LIMIT)
-    #     mock_existing_order.price_open = 1.0900
-    #     mock_existing_order.sl = 1.0800
-    #     mock_existing_order.tp = 1.1000
-    #     mock_existing_order.price_stoplimit = 0 # No stoplimit initially
-    #     mock_get_orders.return_value = [mock_existing_order]
+        mock_existing_order = self._create_mock_order(789, trade.expert_id, mock_mt5.ORDER_TYPE_BUY_LIMIT)
+        mock_existing_order.price_open = 1.0900
+        mock_existing_order.sl = 1.0800
+        mock_existing_order.tp = 1.1000
+        mock_existing_order.price_stoplimit = 0 # No stoplimit initially
+        mock_get_orders.return_value = [mock_existing_order]
         
-    #     mock_send_order.return_value = MagicMock(retcode=mock_mt5.TRADE_RETCODE_DONE)
+        mock_send_order.return_value = MagicMock(retcode=mock_mt5.TRADE_RETCODE_DONE)
         
-    #     new_price = 1.0950
-    #     new_sl = 1.0850
-    #     trade.modify_order(ticket=789, price=new_price, sl=new_sl)
+        new_price = 1.0950
+        new_sl = 1.0850
+        trade.modify_order(ticket=789, price=new_price, sl=new_sl)
         
-    #     mock_get_orders.assert_called_once_with(ticket=789)
-    #     expected_request = {
-    #         "action": mock_mt5.TRADE_ACTION_MODIFY,
-    #         "order": 789,
-    #         "price": new_price,
-    #         "sl": new_sl,
-    #         "tp": mock_existing_order.tp, # Original TP
-    #         "stoplimit": mock_existing_order.price_stoplimit, # Original stoplimit
-    #     }
-    #     mock_check_order.assert_called_once_with(expected_request)
-    #     mock_send_order.assert_called_once_with(expected_request)
-    #     mock_logger.info.assert_called_with(
-    #         f"Order #789 modified, SYMBOL={trade.symbol}, PRICE={new_price}, SL={new_sl}, TP={mock_existing_order.tp}, STOP_LIMIT={mock_existing_order.price_stoplimit}"
-    #     )
+        mock_get_orders.assert_called_once_with(ticket=789)
+        expected_request = {
+            "action": mock_mt5.TRADE_ACTION_MODIFY,
+            "order": 789,
+            "price": new_price,
+            "sl": new_sl,
+            "tp": mock_existing_order.tp, # Original TP
+            "stoplimit": mock_existing_order.price_stoplimit, # Original stoplimit
+        }
+        mock_check_order.assert_called_once_with(expected_request)
+        mock_send_order.assert_called_once_with(expected_request)
+        mock_logger.info.assert_called_with(
+            f"Order #789 modified, SYMBOL={trade.symbol}, PRICE={new_price}, SL={new_sl}, TP={mock_existing_order.tp}, STOP_LIMIT={mock_existing_order.price_stoplimit}"
+        )
 
     @patch.object(Trade, 'get_orders', return_value=[]) # Order not found
     def test_modify_order_not_found(self, mock_get_orders):
@@ -1404,57 +1404,57 @@ class TestTrade(unittest.TestCase):
         trade.modify_order(ticket=999, price=1.1)
         mock_logger.error.assert_called_with(f"Order #999 not found, SYMBOL={trade.symbol}, PRICE=1.1")
 
-    # @patch.object(Trade, 'close_request', return_value=True)
-    # def test_close_order(self, mock_cr):
-    #     trade = Trade(**self.default_params)
-    #     ticket_to_close = 111
-    #     custom_comment = "Closing this order"
+    @patch.object(Trade, 'close_request', return_value=True)
+    def test_close_order(self, mock_cr):
+        trade = Trade(**self.default_params)
+        ticket_to_close = 111
+        custom_comment = "Closing this order"
         
-    #     trade.close_order(ticket_to_close, id=trade.expert_id, comment=custom_comment)
+        trade.close_order(ticket_to_close, id=trade.expert_id, comment=custom_comment)
         
-    #     expected_request = {
-    #         "action": mock_mt5.TRADE_ACTION_REMOVE,
-    #         "symbol": trade.symbol,
-    #         "order": ticket_to_close,
-    #         "magic": trade.expert_id,
-    #         "comment": custom_comment,
-    #     }
-    #     mock_cr.assert_called_once_with(expected_request, type="order")
+        expected_request = {
+            "action": mock_mt5.TRADE_ACTION_REMOVE,
+            "symbol": trade.symbol,
+            "order": ticket_to_close,
+            "magic": trade.expert_id,
+            "comment": custom_comment,
+        }
+        mock_cr.assert_called_once_with(expected_request, type="order")
 
-    # @patch.object(Trade, 'get_positions')
-    # @patch.object(Trade, 'get_tick_info')
-    # @patch.object(Trade, 'close_request', return_value=True)
-    # @patch.object(Trade, 'get_deviation', return_value=5)
-    # def test_close_position_full(self, mock_get_dev, mock_cr, mock_get_tick, mock_get_pos):
-    #     trade = Trade(**self.default_params) # expert_id = 12345
+    @patch.object(Trade, 'get_positions')
+    @patch.object(Trade, 'get_tick_info')
+    @patch.object(Trade, 'close_request', return_value=True)
+    @patch.object(Trade, 'get_deviation', return_value=5)
+    def test_close_position_full(self, mock_get_dev, mock_cr, mock_get_tick, mock_get_pos):
+        trade = Trade(**self.default_params) # expert_id = 12345
         
-    #     mock_pos_to_close = self._create_mock_position(222, 12345, 0, 10) # Buy position
-    #     mock_pos_to_close.volume = 0.5
-    #     mock_get_pos.return_value = [mock_pos_to_close]
+        mock_pos_to_close = self._create_mock_position(222, 12345, 0, 10) # Buy position
+        mock_pos_to_close.volume = 0.5
+        mock_get_pos.return_value = [mock_pos_to_close]
         
-    #     mock_sell_price = 1.12340 # Price for closing a buy
-    #     mock_get_tick.return_value = MagicMock(ask=1.12350, bid=mock_sell_price)
+        mock_sell_price = 1.12340 # Price for closing a buy
+        mock_get_tick.return_value = MagicMock(ask=1.12350, bid=mock_sell_price)
         
-    #     custom_id = 12345
-    #     trade.close_position(ticket=222, id=custom_id, pct=1.0, comment="Full Close")
+        custom_id = 12345
+        trade.close_position(ticket=222, id=custom_id, pct=1.0, comment="Full Close")
         
-    #     mock_get_pos.assert_called_once_with(ticket=222)
-    #     mock_get_tick.assert_called_with(trade.symbol) # Ensure get_tick_info is called for the trade's symbol
+        mock_get_pos.assert_called_once_with(ticket=222)
+        mock_get_tick.assert_called_with(trade.symbol) # Ensure get_tick_info is called for the trade's symbol
         
-    #     expected_request = {
-    #         "action": mock_mt5.TRADE_ACTION_DEAL,
-    #         "symbol": trade.symbol,
-    #         "volume": mock_pos_to_close.volume * 1.0, # Full volume
-    #         "type": mock_mt5.ORDER_TYPE_SELL, # Closing a BUY
-    #         "position": 222,
-    #         "price": mock_sell_price,
-    #         "deviation": mock_get_dev.return_value,
-    #         "magic": custom_id,
-    #         "comment": "Full Close",
-    #         "type_time": mock_mt5.ORDER_TIME_GTC,
-    #         "type_filling": mock_mt5.ORDER_FILLING_FOK,
-    #     }
-    #     mock_cr.assert_called_once_with(expected_request, type="position")
+        expected_request = {
+            "action": mock_mt5.TRADE_ACTION_DEAL,
+            "symbol": trade.symbol,
+            "volume": mock_pos_to_close.volume * 1.0, # Full volume
+            "type": mock_mt5.ORDER_TYPE_SELL, # Closing a BUY
+            "position": 222,
+            "price": mock_sell_price,
+            "deviation": mock_get_dev.return_value,
+            "magic": custom_id,
+            "comment": "Full Close",
+            "type_time": mock_mt5.ORDER_TIME_GTC,
+            "type_filling": mock_mt5.ORDER_FILLING_FOK,
+        }
+        mock_cr.assert_called_once_with(expected_request, type="position")
 
     @patch.object(Trade, 'get_positions', return_value=None) # Position not found
     def test_close_position_not_found(self, mock_get_pos):
@@ -1467,25 +1467,25 @@ class TestTrade(unittest.TestCase):
             mock_cr_local.assert_not_called()
 
 
-    # def test_bulk_close_orders(self):
-    #     trade = Trade(**self.default_params)
-    #     mock_close_order_func = MagicMock()
+    def test_bulk_close_orders(self):
+        trade = Trade(**self.default_params)
+        mock_close_order_func = MagicMock()
         
-    #     tickets_to_close = [1, 2, 3]
-    #     # Simulate some successes and some failures
-    #     mock_close_order_func.side_effect = [True, False, True] 
+        tickets_to_close = [1, 2, 3]
+        # Simulate some successes and some failures
+        mock_close_order_func.side_effect = [True, False, True] 
         
-    #     mock_logger.reset_mock()
-    #     trade.bulk_close(tickets_to_close, "orders", mock_close_order_func, "buy_limits", id=12345, comment="Bulk Close Test")
+        mock_logger.reset_mock()
+        trade.bulk_close(tickets_to_close, "orders", mock_close_order_func, "buy_limits", id=12345, comment="Bulk Close Test")
         
-    #     self.assertEqual(mock_close_order_func.call_count, 3)
-    #     mock_close_order_func.assert_any_call(1, id=12345, comment="Bulk Close Test")
-    #     mock_close_order_func.assert_any_call(2, id=12345, comment="Bulk Close Test")
-    #     mock_close_order_func.assert_any_call(3, id=12345, comment="Bulk Close Test")
+        self.assertEqual(mock_close_order_func.call_count, 3)
+        mock_close_order_func.assert_any_call(1, id=12345, comment="Bulk Close Test")
+        mock_close_order_func.assert_any_call(2, id=12345, comment="Bulk Close Test")
+        mock_close_order_func.assert_any_call(3, id=12345, comment="Bulk Close Test")
         
-    #     # tickets_to_close list is modified in place
-    #     self.assertEqual(tickets_to_close, [2]) # Only the one that failed (returned False) remains
-    #     mock_logger.info.assert_any_call(f"1 BUY_LIMITS ORDERS not closed, SYMBOL={trade.symbol}")
+        # tickets_to_close list is modified in place
+        self.assertEqual(tickets_to_close, [2]) # Only the one that failed (returned False) remains
+        mock_logger.info.assert_any_call(f"1 BUY_LIMITS ORDERS not closed, SYMBOL={trade.symbol}")
 
 
     @patch.object(Trade, 'get_current_buy_stops', return_value=[10, 11])
@@ -1511,11 +1511,11 @@ class TestTrade(unittest.TestCase):
             [20, 21], "positions", trade.close_position, "all", id=trade.expert_id, comment="Close All Positions"
         )
         
-    # def test_close_orders_invalid_type(self):
-    #     trade = Trade(**self.default_params)
-    #     mock_logger.reset_mock()
-    #     trade.close_orders(order_type="invalid_type")
-    #     mock_logger.error.assert_called_with("Invalid order type: invalid_type")
+    def test_close_orders_invalid_type(self):
+        trade = Trade(**self.default_params)
+        mock_logger.reset_mock()
+        trade.close_orders(order_type="invalid_type")
+        mock_logger.error.assert_called_with("Invalid order type: invalid_type")
 
     # Tests for statistics and utility methods
 
@@ -1617,44 +1617,44 @@ class TestTrade(unittest.TestCase):
         self.assertEqual(stats2["profitability"], "Yes") # Since balance (10000) > initial_balance (10000 - 43)
 
 
-    # @patch.object(Trade, 'get_trades_history')
-    # def test_sharpe_ratio_with_history(self, mock_get_hist_sharpe):
-    #     trade = Trade(**self.default_params)
-    #     # Mock get_trades_history to return a DataFrame
-    #     mock_df_data = { # Needs at least two rows for pct_change
-    #         'profit': [0, 10, 15, 5, 20], 
-    #         'commission': [0, -1, -1, -0.5, -1],
-    #         'fee': [0, 0, 0, 0, 0],
-    #         'swap': [0, 0, -0.1, 0, -0.2]
-    #     }
-    #     mock_hist_df = pd.DataFrame(mock_df_data)
-    #     mock_get_hist_sharpe.return_value = mock_hist_df
+    @patch.object(Trade, 'get_trades_history')
+    def test_sharpe_ratio_with_history(self, mock_get_hist_sharpe):
+        trade = Trade(**self.default_params)
+        # Mock get_trades_history to return a DataFrame
+        mock_df_data = { # Needs at least two rows for pct_change
+            'profit': [0, 10, 15, 5, 20], 
+            'commission': [0, -1, -1, -0.5, -1],
+            'fee': [0, 0, 0, 0, 0],
+            'swap': [0, 0, -0.1, 0, -0.2]
+        }
+        mock_hist_df = pd.DataFrame(mock_df_data)
+        mock_get_hist_sharpe.return_value = mock_hist_df
         
-    #     # The global mock_qs is already set up: mock_qs.stats.sharpe.return_value = 1.5
-    #     sharpe_ratio = trade.sharpe()
+        # The global mock_qs is already set up: mock_qs.stats.sharpe.return_value = 1.5
+        sharpe_ratio = trade.sharpe()
         
-    #     self.assertEqual(sharpe_ratio, 1.5)
-    #     mock_get_hist_sharpe.assert_called_once()
-    #     # Assert that qs.stats.sharpe was called
-    #     # The first arg to sharpe is pandas Series of returns.
-    #     # returns = profit_series.pct_change()
-    #     # profit_series comes from df.iloc[1:][['profit', 'commission', 'fee', 'swap']].sum(axis=1)
-    #     # For mock_df_data (from row 1):
-    #     # p1 = 10-1 = 9
-    #     # p2 = 15-1-0.1 = 13.9
-    #     # p3 = 5-0.5 = 4.5
-    #     # p4 = 20-1-0.2 = 18.8
-    #     # expected_profit_series = pd.Series([9, 13.9, 4.5, 18.8])
-    #     # expected_returns = expected_profit_series.pct_change()
+        self.assertEqual(sharpe_ratio, 1.5)
+        mock_get_hist_sharpe.assert_called_once()
+        # Assert that qs.stats.sharpe was called
+        # The first arg to sharpe is pandas Series of returns.
+        # returns = profit_series.pct_change()
+        # profit_series comes from df.iloc[1:][['profit', 'commission', 'fee', 'swap']].sum(axis=1)
+        # For mock_df_data (from row 1):
+        # p1 = 10-1 = 9
+        # p2 = 15-1-0.1 = 13.9
+        # p3 = 5-0.5 = 4.5
+        # p4 = 20-1-0.2 = 18.8
+        # expected_profit_series = pd.Series([9, 13.9, 4.5, 18.8])
+        # expected_returns = expected_profit_series.pct_change()
         
-    #     self.assertTrue(mock_qs.stats.sharpe.called)
-    #     call_args = mock_qs.stats.sharpe.call_args
-    #     # We need to handle potential floating point inaccuracies if directly comparing Series
-    #     # Instead, let's check the values within a tolerance or the structure if that's more robust
-    #     expected_profit_series = pd.Series([9.0, 13.9, 4.5, 18.8])
-    #     expected_returns_series = expected_profit_series.pct_change()
-    #     pd.testing.assert_series_equal(call_args[0][0].reset_index(drop=True), expected_returns_series.reset_index(drop=True), check_dtype=False)
-    #     self.assertEqual(call_args[1]['periods'], trade.max_trade() * 252)
+        self.assertTrue(mock_qs.stats.sharpe.called)
+        call_args = mock_qs.stats.sharpe.call_args
+        # We need to handle potential floating point inaccuracies if directly comparing Series
+        # Instead, let's check the values within a tolerance or the structure if that's more robust
+        expected_profit_series = pd.Series([9.0, 13.9, 4.5, 18.8])
+        expected_returns_series = expected_profit_series.pct_change()
+        pd.testing.assert_series_equal(call_args[0][0].reset_index(drop=True), expected_returns_series.reset_index(drop=True), check_dtype=False)
+        self.assertEqual(call_args[1]['periods'], trade.max_trade() * 252)
 
 
     @patch.object(Trade, 'get_trades_history', return_value=None)
@@ -1701,71 +1701,71 @@ class TestTrade(unittest.TestCase):
 
     # Tests for create_trade_instance function
     # We need to patch 'bbstrader.metatrader.trade.Trade' to check its instantiation
-    # @patch('bbstrader.metatrader.trade.Trade') # Patch the Trade class in the trade module
-    # def test_create_trade_instance_single_symbol(self, MockTradeClass):
-    #     mock_trade_instance = MagicMock()
-    #     MockTradeClass.return_value = mock_trade_instance
+    @patch('bbstrader.metatrader.trade.Trade') # Patch the Trade class in the trade module
+    def test_create_trade_instance_single_symbol(self, MockTradeClass):
+        mock_trade_instance = MagicMock()
+        MockTradeClass.return_value = mock_trade_instance
         
-    #     symbols = ["EURUSD"]
-    #     base_params = {"expert_name": "CreatorTest", "target": 3.0, "logger": mock_logger}
+        symbols = ["EURUSD"]
+        base_params = {"expert_name": "CreatorTest", "target": 3.0, "logger": mock_logger}
         
-    #     instances = create_trade_instance(symbols, base_params.copy()) # Use .copy()
+        instances = create_trade_instance(symbols, base_params.copy()) # Use .copy()
         
-    #     self.assertEqual(len(instances), 1)
-    #     self.assertIn("EURUSD", instances)
-    #     self.assertEqual(instances["EURUSD"], mock_trade_instance)
+        self.assertEqual(len(instances), 1)
+        self.assertIn("EURUSD", instances)
+        self.assertEqual(instances["EURUSD"], mock_trade_instance)
         
-    #     expected_call_params = {
-    #         "symbol": "EURUSD", "expert_name": "CreatorTest", "target": 3.0, 
-    #         "logger": mock_logger, "expert_id": EXPERT_ID, # Default EXPERT_ID from trade module
-    #         "pchange_sl": None, "daily_risk": None, "max_risk": 10.0 # Defaults from create_trade_instance
-    #     }
-    #     MockTradeClass.assert_called_once_with(**expected_call_params)
-    #     mock_logger.info.assert_any_call("Trade instances created successfully for 1 symbols.")
+        expected_call_params = {
+            "symbol": "EURUSD", "expert_name": "CreatorTest", "target": 3.0, 
+            "logger": mock_logger, "expert_id": EXPERT_ID, # Default EXPERT_ID from trade module
+            "pchange_sl": None, "daily_risk": None, "max_risk": 10.0 # Defaults from create_trade_instance
+        }
+        MockTradeClass.assert_called_once_with(**expected_call_params)
+        mock_logger.info.assert_any_call("Trade instances created successfully for 1 symbols.")
 
 
-    # @patch('bbstrader.metatrader.trade.Trade')
-    # def test_create_trade_instance_multiple_symbols_with_risk_dicts(self, MockTradeClass):
-    #     mock_eurusd_instance = MagicMock(name="EURUSD_Instance")
-    #     mock_gbpusd_instance = MagicMock(name="GBPUSD_Instance")
-    #     MockTradeClass.side_effect = [mock_eurusd_instance, mock_gbpusd_instance]
+    @patch('bbstrader.metatrader.trade.Trade')
+    def test_create_trade_instance_multiple_symbols_with_risk_dicts(self, MockTradeClass):
+        mock_eurusd_instance = MagicMock(name="EURUSD_Instance")
+        mock_gbpusd_instance = MagicMock(name="GBPUSD_Instance")
+        MockTradeClass.side_effect = [mock_eurusd_instance, mock_gbpusd_instance]
         
-    #     symbols = ["EURUSD", "GBPUSD"]
-    #     base_params = {"expert_name": "MultiCreator", "logger": mock_logger}
-    #     daily_risks = {"EURUSD": 0.5, "GBPUSD": 0.4}
-    #     max_risks = {"EURUSD": 1.5, "GBPUSD": 1.2}
-    #     pchange_sls = {"EURUSD": 0.2, "GBPUSD": 0.3}
-    #     expert_ids = {"EURUSD": 111, "GBPUSD": 222}
+        symbols = ["EURUSD", "GBPUSD"]
+        base_params = {"expert_name": "MultiCreator", "logger": mock_logger}
+        daily_risks = {"EURUSD": 0.5, "GBPUSD": 0.4}
+        max_risks = {"EURUSD": 1.5, "GBPUSD": 1.2}
+        pchange_sls = {"EURUSD": 0.2, "GBPUSD": 0.3}
+        expert_ids = {"EURUSD": 111, "GBPUSD": 222}
         
-    #     # Add expert_ids to base_params as it's processed first if it's a dict
-    #     params_with_ids = base_params.copy()
-    #     params_with_ids["expert_id"] = expert_ids
+        # Add expert_ids to base_params as it's processed first if it's a dict
+        params_with_ids = base_params.copy()
+        params_with_ids["expert_id"] = expert_ids
 
-    #     instances = create_trade_instance(
-    #         symbols, 
-    #         params_with_ids, 
-    #         daily_risk=daily_risks, 
-    #         max_risk=max_risks, 
-    #         pchange_sl=pchange_sls
-    #     )
+        instances = create_trade_instance(
+            symbols, 
+            params_with_ids, 
+            daily_risk=daily_risks, 
+            max_risk=max_risks, 
+            pchange_sl=pchange_sls
+        )
         
-    #     self.assertEqual(len(instances), 2)
-    #     self.assertEqual(MockTradeClass.call_count, 2)
+        self.assertEqual(len(instances), 2)
+        self.assertEqual(MockTradeClass.call_count, 2)
         
-    #     call_args_eurusd = MockTradeClass.call_args_list[0][1] # kwargs of first call
-    #     expected_eurusd = {
-    #         "symbol": "EURUSD", "expert_name": "MultiCreator", "logger": mock_logger,
-    #         "expert_id": 111, "daily_risk": 0.5, "max_risk": 1.5, "pchange_sl": 0.2
-    #     }
-    #     self.assertEqual(call_args_eurusd, expected_eurusd)
+        call_args_eurusd = MockTradeClass.call_args_list[0][1] # kwargs of first call
+        expected_eurusd = {
+            "symbol": "EURUSD", "expert_name": "MultiCreator", "logger": mock_logger,
+            "expert_id": 111, "daily_risk": 0.5, "max_risk": 1.5, "pchange_sl": 0.2
+        }
+        self.assertEqual(call_args_eurusd, expected_eurusd)
         
-    #     call_args_gbpusd = MockTradeClass.call_args_list[1][1] # kwargs of second call
-    #     expected_gbpusd = {
-    #         "symbol": "GBPUSD", "expert_name": "MultiCreator", "logger": mock_logger,
-    #         "expert_id": 222, "daily_risk": 0.4, "max_risk": 1.2, "pchange_sl": 0.3
-    #     }
-    #     self.assertEqual(call_args_gbpusd, expected_gbpusd)
-    #     mock_logger.info.assert_any_call("Trade instances created successfully for 2 symbols.")
+        call_args_gbpusd = MockTradeClass.call_args_list[1][1] # kwargs of second call
+        expected_gbpusd = {
+            "symbol": "GBPUSD", "expert_name": "MultiCreator", "logger": mock_logger,
+            "expert_id": 222, "daily_risk": 0.4, "max_risk": 1.2, "pchange_sl": 0.3
+        }
+        self.assertEqual(call_args_gbpusd, expected_gbpusd)
+        mock_logger.info.assert_any_call("Trade instances created successfully for 2 symbols.")
 
     @patch('bbstrader.metatrader.trade.Trade')
     def test_create_trade_instance_scalar_risk_values(self, MockTradeClass):
@@ -1823,41 +1823,41 @@ class TestTrade(unittest.TestCase):
             create_trade_instance(["EURUSD"], {})
 
 
-    # @patch('bbstrader.metatrader.trade.Trade', side_effect=Exception("Trade Creation Failed"))
-    # def test_create_trade_instance_trade_creation_fails(self, MockTradeClassFail):
-    #     symbols = ["EURUSD"]
-    #     base_params = {"expert_name": "FailTest", "logger": mock_logger}
-    #     mock_logger.reset_mock() # Reset from previous calls
+    @patch('bbstrader.metatrader.trade.Trade', side_effect=Exception("Trade Creation Failed"))
+    def test_create_trade_instance_trade_creation_fails(self, MockTradeClassFail):
+        symbols = ["EURUSD"]
+        base_params = {"expert_name": "FailTest", "logger": mock_logger}
+        mock_logger.reset_mock() # Reset from previous calls
 
-    #     instances = create_trade_instance(symbols, base_params.copy())
+        instances = create_trade_instance(symbols, base_params.copy())
         
-    #     self.assertEqual(len(instances), 0) # No instance should be added if creation fails
-    #     MockTradeClassFail.assert_called_once()
-    #     # Check logger error call
-    #     mock_logger.error.assert_any_call("Creating Trade instance, SYMBOL=EURUSD Trade Creation Failed")
-    #     # The final log "Trade instances created successfully for 0 symbols." will also be there.
-    #     mock_logger.info.assert_any_call("Trade instances created successfully for 0 symbols.")
+        self.assertEqual(len(instances), 0) # No instance should be added if creation fails
+        MockTradeClassFail.assert_called_once()
+        # Check logger error call
+        mock_logger.error.assert_any_call("Creating Trade instance, SYMBOL=EURUSD Trade Creation Failed")
+        # The final log "Trade instances created successfully for 0 symbols." will also be there.
+        mock_logger.info.assert_any_call("Trade instances created successfully for 0 symbols.")
 
-    # @patch('bbstrader.metatrader.trade.Trade')
-    # def test_create_trade_instance_partial_failure(self, MockTradeClassPartial):
-    #     mock_eurusd_instance = MagicMock(name="EURUSD_Instance")
-    #     # Simulate failure for GBPUSD
-    #     MockTradeClassPartial.side_effect = [mock_eurusd_instance, Exception("GBPUSD Creation Failed")]
+    @patch('bbstrader.metatrader.trade.Trade')
+    def test_create_trade_instance_partial_failure(self, MockTradeClassPartial):
+        mock_eurusd_instance = MagicMock(name="EURUSD_Instance")
+        # Simulate failure for GBPUSD
+        MockTradeClassPartial.side_effect = [mock_eurusd_instance, Exception("GBPUSD Creation Failed")]
         
-    #     symbols = ["EURUSD", "GBPUSD"]
-    #     base_params = {"expert_name": "PartialFail", "logger": mock_logger, "expert_id": 123}
-    #     mock_logger.reset_mock()
+        symbols = ["EURUSD", "GBPUSD"]
+        base_params = {"expert_name": "PartialFail", "logger": mock_logger, "expert_id": 123}
+        mock_logger.reset_mock()
 
-    #     instances = create_trade_instance(symbols, base_params.copy())
+        instances = create_trade_instance(symbols, base_params.copy())
         
-    #     self.assertEqual(len(instances), 1)
-    #     self.assertIn("EURUSD", instances)
-    #     self.assertNotIn("GBPUSD", instances)
-    #     self.assertEqual(MockTradeClassPartial.call_count, 2)
+        self.assertEqual(len(instances), 1)
+        self.assertIn("EURUSD", instances)
+        self.assertNotIn("GBPUSD", instances)
+        self.assertEqual(MockTradeClassPartial.call_count, 2)
         
-    #     mock_logger.error.assert_called_once_with("Creating Trade instance, SYMBOL=GBPUSD GBPUSD Creation Failed")
-    #     mock_logger.info.assert_any_call("Failed to create Trade instance for SYMBOL=GBPUSD")
-    #     mock_logger.info.assert_any_call("Trade instances created successfully for 1 symbols.")
+        mock_logger.error.assert_called_once_with("Creating Trade instance, SYMBOL=GBPUSD GBPUSD Creation Failed")
+        mock_logger.info.assert_any_call("Failed to create Trade instance for SYMBOL=GBPUSD")
+        mock_logger.info.assert_any_call("Trade instances created successfully for 1 symbols.")
 
 if __name__ == '__main__':
     unittest.main()

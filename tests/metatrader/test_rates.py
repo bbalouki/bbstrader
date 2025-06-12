@@ -1,139 +1,233 @@
-import unittest
-import pandas as pd
 from datetime import datetime
-from unittest.mock import patch,  MagicMock
-from bbstrader.metatrader.rates import Rates, TIMEFRAMES
+from unittest.mock import MagicMock, patch
+
+import numpy as np
+import pandas as pd
+import pytest
 
 
+mock_mt5_module = MagicMock()
+mock_mt5_module.TIMEFRAME_M1 = 1
+mock_mt5_module.TIMEFRAME_D1 = 16408
+mock_mt5_module.TIMEFRAME_W1 = 32769
+mock_mt5_module.TIMEFRAME_H12 = 16396
+mock_mt5_module.TIMEFRAME_MN1 = 49153
 
-class TestRates(unittest.TestCase):
+# patch.dict("sys.modules", {"MetaTrader5": mock_mt5_module}).start()
 
-    def setUp(self):
-        """Set up any required parameters or mock objects."""
-        self.symbol = "EURUSD"
-        self.time_frame = "D1"
-        self.start_pos = 0
-        self.count = 100
-        self.session_duration = 8
-        self.rates = Rates(
-            symbol=self.symbol, 
-            time_frame=self.time_frame, 
-            start_pos=self.start_pos, 
-            count=self.count, 
-            session_duration=self.session_duration
+
+from bbstrader.metatrader.rates import (  # noqa: E402
+    Rates,
+    download_historical_data,
+    get_data_from_date,  # noqa: F401
+    get_data_from_pos,  # noqa: F401
+)
+from bbstrader.metatrader.utils import SymbolType  # noqa: E402
+
+
+@pytest.fixture
+def mock_mt5_api():
+    """Fixture to configure the mocked MetaTrader5 API calls."""
+    rates_data = np.array(
+        [
+            (1672617600, 1.06, 1.09, 1.05, 1.07, 1200),  # 2023-01-02 00:00:00 UTC
+            (1672704000, 1.07, 1.10, 1.06, 1.08, 1100),  # 2023-01-03 00:00:00 UTC
+            (1672790400, 1.08, 1.11, 1.07, 1.09, 1300),  # 2023-01-04 00:00:00 UTC
+        ],
+        dtype=[
+            ("time", "<i8"),
+            ("open", "<f8"),
+            ("high", "<f8"),
+            ("low", "<f8"),
+            ("close", "<f8"),
+            ("tick_volume", "<i8"),
+        ],
+    )
+
+    mock_mt5_module.copy_rates_from_pos.return_value = rates_data
+    mock_mt5_module.copy_rates_from.return_value = rates_data
+    mock_mt5_module.copy_rates_range.return_value = rates_data
+
+    # Reset mocks before each test run for isolation
+    mock_mt5_module.reset_mock()
+    return mock_mt5_module
+
+
+@pytest.fixture
+def mock_account(mocker):
+    """
+    Fixture to mock the Account class *specifically where it's used in the rates module*.
+    This is the key change.
+    """
+    mock_account_instance = MagicMock()
+    mock_account_instance.get_symbol_type.return_value = SymbolType.FOREX
+    mock_account_instance.get_symbol_info.return_value = MagicMock(
+        path="Group\\Forex\\EURUSD"
+    )
+    mock_account_instance.get_currency_rates.return_value = {"mc": "USD"}
+
+    
+    mocker.patch(
+        "bbstrader.metatrader.rates.Account", return_value=mock_account_instance
+    )
+
+    return mock_account_instance
+
+
+@pytest.fixture
+def mock_check_connection(mocker):
+    """Fixture to mock the check_mt5_connection function."""
+    return mocker.patch("bbstrader.metatrader.rates.check_mt5_connection")
+
+
+def test_rates_initialization(mock_mt5_api, mock_account, mock_check_connection):
+    """
+    Test the successful initialization of the Rates class with proper mocks.
+    """
+    rates = Rates(symbol="EURUSD", timeframe="D1", start_pos=0, count=100)
+
+    # 1. Check if MT5 connection was checked
+    mock_check_connection.assert_called_once()
+
+    # 2. Check if Account was instantiated (the patch in mock_account handles this)
+    # We can check its methods were NOT called since filter=False by default.
+    mock_account.get_symbol_type.assert_not_called()
+
+    # 3. Check if data was fetched on initialization
+    mock_mt5_api.copy_rates_from_pos.assert_called_once_with("EURUSD", 16408, 0, 100)
+
+    # 4. Check if the internal data DataFrame is correctly populated
+    assert isinstance(rates._Rates__data, pd.DataFrame)
+    assert not rates._Rates__data.empty
+    assert "Close" in rates._Rates__data.columns
+    assert rates._Rates__data.index.name == "Date"
+
+
+def test_rates_initialization_invalid_timeframe():
+    """
+    Test that initializing with an invalid timeframe raises a ValueError.
+    """
+    with pytest.raises(ValueError, match="Unsupported time frame 'INVALID_TF'"):
+        # We don't need full mocks for this, as it fails before they are used.
+        Rates(symbol="EURUSD", timeframe="INVALID_TF")
+
+
+def test_get_start_pos_with_string_date(
+    mocker, mock_check_connection, mock_account, mock_mt5_api
+):
+    """
+    Test the _get_pos_index calculation for a string date start_pos.
+    """
+    mock_dt = mocker.patch("bbstrader.metatrader.rates.datetime")
+    mock_dt.now.return_value = datetime(2023, 12, 31)
+
+    rates = Rates(
+        symbol="EURUSD", timeframe="D1", start_pos="2023-12-20", session_duration=24
+    )
+    assert rates.start_pos == 6
+
+
+def test_get_historical_data(mock_mt5_api, mock_account, mock_check_connection):
+    """
+    Test the get_historical_data method.
+    """
+    rates = Rates("GBPUSD", "D1")
+    date_from = datetime(2023, 1, 1)
+    date_to = datetime(2023, 1, 31)
+
+    df = rates.get_historical_data(
+        date_from=date_from, date_to=date_to, lower_colnames=True
+    )
+
+    mock_mt5_api.copy_rates_range.assert_called_once_with(
+        "GBPUSD", 16408, date_from, date_to
+    )
+    assert isinstance(df, pd.DataFrame)
+    assert "close" in df.columns
+    assert df.index.name == "date"
+
+
+def test_data_filtering_for_stock(mock_mt5_api, mock_account, mock_check_connection):
+    """
+    Test the filtering mechanism for a stock symbol.
+    """
+    mock_account.get_symbol_type.return_value = SymbolType.STOCKS
+    mock_account.get_stocks_from_exchange.return_value = ["AAPL"]
+
+    with patch("bbstrader.metatrader.rates.AMG_EXCHANGES", ["'XNYS'"]):
+        rates = Rates("AAPL", "D1")
+        date_from = pd.Timestamp("2023-01-01")
+        date_to = pd.Timestamp("2023-01-04")
+
+        df = rates.get_historical_data(
+            date_from=date_from, date_to=date_to, filter=True
         )
 
-    def test_initialization(self):
-        """Test the initialization of the Rates class."""
-        self.assertEqual(self.rates.symbol, self.symbol)
-        self.assertEqual(self.rates.time_frame, TIMEFRAMES[self.time_frame])
-        self.assertEqual(self.rates.count, self.count)
-        self.assertEqual(self.rates.start_pos, self.start_pos)
+    mock_account.get_symbol_type.assert_called()
+    mock_account.get_stocks_from_exchange.assert_called()
 
-    def test_invalid_time_frame(self):
-        """Test that an invalid timeframe raises an error."""
-        with self.assertRaises(ValueError):
-            Rates(symbol="EURUSD", time_frame="invalid_timeframe")
+    assert not df.isnull().values.any()
 
-    def test_get_start_pos_with_int(self):
-        """Test that start_pos is correctly assigned when an integer is provided."""
-        self.assertEqual(self.rates.start_pos, self.start_pos)
 
-    def test_get_start_pos_with_str(self):
-        """Test that start_pos is correctly calculated when a string date is provided."""
-        start_date = "2024-01-01"
-        rates = Rates(symbol="EURUSD", time_frame="1h", start_pos=start_date, session_duration=8)
-        expected_start_pos = rates._get_pos_index(start_date, "1h", 8)
-        self.assertEqual(rates.start_pos, expected_start_pos)
+def test_data_filtering_with_fill_na(mock_mt5_api, mock_account, mock_check_connection):
+    """
+    Test filtering with fill_na=True for a D1 timeframe.
+    """
+    mock_account.get_symbol_type.return_value = SymbolType.FOREX  # Use a 24/5 calendar
 
-    def test_get_pos_index(self):
-        """Test the calculation of position index from a start date."""
-        start_date = "2024-01-01"
-        time_frame = "1h"
-        session_duration = 8
-        rates = Rates(symbol="EURUSD", time_frame="1h", start_pos=start_date, session_duration=session_duration)
-        index = rates._get_pos_index(start_date, time_frame, session_duration)
-        self.assertGreaterEqual(index, 0)
+    rates = Rates("EURUSD", "D1")
+    date_from = pd.Timestamp("2023-01-01")
+    date_to = pd.Timestamp("2023-01-04")
 
-    def test_format_dataframe(self):
-        """Test the formatting of the DataFrame returned by MT5."""
-        data = {
-            'time': [1637854800],
-            'open': [1.1234],
-            'high': [1.1250],
-            'low': [1.1200],
-            'close': [1.1220],
-            'tick_volume': [1000]
-        }
-        df = pd.DataFrame(data)
-        formatted_df = self.rates._format_dataframe(df)
-        
-        self.assertIn('Open', formatted_df.columns)
-        self.assertIn('High', formatted_df.columns)
-        self.assertIn('Adj Close', formatted_df.columns)
-        self.assertEqual(formatted_df.index.name, 'Date')
+    df = rates.get_historical_data(
+        date_from=date_from, date_to=date_to, filter=True, fill_na=True
+    )
 
-    def test_get_rates_from_pos_no_mt5(self):
-        """Test getting rates from position without relying on MT5."""
-        # Assuming _fetch_data is supposed to return a DataFrame
-        mock_df = pd.DataFrame({
-            'Date': [datetime(2024, 1, 1)],
-            'Open': [1.1234],
-            'High': [1.1250],
-            'Low': [1.1200],
-            'Close': [1.1220],
-            'Adj Close': [1.1220],
-            'Volume': [1000]
-        })
-        
-        self.rates._fetch_data = MagicMock(return_value=mock_df)
-        df = self.rates.get_rates_from_pos()
-        
-        self.assertIsNotNone(df)
-        self.assertEqual(df.shape[0], 1)
-        self.assertIn('Open', df.columns)
+    # The 'us_futures' calendar (used for FOREX) is closed on Jan 2nd.
+    # With fill_na=True, this day should be present and filled.
+    assert not df.isnull().values.any()
+    # The calendar includes Jan 3 and Jan 4.
+    assert pd.Timestamp("2023-01-03") in df.index
+    assert pd.Timestamp("2023-01-04") in df.index
 
-    def test_get_historical_data_no_mt5(self):
-        """Test getting historical data within a date range without relying on MT5."""
-        mock_df = pd.DataFrame({
-            'Date': [datetime(2024, 1, 1)],
-            'Open': [1.1234],
-            'High': [1.1250],
-            'Low': [1.1200],
-            'Close': [1.1220],
-            'Adj Close': [1.1220],
-            'Volume': [1000]
-        })
 
-        self.rates._fetch_data = MagicMock(return_value=mock_df)
-        date_from = datetime(2024, 1, 1)
-        date_to = datetime(2024, 1, 10)
-        df = self.rates.get_historical_data(date_from, date_to)
-        
-        self.assertIsNotNone(df)
-        self.assertEqual(df.shape[0], 1)
-        self.assertIn('Open', df.columns)
+def test_properties_access(mock_mt5_api, mock_account, mock_check_connection):
+    """
+    Test the data properties like .open, .close, .returns.
+    """
+    rates = Rates("EURUSD", "D1")
 
-    def test_save_csv(self):
-        """Test saving historical data to a CSV file."""
-        mock_df = pd.DataFrame({
-            'Date': [datetime(2024, 1, 1)],
-            'Open': [1.1234],
-            'High': [1.1250],
-            'Low': [1.1200],
-            'Close': [1.1220],
-            'Adj Close': [1.1220],
-            'Volume': [1000]
-        })
+    pd.testing.assert_series_equal(
+        rates.close, rates._Rates__data["Close"], check_names=False
+    )
 
-        with patch('pandas.DataFrame.to_csv') as mock_to_csv:
-            self.rates._fetch_data = MagicMock(return_value=mock_df)
-            date_from = datetime(2024, 1, 1)
-            date_to = datetime(2024, 1, 10)
-            df = self.rates.get_historical_data(date_from, date_to, save_csv=True)
+    returns = rates.returns
+    assert isinstance(returns, pd.Series)
+    assert not returns.isnull().any()
+    expected_return = (1.08 - 1.07) / 1.07
+    assert np.isclose(returns.iloc[0], expected_return)
 
-            mock_to_csv.assert_called_once_with(f"{self.symbol}.csv")
-            self.assertIsNotNone(df)
 
-if __name__ == '__main__':
-    unittest.main()
+def test_download_historical_data_wrapper(mocker):
+    """
+    Test the wrapper function to ensure it instantiates Rates and calls the correct method.
+    """
+    # Here, we mock the entire Rates class since we are testing the wrapper function, not the class itself.
+    mock_rates_class = mocker.patch("bbstrader.metatrader.rates.Rates")
+    mock_rates_instance = mock_rates_class.return_value
+
+    date_from = datetime(2022, 1, 1)
+
+    download_historical_data(
+        symbol="USDCAD", timeframe="H12", date_from=date_from, filter=True
+    )
+
+    # Check that Rates was initialized correctly
+    # Note: the timeframe "H12" will be passed as a string to the constructor.
+    mock_rates_class.assert_called_once_with("USDCAD", "H12")
+
+    # Check that the method on the instance was called correctly
+    mock_rates_instance.get_historical_data.assert_called_once()
+    call_args, call_kwargs = mock_rates_instance.get_historical_data.call_args
+    assert call_kwargs["date_from"] == date_from
+    assert call_kwargs["filter"] is True
