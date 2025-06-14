@@ -486,10 +486,12 @@ class MT5TerminalError(Exception):
         self.message = message
 
     def __str__(self) -> str:
-        if self.message is None:
-            return f"{self.__class__.__name__}"
-        else:
-            return f"{self.__class__.__name__}, {self.message}"
+        # if self.message is None:
+        #     return f"{self.__class__.__name__}"
+        # else:
+        #     return f"{self.__class__.__name__}, {self.message}"
+        msg_str = str(self.message) if self.message is not None else ""
+        return f"{self.code} - {self.__class__.__name__}: {msg_str}"
 
 
 class GenericFail(MT5TerminalError):
@@ -582,6 +584,21 @@ class InternalFailTimeout(InternalFailError):
         super().__init__(MT5.RES_E_INTERNAL_FAIL_TIMEOUT, message)
 
 
+RES_E_FAIL = 1  # Generic error
+RES_E_INVALID_PARAMS = 2  # Invalid parameters
+RES_E_NOT_FOUND = 3  # Not found
+RES_E_INVALID_VERSION = 4  # Invalid version
+RES_E_AUTH_FAILED = 5  # Authorization failed
+RES_E_UNSUPPORTED = 6  # Unsupported method
+RES_E_AUTO_TRADING_DISABLED = 7  # Autotrading disabled
+
+# Actual internal error codes from MetaTrader5
+RES_E_INTERNAL_FAIL_CONNECT = -10000
+RES_E_INTERNAL_FAIL_INIT = -10001
+RES_E_INTERNAL_FAIL_SEND = -10006
+RES_E_INTERNAL_FAIL_RECEIVE = -10007
+RES_E_INTERNAL_FAIL_TIMEOUT = -10008
+
 # Dictionary to map error codes to exception classes
 _ERROR_CODE_TO_EXCEPTION_ = {
     MT5.RES_E_FAIL: GenericFail,
@@ -596,6 +613,18 @@ _ERROR_CODE_TO_EXCEPTION_ = {
     MT5.RES_E_INTERNAL_FAIL_INIT: InternalFailInit,
     MT5.RES_E_INTERNAL_FAIL_CONNECT: InternalFailConnect,
     MT5.RES_E_INTERNAL_FAIL_TIMEOUT: InternalFailTimeout,
+    RES_E_FAIL: GenericFail,
+    RES_E_INVALID_PARAMS: InvalidParams,
+    RES_E_NOT_FOUND: HistoryNotFound,
+    RES_E_INVALID_VERSION: InvalidVersion,
+    RES_E_AUTH_FAILED: AuthFailed,
+    RES_E_UNSUPPORTED: UnsupportedMethod,
+    RES_E_AUTO_TRADING_DISABLED: AutoTradingDisabled,
+    RES_E_INTERNAL_FAIL_SEND: InternalFailSend,
+    RES_E_INTERNAL_FAIL_RECEIVE: InternalFailReceive,
+    RES_E_INTERNAL_FAIL_INIT: InternalFailInit,
+    RES_E_INTERNAL_FAIL_CONNECT: InternalFailConnect,
+    RES_E_INTERNAL_FAIL_TIMEOUT: InternalFailTimeout,
 }
 
 
@@ -609,7 +638,10 @@ def raise_mt5_error(message: Optional[str] = None):
         MT5TerminalError: A specific exception based on the error code.
     """
     error = _ERROR_CODE_TO_EXCEPTION_.get(MT5.last_error()[0])
-    raise Exception(f"{error(None)} {message or MT5.last_error()[1]}")
+    if error is not None:
+        raise Exception(f"{error(None)} {message or MT5.last_error()[1]}")
+    else:
+        raise Exception(f"{message or MT5.last_error()[1]}")
 
 
 _ORDER_FILLING_TYPE_ = "https://www.mql5.com/en/docs/constants/tradingconstants/orderproperties#enum_order_type_filling"

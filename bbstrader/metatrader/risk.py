@@ -275,10 +275,12 @@ class RiskManagement(Account):
             swap = df["swap"].sum()
             total_profit = commisions + fees + swap + profit
             initial_balance = balance - total_profit
-            if balance != 0:
+            if equity != 0:
                 risk_alowed = (((equity - initial_balance) / equity) * 100) * -1
                 return round(risk_alowed, 2)
-        return 0.0
+            else: # Handle equity is zero
+                return 0.0
+        return 0.0 # This is for the case where df is None
 
     def get_lot(self) -> float:
         """ "Get the approprite lot size for a trade"""
