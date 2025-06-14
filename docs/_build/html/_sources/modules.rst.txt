@@ -4,12 +4,10 @@ bbstrader
 .. toctree::
    :maxdepth: 4
 
-   btengine
-   compat
-   config
-   core
-   ibkr
-   metatrader
-   models
-   trading
-   tseries
+   bbstrader.btengine
+   bbstrader.core
+   bbstrader.ibkr
+   bbstrader.metatrader
+   bbstrader.models
+   bbstrader.trading
+   bbstrader.tseries

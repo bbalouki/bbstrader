@@ -1,0 +1,554 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bbstrader.trading package &mdash; bbstrader 0.2.092 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=97badf68"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="bbstrader.models package" href="bbstrader.models.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            bbstrader
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">bbstrader</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="bbstrader.btengine.html">bbstrader.btengine package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bbstrader.core.html">bbstrader.core package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bbstrader.ibkr.html">bbstrader.ibkr package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bbstrader.metatrader.html">bbstrader.metatrader package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bbstrader.models.html">bbstrader.models package</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">bbstrader.trading package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-bbstrader.trading.execution">bbstrader.trading.execution module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.trading.execution.Mt5ExecutionEngine"><code class="docutils literal notranslate"><span class="pre">Mt5ExecutionEngine</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.trading.execution.RunMt5Engine"><code class="docutils literal notranslate"><span class="pre">RunMt5Engine()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.trading.execution.RunMt5Engines"><code class="docutils literal notranslate"><span class="pre">RunMt5Engines()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.trading.execution.TWSExecutionEngine"><code class="docutils literal notranslate"><span class="pre">TWSExecutionEngine</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-bbstrader.trading.scripts">bbstrader.trading.scripts module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.trading.scripts.RunMt5Terminal"><code class="docutils literal notranslate"><span class="pre">RunMt5Terminal()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.trading.scripts.RunTWSTerminal"><code class="docutils literal notranslate"><span class="pre">RunTWSTerminal()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.trading.scripts.execute_strategy"><code class="docutils literal notranslate"><span class="pre">execute_strategy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.trading.scripts.load_config"><code class="docutils literal notranslate"><span class="pre">load_config()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.trading.scripts.worker_function"><code class="docutils literal notranslate"><span class="pre">worker_function()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-bbstrader.trading.strategies">bbstrader.trading.strategies module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.trading.strategies.ArimaGarchStrategy"><code class="docutils literal notranslate"><span class="pre">ArimaGarchStrategy</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.trading.strategies.KalmanFilterStrategy"><code class="docutils literal notranslate"><span class="pre">KalmanFilterStrategy</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.trading.strategies.SMAStrategy"><code class="docutils literal notranslate"><span class="pre">SMAStrategy</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.trading.strategies.StockIndexSTBOTrading"><code class="docutils literal notranslate"><span class="pre">StockIndexSTBOTrading</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.trading.strategies.get_quantities"><code class="docutils literal notranslate"><span class="pre">get_quantities()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.trading.strategies.test_strategy"><code class="docutils literal notranslate"><span class="pre">test_strategy()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-bbstrader.trading.utils">bbstrader.trading.utils module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.trading.utils.send_message"><code class="docutils literal notranslate"><span class="pre">send_message()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.trading.utils.send_notification"><code class="docutils literal notranslate"><span class="pre">send_notification()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.trading.utils.send_telegram_message"><code class="docutils literal notranslate"><span class="pre">send_telegram_message()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-bbstrader.trading">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">bbstrader</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">bbstrader</a></li>
+      <li class="breadcrumb-item active">bbstrader.trading package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/bbstrader.trading.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="bbstrader-trading-package">
+<h1>bbstrader.trading package<a class="headerlink" href="#bbstrader-trading-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-bbstrader.trading.execution">
+<span id="bbstrader-trading-execution-module"></span><h2>bbstrader.trading.execution module<a class="headerlink" href="#module-bbstrader.trading.execution" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="bbstrader.trading.execution.Mt5ExecutionEngine">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bbstrader.trading.execution.</span></span><span class="sig-name descname"><span class="pre">Mt5ExecutionEngine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trades_instances</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.trade.Trade" title="bbstrader.metatrader.trade.Trade"><span class="pre">Trade</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy_cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="bbstrader.btengine.html#bbstrader.btengine.strategy.Strategy" title="bbstrader.btengine.strategy.Strategy"><span class="pre">Strategy</span></a></span></em>, <em class="sig-param"><span class="positional-only-separator o"><abbr title="Positional-only parameter separator (PEP 570)"><span class="pre">/</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">mm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'equal'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trail</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_trail</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trail_after_points</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">be_plus_points</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_positions_orders</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iter_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_trade_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">period</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'24/7'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'day'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'week'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'month'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'week'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">period_end_action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'break'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'sleep'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'break'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">closing_pnl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trading_days</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/trading/execution.html#Mt5ExecutionEngine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.trading.execution.Mt5ExecutionEngine" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>The <cite>Mt5ExecutionEngine</cite> class serves as the central hub for executing your trading strategies within the <cite>bbstrader</cite> framework.
+It orchestrates the entire trading process, ensuring seamless interaction between your strategies, market data, and your chosen
+trading platform.</p>
+<section id="key-features">
+<h3>Key Features<a class="headerlink" href="#key-features" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Strategy Execution:</strong> The <cite>Mt5ExecutionEngine</cite> is responsible for running your strategy, retrieving signals, and executing trades based on those signals.</p></li>
+<li><p><strong>Time Management:</strong> You can define a specific time frame for your trades and set the frequency with which the engine checks for signals and manages trades.</p></li>
+<li><p><strong>Trade Period Control:</strong> Define whether your strategy runs for a day, a week, or a month, allowing for flexible trading durations.</p></li>
+<li><p><strong>Money Management:</strong> The engine supports optional money management features, allowing you to control risk and optimize your trading performance.</p></li>
+<li><p><strong>Trading Day Configuration:</strong> You can customize the days of the week your strategy will execute, providing granular control over your trading schedule.</p></li>
+<li><p><strong>Platform Integration:</strong> The <cite>Mt5ExecutionEngine</cite> is currently designed to work with MT5.</p></li>
+</ul>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">bbstrader.metatrader</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_trade_instance</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">bbstrader.trading.execution</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mt5ExecutionEngine</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">bbstrader.trading.strategies</span><span class="w"> </span><span class="kn">import</span> <span class="n">StockIndexSTBOTrading</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">bbstrader.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">config_logger</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">logger</span> <span class="o">=</span> <span class="n">config_logger</span><span class="p">(</span><span class="n">index_trade</span><span class="o">.</span><span class="n">log</span><span class="p">,</span> <span class="n">console_log</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="c1"># Define symbols</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">ndx</span> <span class="o">=</span> <span class="s1">&#39;[NQ100]&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">spx</span> <span class="o">=</span> <span class="s1">&#39;[SP500]&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">dji</span> <span class="o">=</span> <span class="s1">&#39;[DJI30]&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">dax</span> <span class="o">=</span> <span class="s1">&#39;GERMANY40&#39;</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">symbol_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">spx</span><span class="p">,</span> <span class="n">dax</span><span class="p">,</span> <span class="n">dji</span><span class="p">,</span>  <span class="n">ndx</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">trade_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+<span class="gp">... </span>       <span class="s1">&#39;expert_id&#39;</span><span class="p">:</span> <span class="mi">5134</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="s1">&#39;time_frame&#39;</span><span class="p">:</span> <span class="s1">&#39;15m&#39;</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="s1">&#39;var_level&#39;</span><span class="p">:</span> <span class="mf">0.99</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="s1">&#39;start_time&#39;</span><span class="p">:</span> <span class="s1">&#39;8:30&#39;</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="s1">&#39;finishing_time&#39;</span><span class="p">:</span> <span class="s1">&#39;19:30&#39;</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="s1">&#39;ending_time&#39;</span><span class="p">:</span> <span class="s1">&#39;21:30&#39;</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="s1">&#39;max_risk&#39;</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="s1">&#39;daily_risk&#39;</span><span class="p">:</span> <span class="mf">0.10</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="s1">&#39;pchange_sl&#39;</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="s1">&#39;rr&#39;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="s1">&#39;logger&#39;</span><span class="p">:</span> <span class="n">logger</span>
+<span class="gp">... </span>   <span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">strategy_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+<span class="gp">... </span>       <span class="s1">&#39;max_trades&#39;</span><span class="p">:</span> <span class="p">{</span><span class="n">ndx</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="n">spx</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="n">dji</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="n">dax</span><span class="p">:</span> <span class="mi">3</span><span class="p">},</span>
+<span class="gp">... </span>       <span class="s1">&#39;expected_returns&#39;</span><span class="p">:</span> <span class="p">{</span><span class="n">ndx</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">,</span> <span class="n">spx</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">,</span> <span class="n">dji</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">dax</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">},</span>
+<span class="gp">... </span>       <span class="s1">&#39;strategy_name&#39;</span><span class="p">:</span> <span class="s1">&#39;SISTBO&#39;</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="s1">&#39;logger&#39;</span><span class="p">:</span> <span class="n">logger</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="s1">&#39;expert_id&#39;</span><span class="p">:</span> <span class="mi">5134</span>
+<span class="gp">... </span>   <span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">trades_instances</span> <span class="o">=</span> <span class="n">create_trade_instance</span><span class="p">(</span>
+<span class="gp">... </span>       <span class="n">symbol_list</span><span class="p">,</span> <span class="n">trade_kwargs</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span>
+<span class="gp">... </span>   <span class="p">)</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">engine</span> <span class="o">=</span> <span class="n">Mt5ExecutionEngine</span><span class="p">(</span>
+<span class="gp">... </span>       <span class="n">symbol_list</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="n">trades_instances</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="n">StockIndexCFDTrading</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="n">time_frame</span><span class="o">=</span><span class="s1">&#39;15m&#39;</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="n">iter_time</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="n">mm</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="n">period</span><span class="o">=</span><span class="s1">&#39;week&#39;</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="n">comment</span><span class="o">=</span><span class="s1">&#39;bbs_SISTBO_@2.0&#39;</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="o">**</span><span class="n">strategy_kwargs</span>
+<span class="gp">... </span>   <span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">engine</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.trading.execution.Mt5ExecutionEngine.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/trading/execution.html#Mt5ExecutionEngine.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.trading.execution.Mt5ExecutionEngine.run" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bbstrader.trading.execution.RunMt5Engine">
+<span class="sig-prename descclassname"><span class="pre">bbstrader.trading.execution.</span></span><span class="sig-name descname"><span class="pre">RunMt5Engine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/trading/execution.html#RunMt5Engine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.trading.execution.RunMt5Engine" title="Link to this definition"></a></dt>
+<dd><p>Starts an MT5 execution engine for a given account.
+:param account_id: Account ID to run the execution engine on.
+:param **kwargs: Additional keyword arguments</p>
+<blockquote>
+<div><p>_ symbol_list : List of symbols to trade.
+- trades_instances : Dictionary of Trade instances.
+- strategy_cls : Strategy class to use for trading.</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bbstrader.trading.execution.RunMt5Engines">
+<span class="sig-prename descclassname"><span class="pre">bbstrader.trading.execution.</span></span><span class="sig-name descname"><span class="pre">RunMt5Engines</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">accounts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_delay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/trading/execution.html#RunMt5Engines"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.trading.execution.RunMt5Engines" title="Link to this definition"></a></dt>
+<dd><p>Runs multiple MT5 execution engines in parallel using multiprocessing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>accounts</strong> – Dictionary of accounts to run the execution engines on.
+Keys are the account names or IDs and values are the parameters for the execution engine.
+The parameters are the same as the ones passed to the <cite>Mt5ExecutionEngine</cite> class.</p></li>
+<li><p><strong>start_delay</strong> – Delay in seconds between starting the processes. Defaults to 1.0.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bbstrader.trading.execution.TWSExecutionEngine">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bbstrader.trading.execution.</span></span><span class="sig-name descname"><span class="pre">TWSExecutionEngine</span></span><a class="reference internal" href="_modules/bbstrader/trading/execution.html#TWSExecutionEngine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.trading.execution.TWSExecutionEngine" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+</dd></dl>
+
+</section>
+<section id="module-bbstrader.trading.scripts">
+<span id="bbstrader-trading-scripts-module"></span><h2>bbstrader.trading.scripts module<a class="headerlink" href="#module-bbstrader.trading.scripts" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="bbstrader.trading.scripts.RunMt5Terminal">
+<span class="sig-prename descclassname"><span class="pre">bbstrader.trading.scripts.</span></span><span class="sig-name descname"><span class="pre">RunMt5Terminal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/trading/scripts.html#RunMt5Terminal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.trading.scripts.RunMt5Terminal" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bbstrader.trading.scripts.RunTWSTerminal">
+<span class="sig-prename descclassname"><span class="pre">bbstrader.trading.scripts.</span></span><span class="sig-name descname"><span class="pre">RunTWSTerminal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/trading/scripts.html#RunTWSTerminal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.trading.scripts.RunTWSTerminal" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bbstrader.trading.scripts.execute_strategy">
+<span class="sig-prename descclassname"><span class="pre">bbstrader.trading.scripts.</span></span><span class="sig-name descname"><span class="pre">execute_strategy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">unknown</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/trading/scripts.html#execute_strategy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.trading.scripts.execute_strategy" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bbstrader.trading.scripts.load_config">
+<span class="sig-prename descclassname"><span class="pre">bbstrader.trading.scripts.</span></span><span class="sig-name descname"><span class="pre">load_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">account</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/trading/scripts.html#load_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.trading.scripts.load_config" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bbstrader.trading.scripts.worker_function">
+<span class="sig-prename descclassname"><span class="pre">bbstrader.trading.scripts.</span></span><span class="sig-name descname"><span class="pre">worker_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/trading/scripts.html#worker_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.trading.scripts.worker_function" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-bbstrader.trading.strategies">
+<span id="bbstrader-trading-strategies-module"></span><h2>bbstrader.trading.strategies module<a class="headerlink" href="#module-bbstrader.trading.strategies" title="Link to this heading"></a></h2>
+<p>Strategies module for trading strategies backtesting and execution.</p>
+<p># NOTE
+These strategies inherit from the Strategy class, not from MT5Strategy, because we chose to demonstrate the modular approach to building and backtesting strategies using the bbstrader framework.</p>
+<p>If these strategies need to be sent to the Mt5ExecutionEngine,
+they must return signals as a list of bbstrader.metatrader.trade.TradingSignal objects.</p>
+<p>Later, we will implement the Execution Engine for the Interactive Brokers TWS platform.</p>
+<p>DISCLAIMER:
+This module is for educational purposes only and should not be
+considered as financial advice. Always consult with a qualified financial advisor before making any investment decisions.
+The authors and contributors of this module are not responsible for any financial losses or damages incurred as a result of using
+this module or the information contained herein.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="bbstrader.trading.strategies.ArimaGarchStrategy">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bbstrader.trading.strategies.</span></span><span class="sig-name descname"><span class="pre">ArimaGarchStrategy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bars</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="bbstrader.btengine.html#bbstrader.btengine.data.DataHandler" title="bbstrader.btengine.data.DataHandler"><span class="pre">DataHandler</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">events</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Queue</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TradingMode</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">TradingMode.BACKTEST</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/trading/strategies.html#ArimaGarchStrategy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.trading.strategies.ArimaGarchStrategy" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="bbstrader.btengine.html#bbstrader.btengine.strategy.Strategy" title="bbstrader.btengine.strategy.Strategy"><code class="xref py py-class docutils literal notranslate"><span class="pre">Strategy</span></code></a></p>
+<p>The <cite>ArimaGarchStrategy</cite> class extends the <cite>Strategy</cite>
+class to implement a backtesting framework for trading strategies based on
+ARIMA-GARCH models, incorporating a Hidden Markov Model (HMM) for risk management.</p>
+<section id="features">
+<h3>Features<a class="headerlink" href="#features" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>ARIMA-GARCH Model</strong>: Utilizes ARIMA for time series forecasting and GARCH for volatility forecasting, aimed at predicting market movements.</p></li>
+<li><p><strong>HMM Risk Management</strong>: Employs a Hidden Markov Model to manage risks, determining safe trading regimes.</p></li>
+<li><p><strong>Event-Driven Backtesting</strong>: Capable of simulating real-time trading conditions by processing market data and signals sequentially.</p></li>
+<li><p><strong>Live Trading</strong>: Supports real-time trading by generating signals based on live ARIMA-GARCH predictions and HMM risk management.</p></li>
+</ul>
+</section>
+<section id="key-methods">
+<h3>Key Methods<a class="headerlink" href="#key-methods" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><cite>get_backtest_data()</cite>: Retrieves historical data for backtesting.</p></li>
+<li><p><cite>create_backtest_signal()</cite>: Generates trading signals based on ARIMA-GARCH predictions and HMM risk management.</p></li>
+<li><p><cite>get_live_data()</cite>: Retrieves live data for real-time trading.</p></li>
+<li><p><cite>create_live_signals()</cite>: Generates trading signals based on live ARIMA-GARCH predictions and HMM risk management.</p></li>
+<li><p><cite>calculate_signals()</cite>: Determines the trading signals based on the mode of operation (backtest or live).</p></li>
+</ul>
+<dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.trading.strategies.ArimaGarchStrategy.calculate_signals">
+<span class="sig-name descname"><span class="pre">calculate_signals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/trading/strategies.html#ArimaGarchStrategy.calculate_signals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.trading.strategies.ArimaGarchStrategy.calculate_signals" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.trading.strategies.ArimaGarchStrategy.create_backtest_signal">
+<span class="sig-name descname"><span class="pre">create_backtest_signal</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/trading/strategies.html#ArimaGarchStrategy.create_backtest_signal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.trading.strategies.ArimaGarchStrategy.create_backtest_signal" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.trading.strategies.ArimaGarchStrategy.create_live_signals">
+<span class="sig-name descname"><span class="pre">create_live_signals</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/trading/strategies.html#ArimaGarchStrategy.create_live_signals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.trading.strategies.ArimaGarchStrategy.create_live_signals" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.trading.strategies.ArimaGarchStrategy.get_backtest_data">
+<span class="sig-name descname"><span class="pre">get_backtest_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/trading/strategies.html#ArimaGarchStrategy.get_backtest_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.trading.strategies.ArimaGarchStrategy.get_backtest_data" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.trading.strategies.ArimaGarchStrategy.get_live_data">
+<span class="sig-name descname"><span class="pre">get_live_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/trading/strategies.html#ArimaGarchStrategy.get_live_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.trading.strategies.ArimaGarchStrategy.get_live_data" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bbstrader.trading.strategies.KalmanFilterStrategy">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bbstrader.trading.strategies.</span></span><span class="sig-name descname"><span class="pre">KalmanFilterStrategy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bars</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="bbstrader.btengine.html#bbstrader.btengine.data.DataHandler" title="bbstrader.btengine.data.DataHandler"><span class="pre">DataHandler</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">events</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Queue</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TradingMode</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">TradingMode.BACKTEST</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/trading/strategies.html#KalmanFilterStrategy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.trading.strategies.KalmanFilterStrategy" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="bbstrader.btengine.html#bbstrader.btengine.strategy.Strategy" title="bbstrader.btengine.strategy.Strategy"><code class="xref py py-class docutils literal notranslate"><span class="pre">Strategy</span></code></a></p>
+<p>The <cite>KalmanFilterStrategy</cite> class implements a backtesting framework for a
+[pairs trading](<a class="reference external" href="https://en.wikipedia.org/wiki/Pairs_trade">https://en.wikipedia.org/wiki/Pairs_trade</a>) strategy using
+Kalman Filter for signals and Hidden Markov Models (HMM) for risk management.
+This document outlines the structure and usage of the <cite>KalmanFilterStrategy</cite>,
+including initialization parameters, main functions, and an example of how to run a backtest.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.trading.strategies.KalmanFilterStrategy.calculate_backtest_signals">
+<span class="sig-name descname"><span class="pre">calculate_backtest_signals</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/trading/strategies.html#KalmanFilterStrategy.calculate_backtest_signals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.trading.strategies.KalmanFilterStrategy.calculate_backtest_signals" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.trading.strategies.KalmanFilterStrategy.calculate_btxy">
+<span class="sig-name descname"><span class="pre">calculate_btxy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">etqt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/trading/strategies.html#KalmanFilterStrategy.calculate_btxy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.trading.strategies.KalmanFilterStrategy.calculate_btxy" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.trading.strategies.KalmanFilterStrategy.calculate_live_signals">
+<span class="sig-name descname"><span class="pre">calculate_live_signals</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/trading/strategies.html#KalmanFilterStrategy.calculate_live_signals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.trading.strategies.KalmanFilterStrategy.calculate_live_signals" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.trading.strategies.KalmanFilterStrategy.calculate_livexy">
+<span class="sig-name descname"><span class="pre">calculate_livexy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/trading/strategies.html#KalmanFilterStrategy.calculate_livexy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.trading.strategies.KalmanFilterStrategy.calculate_livexy" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.trading.strategies.KalmanFilterStrategy.calculate_signals">
+<span class="sig-name descname"><span class="pre">calculate_signals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/trading/strategies.html#KalmanFilterStrategy.calculate_signals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.trading.strategies.KalmanFilterStrategy.calculate_signals" title="Link to this definition"></a></dt>
+<dd><p>Calculate the Kalman Filter strategy.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bbstrader.trading.strategies.SMAStrategy">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bbstrader.trading.strategies.</span></span><span class="sig-name descname"><span class="pre">SMAStrategy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bars</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="bbstrader.btengine.html#bbstrader.btengine.data.DataHandler" title="bbstrader.btengine.data.DataHandler"><span class="pre">DataHandler</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">events</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Queue</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TradingMode</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">TradingMode.BACKTEST</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/trading/strategies.html#SMAStrategy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.trading.strategies.SMAStrategy" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="bbstrader.btengine.html#bbstrader.btengine.strategy.Strategy" title="bbstrader.btengine.strategy.Strategy"><code class="xref py py-class docutils literal notranslate"><span class="pre">Strategy</span></code></a></p>
+<p>Carries out a basic Moving Average Crossover strategy bactesting with a
+short/long simple weighted moving average. Default short/long
+windows are 50/200 periods respectively and uses Hiden Markov Model
+as risk Managment system for filteering signals.</p>
+<p>The trading strategy for this class is exceedingly simple and is used to bettter
+understood. The important issue is the risk management aspect (the Hmm model)</p>
+<p>The Long-term trend following strategy is of the classic moving average crossover type.
+The rules are simple:
+-   At every bar calculate the 50-day and 200-day simple moving averages (SMA)
+-   If the 50-day SMA exceeds the 200-day SMA and the strategy is not invested, then go long
+-   If the 200-day SMA exceeds the 50-day SMA and the strategy is invested, then close the position</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.trading.strategies.SMAStrategy.calculate_signals">
+<span class="sig-name descname"><span class="pre">calculate_signals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/trading/strategies.html#SMAStrategy.calculate_signals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.trading.strategies.SMAStrategy.calculate_signals" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.trading.strategies.SMAStrategy.create_backtest_signals">
+<span class="sig-name descname"><span class="pre">create_backtest_signals</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/trading/strategies.html#SMAStrategy.create_backtest_signals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.trading.strategies.SMAStrategy.create_backtest_signals" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.trading.strategies.SMAStrategy.create_live_signals">
+<span class="sig-name descname"><span class="pre">create_live_signals</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/trading/strategies.html#SMAStrategy.create_live_signals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.trading.strategies.SMAStrategy.create_live_signals" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.trading.strategies.SMAStrategy.get_backtest_data">
+<span class="sig-name descname"><span class="pre">get_backtest_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/trading/strategies.html#SMAStrategy.get_backtest_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.trading.strategies.SMAStrategy.get_backtest_data" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.trading.strategies.SMAStrategy.get_live_data">
+<span class="sig-name descname"><span class="pre">get_live_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/trading/strategies.html#SMAStrategy.get_live_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.trading.strategies.SMAStrategy.get_live_data" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bbstrader.trading.strategies.StockIndexSTBOTrading">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bbstrader.trading.strategies.</span></span><span class="sig-name descname"><span class="pre">StockIndexSTBOTrading</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bars</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="bbstrader.btengine.html#bbstrader.btengine.data.DataHandler" title="bbstrader.btengine.data.DataHandler"><span class="pre">DataHandler</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">events</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Queue</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TradingMode</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">TradingMode.BACKTEST</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/trading/strategies.html#StockIndexSTBOTrading"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.trading.strategies.StockIndexSTBOTrading" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="bbstrader.btengine.html#bbstrader.btengine.strategy.Strategy" title="bbstrader.btengine.strategy.Strategy"><code class="xref py py-class docutils literal notranslate"><span class="pre">Strategy</span></code></a></p>
+<p>The StockIndexSTBOTrading class implements a stock index Contract for Difference (CFD)
+Buy-Only trading strategy. This strategy is based on the assumption that stock markets
+typically follow a long-term uptrend. The strategy is designed to capitalize on market
+corrections and price dips, where stocks or indices temporarily drop but are expected
+to recover. It operates in two modes: backtest and live, and it is particularly
+tailored to index trading.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.trading.strategies.StockIndexSTBOTrading.calculate_backtest_signals">
+<span class="sig-name descname"><span class="pre">calculate_backtest_signals</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/trading/strategies.html#StockIndexSTBOTrading.calculate_backtest_signals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.trading.strategies.StockIndexSTBOTrading.calculate_backtest_signals" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.trading.strategies.StockIndexSTBOTrading.calculate_live_signals">
+<span class="sig-name descname"><span class="pre">calculate_live_signals</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/trading/strategies.html#StockIndexSTBOTrading.calculate_live_signals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.trading.strategies.StockIndexSTBOTrading.calculate_live_signals" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.trading.strategies.StockIndexSTBOTrading.calculate_signals">
+<span class="sig-name descname"><span class="pre">calculate_signals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/bbstrader/trading/strategies.html#StockIndexSTBOTrading.calculate_signals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.trading.strategies.StockIndexSTBOTrading.calculate_signals" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bbstrader.trading.strategies.get_quantities">
+<span class="sig-prename descclassname"><span class="pre">bbstrader.trading.strategies.</span></span><span class="sig-name descname"><span class="pre">get_quantities</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">quantities</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol_list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/trading/strategies.html#get_quantities"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.trading.strategies.get_quantities" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bbstrader.trading.strategies.test_strategy">
+<span class="sig-prename descclassname"><span class="pre">bbstrader.trading.strategies.</span></span><span class="sig-name descname"><span class="pre">test_strategy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">strategy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'sma'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'klf'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'arch'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'sistbo'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'sma'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/trading/strategies.html#test_strategy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.trading.strategies.test_strategy" title="Link to this definition"></a></dt>
+<dd><p>Executes a backtest of the specified strategy</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>strategy</strong> – The strategy to use in test mode. Default is <cite>sma</cite>.
+- <cite>sma</cite> Execute <cite>SMAStrategy</cite>, for more detail see this class documentation.
+- <cite>klf</cite> Execute <cite>KalmanFilterStrategy</cite>, for more detail see this class documentation.
+- <cite>arch</cite> Execute <cite>ArimaGarchStrategy</cite>, for more detail see this class documentation.
+- <cite>sistbo</cite> Execute <cite>StockIndexSTBOTrading</cite>, for more detail see this class documentation.</p></li>
+<li><p><strong>quantity</strong> – The quantity of assets to be used in the test backtest. Default is 1000.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-bbstrader.trading.utils">
+<span id="bbstrader-trading-utils-module"></span><h2>bbstrader.trading.utils module<a class="headerlink" href="#module-bbstrader.trading.utils" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="bbstrader.trading.utils.send_message">
+<span class="sig-prename descclassname"><span class="pre">bbstrader.trading.utils.</span></span><span class="sig-name descname"><span class="pre">send_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'SIGNAL'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'New</span> <span class="pre">signal'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">notify_me</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">telegram</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chat_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/trading/utils.html#send_message"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.trading.utils.send_message" title="Link to this definition"></a></dt>
+<dd><p>Send a message to the user</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>title</strong> – str: Title of the message</p></li>
+<li><p><strong>message</strong> – str: Message of the message</p></li>
+<li><p><strong>notify_me</strong> – bool: Send a desktop notification</p></li>
+<li><p><strong>telegram</strong> – bool: Send a telegram message</p></li>
+<li><p><strong>token</strong> – str: Telegram bot token</p></li>
+<li><p><strong>chat_id</strong> – int or str or list: Chat id or list of chat ids</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bbstrader.trading.utils.send_notification">
+<span class="sig-prename descclassname"><span class="pre">bbstrader.trading.utils.</span></span><span class="sig-name descname"><span class="pre">send_notification</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">title</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/trading/utils.html#send_notification"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.trading.utils.send_notification" title="Link to this definition"></a></dt>
+<dd><p>Send a desktop notification</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>title</strong> – str: Title of the notification</p></li>
+<li><p><strong>message</strong> – str: Message of the notification</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bbstrader.trading.utils.send_telegram_message">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bbstrader.trading.utils.</span></span><span class="sig-name descname"><span class="pre">send_telegram_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">token</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chat_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/trading/utils.html#send_telegram_message"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.trading.utils.send_telegram_message" title="Link to this definition"></a></dt>
+<dd><p>Send a message to a telegram chat</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>token</strong> – str: Telegram bot token</p></li>
+<li><p><strong>chat_id</strong> – int or str or list: Chat id or list of chat ids</p></li>
+<li><p><strong>text</strong> – str: Message to send</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-bbstrader.trading">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-bbstrader.trading" title="Link to this heading"></a></h2>
+<p>Trading strategies execution module</p>
+<p>This module is responsible for executing trading strategies.
+It provides a framework for executing trading strategies and managing the trading process.
+The module is designed to be flexible and extensible, allowing users to define their own trading
+strategies and customize the trading process.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="bbstrader.models.html" class="btn btn-neutral float-left" title="bbstrader.models package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023 - 2025, Bertin Balouki SIMYELI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

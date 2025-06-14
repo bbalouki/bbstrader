@@ -1,0 +1,418 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bbstrader.models.factors &mdash; bbstrader 0.2.092 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=97badf68"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            bbstrader
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">bbstrader</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">bbstrader</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">bbstrader.models.factors</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bbstrader.models.factors</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">yfinance</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">yf</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">bbstrader.btengine.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">EODHDataHandler</span><span class="p">,</span> <span class="n">FMPDataHandler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bbstrader.metatrader.rates</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_historical_data</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bbstrader.tseries</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">find_cointegrated_pairs</span><span class="p">,</span>
+    <span class="n">select_assets</span><span class="p">,</span>
+    <span class="n">select_candidate_pairs</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;search_coint_candidate_pairs&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_download_and_process_data</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">tickers</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">tf</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Download and process data for a list of tickers from the specified source.&quot;&quot;&quot;</span>
+    <span class="n">data_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">ticker</span> <span class="ow">in</span> <span class="n">tickers</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">source</span> <span class="o">==</span> <span class="s2">&quot;yf&quot;</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">yf</span><span class="o">.</span><span class="n">download</span><span class="p">(</span>
+                    <span class="n">ticker</span><span class="p">,</span>
+                    <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
+                    <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
+                    <span class="n">progress</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">multi_level_index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">auto_adjust</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="s2">&quot;Adj Close&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Adj Close&quot;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">source</span> <span class="o">==</span> <span class="s2">&quot;mt5&quot;</span><span class="p">:</span>
+                <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="n">start</span><span class="p">),</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="n">end</span><span class="p">)</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">download_historical_data</span><span class="p">(</span>
+                    <span class="n">symbol</span><span class="o">=</span><span class="n">ticker</span><span class="p">,</span>
+                    <span class="n">timeframe</span><span class="o">=</span><span class="n">tf</span><span class="p">,</span>
+                    <span class="n">date_from</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
+                    <span class="n">date_to</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
+                    <span class="o">**</span><span class="p">{</span><span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="n">path</span><span class="p">},</span>
+                <span class="p">)</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;adj_close&quot;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">source</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;fmp&quot;</span><span class="p">,</span> <span class="s2">&quot;eodhd&quot;</span><span class="p">]:</span>
+                <span class="n">handler_class</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">FMPDataHandler</span> <span class="k">if</span> <span class="n">source</span> <span class="o">==</span> <span class="s2">&quot;fmp&quot;</span> <span class="k">else</span> <span class="n">EODHDataHandler</span>
+                <span class="p">)</span>
+                <span class="n">handler</span> <span class="o">=</span> <span class="n">handler_class</span><span class="p">(</span><span class="n">events</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">symbol_list</span><span class="o">=</span><span class="p">[</span><span class="n">ticker</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">handler</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">ticker</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid source: </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="nb">str</span><span class="o">.</span><span class="n">lower</span><span class="p">)</span>
+            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;ticker&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ticker</span>
+            <span class="n">data_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No Data found for </span><span class="si">{</span><span class="n">ticker</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">continue</span>
+
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">data_list</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_handle_date_range</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">window</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle start and end date generation.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">end</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">())</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">())</span>
+            <span class="o">-</span> <span class="n">pd</span><span class="o">.</span><span class="n">DateOffset</span><span class="p">(</span><span class="n">years</span><span class="o">=</span><span class="n">window</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">pd</span><span class="o">.</span><span class="n">DateOffset</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_period_search</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">securities</span><span class="p">,</span> <span class="n">candidates</span><span class="p">,</span> <span class="n">window</span><span class="p">,</span> <span class="n">npairs</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">window</span> <span class="o">&lt;</span> <span class="mi">3</span> <span class="ow">or</span> <span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="n">end</span><span class="p">)</span> <span class="o">-</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="n">start</span><span class="p">))</span><span class="o">.</span><span class="n">days</span> <span class="o">/</span> <span class="mi">365</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;The date range must be at least two (2) years for period search.&quot;</span>
+        <span class="p">)</span>
+    <span class="n">top_pairs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">p_start</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="n">end</span><span class="p">)</span> <span class="o">-</span> <span class="n">pd</span><span class="o">.</span><span class="n">DateOffset</span><span class="p">(</span><span class="n">years</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">periods</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">p_start</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="n">end</span><span class="p">),</span> <span class="n">freq</span><span class="o">=</span><span class="s2">&quot;BQE&quot;</span><span class="p">)</span>
+    <span class="n">npairs</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">npairs</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">period</span> <span class="ow">in</span> <span class="n">periods</span><span class="p">:</span>
+        <span class="n">s_start</span> <span class="o">=</span> <span class="n">period</span> <span class="o">-</span> <span class="n">pd</span><span class="o">.</span><span class="n">DateOffset</span><span class="p">(</span><span class="n">years</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">pd</span><span class="o">.</span><span class="n">DateOffset</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Searching for pairs in period: </span><span class="si">{</span><span class="n">s_start</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">period</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">pairs</span> <span class="o">=</span> <span class="n">find_cointegrated_pairs</span><span class="p">(</span>
+            <span class="n">securities</span><span class="p">,</span>
+            <span class="n">candidates</span><span class="p">,</span>
+            <span class="n">n</span><span class="o">=</span><span class="n">npairs</span><span class="p">,</span>
+            <span class="n">start</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">s_start</span><span class="p">),</span>
+            <span class="n">stop</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">period</span><span class="p">),</span>
+            <span class="n">coint</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">pairs</span><span class="p">[</span><span class="s2">&quot;period&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">period</span>
+        <span class="n">top_pairs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pairs</span><span class="p">)</span>
+    <span class="n">top_pairs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">top_pairs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">top_pairs</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;No pairs found in the specified period.&quot;</span>
+            <span class="s2">&quot;Please adjust the date range or increase the number of pairs.&quot;</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">top_pairs</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">npairs</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_process_asset_data</span><span class="p">(</span><span class="n">securities</span><span class="p">,</span> <span class="n">candidates</span><span class="p">,</span> <span class="n">universe</span><span class="p">,</span> <span class="n">rolling_window</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Process and select assets from the data.&quot;&quot;&quot;</span>
+    <span class="n">securities</span> <span class="o">=</span> <span class="n">select_assets</span><span class="p">(</span>
+        <span class="n">securities</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">universe</span><span class="p">,</span> <span class="n">rolling_window</span><span class="o">=</span><span class="n">rolling_window</span>
+    <span class="p">)</span>
+    <span class="n">candidates</span> <span class="o">=</span> <span class="n">select_assets</span><span class="p">(</span>
+        <span class="n">candidates</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">universe</span><span class="p">,</span> <span class="n">rolling_window</span><span class="o">=</span><span class="n">rolling_window</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">securities</span><span class="p">,</span> <span class="n">candidates</span>
+
+
+<div class="viewcode-block" id="search_coint_candidate_pairs">
+<a class="viewcode-back" href="../../../bbstrader.models.html#bbstrader.models.factors.search_coint_candidate_pairs">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">search_coint_candidate_pairs</span><span class="p">(</span>
+    <span class="n">securities</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">candidates</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">start</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">end</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">period_search</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">select</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">source</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">universe</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+    <span class="n">window</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="n">rolling_window</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">npairs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="n">tf</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;D1&quot;</span><span class="p">,</span>
+    <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Searches for candidate pairs of securities based on cointegration analysis.</span>
+
+<span class="sd">    This function either processes preloaded securities and candidates data</span>
+<span class="sd">    (as pandas DataFrames) or downloads historical data from a specified</span>
+<span class="sd">    source (e.g., Yahoo Finance, MetaTrader 5, Financial Modeling Prep, or EODHD).</span>
+<span class="sd">    It then selects the top `npairs` based on cointegration.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        securities (pd.DataFrame | List[str], optional):</span>
+<span class="sd">            A DataFrame or list of tickers representing the securities for analysis.</span>
+<span class="sd">            If using a DataFrame, it should include a MultiIndex with levels</span>
+<span class="sd">            [&#39;ticker&#39;, &#39;date&#39;].</span>
+<span class="sd">        candidates (pd.DataFrame | List[str], optional):</span>
+<span class="sd">            A DataFrame or list of tickers representing the candidate securities</span>
+<span class="sd">            for pair selection.</span>
+<span class="sd">        start (str, optional):</span>
+<span class="sd">            The start date for data retrieval in &#39;YYYY-MM-DD&#39; format. Ignored</span>
+<span class="sd">            if both `securities` and `candidates` are DataFrames.</span>
+<span class="sd">        end (str, optional):</span>
+<span class="sd">            The end date for data retrieval in &#39;YYYY-MM-DD&#39; format. Ignored</span>
+<span class="sd">            if both `securities` and `candidates` are DataFrames.</span>
+<span class="sd">        period_search (bool, optional):</span>
+<span class="sd">            If True, the function will perform a periodic search for cointegrated from 3 years</span>
+<span class="sd">            to the end date by taking 2 yerars rolling window. So you need to have at least 3 years of data</span>
+<span class="sd">            or set the `window` parameter to 3. Defaults to False.</span>
+<span class="sd">        select (bool, optional):</span>
+<span class="sd">            If True, the function will select the top cointegrated pairs based on the</span>
+<span class="sd">            cointegration test results in form of List[dict].</span>
+<span class="sd">            If False, the function will return all cointegrated pairs in form of DataFrame.</span>
+<span class="sd">            This can be useful for further analysis or visualization.</span>
+<span class="sd">        source (str, optional):</span>
+<span class="sd">            The data source for historical data retrieval. Must be one of</span>
+<span class="sd">            [&#39;yf&#39;, &#39;mt5&#39;, &#39;fmp&#39;, &#39;eodhd&#39;]. Required if `securities` and</span>
+<span class="sd">            `candidates` are lists of tickers.</span>
+<span class="sd">        universe (int, optional):</span>
+<span class="sd">            The maximum number of assets to retain for analysis. Defaults to 100.</span>
+<span class="sd">        window (int, optional):</span>
+<span class="sd">            The number of years of historical data to retrieve if `start` and `end`</span>
+<span class="sd">            are not specified. Defaults to 2 years.</span>
+<span class="sd">        rolling_window (int, optional):</span>
+<span class="sd">            The size of the rolling window (in days) used for asset selection.</span>
+<span class="sd">            Defaults to None.</span>
+<span class="sd">        npairs (int, optional):</span>
+<span class="sd">            The number of top cointegrated pairs to select. Defaults to 10.</span>
+<span class="sd">        tf (str, optional):</span>
+<span class="sd">            The timeframe for MetaTrader 5 data retrieval. Defaults to &#39;D1&#39;.</span>
+<span class="sd">        path (str, optional):</span>
+<span class="sd">            The path to MetaTrader 5 historical data files. Required if `source=&#39;mt5&#39;`.</span>
+<span class="sd">        **kwargs:</span>
+<span class="sd">            Additional parameters for data retrieval (e.g., API keys, date ranges</span>
+<span class="sd">            for specific sources), see ``bbstrader.btengine.data.FMPDataHandler`` or</span>
+<span class="sd">            ``bbstrader.btengine.data.EODHDataHandler`` for more details.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        List[dict]: A list containing the selected top cointegrated pairs if `select=True`.</span>
+<span class="sd">        pd.DataFrame: A DataFrame containing all cointegrated pairs if `select=False`.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If the inputs are invalid or if the `source` is not one of</span>
+<span class="sd">        the supported sources.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        Using preloaded DataFrames:</span>
+<span class="sd">            &gt;&gt;&gt; securities = pd.read_csv(&#39;securities.csv&#39;, index_col=[&#39;ticker&#39;, &#39;date&#39;])</span>
+<span class="sd">            &gt;&gt;&gt; candidates = pd.read_csv(&#39;candidates.csv&#39;, index_col=[&#39;ticker&#39;, &#39;date&#39;])</span>
+<span class="sd">            &gt;&gt;&gt; pairs = search_candidate_pairs(securities=securities, candidates=candidates)</span>
+
+<span class="sd">        Using a data source (Yahoo Finance):</span>
+<span class="sd">            &gt;&gt;&gt; securities = [&#39;SPY&#39;, &#39;IWM&#39;, &#39;XLF&#39;, &#39;HYG&#39;, &#39;XLE&#39;, &#39;LQD&#39;, &#39;GDX&#39;, &#39;FXI&#39;, &#39;EWZ&#39;, ...]</span>
+<span class="sd">            &gt;&gt;&gt; candidates = [&#39;AAPL&#39;, &#39;AMZN&#39;, &#39;NVDA&#39;, &#39;MSFT&#39;, &#39;GOOGL&#39;, &#39;AMD&#39;, &#39;BAC&#39;, &#39;NFLX&#39;, ...]</span>
+
+<span class="sd">            &gt;&gt;&gt; pairs = search_candidate_pairs(</span>
+<span class="sd">            ...     securities=securities,</span>
+<span class="sd">            ...     candidates=candidates,</span>
+<span class="sd">            ...     start=&#39;2022-12-12&#39;,</span>
+<span class="sd">            ...     end=&#39;2024-12-10&#39;,</span>
+<span class="sd">            ...     source=&#39;yf&#39;,</span>
+<span class="sd">            ...     npairs=10</span>
+<span class="sd">            ... )</span>
+<span class="sd">            &gt;&gt;&gt;    [</span>
+<span class="sd">            ...    {&#39;x&#39;: &#39;LQD&#39;, &#39;y&#39;: &#39;TMO&#39;},</span>
+<span class="sd">            ...    {&#39;x&#39;: &#39;IEF&#39;, &#39;y&#39;: &#39;COP&#39;},</span>
+<span class="sd">            ...    {&#39;x&#39;: &#39;WMT&#39;, &#39;y&#39;: &#39;IWM&#39;},</span>
+<span class="sd">            ...    {&#39;x&#39;: &#39;MDT&#39;, &#39;y&#39;: &#39;OIH&#39;},</span>
+<span class="sd">            ...    {&#39;x&#39;: &#39;EWZ&#39;, &#39;y&#39;: &#39;CMCSA&#39;},</span>
+<span class="sd">            ...    {&#39;x&#39;: &#39;VLO&#39;, &#39;y&#39;: &#39;XOP&#39;},</span>
+<span class="sd">            ...    {&#39;x&#39;: &#39;SHY&#39;, &#39;y&#39;: &#39;F&#39;},</span>
+<span class="sd">            ...    {&#39;x&#39;: &#39;ABT&#39;, &#39;y&#39;: &#39;LQD&#39;},</span>
+<span class="sd">            ...    {&#39;x&#39;: &#39;PFE&#39;, &#39;y&#39;: &#39;USO&#39;},</span>
+<span class="sd">            ...    {&#39;x&#39;: &#39;LQD&#39;, &#39;y&#39;: &#39;MDT&#39;}</span>
+<span class="sd">            ...    ]</span>
+
+<span class="sd">        Using MetaTrader 5:</span>
+<span class="sd">            &gt;&gt;&gt; securities = [&#39;EURUSD&#39;, &#39;GBPUSD&#39;]</span>
+<span class="sd">            &gt;&gt;&gt; candidates = [&#39;USDJPY&#39;, &#39;AUDUSD&#39;]</span>
+<span class="sd">            &gt;&gt;&gt; pairs = search_candidate_pairs(</span>
+<span class="sd">            ...     securities=securities,</span>
+<span class="sd">            ...     candidates=candidates,</span>
+<span class="sd">            ...     source=&#39;mt5&#39;,</span>
+<span class="sd">            ...     tf=&#39;H1&#39;,</span>
+<span class="sd">            ...     path=&#39;/path/to/terminal64.exe&#39;,</span>
+<span class="sd">            ... )</span>
+
+<span class="sd">    Notes:</span>
+<span class="sd">        - If `securities` and `candidates` are DataFrames, the function assumes</span>
+<span class="sd">          the data is already preprocessed and indexed by [&#39;ticker&#39;, &#39;date&#39;].</span>
+<span class="sd">        - When using `source=&#39;fmp&#39;` or `source=&#39;eodhd&#39;`, API keys and other</span>
+<span class="sd">          required parameters should be passed via `kwargs`.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="p">(</span>
+        <span class="n">securities</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="ow">and</span> <span class="n">candidates</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">securities</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span>
+        <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">candidates</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span>
+    <span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">securities</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span>
+            <span class="n">candidates</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span>
+        <span class="p">):</span>
+            <span class="n">securities</span><span class="p">,</span> <span class="n">candidates</span> <span class="o">=</span> <span class="n">_process_asset_data</span><span class="p">(</span>
+                <span class="n">securities</span><span class="p">,</span> <span class="n">candidates</span><span class="p">,</span> <span class="n">universe</span><span class="p">,</span> <span class="n">rolling_window</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">period_search</span><span class="p">:</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">securities</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s2">&quot;date&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+            <span class="n">end</span> <span class="o">=</span> <span class="n">securities</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s2">&quot;date&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+            <span class="n">top_pairs</span> <span class="o">=</span> <span class="n">_period_search</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">securities</span><span class="p">,</span> <span class="n">candidates</span><span class="p">,</span> <span class="n">window</span><span class="p">,</span> <span class="n">npairs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">top_pairs</span> <span class="o">=</span> <span class="n">find_cointegrated_pairs</span><span class="p">(</span>
+                <span class="n">securities</span><span class="p">,</span> <span class="n">candidates</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">npairs</span><span class="p">,</span> <span class="n">coint</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">select</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">select_candidate_pairs</span><span class="p">(</span>
+                <span class="n">top_pairs</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="kc">True</span> <span class="k">if</span> <span class="n">period_search</span> <span class="k">else</span> <span class="kc">False</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">top_pairs</span>
+
+    <span class="k">elif</span> <span class="n">source</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">source</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;yf&quot;</span><span class="p">,</span> <span class="s2">&quot;mt5&quot;</span><span class="p">,</span> <span class="s2">&quot;fmp&quot;</span><span class="p">,</span> <span class="s2">&quot;eodhd&quot;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;source must be either &#39;yf&#39;, &#39;mt5&#39;, &#39;fmp&#39;, or &#39;eodhd&#39;&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">securities</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">candidates</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;securities and candidates must be a list of tickers&quot;</span><span class="p">)</span>
+
+        <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">_handle_date_range</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">window</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">source</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;fmp&quot;</span><span class="p">,</span> <span class="s2">&quot;eodhd&quot;</span><span class="p">]:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">_start&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">_start&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">start</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">_end&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">_end&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">end</span>
+
+        <span class="n">securities_data</span> <span class="o">=</span> <span class="n">_download_and_process_data</span><span class="p">(</span>
+            <span class="n">source</span><span class="p">,</span> <span class="n">securities</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">tf</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+        <span class="n">candidates_data</span> <span class="o">=</span> <span class="n">_download_and_process_data</span><span class="p">(</span>
+            <span class="n">source</span><span class="p">,</span> <span class="n">candidates</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">tf</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+        <span class="n">securities_data</span> <span class="o">=</span> <span class="n">securities_data</span><span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s2">&quot;ticker&quot;</span><span class="p">,</span> <span class="s2">&quot;date&quot;</span><span class="p">])</span>
+        <span class="n">candidates_data</span> <span class="o">=</span> <span class="n">candidates_data</span><span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s2">&quot;ticker&quot;</span><span class="p">,</span> <span class="s2">&quot;date&quot;</span><span class="p">])</span>
+        <span class="n">securities_data</span><span class="p">,</span> <span class="n">candidates_data</span> <span class="o">=</span> <span class="n">_process_asset_data</span><span class="p">(</span>
+            <span class="n">securities_data</span><span class="p">,</span> <span class="n">candidates_data</span><span class="p">,</span> <span class="n">universe</span><span class="p">,</span> <span class="n">rolling_window</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">period_search</span><span class="p">:</span>
+            <span class="n">top_pairs</span> <span class="o">=</span> <span class="n">_period_search</span><span class="p">(</span>
+                <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">securities_data</span><span class="p">,</span> <span class="n">candidates_data</span><span class="p">,</span> <span class="n">window</span><span class="p">,</span> <span class="n">npairs</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">npairs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">top_pairs</span> <span class="o">=</span> <span class="n">find_cointegrated_pairs</span><span class="p">(</span>
+                <span class="n">securities_data</span><span class="p">,</span> <span class="n">candidates_data</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">npairs</span><span class="p">,</span> <span class="n">coint</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">select</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">select_candidate_pairs</span><span class="p">(</span>
+                <span class="n">top_pairs</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="kc">True</span> <span class="k">if</span> <span class="n">period_search</span> <span class="k">else</span> <span class="kc">False</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">top_pairs</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;Invalid input. Either provide securities&quot;</span>
+            <span class="s2">&quot;and candidates as DataFrames or specify a data source.&quot;</span>
+        <span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023 - 2025, Bertin Balouki SIMYELI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

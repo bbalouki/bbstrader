@@ -1,0 +1,919 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bbstrader.models.nlp &mdash; bbstrader 0.2.092 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=97badf68"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            bbstrader
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">bbstrader</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">bbstrader</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">bbstrader.models.nlp</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bbstrader.models.nlp</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">dash</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">nltk</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">plotly.express</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">px</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">spacy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dash</span><span class="w"> </span><span class="kn">import</span> <span class="n">dcc</span><span class="p">,</span> <span class="n">html</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dash.dependencies</span><span class="w"> </span><span class="kn">import</span> <span class="n">Input</span><span class="p">,</span> <span class="n">Output</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">nltk.corpus</span><span class="w"> </span><span class="kn">import</span> <span class="n">stopwords</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">nltk.tokenize</span><span class="w"> </span><span class="kn">import</span> <span class="n">word_tokenize</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">textblob</span><span class="w"> </span><span class="kn">import</span> <span class="n">TextBlob</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">vaderSentiment.vaderSentiment</span><span class="w"> </span><span class="kn">import</span> <span class="n">SentimentIntensityAnalyzer</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">bbstrader.core.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">FinancialNews</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;TopicModeler&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SentimentAnalyzer&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;EQUITY_LEXICON&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FOREX_LEXICON&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;COMMODITIES_LEXICON&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CRYPTO_LEXICON&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;BONDS_LEXICON&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FINANCIAL_LEXICON&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+
+<span class="n">EQUITY_LEXICON</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="c1"># Strongly Positive Sentiment</span>
+    <span class="s2">&quot;bullish&quot;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span>
+    <span class="s2">&quot;rally&quot;</span><span class="p">:</span> <span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;breakout&quot;</span><span class="p">:</span> <span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;upgrade&quot;</span><span class="p">:</span> <span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;beat estimates&quot;</span><span class="p">:</span> <span class="mf">3.2</span><span class="p">,</span>
+    <span class="s2">&quot;strong earnings&quot;</span><span class="p">:</span> <span class="mf">3.5</span><span class="p">,</span>
+    <span class="s2">&quot;record revenue&quot;</span><span class="p">:</span> <span class="mf">3.5</span><span class="p">,</span>
+    <span class="s2">&quot;profit surge&quot;</span><span class="p">:</span> <span class="mf">3.2</span><span class="p">,</span>
+    <span class="s2">&quot;buyback&quot;</span><span class="p">:</span> <span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;dividend increase&quot;</span><span class="p">:</span> <span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;guidance raised&quot;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span>
+    <span class="s2">&quot;expanding market share&quot;</span><span class="p">:</span> <span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;exceeded expectations&quot;</span><span class="p">:</span> <span class="mf">3.2</span><span class="p">,</span>
+    <span class="s2">&quot;all-time high&quot;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span>
+    <span class="s2">&quot;strong fundamentals&quot;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span>
+    <span class="s2">&quot;robust growth&quot;</span><span class="p">:</span> <span class="mf">3.2</span><span class="p">,</span>
+    <span class="s2">&quot;cash flow positive&quot;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span>
+    <span class="s2">&quot;market leader&quot;</span><span class="p">:</span> <span class="mf">2.8</span><span class="p">,</span>
+    <span class="s2">&quot;acquisition&quot;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span>
+    <span class="s2">&quot;cost-cutting&quot;</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">,</span>
+    <span class="s2">&quot;strong guidance&quot;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span>
+    <span class="s2">&quot;positive outlook&quot;</span><span class="p">:</span> <span class="mf">2.8</span><span class="p">,</span>
+    <span class="s2">&quot;EPS growth&quot;</span><span class="p">:</span> <span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;undervalued&quot;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span>
+    <span class="c1"># Moderately Positive Sentiment</span>
+    <span class="s2">&quot;merger talks&quot;</span><span class="p">:</span> <span class="mf">1.8</span><span class="p">,</span>
+    <span class="s2">&quot;strategic partnership&quot;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span>
+    <span class="s2">&quot;shareholder value&quot;</span><span class="p">:</span> <span class="mf">2.2</span><span class="p">,</span>
+    <span class="s2">&quot;restructuring&quot;</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">,</span>
+    <span class="s2">&quot;capital appreciation&quot;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span>
+    <span class="s2">&quot;competitive advantage&quot;</span><span class="p">:</span> <span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;economic expansion&quot;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span>
+    <span class="s2">&quot;strong balance sheet&quot;</span><span class="p">:</span> <span class="mf">2.8</span><span class="p">,</span>
+    <span class="c1"># Neutral Sentiment</span>
+    <span class="s2">&quot;consolidation&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
+    <span class="s2">&quot;technical correction&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.8</span><span class="p">,</span>
+    <span class="s2">&quot;volatility&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="s2">&quot;profit-taking&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span>
+    <span class="s2">&quot;neutral rating&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="s2">&quot;steady growth&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="c1"># Moderately Negative Sentiment</span>
+    <span class="s2">&quot;short interest rising&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.0</span><span class="p">,</span>
+    <span class="s2">&quot;debt restructuring&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">1.5</span><span class="p">,</span>
+    <span class="s2">&quot;share dilution&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.0</span><span class="p">,</span>
+    <span class="s2">&quot;regulatory scrutiny&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;missed expectations&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.0</span><span class="p">,</span>
+    <span class="s2">&quot;guidance lowered&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.0</span><span class="p">,</span>
+    <span class="s2">&quot;cost overruns&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.0</span><span class="p">,</span>
+    <span class="s2">&quot;flat revenue&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">1.5</span><span class="p">,</span>
+    <span class="s2">&quot;underperformance&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;profit margin decline&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.2</span><span class="p">,</span>
+    <span class="s2">&quot;competitive pressure&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">1.8</span><span class="p">,</span>
+    <span class="s2">&quot;legal issues&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.0</span><span class="p">,</span>
+    <span class="c1"># Strongly Negative Sentiment</span>
+    <span class="s2">&quot;bearish&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.0</span><span class="p">,</span>
+    <span class="s2">&quot;sell-off&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.5</span><span class="p">,</span>
+    <span class="s2">&quot;downgrade&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.8</span><span class="p">,</span>
+    <span class="s2">&quot;weak earnings&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.5</span><span class="p">,</span>
+    <span class="s2">&quot;profit warning&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.5</span><span class="p">,</span>
+    <span class="s2">&quot;default risk&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">4.0</span><span class="p">,</span>
+    <span class="s2">&quot;bankruptcy filing&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">4.2</span><span class="p">,</span>
+    <span class="s2">&quot;liquidity crisis&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.8</span><span class="p">,</span>
+    <span class="s2">&quot;cut dividend&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.8</span><span class="p">,</span>
+    <span class="s2">&quot;earnings decline&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.2</span><span class="p">,</span>
+    <span class="s2">&quot;stock crash&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">4.0</span><span class="p">,</span>
+    <span class="s2">&quot;economic slowdown&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.8</span><span class="p">,</span>
+    <span class="s2">&quot;recession fears&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.5</span><span class="p">,</span>
+    <span class="s2">&quot;high debt levels&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.0</span><span class="p">,</span>
+    <span class="s2">&quot;market downturn&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.2</span><span class="p">,</span>
+    <span class="s2">&quot;losses widen&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.8</span><span class="p">,</span>
+    <span class="s2">&quot;credit downgrade&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.5</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="n">FOREX_LEXICON</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="c1"># Strongly Positive Sentiment</span>
+    <span class="s2">&quot;hawkish&quot;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span>
+    <span class="s2">&quot;rate hike&quot;</span><span class="p">:</span> <span class="mf">2.8</span><span class="p">,</span>
+    <span class="s2">&quot;tightening policy&quot;</span><span class="p">:</span> <span class="mf">2.8</span><span class="p">,</span>
+    <span class="s2">&quot;currency appreciation&quot;</span><span class="p">:</span> <span class="mf">2.8</span><span class="p">,</span>
+    <span class="s2">&quot;strong labor market&quot;</span><span class="p">:</span> <span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;GDP expansion&quot;</span><span class="p">:</span> <span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;economic boom&quot;</span><span class="p">:</span> <span class="mf">3.2</span><span class="p">,</span>
+    <span class="s2">&quot;inflation under control&quot;</span><span class="p">:</span> <span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;positive trade balance&quot;</span><span class="p">:</span> <span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;fiscal stimulus&quot;</span><span class="p">:</span> <span class="mf">2.8</span><span class="p">,</span>
+    <span class="s2">&quot;interest rate hike&quot;</span><span class="p">:</span> <span class="mf">2.8</span><span class="p">,</span>
+    <span class="s2">&quot;capital inflows&quot;</span><span class="p">:</span> <span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;strong consumer spending&quot;</span><span class="p">:</span> <span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;foreign investment inflow&quot;</span><span class="p">:</span> <span class="mf">2.5</span><span class="p">,</span>
+    <span class="c1"># Moderately Positive Sentiment</span>
+    <span class="s2">&quot;interest rate decision&quot;</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">,</span>
+    <span class="s2">&quot;central bank intervention&quot;</span><span class="p">:</span> <span class="mf">2.2</span><span class="p">,</span>
+    <span class="s2">&quot;GDP growth&quot;</span><span class="p">:</span> <span class="mf">2.2</span><span class="p">,</span>
+    <span class="s2">&quot;trade surplus&quot;</span><span class="p">:</span> <span class="mf">2.2</span><span class="p">,</span>
+    <span class="s2">&quot;moderate inflation&quot;</span><span class="p">:</span> <span class="mf">1.8</span><span class="p">,</span>
+    <span class="s2">&quot;foreign capital influx&quot;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span>
+    <span class="s2">&quot;economic stability&quot;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span>
+    <span class="s2">&quot;currency stabilization&quot;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span>
+    <span class="s2">&quot;improving employment&quot;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span>
+    <span class="s2">&quot;positive business confidence&quot;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span>
+    <span class="c1"># Neutral Sentiment</span>
+    <span class="s2">&quot;monetary policy&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="s2">&quot;exchange rate fluctuation&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="s2">&quot;interest rate unchanged&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="s2">&quot;trade negotiations&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
+    <span class="s2">&quot;stable inflation&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
+    <span class="c1"># Moderately Negative Sentiment</span>
+    <span class="s2">&quot;trade deficit&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.2</span><span class="p">,</span>
+    <span class="s2">&quot;currency depreciation&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;inflation risk&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.0</span><span class="p">,</span>
+    <span class="s2">&quot;economic slowdown&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;high fiscal deficit&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.2</span><span class="p">,</span>
+    <span class="s2">&quot;sovereign debt concerns&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;capital outflows&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.2</span><span class="p">,</span>
+    <span class="s2">&quot;weak consumer confidence&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.0</span><span class="p">,</span>
+    <span class="s2">&quot;soft labor market&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.0</span><span class="p">,</span>
+    <span class="s2">&quot;rising unemployment&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.5</span><span class="p">,</span>
+    <span class="c1"># Strongly Negative Sentiment</span>
+    <span class="s2">&quot;dovish&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.0</span><span class="p">,</span>
+    <span class="s2">&quot;rate cut&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.8</span><span class="p">,</span>
+    <span class="s2">&quot;quantitative easing&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.2</span><span class="p">,</span>
+    <span class="s2">&quot;recession fears&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.5</span><span class="p">,</span>
+    <span class="s2">&quot;market turmoil&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.5</span><span class="p">,</span>
+    <span class="s2">&quot;economic contraction&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.2</span><span class="p">,</span>
+    <span class="s2">&quot;currency crisis&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.8</span><span class="p">,</span>
+    <span class="s2">&quot;sovereign default&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">4.0</span><span class="p">,</span>
+    <span class="s2">&quot;credit rating downgrade&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.5</span><span class="p">,</span>
+    <span class="s2">&quot;financial instability&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.5</span><span class="p">,</span>
+    <span class="s2">&quot;debt crisis&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.8</span><span class="p">,</span>
+    <span class="s2">&quot;hyperinflation&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">4.0</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="n">COMMODITIES_LEXICON</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="c1"># Strongly Positive Sentiment</span>
+    <span class="s2">&quot;supply shortage&quot;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span>
+    <span class="s2">&quot;OPEC production cut&quot;</span><span class="p">:</span> <span class="mf">3.2</span><span class="p">,</span>
+    <span class="s2">&quot;energy crisis&quot;</span><span class="p">:</span> <span class="mf">3.5</span><span class="p">,</span>
+    <span class="s2">&quot;oil embargo&quot;</span><span class="p">:</span> <span class="mf">3.8</span><span class="p">,</span>
+    <span class="s2">&quot;commodity supercycle&quot;</span><span class="p">:</span> <span class="mf">3.2</span><span class="p">,</span>
+    <span class="s2">&quot;gold safe-haven demand&quot;</span><span class="p">:</span> <span class="mf">2.8</span><span class="p">,</span>
+    <span class="s2">&quot;inflation hedge&quot;</span><span class="p">:</span> <span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;weak dollar&quot;</span><span class="p">:</span> <span class="mf">2.8</span><span class="p">,</span>
+    <span class="s2">&quot;geopolitical risk&quot;</span><span class="p">:</span> <span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;strong demand&quot;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span>
+    <span class="s2">&quot;rising crude prices&quot;</span><span class="p">:</span> <span class="mf">3.2</span><span class="p">,</span>
+    <span class="s2">&quot;bullish commodity outlook&quot;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span>
+    <span class="s2">&quot;supply constraints&quot;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span>
+    <span class="c1"># Moderately Positive Sentiment</span>
+    <span class="s2">&quot;rising metal prices&quot;</span><span class="p">:</span> <span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;higher energy demand&quot;</span><span class="p">:</span> <span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;limited production capacity&quot;</span><span class="p">:</span> <span class="mf">2.2</span><span class="p">,</span>
+    <span class="s2">&quot;low inventory levels&quot;</span><span class="p">:</span> <span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;export restrictions&quot;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span>
+    <span class="s2">&quot;strategic reserves release&quot;</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">,</span>
+    <span class="s2">&quot;drought impact on crops&quot;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span>
+    <span class="s2">&quot;agriculture supply risk&quot;</span><span class="p">:</span> <span class="mf">2.2</span><span class="p">,</span>
+    <span class="c1"># Neutral Sentiment</span>
+    <span class="s2">&quot;market rebalancing&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="s2">&quot;seasonal demand&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
+    <span class="s2">&quot;commodity price stabilization&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
+    <span class="s2">&quot;production levels steady&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="c1"># Moderately Negative Sentiment</span>
+    <span class="s2">&quot;inventory build-up&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;OPEC production increase&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.0</span><span class="p">,</span>
+    <span class="s2">&quot;mining output increase&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.2</span><span class="p">,</span>
+    <span class="s2">&quot;price cap&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.2</span><span class="p">,</span>
+    <span class="s2">&quot;demand destruction&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;falling oil demand&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.2</span><span class="p">,</span>
+    <span class="s2">&quot;oversupply concerns&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;slowing industrial activity&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.0</span><span class="p">,</span>
+    <span class="s2">&quot;crop surplus&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.0</span><span class="p">,</span>
+    <span class="s2">&quot;market correction&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">1.5</span><span class="p">,</span>
+    <span class="c1"># Strongly Negative Sentiment</span>
+    <span class="s2">&quot;strong dollar&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.8</span><span class="p">,</span>
+    <span class="s2">&quot;commodity price crash&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.5</span><span class="p">,</span>
+    <span class="s2">&quot;recession-driven demand slump&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.5</span><span class="p">,</span>
+    <span class="s2">&quot;economic downturn impact&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.5</span><span class="p">,</span>
+    <span class="s2">&quot;excess oil production&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.0</span><span class="p">,</span>
+    <span class="s2">&quot;weak commodity prices&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.0</span><span class="p">,</span>
+    <span class="s2">&quot;global trade slowdown&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.5</span><span class="p">,</span>
+    <span class="s2">&quot;deflationary pressure&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.8</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="n">CRYPTO_LEXICON</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="c1"># Strongly Positive Sentiment</span>
+    <span class="s2">&quot;bull run&quot;</span><span class="p">:</span> <span class="mf">3.5</span><span class="p">,</span>
+    <span class="s2">&quot;institutional adoption&quot;</span><span class="p">:</span> <span class="mf">3.2</span><span class="p">,</span>
+    <span class="s2">&quot;mainnet launch&quot;</span><span class="p">:</span> <span class="mf">3.2</span><span class="p">,</span>
+    <span class="s2">&quot;layer 2 adoption&quot;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span>
+    <span class="s2">&quot;token burn&quot;</span><span class="p">:</span> <span class="mf">2.8</span><span class="p">,</span>
+    <span class="s2">&quot;hash rate increase&quot;</span><span class="p">:</span> <span class="mf">2.8</span><span class="p">,</span>
+    <span class="s2">&quot;exchange outflow rising&quot;</span><span class="p">:</span> <span class="mf">2.8</span><span class="p">,</span>
+    <span class="s2">&quot;staking rewards increase&quot;</span><span class="p">:</span> <span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;whale accumulation&quot;</span><span class="p">:</span> <span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;strong on-chain activity&quot;</span><span class="p">:</span> <span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;NFT boom&quot;</span><span class="p">:</span> <span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;defi yield farming&quot;</span><span class="p">:</span> <span class="mf">2.2</span><span class="p">,</span>
+    <span class="s2">&quot;crypto ETF approval&quot;</span><span class="p">:</span> <span class="mf">3.5</span><span class="p">,</span>
+    <span class="s2">&quot;blockchain upgrade&quot;</span><span class="p">:</span> <span class="mf">3.2</span><span class="p">,</span>
+    <span class="s2">&quot;bullish sentiment&quot;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span>
+    <span class="c1"># Moderately Positive Sentiment</span>
+    <span class="s2">&quot;FOMO&quot;</span><span class="p">:</span> <span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;airdrops&quot;</span><span class="p">:</span> <span class="mf">2.2</span><span class="p">,</span>
+    <span class="s2">&quot;crypto partnerships&quot;</span><span class="p">:</span> <span class="mf">2.2</span><span class="p">,</span>
+    <span class="s2">&quot;cross-chain adoption&quot;</span><span class="p">:</span> <span class="mf">2.2</span><span class="p">,</span>
+    <span class="s2">&quot;rising transaction volume&quot;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span>
+    <span class="s2">&quot;mass adoption&quot;</span><span class="p">:</span> <span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;long liquidations&quot;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span>
+    <span class="s2">&quot;staking demand&quot;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span>
+    <span class="s2">&quot;increasing DeFi TVL&quot;</span><span class="p">:</span> <span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;uptrend confirmation&quot;</span><span class="p">:</span> <span class="mf">2.5</span><span class="p">,</span>
+    <span class="c1"># Neutral Sentiment</span>
+    <span class="s2">&quot;market correction&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="s2">&quot;smart contract execution&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="s2">&quot;blockchain fork&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="s2">&quot;stablecoin issuance&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="s2">&quot;on-chain metrics neutral&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="s2">&quot;volatility spike&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="c1"># Moderately Negative Sentiment</span>
+    <span class="s2">&quot;exchange inflow rising&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;network congestion&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.2</span><span class="p">,</span>
+    <span class="s2">&quot;liquidity crisis&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;flash crash&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;stablecoin depeg&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.8</span><span class="p">,</span>
+    <span class="s2">&quot;security breach&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.8</span><span class="p">,</span>
+    <span class="s2">&quot;mining ban&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;bearish divergence&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;liquidation cascade&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;funding rates negative&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.5</span><span class="p">,</span>
+    <span class="c1"># Strongly Negative Sentiment</span>
+    <span class="s2">&quot;bear market&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.5</span><span class="p">,</span>
+    <span class="s2">&quot;whale dumping&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.2</span><span class="p">,</span>
+    <span class="s2">&quot;FUD&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.0</span><span class="p">,</span>
+    <span class="s2">&quot;rug pull&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.8</span><span class="p">,</span>
+    <span class="s2">&quot;smart contract exploit&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.5</span><span class="p">,</span>
+    <span class="s2">&quot;regulatory crackdown&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.8</span><span class="p">,</span>
+    <span class="s2">&quot;exchange insolvency&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">4.0</span><span class="p">,</span>
+    <span class="s2">&quot;crypto ban&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">4.0</span><span class="p">,</span>
+    <span class="s2">&quot;market manipulation&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.5</span><span class="p">,</span>
+    <span class="s2">&quot;scam project&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.8</span><span class="p">,</span>
+    <span class="s2">&quot;protocol failure&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.5</span><span class="p">,</span>
+    <span class="s2">&quot;hacked exchange&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.8</span><span class="p">,</span>
+    <span class="s2">&quot;capitulation&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.5</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="n">BONDS_LEXICON</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="c1"># Strongly Positive Sentiment</span>
+    <span class="s2">&quot;yields falling&quot;</span><span class="p">:</span> <span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;credit upgrade&quot;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span>
+    <span class="s2">&quot;investment grade&quot;</span><span class="p">:</span> <span class="mf">3.2</span><span class="p">,</span>
+    <span class="s2">&quot;flight to safety&quot;</span><span class="p">:</span> <span class="mf">2.8</span><span class="p">,</span>
+    <span class="s2">&quot;bond rally&quot;</span><span class="p">:</span> <span class="mf">2.8</span><span class="p">,</span>
+    <span class="s2">&quot;rate cut expectation&quot;</span><span class="p">:</span> <span class="mf">2.8</span><span class="p">,</span>
+    <span class="s2">&quot;monetary easing&quot;</span><span class="p">:</span> <span class="mf">2.8</span><span class="p">,</span>
+    <span class="s2">&quot;central bank bond purchases&quot;</span><span class="p">:</span> <span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;bond demand rising&quot;</span><span class="p">:</span> <span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;strong bond auction&quot;</span><span class="p">:</span> <span class="mf">2.2</span><span class="p">,</span>
+    <span class="s2">&quot;stable credit outlook&quot;</span><span class="p">:</span> <span class="mf">2.5</span><span class="p">,</span>
+    <span class="c1"># Moderately Positive Sentiment</span>
+    <span class="s2">&quot;safe-haven demand&quot;</span><span class="p">:</span> <span class="mf">2.2</span><span class="p">,</span>
+    <span class="s2">&quot;long-term bond buying&quot;</span><span class="p">:</span> <span class="mf">2.2</span><span class="p">,</span>
+    <span class="s2">&quot;falling credit spreads&quot;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span>
+    <span class="s2">&quot;economic slowdown favoring bonds&quot;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span>
+    <span class="s2">&quot;deflationary environment&quot;</span><span class="p">:</span> <span class="mf">2.2</span><span class="p">,</span>
+    <span class="s2">&quot;low-rate environment&quot;</span><span class="p">:</span> <span class="mf">2.2</span><span class="p">,</span>
+    <span class="c1"># Neutral Sentiment</span>
+    <span class="s2">&quot;bond market stabilization&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="s2">&quot;steady credit ratings&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="s2">&quot;balanced bond flows&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="s2">&quot;interest rate outlook neutral&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="c1"># Moderately Negative Sentiment</span>
+    <span class="s2">&quot;corporate debt issuance&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.2</span><span class="p">,</span>
+    <span class="s2">&quot;widening credit spreads&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.2</span><span class="p">,</span>
+    <span class="s2">&quot;rate hike expectation&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.8</span><span class="p">,</span>
+    <span class="s2">&quot;rising borrowing costs&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;tightening liquidity&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.5</span><span class="p">,</span>
+    <span class="s2">&quot;bond outflows&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.2</span><span class="p">,</span>
+    <span class="s2">&quot;weaker bond auction&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.2</span><span class="p">,</span>
+    <span class="c1"># Strongly Negative Sentiment</span>
+    <span class="s2">&quot;yields rising&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.0</span><span class="p">,</span>
+    <span class="s2">&quot;inverted yield curve&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.2</span><span class="p">,</span>
+    <span class="s2">&quot;credit downgrade&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.5</span><span class="p">,</span>
+    <span class="s2">&quot;default risk rising&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.8</span><span class="p">,</span>
+    <span class="s2">&quot;junk bond status&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.2</span><span class="p">,</span>
+    <span class="s2">&quot;inflation concerns&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.2</span><span class="p">,</span>
+    <span class="s2">&quot;liquidity crunch&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.2</span><span class="p">,</span>
+    <span class="s2">&quot;monetary tightening&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.2</span><span class="p">,</span>
+    <span class="s2">&quot;debt ceiling uncertainty&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.2</span><span class="p">,</span>
+    <span class="s2">&quot;sovereign debt crisis&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">4.0</span><span class="p">,</span>
+    <span class="s2">&quot;bond market crash&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.8</span><span class="p">,</span>
+    <span class="s2">&quot;hyperinflation risk&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.8</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="n">FINANCIAL_LEXICON</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="o">**</span><span class="n">EQUITY_LEXICON</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">FOREX_LEXICON</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">COMMODITIES_LEXICON</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">CRYPTO_LEXICON</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">BONDS_LEXICON</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="TopicModeler">
+<a class="viewcode-back" href="../../../bbstrader.models.html#bbstrader.models.nlp.TopicModeler">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TopicModeler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nlp</span> <span class="o">=</span> <span class="n">spacy</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;en_core_web_sm&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nlp</span><span class="o">.</span><span class="n">disable_pipes</span><span class="p">(</span><span class="s2">&quot;ner&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="TopicModeler.preprocess_texts">
+<a class="viewcode-back" href="../../../bbstrader.models.html#bbstrader.models.nlp.TopicModeler.preprocess_texts">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">preprocess_texts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">texts</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">clean_doc</span><span class="p">(</span><span class="n">Doc</span><span class="p">):</span>
+            <span class="n">doc</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">Doc</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span>
+                    <span class="p">[</span>
+                        <span class="n">t</span><span class="o">.</span><span class="n">is_stop</span><span class="p">,</span>
+                        <span class="n">t</span><span class="o">.</span><span class="n">is_digit</span><span class="p">,</span>
+                        <span class="ow">not</span> <span class="n">t</span><span class="o">.</span><span class="n">is_alpha</span><span class="p">,</span>
+                        <span class="n">t</span><span class="o">.</span><span class="n">is_punct</span><span class="p">,</span>
+                        <span class="n">t</span><span class="o">.</span><span class="n">is_space</span><span class="p">,</span>
+                        <span class="n">t</span><span class="o">.</span><span class="n">lemma_</span> <span class="o">==</span> <span class="s2">&quot;-PRON-&quot;</span><span class="p">,</span>
+                    <span class="p">]</span>
+                <span class="p">):</span>
+                    <span class="n">doc</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">lemma_</span><span class="p">)</span>
+            <span class="k">return</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span>
+
+        <span class="n">texts</span> <span class="o">=</span> <span class="p">(</span><span class="n">text</span> <span class="k">for</span> <span class="n">text</span> <span class="ow">in</span> <span class="n">texts</span><span class="p">)</span>
+        <span class="n">clean_texts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">doc</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nlp</span><span class="o">.</span><span class="n">pipe</span><span class="p">(</span><span class="n">texts</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">n_process</span><span class="o">=</span><span class="mi">8</span><span class="p">),</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">clean_texts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">clean_doc</span><span class="p">(</span><span class="n">doc</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">clean_texts</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="SentimentAnalyzer">
+<a class="viewcode-back" href="../../../bbstrader.models.html#bbstrader.models.nlp.SentimentAnalyzer">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SentimentAnalyzer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A financial sentiment analysis tool that processes and analyzes sentiment</span>
+<span class="sd">    from news articles, social media posts, and financial reports.</span>
+
+<span class="sd">    This class utilizes NLP techniques to preprocess text and apply sentiment</span>
+<span class="sd">    analysis using VADER (SentimentIntensityAnalyzer) and optional TextBlob</span>
+<span class="sd">    for enhanced polarity scoring.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        nlp (spacy.Language): A SpaCy NLP pipeline for tokenization and lemmatization,</span>
+<span class="sd">                               with Named Entity Recognition (NER) disabled.</span>
+<span class="sd">        analyzer (SentimentIntensityAnalyzer): An instance of VADER&#39;s sentiment analyzer</span>
+<span class="sd">                                               for financial sentiment scoring.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes the SentimentAnalyzer class by downloading necessary</span>
+<span class="sd">        NLTK resources and loading the SpaCy NLP model.</span>
+
+<span class="sd">        - Downloads NLTK tokenization (`punkt`) and stopwords.</span>
+<span class="sd">        - Loads the `en_core_web_sm` SpaCy model with Named Entity Recognition (NER) disabled.</span>
+<span class="sd">        - Initializes VADER&#39;s SentimentIntensityAnalyzer for sentiment scoring.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">nltk</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="s2">&quot;punkt&quot;</span><span class="p">,</span> <span class="n">quiet</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">nltk</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="s2">&quot;stopwords&quot;</span><span class="p">,</span> <span class="n">quiet</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nlp</span> <span class="o">=</span> <span class="n">spacy</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;en_core_web_sm&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nlp</span><span class="o">.</span><span class="n">disable_pipes</span><span class="p">(</span><span class="s2">&quot;ner&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;The SpaCy model &#39;en_core_web_sm&#39; is not installed.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="s2">&quot;Please install it by running:</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="s2">&quot;   python -m spacy download en_core_web_sm&quot;</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">analyzer</span> <span class="o">=</span> <span class="n">SentimentIntensityAnalyzer</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stopwords</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">stopwords</span><span class="o">.</span><span class="n">words</span><span class="p">(</span><span class="s2">&quot;english&quot;</span><span class="p">))</span>
+
+<div class="viewcode-block" id="SentimentAnalyzer.preprocess_text">
+<a class="viewcode-back" href="../../../bbstrader.models.html#bbstrader.models.nlp.SentimentAnalyzer.preprocess_text">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">preprocess_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Preprocesses the input text by performing the following steps:</span>
+<span class="sd">        1. Converts text to lowercase.</span>
+<span class="sd">        2. Removes URLs.</span>
+<span class="sd">        3. Removes all non-alphabetic characters (punctuation, numbers, special symbols).</span>
+<span class="sd">        4. Tokenizes the text into words.</span>
+<span class="sd">        5. Removes stop words.</span>
+<span class="sd">        6. Lemmatizes the words using SpaCy, excluding pronouns.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            text (str): The input text to preprocess.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The cleaned and lemmatized text.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;http\S+&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[^a-zA-Z\s]&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+        <span class="n">words</span> <span class="o">=</span> <span class="n">word_tokenize</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="n">words</span> <span class="o">=</span> <span class="p">[</span><span class="n">word</span> <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">words</span> <span class="k">if</span> <span class="n">word</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stopwords</span><span class="p">]</span>
+        <span class="n">doc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlp</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">words</span><span class="p">))</span>
+        <span class="n">words</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">lemma_</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">doc</span> <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">lemma_</span> <span class="o">!=</span> <span class="s2">&quot;-PRON-&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">words</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SentimentAnalyzer.analyze_sentiment">
+<a class="viewcode-back" href="../../../bbstrader.models.html#bbstrader.models.nlp.SentimentAnalyzer.analyze_sentiment">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">analyze_sentiment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">texts</span><span class="p">,</span> <span class="n">lexicon</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">textblob</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Analyzes the sentiment of a list of texts using VADER or TextBlob.</span>
+
+<span class="sd">        Steps:</span>
+<span class="sd">        1. If a custom lexicon is provided, updates the VADER lexicon.</span>
+<span class="sd">        2. If `textblob` is set to True, computes sentiment using TextBlob.</span>
+<span class="sd">        3. Otherwise, preprocesses the text and computes sentiment using VADER.</span>
+<span class="sd">        4. Returns the average sentiment score of all input texts.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            texts (list of str): A list of text inputs to analyze.</span>
+<span class="sd">            lexicon (dict, optional): A custom sentiment lexicon to update VADER&#39;s default lexicon.</span>
+<span class="sd">            textblob (bool, optional): If True, uses TextBlob for sentiment analysis instead of VADER.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: The average sentiment score across all input texts.</span>
+<span class="sd">                   - Positive values indicate positive sentiment.</span>
+<span class="sd">                   - Negative values indicate negative sentiment.</span>
+<span class="sd">                   - Zero indicates neutral sentiment.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">lexicon</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">analyzer</span><span class="o">.</span><span class="n">lexicon</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">lexicon</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">textblob</span><span class="p">:</span>
+            <span class="n">blob</span> <span class="o">=</span> <span class="n">TextBlob</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">texts</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">blob</span><span class="o">.</span><span class="n">sentiment</span><span class="o">.</span><span class="n">polarity</span>
+        <span class="n">sentiment_scores</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">analyzer</span><span class="o">.</span><span class="n">polarity_scores</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">preprocess_text</span><span class="p">(</span><span class="n">text</span><span class="p">))[</span><span class="s2">&quot;compound&quot;</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">text</span> <span class="ow">in</span> <span class="n">texts</span>
+        <span class="p">]</span>
+        <span class="n">avg_sentiment</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">sum</span><span class="p">(</span><span class="n">sentiment_scores</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">sentiment_scores</span><span class="p">)</span> <span class="k">if</span> <span class="n">sentiment_scores</span> <span class="k">else</span> <span class="mf">0.0</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">avg_sentiment</span></div>
+
+
+<div class="viewcode-block" id="SentimentAnalyzer.get_sentiment_for_tickers">
+<a class="viewcode-back" href="../../../bbstrader.models.html#bbstrader.models.nlp.SentimentAnalyzer.get_sentiment_for_tickers">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_sentiment_for_tickers</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">tickers</span><span class="p">,</span> <span class="n">lexicon</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">asset_type</span><span class="o">=</span><span class="s2">&quot;stock&quot;</span><span class="p">,</span> <span class="n">top_news</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes sentiment scores for a list of financial tickers based on news and social media data.</span>
+
+<span class="sd">        Process:</span>
+<span class="sd">        1. Collects news articles and posts related to each ticker from various sources:</span>
+<span class="sd">           - Yahoo Finance News</span>
+<span class="sd">           - Google Finance News</span>
+<span class="sd">           - Reddit posts</span>
+<span class="sd">           - Financial Modeling Prep (FMP) news</span>
+<span class="sd">        2. Analyzes sentiment from each source:</span>
+<span class="sd">           - Uses VADER for Yahoo and Google Finance news.</span>
+<span class="sd">           - Uses TextBlob for Reddit and FMP news.</span>
+<span class="sd">        3. Computes an overall sentiment score using a weighted average approach.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tickers (list of str): A list of stock, forex, crypto, or other asset tickers.</span>
+<span class="sd">            lexicon (dict, optional): A custom sentiment lexicon to update VADER&#39;s default lexicon.</span>
+<span class="sd">            asset_type (str, optional): The type of asset (e.g., &quot;stock&quot;, &quot;forex&quot;, &quot;crypto&quot;). Defaults to &quot;stock&quot;.</span>
+<span class="sd">            top_news (int, optional): Number of news articles/posts to fetch per source. Defaults to 10.</span>
+<span class="sd">            **kwargs: Additional parameters for API authentication and data retrieval, including:</span>
+<span class="sd">                - fmp_api (str): API key for Financial Modeling Prep.</span>
+<span class="sd">                - client_id, client_secret, user_agent (str): Credentials for accessing Reddit API.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dict[str, float]: A dictionary mapping each ticker to its overall sentiment score.</span>
+<span class="sd">                             - Positive values indicate positive sentiment.</span>
+<span class="sd">                             - Negative values indicate negative sentiment.</span>
+<span class="sd">                             - Zero indicates neutral sentiment.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sentiment_results</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">rd_params</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;client_id&quot;</span><span class="p">,</span> <span class="s2">&quot;client_secret&quot;</span><span class="p">,</span> <span class="s2">&quot;user_agent&quot;</span><span class="p">]</span>
+        <span class="n">news</span> <span class="o">=</span> <span class="n">FinancialNews</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">ticker</span> <span class="ow">in</span> <span class="n">tickers</span><span class="p">:</span>
+            <span class="c1"># Collect data</span>
+            <span class="n">sources</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">yahoo_news</span> <span class="o">=</span> <span class="n">news</span><span class="o">.</span><span class="n">get_yahoo_finance_news</span><span class="p">(</span>
+                <span class="n">ticker</span><span class="p">,</span> <span class="n">asset_type</span><span class="o">=</span><span class="n">asset_type</span><span class="p">,</span> <span class="n">n_news</span><span class="o">=</span><span class="n">top_news</span>
+            <span class="p">)</span>
+            <span class="n">google_news</span> <span class="o">=</span> <span class="n">news</span><span class="o">.</span><span class="n">get_google_finance_news</span><span class="p">(</span>
+                <span class="n">ticker</span><span class="p">,</span> <span class="n">asset_type</span><span class="o">=</span><span class="n">asset_type</span><span class="p">,</span> <span class="n">n_news</span><span class="o">=</span><span class="n">top_news</span>
+            <span class="p">)</span>
+            <span class="n">reddit_posts</span> <span class="o">=</span> <span class="n">news</span><span class="o">.</span><span class="n">get_reddit_posts</span><span class="p">(</span>
+                <span class="n">ticker</span><span class="p">,</span> <span class="n">n_posts</span><span class="o">=</span><span class="n">top_news</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">rd_params</span><span class="p">}</span>
+            <span class="p">)</span>
+            <span class="n">coindesk_news</span> <span class="o">=</span> <span class="n">news</span><span class="o">.</span><span class="n">get_coindesk_news</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="n">ticker</span><span class="p">,</span> <span class="n">list_of_str</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">fmp_source_news</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">fmp_news</span> <span class="o">=</span> <span class="n">news</span><span class="o">.</span><span class="n">get_fmp_news</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fmp_api&quot;</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;articles&quot;</span><span class="p">]:</span>  <span class="c1"># , &quot;releases&quot;, asset_type]:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">source_news</span> <span class="o">=</span> <span class="n">fmp_news</span><span class="o">.</span><span class="n">get_news</span><span class="p">(</span>
+                        <span class="n">ticker</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">,</span> <span class="n">symbol</span><span class="o">=</span><span class="n">ticker</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+                    <span class="p">)</span>
+                    <span class="n">fmp_source_news</span> <span class="o">+=</span> <span class="n">source_news</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                    <span class="n">source_news</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="p">[</span><span class="n">yahoo_news</span><span class="p">,</span> <span class="n">google_news</span><span class="p">]]):</span>
+                <span class="n">sources</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="p">[</span><span class="n">reddit_posts</span><span class="p">,</span> <span class="n">fmp_source_news</span><span class="p">,</span> <span class="n">coindesk_news</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">source</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">sources</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="c1"># Compute sentiment</span>
+            <span class="n">news_sentiment</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">analyze_sentiment</span><span class="p">(</span>
+                <span class="n">yahoo_news</span> <span class="o">+</span> <span class="n">google_news</span><span class="p">,</span> <span class="n">lexicon</span><span class="o">=</span><span class="n">lexicon</span>
+            <span class="p">)</span>
+            <span class="n">reddit_sentiment</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">analyze_sentiment</span><span class="p">(</span>
+                <span class="n">reddit_posts</span><span class="p">,</span> <span class="n">lexicon</span><span class="o">=</span><span class="n">lexicon</span><span class="p">,</span> <span class="n">textblob</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+            <span class="n">fmp_sentiment</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">analyze_sentiment</span><span class="p">(</span>
+                <span class="n">fmp_source_news</span><span class="p">,</span> <span class="n">lexicon</span><span class="o">=</span><span class="n">lexicon</span><span class="p">,</span> <span class="n">textblob</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+            <span class="n">coindesk_sentiment</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">analyze_sentiment</span><span class="p">(</span>
+                <span class="n">coindesk_news</span><span class="p">,</span> <span class="n">lexicon</span><span class="o">=</span><span class="n">lexicon</span><span class="p">,</span> <span class="n">textblob</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Weighted average sentiment score</span>
+            <span class="k">if</span> <span class="n">sources</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">overall_sentiment</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">news_sentiment</span>
+                    <span class="o">+</span> <span class="n">reddit_sentiment</span>
+                    <span class="o">+</span> <span class="n">fmp_sentiment</span>
+                    <span class="o">+</span> <span class="n">coindesk_sentiment</span>
+                <span class="p">)</span> <span class="o">/</span> <span class="n">sources</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">overall_sentiment</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="n">sentiment_results</span><span class="p">[</span><span class="n">ticker</span><span class="p">]</span> <span class="o">=</span> <span class="n">overall_sentiment</span>
+
+        <span class="k">return</span> <span class="n">sentiment_results</span></div>
+
+
+<div class="viewcode-block" id="SentimentAnalyzer.get_topn_sentiments">
+<a class="viewcode-back" href="../../../bbstrader.models.html#bbstrader.models.nlp.SentimentAnalyzer.get_topn_sentiments">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_topn_sentiments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sentiments</span><span class="p">,</span> <span class="n">topn</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieves the top and bottom N assets based on sentiment scores.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            sentiments (dict): A dictionary mapping asset tickers to their sentiment scores.</span>
+<span class="sd">            topn (int, optional): The number of top and bottom assets to return. Defaults to 10.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: A tuple containing two lists:</span>
+<span class="sd">                - bottom (list of tuples): The `topn` assets with the lowest sentiment scores, sorted in ascending order.</span>
+<span class="sd">                - top (list of tuples): The `topn` assets with the highest sentiment scores, sorted in descending order.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sorted_sentiments</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">sentiments</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">bottom</span> <span class="o">=</span> <span class="n">sorted_sentiments</span><span class="p">[:</span><span class="n">topn</span><span class="p">]</span>
+        <span class="n">top</span> <span class="o">=</span> <span class="n">sorted_sentiments</span><span class="p">[</span><span class="o">-</span><span class="n">topn</span><span class="p">:]</span>
+        <span class="k">return</span> <span class="n">bottom</span><span class="p">,</span> <span class="n">top</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_sentiment_bar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sentiment_dict</span><span class="p">,</span> <span class="n">top_n</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+        <span class="n">bottom_stocks</span><span class="p">,</span> <span class="n">top_stocks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_topn_sentiments</span><span class="p">(</span><span class="n">sentiment_dict</span><span class="p">,</span> <span class="n">topn</span><span class="o">=</span><span class="n">top_n</span><span class="p">)</span>
+        <span class="n">top_bottom_stocks</span> <span class="o">=</span> <span class="n">bottom_stocks</span> <span class="o">+</span> <span class="n">top_stocks</span>
+
+        <span class="n">stocks</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">top_bottom_stocks</span><span class="p">]</span>
+        <span class="n">scores</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">top_bottom_stocks</span><span class="p">]</span>
+        <span class="n">colors</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;red&quot;</span> <span class="k">if</span> <span class="n">s</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s2">&quot;green&quot;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">scores</span><span class="p">]</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">barh</span><span class="p">(</span><span class="n">stocks</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Sentiment Score&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Stock Ticker&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Top </span><span class="si">{</span><span class="n">top_n</span><span class="si">}</span><span class="s2"> Positive &amp; Negative Stock Sentiments&quot;</span><span class="p">)</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_sentiment_scatter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sentiment_dict</span><span class="p">):</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+            <span class="nb">list</span><span class="p">(</span><span class="n">sentiment_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()),</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Ticker&quot;</span><span class="p">,</span> <span class="s2">&quot;Sentiment Score&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">px</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+            <span class="n">df</span><span class="p">,</span>
+            <span class="n">x</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">,</span>
+            <span class="n">y</span><span class="o">=</span><span class="s2">&quot;Sentiment Score&quot;</span><span class="p">,</span>
+            <span class="n">hover_data</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Ticker&quot;</span><span class="p">],</span>
+            <span class="n">color</span><span class="o">=</span><span class="s2">&quot;Sentiment Score&quot;</span><span class="p">,</span>
+            <span class="n">color_continuous_scale</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="s2">&quot;yellow&quot;</span><span class="p">,</span> <span class="s2">&quot;green&quot;</span><span class="p">],</span>
+            <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Stock Sentiment Analysis - Interactive Scatter Plot&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">update_layout</span><span class="p">(</span><span class="n">xaxis</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">showticklabels</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<div class="viewcode-block" id="SentimentAnalyzer.visualize_sentiments">
+<a class="viewcode-back" href="../../../bbstrader.models.html#bbstrader.models.nlp.SentimentAnalyzer.visualize_sentiments">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">visualize_sentiments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sentiment_dict</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;bar&quot;</span><span class="p">,</span> <span class="n">top_n</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Visualizes sentiment scores for financial assets using different chart types.</span>
+
+<span class="sd">        Visualization Modes:</span>
+<span class="sd">        - &quot;bar&quot;: Displays a bar chart of the top N assets by sentiment score.</span>
+<span class="sd">        - &quot;scatter&quot;: Displays a scatter plot of sentiment scores.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            sentiment_dict (dict): A dictionary mapping asset tickers to their sentiment scores.</span>
+<span class="sd">            mode (str, optional): The type of visualization to generate.</span>
+<span class="sd">                                  Options: &quot;bar&quot; (default), &quot;scatter&quot;.</span>
+<span class="sd">            top_n (int, optional): The number of top tickers to display in the bar chart.</span>
+<span class="sd">                                   Only applicable when mode is &quot;bar&quot;.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None: Displays the sentiment visualization.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;bar&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sentiment_bar</span><span class="p">(</span><span class="n">sentiment_dict</span><span class="p">,</span> <span class="n">top_n</span><span class="o">=</span><span class="n">top_n</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;scatter&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sentiment_scatter</span><span class="p">(</span><span class="n">sentiment_dict</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SentimentAnalyzer.display_sentiment_dashboard">
+<a class="viewcode-back" href="../../../bbstrader.models.html#bbstrader.models.nlp.SentimentAnalyzer.display_sentiment_dashboard">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">display_sentiment_dashboard</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">tickers</span><span class="p">,</span>
+        <span class="n">asset_type</span><span class="o">=</span><span class="s2">&quot;stock&quot;</span><span class="p">,</span>
+        <span class="n">lexicon</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">interval</span><span class="o">=</span><span class="mi">100_000</span><span class="p">,</span>
+        <span class="n">top_n</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates and runs a real-time sentiment analysis dashboard for financial assets.</span>
+
+<span class="sd">        The dashboard visualizes sentiment scores for given tickers using interactive</span>
+<span class="sd">        bar and scatter plots. It fetches new sentiment data at specified intervals.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tickers (list[str]):</span>
+<span class="sd">                A list of asset tickers (e.g., [&quot;AAPL&quot;, &quot;GOOGL&quot;, &quot;TSLA&quot;]).</span>
+<span class="sd">            asset_type (str, optional):</span>
+<span class="sd">                The type of financial asset (&quot;stock&quot;, &quot;forex&quot;, &quot;crypto&quot;). Defaults to &quot;stock&quot;.</span>
+<span class="sd">            lexicon (dict, optional):</span>
+<span class="sd">                A custom sentiment lexicon. Defaults to None.</span>
+<span class="sd">            interval (int, optional):</span>
+<span class="sd">                The refresh interval (in milliseconds) for sentiment data updates. Defaults to 100000.</span>
+<span class="sd">            top_n (int, optional):</span>
+<span class="sd">                The number of top and bottom assets to display in the sentiment bar chart. Defaults to 20.</span>
+<span class="sd">            **kwargs (dict):</span>
+<span class="sd">                Additional arguments required for fetching sentiment data. Must include:</span>
+<span class="sd">                - client_id (str): Reddit API client ID.</span>
+<span class="sd">                - client_secret (str): Reddit API client secret.</span>
+<span class="sd">                - user_agent (str): User agent for Reddit API.</span>
+<span class="sd">                - fmp_api (str): Financial Modeling Prep (FMP) API key.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None: The function does not return anything but starts a real-time interactive dashboard.</span>
+
+<span class="sd">        Example Usage:</span>
+<span class="sd">            sa = SentimentAnalyzer()</span>
+<span class="sd">            sa.display_sentiment_dashboard(</span>
+<span class="sd">                tickers=[&quot;AAPL&quot;, &quot;TSLA&quot;, &quot;GOOGL&quot;],</span>
+<span class="sd">                asset_type=&quot;stock&quot;,</span>
+<span class="sd">                lexicon=my_lexicon,</span>
+<span class="sd">                display=True,</span>
+<span class="sd">                interval=5000,</span>
+<span class="sd">                top_n=10,</span>
+<span class="sd">                client_id=&quot;your_reddit_id&quot;,</span>
+<span class="sd">                client_secret=&quot;your_reddit_secret&quot;,</span>
+<span class="sd">                user_agent=&quot;your_user_agent&quot;,</span>
+<span class="sd">                fmp_api=&quot;your_fmp_api_key&quot;,</span>
+<span class="sd">            )</span>
+
+<span class="sd">        Notes:</span>
+<span class="sd">            - Sentiment analysis is performed using financial news and social media discussions.</span>
+<span class="sd">            - The dashboard updates in real-time at the specified interval.</span>
+<span class="sd">            - The dashboard will keep running unless manually stopped (Ctrl+C).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">app</span> <span class="o">=</span> <span class="n">dash</span><span class="o">.</span><span class="n">Dash</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+        <span class="n">sentiment_history</span> <span class="o">=</span> <span class="p">{</span><span class="n">ticker</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">ticker</span> <span class="ow">in</span> <span class="n">tickers</span><span class="p">}</span>
+
+        <span class="c1"># Dash Layout</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">layout</span> <span class="o">=</span> <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">(</span>
+            <span class="n">children</span><span class="o">=</span><span class="p">[</span>
+                <span class="n">html</span><span class="o">.</span><span class="n">H1</span><span class="p">(</span><span class="s2">&quot;📊 Real-Time Sentiment Dashboard&quot;</span><span class="p">),</span>
+                <span class="n">dcc</span><span class="o">.</span><span class="n">Graph</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s2">&quot;top-sentiment-bar&quot;</span><span class="p">),</span>
+                <span class="n">dcc</span><span class="o">.</span><span class="n">Graph</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s2">&quot;sentiment-interactive&quot;</span><span class="p">),</span>
+                <span class="n">dcc</span><span class="o">.</span><span class="n">Interval</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s2">&quot;interval-component&quot;</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="n">interval</span><span class="p">,</span> <span class="n">n_intervals</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Update Sentiment Data</span>
+        <span class="nd">@app</span><span class="o">.</span><span class="n">callback</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">Output</span><span class="p">(</span><span class="s2">&quot;top-sentiment-bar&quot;</span><span class="p">,</span> <span class="s2">&quot;figure&quot;</span><span class="p">),</span>
+                <span class="n">Output</span><span class="p">(</span><span class="s2">&quot;sentiment-interactive&quot;</span><span class="p">,</span> <span class="s2">&quot;figure&quot;</span><span class="p">),</span>
+            <span class="p">],</span>
+            <span class="p">[</span><span class="n">Input</span><span class="p">(</span><span class="s2">&quot;interval-component&quot;</span><span class="p">,</span> <span class="s2">&quot;n_intervals&quot;</span><span class="p">)],</span>
+        <span class="p">)</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">update_dashboard</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+            <span class="n">sentiment_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sentiment_for_tickers</span><span class="p">(</span>
+                <span class="n">tickers</span><span class="p">,</span>
+                <span class="n">lexicon</span><span class="o">=</span><span class="n">lexicon</span><span class="p">,</span>
+                <span class="n">asset_type</span><span class="o">=</span><span class="n">asset_type</span><span class="p">,</span>
+                <span class="n">top_news</span><span class="o">=</span><span class="n">top_n</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">elapsed_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Sentiment Fetch Time: </span><span class="si">{</span><span class="n">elapsed_time</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span>
+            <span class="n">timestamp</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%H:%M:%S&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">stock</span><span class="p">,</span> <span class="n">score</span> <span class="ow">in</span> <span class="n">sentiment_data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">sentiment_history</span><span class="p">[</span><span class="n">stock</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="p">{</span><span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="n">timestamp</span><span class="p">,</span> <span class="s2">&quot;score&quot;</span><span class="p">:</span> <span class="n">score</span><span class="p">}</span>
+                <span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">stock</span><span class="p">,</span> <span class="n">scores</span> <span class="ow">in</span> <span class="n">sentiment_history</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">scores</span><span class="p">:</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="p">{</span>
+                            <span class="s2">&quot;Ticker&quot;</span><span class="p">:</span> <span class="n">stock</span><span class="p">,</span>
+                            <span class="s2">&quot;Time&quot;</span><span class="p">:</span> <span class="n">entry</span><span class="p">[</span><span class="s2">&quot;timestamp&quot;</span><span class="p">],</span>
+                            <span class="s2">&quot;Sentiment Score&quot;</span><span class="p">:</span> <span class="n">entry</span><span class="p">[</span><span class="s2">&quot;score&quot;</span><span class="p">],</span>
+                        <span class="p">}</span>
+                    <span class="p">)</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+            <span class="c1"># Top Sentiment Bar Chart</span>
+            <span class="n">latest_timestamp</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Time&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+            <span class="n">latest_sentiments</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;Time&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">latest_timestamp</span><span class="p">]</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">df</span><span class="o">.</span><span class="n">empty</span>
+                <span class="k">else</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Ticker&quot;</span><span class="p">,</span> <span class="s2">&quot;Sentiment Score&quot;</span><span class="p">])</span>
+            <span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">latest_sentiments</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+                <span class="n">bar_chart</span> <span class="o">=</span> <span class="n">px</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;No Sentiment Data Available&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Get top N and bottom N stocks</span>
+                <span class="n">bottom_stocks</span><span class="p">,</span> <span class="n">top_stocks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_topn_sentiments</span><span class="p">(</span>
+                    <span class="n">sentiment_data</span><span class="p">,</span> <span class="n">topn</span><span class="o">=</span><span class="n">top_n</span>
+                <span class="p">)</span>
+                <span class="n">top_bottom_stocks</span> <span class="o">=</span> <span class="n">bottom_stocks</span> <span class="o">+</span> <span class="n">top_stocks</span>
+
+                <span class="n">stocks</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">top_bottom_stocks</span><span class="p">]</span>
+                <span class="n">scores</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">top_bottom_stocks</span><span class="p">]</span>
+
+                <span class="n">df_plot</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;Ticker&quot;</span><span class="p">:</span> <span class="n">stocks</span><span class="p">,</span> <span class="s2">&quot;Sentiment Score&quot;</span><span class="p">:</span> <span class="n">scores</span><span class="p">})</span>
+                <span class="c1"># Horizontal bar chart</span>
+                <span class="n">bar_chart</span> <span class="o">=</span> <span class="n">px</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span>
+                    <span class="n">df_plot</span><span class="p">,</span>
+                    <span class="n">x</span><span class="o">=</span><span class="s2">&quot;Sentiment Score&quot;</span><span class="p">,</span>
+                    <span class="n">y</span><span class="o">=</span><span class="s2">&quot;Ticker&quot;</span><span class="p">,</span>
+                    <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Top </span><span class="si">{</span><span class="n">top_n</span><span class="si">}</span><span class="s2"> Positive &amp; Negative Sentiment Stocks&quot;</span><span class="p">,</span>
+                    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;Sentiment Score&quot;</span><span class="p">,</span>
+                    <span class="n">color_continuous_scale</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="s2">&quot;yellow&quot;</span><span class="p">,</span> <span class="s2">&quot;green&quot;</span><span class="p">],</span>
+                    <span class="n">orientation</span><span class="o">=</span><span class="s2">&quot;h&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">bar_chart</span><span class="o">.</span><span class="n">add_vline</span><span class="p">(</span>
+                    <span class="n">x</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">line_width</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">line_dash</span><span class="o">=</span><span class="s2">&quot;dash&quot;</span><span class="p">,</span> <span class="n">line_color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span>
+                <span class="p">)</span>
+                <span class="n">bar_chart</span><span class="o">.</span><span class="n">update_layout</span><span class="p">(</span>
+                    <span class="n">xaxis_title</span><span class="o">=</span><span class="s2">&quot;Sentiment Score&quot;</span><span class="p">,</span>
+                    <span class="n">yaxis_title</span><span class="o">=</span><span class="s2">&quot;Stock Ticker&quot;</span><span class="p">,</span>
+                    <span class="n">yaxis</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">autorange</span><span class="o">=</span><span class="s2">&quot;reversed&quot;</span><span class="p">),</span>
+                    <span class="n">width</span><span class="o">=</span><span class="mi">1500</span><span class="p">,</span>
+                    <span class="n">height</span><span class="o">=</span><span class="mi">600</span><span class="p">,</span>
+                <span class="p">)</span>
+
+            <span class="c1"># Sentiment Interactive Scatter Plot</span>
+            <span class="n">scatter_chart</span> <span class="o">=</span> <span class="n">px</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+                <span class="n">latest_sentiments</span><span class="p">,</span>
+                <span class="n">x</span><span class="o">=</span><span class="n">latest_sentiments</span><span class="o">.</span><span class="n">index</span><span class="p">,</span>
+                <span class="n">y</span><span class="o">=</span><span class="s2">&quot;Sentiment Score&quot;</span><span class="p">,</span>
+                <span class="n">hover_data</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Ticker&quot;</span><span class="p">],</span>
+                <span class="n">color</span><span class="o">=</span><span class="s2">&quot;Sentiment Score&quot;</span><span class="p">,</span>
+                <span class="n">color_continuous_scale</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="s2">&quot;yellow&quot;</span><span class="p">,</span> <span class="s2">&quot;green&quot;</span><span class="p">],</span>
+                <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Stock Sentiment Analysis - Interactive Scatter Plot&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">scatter_chart</span><span class="o">.</span><span class="n">update_layout</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="mi">1500</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">600</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">bar_chart</span><span class="p">,</span> <span class="n">scatter_chart</span>
+
+        <span class="n">app</span><span class="o">.</span><span class="n">run</span><span class="p">()</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023 - 2025, Bertin Balouki SIMYELI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
