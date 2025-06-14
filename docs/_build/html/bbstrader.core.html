@@ -1,0 +1,504 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bbstrader.core package &mdash; bbstrader 0.2.092 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=97badf68"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="bbstrader.ibkr package" href="bbstrader.ibkr.html" />
+    <link rel="prev" title="bbstrader.btengine package" href="bbstrader.btengine.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            bbstrader
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">bbstrader</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="bbstrader.btengine.html">bbstrader.btengine package</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">bbstrader.core package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-bbstrader.core.data">bbstrader.core.data module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.core.data.FinancialNews"><code class="docutils literal notranslate"><span class="pre">FinancialNews</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.core.data.FmpData"><code class="docutils literal notranslate"><span class="pre">FmpData</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.core.data.FmpNews"><code class="docutils literal notranslate"><span class="pre">FmpNews</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-bbstrader.core.scripts">bbstrader.core.scripts module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.core.scripts.format_article_for_telegram"><code class="docutils literal notranslate"><span class="pre">format_article_for_telegram()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.core.scripts.send_articles"><code class="docutils literal notranslate"><span class="pre">send_articles()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.core.scripts.send_news_feed"><code class="docutils literal notranslate"><span class="pre">send_news_feed()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.core.scripts.summarize_text"><code class="docutils literal notranslate"><span class="pre">summarize_text()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-bbstrader.core.utils">bbstrader.core.utils module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.core.utils.load_class"><code class="docutils literal notranslate"><span class="pre">load_class()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.core.utils.load_module"><code class="docutils literal notranslate"><span class="pre">load_module()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-bbstrader.core">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="bbstrader.ibkr.html">bbstrader.ibkr package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bbstrader.metatrader.html">bbstrader.metatrader package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bbstrader.models.html">bbstrader.models package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bbstrader.trading.html">bbstrader.trading package</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">bbstrader</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">bbstrader</a></li>
+      <li class="breadcrumb-item active">bbstrader.core package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/bbstrader.core.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="bbstrader-core-package">
+<h1>bbstrader.core package<a class="headerlink" href="#bbstrader-core-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-bbstrader.core.data">
+<span id="bbstrader-core-data-module"></span><h2>bbstrader.core.data module<a class="headerlink" href="#module-bbstrader.core.data" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="bbstrader.core.data.FinancialNews">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bbstrader.core.data.</span></span><span class="sig-name descname"><span class="pre">FinancialNews</span></span><a class="reference internal" href="_modules/bbstrader/core/data.html#FinancialNews"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.core.data.FinancialNews" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>The FinancialNews class provides methods to fetch financial news, articles, and discussions
+from various sources such as Yahoo Finance, Google Finance, Reddit, Coindesk and Twitter.
+It also supports retrieving news using Financial Modeling Prep (FMP).</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.core.data.FinancialNews.get_coindesk_news">
+<span class="sig-name descname"><span class="pre">get_coindesk_news</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lang</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'EN'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'ES'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'TR'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'FR'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'JP'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'PT'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'EN'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">list_of_str</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/bbstrader/core/data.html#FinancialNews.get_coindesk_news"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.core.data.FinancialNews.get_coindesk_news" title="Link to this definition"></a></dt>
+<dd><p>Fetches and filters recent news articles from CoinDesk’s News API.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query</strong> – str, optional
+A search term to filter articles by title, body, or keywords.
+If empty, all articles are returned without filtering (default is “”).</p></li>
+<li><p><strong>lang</strong> – Literal[“EN”, “ES”, “TR”, “FR”, “JP”, “PT”], optional
+Language in which to fetch news articles. Supported languages:
+English (EN), Spanish (ES), Turkish (TR), French (FR), Japanese (JP), and Portuguese (PT).
+Default is “EN”.</p></li>
+<li><p><strong>limit</strong> – int, optional
+Maximum number of articles to retrieve. Default is 50.</p></li>
+<li><p><strong>list_of_str</strong> – bool, optional
+If True, returns a list of strings (concatenated article content).
+If False, returns a list of filtered article dictionaries.
+Default is False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>List[str] | List[dict]</dt><dd><ul class="simple">
+<li><p>If <cite>query</cite> is empty: returns a list of filtered article dictionaries.</p></li>
+<li><dl class="simple">
+<dt>If <cite>query</cite> is provided:</dt><dd><ul>
+<li><p>Returns a list of strings if <cite>list_of_str=True</cite>.</p></li>
+<li><p>Returns a list of filtered article dictionaries otherwise.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Each article dictionary contains the following fields:</dt><dd><ul class="simple">
+<li><p>‘published_on’: datetime of publication</p></li>
+<li><p>‘title’: article headline</p></li>
+<li><p>‘subtitle’: secondary headline</p></li>
+<li><p>‘url’: direct link to the article</p></li>
+<li><p>‘body’: article content</p></li>
+<li><p>‘keywords’: associated tags</p></li>
+<li><p>‘sentiment’: sentiment label</p></li>
+<li><p>‘status’: publication status</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>Articles marked as sponsored are automatically excluded.</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.core.data.FinancialNews.get_fmp_news">
+<span class="sig-name descname"><span class="pre">get_fmp_news</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">api</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#bbstrader.core.data.FmpNews" title="bbstrader.core.data.FmpNews"><span class="pre">FmpNews</span></a></span></span><a class="reference internal" href="_modules/bbstrader/core/data.html#FinancialNews.get_fmp_news"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.core.data.FinancialNews.get_fmp_news" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.core.data.FinancialNews.get_google_finance_news">
+<span class="sig-name descname"><span class="pre">get_google_finance_news</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">asset_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'stock'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_news</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/core/data.html#FinancialNews.get_google_finance_news"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.core.data.FinancialNews.get_google_finance_news" title="Link to this definition"></a></dt>
+<dd><p>Fetches recent Google Finance news headlines for a given financial asset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query</strong> (<em>str</em>) – The asset symbol or name (e.g., “AAPL”).</p></li>
+<li><p><strong>asset_type</strong> (<em>str</em><em>, </em><em>optional</em>) – The type of asset (e.g., “stock”, “crypto”). Defaults to “stock”.</p></li>
+<li><p><strong>n_news</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of news headlines to return. Defaults to 10.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of Google Finance news headlines relevant to the query.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.core.data.FinancialNews.get_reddit_posts">
+<span class="sig-name descname"><span class="pre">get_reddit_posts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">client_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">client_secret</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_agent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">asset_class</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'stock'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_posts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/bbstrader/core/data.html#FinancialNews.get_reddit_posts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.core.data.FinancialNews.get_reddit_posts" title="Link to this definition"></a></dt>
+<dd><p>Fetches recent Reddit posts related to a financial asset.</p>
+<p>This method queries relevant subreddits for posts mentioning the specified symbol
+and returns posts based on the selected asset class (e.g., stock, forex, crypto).
+The function uses the PRAW library to interact with Reddit’s API.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>symbol</strong> (<em>str</em>) – The financial asset’s symbol or name to search for.</p></li>
+<li><p><strong>client_id</strong> (<em>str</em><em>, </em><em>optional</em>) – Reddit API client ID for authentication.</p></li>
+<li><p><strong>client_secret</strong> (<em>str</em><em>, </em><em>optional</em>) – Reddit API client secret.</p></li>
+<li><p><strong>user_agent</strong> (<em>str</em><em>, </em><em>optional</em>) – Reddit API user agent.</p></li>
+<li><p><strong>asset_class</strong> (<em>str</em><em>, </em><em>optional</em>) – The type of financial asset. Defaults to “stock”.
+- “stock”: Searches in stock-related subreddits (e.g., wallstreetbets, stocks).
+- “forex”: Searches in forex-related subreddits.
+- “commodities”: Searches in commodity-related subreddits (e.g., gold, oil).
+- “etfs”: Searches in ETF-related subreddits.
+- “futures”: Searches in futures and options trading subreddits.
+- “crypto”: Searches in cryptocurrency-related subreddits.
+- If an unrecognized asset class is provided, defaults to stock-related subreddits.</p></li>
+<li><p><strong>n_posts</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of posts to return per subreddit. Defaults to 10.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A list of Reddit post contents matching the query.</dt><dd><p>Each entry contains the post title and body.
+If no posts are found or an error occurs, returns an empty list.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[str]</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>praw.exceptions.PRAWException</strong> – If an error occurs while interacting with Reddit’s API.</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_reddit_posts</span><span class="p">(</span><span class="n">symbol</span><span class="o">=</span><span class="s2">&quot;AAPL&quot;</span><span class="p">,</span> <span class="n">client_id</span><span class="o">=</span><span class="s2">&quot;your_id&quot;</span><span class="p">,</span> <span class="n">client_secret</span><span class="o">=</span><span class="s2">&quot;your_secret&quot;</span><span class="p">,</span> <span class="n">user_agent</span><span class="o">=</span><span class="s2">&quot;your_agent&quot;</span><span class="p">,</span> <span class="n">asset_class</span><span class="o">=</span><span class="s2">&quot;stock&quot;</span><span class="p">,</span> <span class="n">n_posts</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="go">[&quot;Apple stock is rallying today due to strong earnings.&quot;, &quot;Should I buy $AAPL now?&quot;, ...]</span>
+</pre></div>
+</div>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>Requires valid Reddit API credentials.</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.core.data.FinancialNews.get_twitter_posts">
+<span class="sig-name descname"><span class="pre">get_twitter_posts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">asset_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'stock'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bearer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">api_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">api_secret</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">access_token</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">access_secret</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_posts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/bbstrader/core/data.html#FinancialNews.get_twitter_posts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.core.data.FinancialNews.get_twitter_posts" title="Link to this definition"></a></dt>
+<dd><p>Fetches recent tweets related to a financial asset.</p>
+<p>This method queries Twitter for recent posts mentioning the specified asset
+and filters the results based on the asset type (e.g., stock, forex, crypto).
+The function uses the Tweepy API to fetch tweets and returns a list of tweet texts.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query</strong> (<em>str</em>) – The main keyword to search for (e.g., a stock ticker or asset name).</p></li>
+<li><p><strong>asset_type</strong> (<em>str</em><em>, </em><em>optional</em>) – The type of financial asset. Defaults to “stock”.
+- “stock”: Searches for tweets mentioning the stock or shares.
+- “forex”: Searches for tweets mentioning foreign exchange (forex) or currency.
+- “crypto”: Searches for tweets mentioning cryptocurrency or related terms.
+- “commodity”: Searches for tweets mentioning commodities or futures trading.
+- “index”: Searches for tweets mentioning stock market indices.
+- “bond”: Searches for tweets mentioning bonds or fixed income securities.
+- If an unrecognized asset type is provided, defaults to general finance-related tweets.</p></li>
+<li><p><strong>bearer</strong> (<em>str</em><em>, </em><em>optional</em>) – Twitter API bearer token for authentication.</p></li>
+<li><p><strong>api_key</strong> (<em>str</em><em>, </em><em>optional</em>) – Twitter API consumer key.</p></li>
+<li><p><strong>api_secret</strong> (<em>str</em><em>, </em><em>optional</em>) – Twitter API consumer secret.</p></li>
+<li><p><strong>access_token</strong> (<em>str</em><em>, </em><em>optional</em>) – Twitter API access token.</p></li>
+<li><p><strong>access_secret</strong> (<em>str</em><em>, </em><em>optional</em>) – Twitter API access token secret.</p></li>
+<li><p><strong>n_posts</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of tweets to return. Defaults to 10.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A list of up to <cite>n_posts</cite> tweet texts matching the query.</dt><dd><p>If no tweets are found or an API error occurs, returns an empty list.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[str]</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>tweepy.TweepyException</strong> – If an error occurs while making the Twitter API request.</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_twitter_posts</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="s2">&quot;AAPL&quot;</span><span class="p">,</span> <span class="n">asset_type</span><span class="o">=</span><span class="s2">&quot;stock&quot;</span><span class="p">,</span> <span class="n">bearer</span><span class="o">=</span><span class="s2">&quot;YOUR_BEARER_TOKEN&quot;</span><span class="p">,</span> <span class="n">n_posts</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="go">[&quot;Apple stock surges after strong earnings!&quot;, &quot;Is $AAPL a buy at this price?&quot;, ...]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.core.data.FinancialNews.get_yahoo_finance_news">
+<span class="sig-name descname"><span class="pre">get_yahoo_finance_news</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">asset_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'stock'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_news</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/core/data.html#FinancialNews.get_yahoo_finance_news"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.core.data.FinancialNews.get_yahoo_finance_news" title="Link to this definition"></a></dt>
+<dd><p>Fetches recent Yahoo Finance news headlines for a given financial asset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query</strong> (<em>str</em>) – The asset symbol or name (e.g., “AAPL”).</p></li>
+<li><p><strong>asset_type</strong> (<em>str</em><em>, </em><em>optional</em>) – The type of asset (e.g., “stock”, “etf”). Defaults to “stock”.</p></li>
+<li><p><strong>n_news</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of news headlines to return. Defaults to 10.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of Yahoo Finance news headlines relevant to the query.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bbstrader.core.data.FmpData">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bbstrader.core.data.</span></span><span class="sig-name descname"><span class="pre">FmpData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">api_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbols</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'AAPL'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/core/data.html#FmpData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.core.data.FmpData" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Toolkit</span></code></p>
+<p>FMPData class for fetching data from Financial Modeling Prep API
+using the Toolkit class from financetoolkit package.</p>
+<p>See <cite>financetoolkit</cite> for more details.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bbstrader.core.data.FmpNews">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bbstrader.core.data.</span></span><span class="sig-name descname"><span class="pre">FmpNews</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">api</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/core/data.html#FmpNews"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.core.data.FmpNews" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">FmpNews</span></code> is responsible for retrieving financial news, press releases, and articles from Financial Modeling Prep (FMP).</p>
+<p><code class="docutils literal notranslate"><span class="pre">FmpNews</span></code> provides methods to fetch the latest stock, crypto, forex, and general financial news,
+as well as financial articles and press releases.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.core.data.FmpNews.get_articles">
+<span class="sig-name descname"><span class="pre">get_articles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/bbstrader/core/data.html#FmpNews.get_articles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.core.data.FmpNews.get_articles" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.core.data.FmpNews.get_crypto_news">
+<span class="sig-name descname"><span class="pre">get_crypto_news</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/core/data.html#FmpNews.get_crypto_news"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.core.data.FmpNews.get_crypto_news" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.core.data.FmpNews.get_forex_news">
+<span class="sig-name descname"><span class="pre">get_forex_news</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/core/data.html#FmpNews.get_forex_news"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.core.data.FmpNews.get_forex_news" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.core.data.FmpNews.get_latest_articles">
+<span class="sig-name descname"><span class="pre">get_latest_articles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">articles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/bbstrader/core/data.html#FmpNews.get_latest_articles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.core.data.FmpNews.get_latest_articles" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.core.data.FmpNews.get_news">
+<span class="sig-name descname"><span class="pre">get_news</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'articles'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">articles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/core/data.html#FmpNews.get_news"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.core.data.FmpNews.get_news" title="Link to this definition"></a></dt>
+<dd><p>Retrieves relevant financial news based on the specified source.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query</strong> (<em>str</em>) – The search query or keyword for filtering news, may also be a ticker.</p></li>
+<li><p><strong>source</strong> (<em>str</em><em>, </em><em>optional</em>) – The news source to retrieve from. Defaults to “articles”.
+Available options: “articles”, “releases”, “stock”, “crypto”, “forex”.</p></li>
+<li><p><strong>articles</strong> (<em>list</em><em>, </em><em>optional</em>) – List of pre-fetched articles to use when source=”articles”. Defaults to None.</p></li>
+<li><p><strong>symbol</strong> (<em>str</em><em>, </em><em>optional</em>) – The financial asset symbol (e.g., “AAPL” for stocks, “BTC” for crypto). Defaults to None.</p></li>
+<li><p><strong>**kwargs</strong> (<em>dict</em>) – Additional arguments required for fetching news data. May include:
+- start (str): The start period for news retrieval (YYY-MM-DD)
+- end (str): The end period for news retrieval (YYY-MM-DD)
+- page (int): The number  of page to load  for each news
+- limit (int): Maximum Responses per API Call</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A list of filtered news articles relevant to the query.</dt><dd><p>Returns an empty list if no relevant news is found.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[dict]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.core.data.FmpNews.get_releases">
+<span class="sig-name descname"><span class="pre">get_releases</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/core/data.html#FmpNews.get_releases"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.core.data.FmpNews.get_releases" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.core.data.FmpNews.get_stock_news">
+<span class="sig-name descname"><span class="pre">get_stock_news</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/core/data.html#FmpNews.get_stock_news"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.core.data.FmpNews.get_stock_news" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.core.data.FmpNews.parse_news">
+<span class="sig-name descname"><span class="pre">parse_news</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">news</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/bbstrader/core/data.html#FmpNews.parse_news"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.core.data.FmpNews.parse_news" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-bbstrader.core.scripts">
+<span id="bbstrader-core-scripts-module"></span><h2>bbstrader.core.scripts module<a class="headerlink" href="#module-bbstrader.core.scripts" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="bbstrader.core.scripts.format_article_for_telegram">
+<span class="sig-prename descclassname"><span class="pre">bbstrader.core.scripts.</span></span><span class="sig-name descname"><span class="pre">format_article_for_telegram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">article</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/bbstrader/core/scripts.html#format_article_for_telegram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.core.scripts.format_article_for_telegram" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bbstrader.core.scripts.send_articles">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bbstrader.core.scripts.</span></span><span class="sig-name descname"><span class="pre">send_articles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">articles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">15</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/core/scripts.html#send_articles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.core.scripts.send_articles" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bbstrader.core.scripts.send_news_feed">
+<span class="sig-prename descclassname"><span class="pre">bbstrader.core.scripts.</span></span><span class="sig-name descname"><span class="pre">send_news_feed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">unknown</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/core/scripts.html#send_news_feed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.core.scripts.send_news_feed" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bbstrader.core.scripts.summarize_text">
+<span class="sig-prename descclassname"><span class="pre">bbstrader.core.scripts.</span></span><span class="sig-name descname"><span class="pre">summarize_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sentences_count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/core/scripts.html#summarize_text"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.core.scripts.summarize_text" title="Link to this definition"></a></dt>
+<dd><p>Generate a summary using TextRank algorithm.</p>
+</dd></dl>
+
+</section>
+<section id="module-bbstrader.core.utils">
+<span id="bbstrader-core-utils-module"></span><h2>bbstrader.core.utils module<a class="headerlink" href="#module-bbstrader.core.utils" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="bbstrader.core.utils.load_class">
+<span class="sig-prename descclassname"><span class="pre">bbstrader.core.utils.</span></span><span class="sig-name descname"><span class="pre">load_class</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">class_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_class</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/core/utils.html#load_class"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.core.utils.load_class" title="Link to this definition"></a></dt>
+<dd><p>Load a class from a module.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>module</strong> – The module to load the class from.</p></li>
+<li><p><strong>class_name</strong> – The name of the class to load.</p></li>
+<li><p><strong>base_class</strong> – The base class that the class must inherit from.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bbstrader.core.utils.load_module">
+<span class="sig-prename descclassname"><span class="pre">bbstrader.core.utils.</span></span><span class="sig-name descname"><span class="pre">load_module</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/core/utils.html#load_module"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.core.utils.load_module" title="Link to this definition"></a></dt>
+<dd><p>Load a module from a file path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>file_path</strong> – Path to the file to load.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The loaded module.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-bbstrader.core">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-bbstrader.core" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="bbstrader.btengine.html" class="btn btn-neutral float-left" title="bbstrader.btengine package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="bbstrader.ibkr.html" class="btn btn-neutral float-right" title="bbstrader.ibkr package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023 - 2025, Bertin Balouki SIMYELI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

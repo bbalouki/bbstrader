@@ -1,0 +1,687 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bbstrader.core.data &mdash; bbstrader 0.2.092 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=97badf68"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            bbstrader
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">bbstrader</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">bbstrader</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">bbstrader.core.data</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bbstrader.core.data</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">ssl</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Literal</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">urllib.request</span><span class="w"> </span><span class="kn">import</span> <span class="n">urlopen</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">certifi</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">praw</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tweepy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">yfinance</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">yf</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bs4</span><span class="w"> </span><span class="kn">import</span> <span class="n">BeautifulSoup</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">financetoolkit</span><span class="w"> </span><span class="kn">import</span> <span class="n">Toolkit</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;FmpData&quot;</span><span class="p">,</span> <span class="s2">&quot;FmpNews&quot;</span><span class="p">,</span> <span class="s2">&quot;FinancialNews&quot;</span><span class="p">]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_search_query</span><span class="p">(</span><span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">if</span> <span class="s2">&quot; &quot;</span> <span class="ow">in</span> <span class="n">query</span> <span class="ow">or</span> <span class="n">query</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">query</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">yf</span><span class="o">.</span><span class="n">Ticker</span><span class="p">(</span><span class="n">query</span><span class="p">)</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;shortName&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">query</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">name</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">query</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_find_news</span><span class="p">(</span><span class="n">query</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">text</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+    <span class="n">pattern</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;\b(?:&quot;</span> <span class="o">+</span> <span class="s2">&quot;|&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">,</span> <span class="n">query</span><span class="p">))</span> <span class="o">+</span> <span class="sa">r</span><span class="s2">&quot;)\b&quot;</span>
+    <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_filter_news</span><span class="p">(</span><span class="n">news</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">text</span> <span class="k">for</span> <span class="n">text</span> <span class="ow">in</span> <span class="n">news</span> <span class="k">if</span> <span class="n">_find_news</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">text</span><span class="p">)]</span>
+
+
+<div class="viewcode-block" id="FmpNews">
+<a class="viewcode-back" href="../../../bbstrader.core.html#bbstrader.core.data.FmpNews">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FmpNews</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    ``FmpNews`` is responsible for retrieving financial news, press releases, and articles from Financial Modeling Prep (FMP).</span>
+
+<span class="sd">    ``FmpNews`` provides methods to fetch the latest stock, crypto, forex, and general financial news,</span>
+<span class="sd">    as well as financial articles and press releases.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">api</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            api (str): The API key for accessing FMP&#39;s news data.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            fmp_news = FmpNews(api=&quot;your_api_key_here&quot;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">api</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;API key is required For FmpNews&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__api</span> <span class="o">=</span> <span class="n">api</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_jsonparsed_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">create_default_context</span><span class="p">(</span><span class="n">cafile</span><span class="o">=</span><span class="n">certifi</span><span class="o">.</span><span class="n">where</span><span class="p">())</span>
+        <span class="k">with</span> <span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span> <span class="k">as</span> <span class="n">response</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_news</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">news_type</span><span class="p">,</span> <span class="n">symbol</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;start&quot;</span><span class="p">:</span> <span class="s2">&quot;from&quot;</span><span class="p">,</span> <span class="s2">&quot;end&quot;</span><span class="p">:</span> <span class="s2">&quot;to&quot;</span><span class="p">,</span> <span class="s2">&quot;page&quot;</span><span class="p">:</span> <span class="s2">&quot;page&quot;</span><span class="p">,</span> <span class="s2">&quot;limit&quot;</span><span class="p">:</span> <span class="s2">&quot;limit&quot;</span><span class="p">}</span>
+        <span class="n">base_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;https://financialmodelingprep.com/stable/news/</span><span class="si">{</span><span class="n">news_type</span><span class="si">}</span><span class="s2">-latest?apikey=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__api</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">if</span> <span class="n">news_type</span> <span class="o">==</span> <span class="s2">&quot;articles&quot;</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">symbol</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;symbol not supported for articles&quot;</span><span class="p">)</span>
+            <span class="n">base_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;https://financialmodelingprep.com/stable/fmp-articles?apikey=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__api</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">elif</span> <span class="n">symbol</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">base_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;https://financialmodelingprep.com/stable/news/</span><span class="si">{</span><span class="n">news_type</span><span class="si">}</span><span class="s2">?symbols=</span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2">&amp;apikey=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__api</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="k">for</span> <span class="n">param</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">param</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">base_url</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;&amp;</span><span class="si">{</span><span class="n">value</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">param</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jsonparsed_data</span><span class="p">(</span><span class="n">base_url</span><span class="p">)</span>
+
+<div class="viewcode-block" id="FmpNews.get_articles">
+<a class="viewcode-back" href="../../../bbstrader.core.html#bbstrader.core.data.FmpNews.get_articles">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_articles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">html_parser</span><span class="p">(</span><span class="n">content</span><span class="p">):</span>
+            <span class="n">soup</span> <span class="o">=</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="s2">&quot;html.parser&quot;</span><span class="p">)</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">soup</span><span class="o">.</span><span class="n">get_text</span><span class="p">(</span><span class="n">separator</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="n">articles</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_news</span><span class="p">(</span><span class="s2">&quot;articles&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">articles</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="s2">&quot;date&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">,</span> <span class="s2">&quot;tickers&quot;</span><span class="p">]]</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;content&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;content&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">html_parser</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="s2">&quot;records&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FmpNews.get_releases">
+<a class="viewcode-back" href="../../../bbstrader.core.html#bbstrader.core.data.FmpNews.get_releases">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_releases</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_news</span><span class="p">(</span><span class="s2">&quot;press-releases&quot;</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FmpNews.get_stock_news">
+<a class="viewcode-back" href="../../../bbstrader.core.html#bbstrader.core.data.FmpNews.get_stock_news">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_stock_news</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_news</span><span class="p">(</span><span class="s2">&quot;stock&quot;</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FmpNews.get_crypto_news">
+<a class="viewcode-back" href="../../../bbstrader.core.html#bbstrader.core.data.FmpNews.get_crypto_news">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_crypto_news</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_news</span><span class="p">(</span><span class="s2">&quot;crypto&quot;</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FmpNews.get_forex_news">
+<a class="viewcode-back" href="../../../bbstrader.core.html#bbstrader.core.data.FmpNews.get_forex_news">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_forex_news</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_news</span><span class="p">(</span><span class="s2">&quot;forex&quot;</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_last_date</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">date</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="FmpNews.parse_news">
+<a class="viewcode-back" href="../../../bbstrader.core.html#bbstrader.core.data.FmpNews.parse_news">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parse_news</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">news</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span> <span class="n">symbol</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;start&quot;</span><span class="p">)</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;end&quot;</span><span class="p">)</span>
+        <span class="n">end_date</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_date</span><span class="p">(</span><span class="n">end</span><span class="p">)</span> <span class="k">if</span> <span class="n">end</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">date</span><span class="p">()</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">parse_record</span><span class="p">(</span><span class="n">record</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">record</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;symbol&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+                    <span class="n">record</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+                    <span class="n">record</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;text&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+                    <span class="n">record</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;content&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+                    <span class="n">record</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;tickers&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+
+        <span class="n">parsed_news</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">news</span><span class="p">:</span>
+            <span class="n">date</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;publishedDate&quot;</span><span class="p">)</span>
+            <span class="n">published_date</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_date</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;date&quot;</span><span class="p">,</span> <span class="n">date</span><span class="p">))</span><span class="o">.</span><span class="n">date</span><span class="p">()</span>
+            <span class="n">start_date</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_last_date</span><span class="p">(</span><span class="n">start</span><span class="p">)</span><span class="o">.</span><span class="n">date</span><span class="p">()</span> <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">published_date</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">published_date</span> <span class="o">&gt;=</span> <span class="n">start_date</span> <span class="ow">and</span> <span class="n">published_date</span> <span class="o">&lt;=</span> <span class="n">end_date</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">symbol</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;symbol&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">symbol</span> <span class="ow">or</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                        <span class="s2">&quot;tickers&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span>
+                    <span class="p">):</span>
+                        <span class="n">parsed_news</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parse_record</span><span class="p">(</span><span class="n">record</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">parsed_news</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parse_record</span><span class="p">(</span><span class="n">record</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">parsed_news</span></div>
+
+
+<div class="viewcode-block" id="FmpNews.get_latest_articles">
+<a class="viewcode-back" href="../../../bbstrader.core.html#bbstrader.core.data.FmpNews.get_latest_articles">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_latest_articles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">articles</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;end&quot;</span><span class="p">)</span>
+        <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">)</span>
+        <span class="n">end_date</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_date</span><span class="p">(</span><span class="n">end</span><span class="p">)</span> <span class="k">if</span> <span class="n">end</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_date</span><span class="p">(</span><span class="n">now</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">articles</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">articles</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;latest_fmp_articles.csv&quot;</span><span class="p">)</span>
+                <span class="n">articles</span> <span class="o">=</span> <span class="n">articles</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="s2">&quot;records&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_date</span><span class="p">(</span><span class="n">articles</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;date&quot;</span><span class="p">])</span> <span class="o">&lt;</span> <span class="n">end_date</span><span class="p">:</span>
+                    <span class="n">articles</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_articles</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">articles</span>
+            <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+                <span class="n">articles</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_articles</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">save</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">articles</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">articles</span><span class="p">)</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">&quot;latest_fmp_articles.csv&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">articles</span></div>
+
+
+<div class="viewcode-block" id="FmpNews.get_news">
+<a class="viewcode-back" href="../../../bbstrader.core.html#bbstrader.core.data.FmpNews.get_news">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_news</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="s2">&quot;articles&quot;</span><span class="p">,</span> <span class="n">articles</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">symbol</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieves relevant financial news based on the specified source.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            query (str): The search query or keyword for filtering news, may also be a ticker.</span>
+<span class="sd">            source (str, optional): The news source to retrieve from. Defaults to &quot;articles&quot;.</span>
+<span class="sd">                                    Available options: &quot;articles&quot;, &quot;releases&quot;, &quot;stock&quot;, &quot;crypto&quot;, &quot;forex&quot;.</span>
+<span class="sd">            articles (list, optional): List of pre-fetched articles to use when source=&quot;articles&quot;. Defaults to None.</span>
+<span class="sd">            symbol (str, optional): The financial asset symbol (e.g., &quot;AAPL&quot; for stocks, &quot;BTC&quot; for crypto). Defaults to None.</span>
+<span class="sd">            **kwargs (dict):</span>
+<span class="sd">                Additional arguments required for fetching news data. May include:</span>
+<span class="sd">                - start (str): The start period for news retrieval (YYY-MM-DD)</span>
+<span class="sd">                - end (str): The end period for news retrieval (YYY-MM-DD)</span>
+<span class="sd">                - page (int): The number  of page to load  for each news</span>
+<span class="sd">                - limit (int): Maximum Responses per API Call</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list[dict]: A list of filtered news articles relevant to the query.</span>
+<span class="sd">                        Returns an empty list if no relevant news is found.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="n">_get_search_query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="n">source_methods</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;articles&quot;</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_latest_articles</span><span class="p">(</span><span class="n">articles</span><span class="o">=</span><span class="n">articles</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+            <span class="s2">&quot;releases&quot;</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_releases</span><span class="p">(</span><span class="n">symbol</span><span class="o">=</span><span class="n">symbol</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span>
+            <span class="s2">&quot;stock&quot;</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_stock_news</span><span class="p">(</span><span class="n">symbol</span><span class="o">=</span><span class="n">symbol</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span>
+            <span class="s2">&quot;crypto&quot;</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_crypto_news</span><span class="p">(</span><span class="n">symbol</span><span class="o">=</span><span class="n">symbol</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span>
+            <span class="s2">&quot;forex&quot;</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_forex_news</span><span class="p">(</span><span class="n">symbol</span><span class="o">=</span><span class="n">symbol</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span>
+        <span class="p">}</span>
+        <span class="n">news_source</span> <span class="o">=</span> <span class="n">source_methods</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="p">[])()</span>
+        <span class="n">news</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_news</span><span class="p">(</span><span class="n">news_source</span><span class="p">,</span> <span class="n">symbol</span><span class="o">=</span><span class="n">symbol</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_filter_news</span><span class="p">(</span><span class="n">news</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="FinancialNews">
+<a class="viewcode-back" href="../../../bbstrader.core.html#bbstrader.core.data.FinancialNews">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FinancialNews</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The FinancialNews class provides methods to fetch financial news, articles, and discussions</span>
+<span class="sd">    from various sources such as Yahoo Finance, Google Finance, Reddit, Coindesk and Twitter.</span>
+<span class="sd">    It also supports retrieving news using Financial Modeling Prep (FMP).</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_fetch_news</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">asset_type</span><span class="p">,</span> <span class="n">n_news</span><span class="p">,</span> <span class="n">headline_tag</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;User-Agent&quot;</span><span class="p">:</span> <span class="s2">&quot;Mozilla/5.0&quot;</span><span class="p">}</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+            <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">RequestException</span><span class="p">:</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">response</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="n">query</span> <span class="o">=</span> <span class="n">_get_search_query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="n">soup</span> <span class="o">=</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="s2">&quot;html.parser&quot;</span><span class="p">)</span>
+
+        <span class="n">headlines</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">h</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">soup</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="n">headline_tag</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">h</span><span class="o">.</span><span class="n">text</span> <span class="ow">and</span> <span class="n">_find_news</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">h</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="n">headlines</span><span class="p">[:</span><span class="n">n_news</span><span class="p">]</span>
+
+<div class="viewcode-block" id="FinancialNews.get_yahoo_finance_news">
+<a class="viewcode-back" href="../../../bbstrader.core.html#bbstrader.core.data.FinancialNews.get_yahoo_finance_news">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_yahoo_finance_news</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">asset_type</span><span class="o">=</span><span class="s2">&quot;stock&quot;</span><span class="p">,</span> <span class="n">n_news</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fetches recent Yahoo Finance news headlines for a given financial asset.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            query (str): The asset symbol or name (e.g., &quot;AAPL&quot;).</span>
+<span class="sd">            asset_type (str, optional): The type of asset (e.g., &quot;stock&quot;, &quot;etf&quot;). Defaults to &quot;stock&quot;.</span>
+<span class="sd">            n_news (int, optional): The number of news headlines to return. Defaults to 10.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list[str]: A list of Yahoo Finance news headlines relevant to the query.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;https://finance.yahoo.com/quote/</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2">/news&quot;</span>
+            <span class="k">if</span> <span class="n">asset_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;stock&quot;</span><span class="p">,</span> <span class="s2">&quot;etf&quot;</span><span class="p">]</span>
+            <span class="k">else</span> <span class="s2">&quot;https://finance.yahoo.com/news&quot;</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fetch_news</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">asset_type</span><span class="p">,</span> <span class="n">n_news</span><span class="p">,</span> <span class="s2">&quot;h3&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FinancialNews.get_google_finance_news">
+<a class="viewcode-back" href="../../../bbstrader.core.html#bbstrader.core.data.FinancialNews.get_google_finance_news">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_google_finance_news</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">asset_type</span><span class="o">=</span><span class="s2">&quot;stock&quot;</span><span class="p">,</span> <span class="n">n_news</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fetches recent Google Finance news headlines for a given financial asset.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            query (str): The asset symbol or name (e.g., &quot;AAPL&quot;).</span>
+<span class="sd">            asset_type (str, optional): The type of asset (e.g., &quot;stock&quot;, &quot;crypto&quot;). Defaults to &quot;stock&quot;.</span>
+<span class="sd">            n_news (int, optional): The number of news headlines to return. Defaults to 10.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list[str]: A list of Google Finance news headlines relevant to the query.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">search_terms</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;stock&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> stock OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> shares OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> market&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;etf&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> ETF OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> fund OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> exchange-traded fund&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;futures&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> futures OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> price OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> market&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;commodity&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> price OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> futures OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> market&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;forex&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> forex OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> exchange rate OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> market&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;crypto&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> cryptocurrency OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> price OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> market&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;bond&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> bond OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> yield OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> interest rate&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;index&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> index OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> stock market OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> performance&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">search_query</span> <span class="o">=</span> <span class="n">search_terms</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">asset_type</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;https://news.google.com/search?q=</span><span class="si">{</span><span class="n">search_query</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;+&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fetch_news</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">asset_type</span><span class="p">,</span> <span class="n">n_news</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FinancialNews.get_reddit_posts">
+<a class="viewcode-back" href="../../../bbstrader.core.html#bbstrader.core.data.FinancialNews.get_reddit_posts">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_reddit_posts</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">symbol</span><span class="p">,</span>
+        <span class="n">client_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">client_secret</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">user_agent</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">asset_class</span><span class="o">=</span><span class="s2">&quot;stock&quot;</span><span class="p">,</span>
+        <span class="n">n_posts</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fetches recent Reddit posts related to a financial asset.</span>
+
+<span class="sd">        This method queries relevant subreddits for posts mentioning the specified symbol</span>
+<span class="sd">        and returns posts based on the selected asset class (e.g., stock, forex, crypto).</span>
+<span class="sd">        The function uses the PRAW library to interact with Reddit&#39;s API.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            symbol (str): The financial asset&#39;s symbol or name to search for.</span>
+<span class="sd">            client_id (str, optional): Reddit API client ID for authentication.</span>
+<span class="sd">            client_secret (str, optional): Reddit API client secret.</span>
+<span class="sd">            user_agent (str, optional): Reddit API user agent.</span>
+<span class="sd">            asset_class (str, optional): The type of financial asset. Defaults to &quot;stock&quot;.</span>
+<span class="sd">                - &quot;stock&quot;: Searches in stock-related subreddits (e.g., wallstreetbets, stocks).</span>
+<span class="sd">                - &quot;forex&quot;: Searches in forex-related subreddits.</span>
+<span class="sd">                - &quot;commodities&quot;: Searches in commodity-related subreddits (e.g., gold, oil).</span>
+<span class="sd">                - &quot;etfs&quot;: Searches in ETF-related subreddits.</span>
+<span class="sd">                - &quot;futures&quot;: Searches in futures and options trading subreddits.</span>
+<span class="sd">                - &quot;crypto&quot;: Searches in cryptocurrency-related subreddits.</span>
+<span class="sd">                - If an unrecognized asset class is provided, defaults to stock-related subreddits.</span>
+<span class="sd">            n_posts (int, optional): The number of posts to return per subreddit. Defaults to 10.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list[str]: A list of Reddit post contents matching the query.</span>
+<span class="sd">                    Each entry contains the post title and body.</span>
+<span class="sd">                    If no posts are found or an error occurs, returns an empty list.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            praw.exceptions.PRAWException: If an error occurs while interacting with Reddit&#39;s API.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; get_reddit_posts(symbol=&quot;AAPL&quot;, client_id=&quot;your_id&quot;, client_secret=&quot;your_secret&quot;, user_agent=&quot;your_agent&quot;, asset_class=&quot;stock&quot;, n_posts=5)</span>
+<span class="sd">            [&quot;Apple stock is rallying today due to strong earnings.&quot;, &quot;Should I buy $AAPL now?&quot;, ...]</span>
+
+<span class="sd">        Notes:</span>
+<span class="sd">            - Requires valid Reddit API credentials.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">reddit</span> <span class="o">=</span> <span class="n">praw</span><span class="o">.</span><span class="n">Reddit</span><span class="p">(</span>
+            <span class="n">client_id</span><span class="o">=</span><span class="n">client_id</span><span class="p">,</span> <span class="n">client_secret</span><span class="o">=</span><span class="n">client_secret</span><span class="p">,</span> <span class="n">user_agent</span><span class="o">=</span><span class="n">user_agent</span>
+        <span class="p">)</span>
+
+        <span class="n">subreddit_mapping</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;stock&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;wallstreetbets&quot;</span><span class="p">,</span> <span class="s2">&quot;stocks&quot;</span><span class="p">,</span> <span class="s2">&quot;investing&quot;</span><span class="p">,</span> <span class="s2">&quot;StockMarket&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;forex&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Forex&quot;</span><span class="p">,</span> <span class="s2">&quot;ForexTrading&quot;</span><span class="p">,</span> <span class="s2">&quot;DayTrading&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;commodities&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Commodities&quot;</span><span class="p">,</span> <span class="s2">&quot;Gold&quot;</span><span class="p">,</span> <span class="s2">&quot;Silverbugs&quot;</span><span class="p">,</span> <span class="s2">&quot;oil&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;etfs&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;ETFs&quot;</span><span class="p">,</span> <span class="s2">&quot;investing&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;futures&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;FuturesTrading&quot;</span><span class="p">,</span> <span class="s2">&quot;OptionsTrading&quot;</span><span class="p">,</span> <span class="s2">&quot;DayTrading&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;crypto&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;CryptoCurrency&quot;</span><span class="p">,</span> <span class="s2">&quot;Bitcoin&quot;</span><span class="p">,</span> <span class="s2">&quot;ethereum&quot;</span><span class="p">,</span> <span class="s2">&quot;altcoin&quot;</span><span class="p">],</span>
+        <span class="p">}</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">subreddits</span> <span class="o">=</span> <span class="n">subreddit_mapping</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">asset_class</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="p">[</span><span class="s2">&quot;stocks&quot;</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="n">posts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">sub</span> <span class="ow">in</span> <span class="n">subreddits</span><span class="p">:</span>
+            <span class="n">subreddit</span> <span class="o">=</span> <span class="n">reddit</span><span class="o">.</span><span class="n">subreddit</span><span class="p">(</span><span class="n">sub</span><span class="p">)</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="n">_get_search_query</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
+            <span class="n">all_posts</span> <span class="o">=</span> <span class="n">subreddit</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="n">n_posts</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">post</span> <span class="ow">in</span> <span class="n">all_posts</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="n">post</span><span class="o">.</span><span class="n">title</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">post</span><span class="o">.</span><span class="n">selftext</span>
+                <span class="k">if</span> <span class="n">_find_news</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+                    <span class="n">posts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">posts</span></div>
+
+
+<div class="viewcode-block" id="FinancialNews.get_twitter_posts">
+<a class="viewcode-back" href="../../../bbstrader.core.html#bbstrader.core.data.FinancialNews.get_twitter_posts">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_twitter_posts</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">query</span><span class="p">,</span>
+        <span class="n">asset_type</span><span class="o">=</span><span class="s2">&quot;stock&quot;</span><span class="p">,</span>
+        <span class="n">bearer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">api_key</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">api_secret</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">access_token</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">access_secret</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">n_posts</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fetches recent tweets related to a financial asset.</span>
+
+<span class="sd">        This method queries Twitter for recent posts mentioning the specified asset</span>
+<span class="sd">        and filters the results based on the asset type (e.g., stock, forex, crypto).</span>
+<span class="sd">        The function uses the Tweepy API to fetch tweets and returns a list of tweet texts.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            query (str): The main keyword to search for (e.g., a stock ticker or asset name).</span>
+<span class="sd">            asset_type (str, optional): The type of financial asset. Defaults to &quot;stock&quot;.</span>
+<span class="sd">                - &quot;stock&quot;: Searches for tweets mentioning the stock or shares.</span>
+<span class="sd">                - &quot;forex&quot;: Searches for tweets mentioning foreign exchange (forex) or currency.</span>
+<span class="sd">                - &quot;crypto&quot;: Searches for tweets mentioning cryptocurrency or related terms.</span>
+<span class="sd">                - &quot;commodity&quot;: Searches for tweets mentioning commodities or futures trading.</span>
+<span class="sd">                - &quot;index&quot;: Searches for tweets mentioning stock market indices.</span>
+<span class="sd">                - &quot;bond&quot;: Searches for tweets mentioning bonds or fixed income securities.</span>
+<span class="sd">                - If an unrecognized asset type is provided, defaults to general finance-related tweets.</span>
+<span class="sd">            bearer (str, optional): Twitter API bearer token for authentication.</span>
+<span class="sd">            api_key (str, optional): Twitter API consumer key.</span>
+<span class="sd">            api_secret (str, optional): Twitter API consumer secret.</span>
+<span class="sd">            access_token (str, optional): Twitter API access token.</span>
+<span class="sd">            access_secret (str, optional): Twitter API access token secret.</span>
+<span class="sd">            n_posts (int, optional): The number of tweets to return. Defaults to 10.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list[str]: A list of up to `n_posts` tweet texts matching the query.</span>
+<span class="sd">                    If no tweets are found or an API error occurs, returns an empty list.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            tweepy.TweepyException: If an error occurs while making the Twitter API request.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; get_twitter_posts(query=&quot;AAPL&quot;, asset_type=&quot;stock&quot;, bearer=&quot;YOUR_BEARER_TOKEN&quot;, n_posts=5)</span>
+<span class="sd">            [&quot;Apple stock surges after strong earnings!&quot;, &quot;Is $AAPL a buy at this price?&quot;, ...]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="n">tweepy</span><span class="o">.</span><span class="n">Client</span><span class="p">(</span>
+            <span class="n">bearer_token</span><span class="o">=</span><span class="n">bearer</span><span class="p">,</span>
+            <span class="n">consumer_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span>
+            <span class="n">consumer_secret</span><span class="o">=</span><span class="n">api_secret</span><span class="p">,</span>
+            <span class="n">access_token</span><span class="o">=</span><span class="n">access_token</span><span class="p">,</span>
+            <span class="n">access_token_secret</span><span class="o">=</span><span class="n">access_secret</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">asset_queries</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;stock&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> stock OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> shares -is:retweet lang:en&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;forex&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> forex OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> currency -is:retweet lang:en&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;crypto&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> cryptocurrency OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> crypto OR #</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> -is:retweet lang:en&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;commodity&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> commodity OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> futures OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> trading -is:retweet lang:en&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;index&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> index OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> market -is:retweet lang:en&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;bond&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> bonds OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> fixed income -is:retweet lang:en&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="c1"># Get the correct query based on the asset type</span>
+        <span class="n">search</span> <span class="o">=</span> <span class="n">asset_queries</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="n">asset_type</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> finance -is:retweet lang:en&quot;</span>
+        <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">tweets</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">search_recent_tweets</span><span class="p">(</span>
+                <span class="n">query</span><span class="o">=</span><span class="n">search</span><span class="p">,</span> <span class="n">max_results</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">tweet_fields</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;text&quot;</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="n">_get_search_query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+            <span class="n">news</span> <span class="o">=</span> <span class="p">[</span><span class="n">tweet</span><span class="o">.</span><span class="n">text</span> <span class="k">for</span> <span class="n">tweet</span> <span class="ow">in</span> <span class="n">tweets</span><span class="o">.</span><span class="n">data</span><span class="p">]</span> <span class="k">if</span> <span class="n">tweets</span><span class="o">.</span><span class="n">data</span> <span class="k">else</span> <span class="p">[]</span>
+            <span class="k">return</span> <span class="n">_filter_news</span><span class="p">(</span><span class="n">news</span><span class="p">,</span> <span class="n">query</span><span class="p">)[:</span><span class="n">n_posts</span><span class="p">]</span>
+        <span class="k">except</span> <span class="n">tweepy</span><span class="o">.</span><span class="n">TweepyException</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span></div>
+
+
+<div class="viewcode-block" id="FinancialNews.get_fmp_news">
+<a class="viewcode-back" href="../../../bbstrader.core.html#bbstrader.core.data.FinancialNews.get_fmp_news">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_fmp_news</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">api</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FmpNews</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">FmpNews</span><span class="p">(</span><span class="n">api</span><span class="o">=</span><span class="n">api</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FinancialNews.get_coindesk_news">
+<a class="viewcode-back" href="../../../bbstrader.core.html#bbstrader.core.data.FinancialNews.get_coindesk_news">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_coindesk_news</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">query</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">lang</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;EN&quot;</span><span class="p">,</span> <span class="s2">&quot;ES&quot;</span><span class="p">,</span> <span class="s2">&quot;TR&quot;</span><span class="p">,</span> <span class="s2">&quot;FR&quot;</span><span class="p">,</span> <span class="s2">&quot;JP&quot;</span><span class="p">,</span> <span class="s2">&quot;PT&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;EN&quot;</span><span class="p">,</span>
+        <span class="n">limit</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+        <span class="n">list_of_str</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fetches and filters recent news articles from CoinDesk&#39;s News API.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            query : str, optional</span>
+<span class="sd">                A search term to filter articles by title, body, or keywords.</span>
+<span class="sd">                If empty, all articles are returned without filtering (default is &quot;&quot;).</span>
+
+<span class="sd">            lang : Literal[&quot;EN&quot;, &quot;ES&quot;, &quot;TR&quot;, &quot;FR&quot;, &quot;JP&quot;, &quot;PT&quot;], optional</span>
+<span class="sd">                Language in which to fetch news articles. Supported languages:</span>
+<span class="sd">                English (EN), Spanish (ES), Turkish (TR), French (FR), Japanese (JP), and Portuguese (PT).</span>
+<span class="sd">                Default is &quot;EN&quot;.</span>
+
+<span class="sd">            limit : int, optional</span>
+<span class="sd">                Maximum number of articles to retrieve. Default is 50.</span>
+
+<span class="sd">            list_of_str : bool, optional</span>
+<span class="sd">                If True, returns a list of strings (concatenated article content).</span>
+<span class="sd">                If False, returns a list of filtered article dictionaries.</span>
+<span class="sd">                Default is False.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[str] | List[dict]</span>
+<span class="sd">                - If `query` is empty: returns a list of filtered article dictionaries.</span>
+<span class="sd">                - If `query` is provided:</span>
+<span class="sd">                    - Returns a list of strings if `list_of_str=True`.</span>
+<span class="sd">                    - Returns a list of filtered article dictionaries otherwise.</span>
+
+<span class="sd">        Each article dictionary contains the following fields:</span>
+<span class="sd">            - &#39;published_on&#39;: datetime of publication</span>
+<span class="sd">            - &#39;title&#39;: article headline</span>
+<span class="sd">            - &#39;subtitle&#39;: secondary headline</span>
+<span class="sd">            - &#39;url&#39;: direct link to the article</span>
+<span class="sd">            - &#39;body&#39;: article content</span>
+<span class="sd">            - &#39;keywords&#39;: associated tags</span>
+<span class="sd">            - &#39;sentiment&#39;: sentiment label</span>
+<span class="sd">            - &#39;status&#39;: publication status</span>
+
+<span class="sd">        Notes:</span>
+<span class="sd">            - Articles marked as sponsored are automatically excluded.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">maximum</span> <span class="o">=</span> <span class="mi">100</span>
+        <span class="k">if</span> <span class="n">limit</span> <span class="o">&gt;</span> <span class="n">maximum</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Number of total news articles allowed is </span><span class="si">{</span><span class="n">maximum</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s2">&quot;https://data-api.coindesk.com/news/v1/article/list&quot;</span><span class="p">,</span>
+            <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;lang&quot;</span><span class="p">:</span> <span class="n">lang</span><span class="p">,</span> <span class="s2">&quot;limit&quot;</span><span class="p">:</span> <span class="n">limit</span><span class="p">},</span>
+            <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;Content-type&quot;</span><span class="p">:</span> <span class="s2">&quot;application/json; charset=UTF-8&quot;</span><span class="p">},</span>
+        <span class="p">)</span>
+        <span class="n">json_response</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="n">articles</span> <span class="o">=</span> <span class="n">json_response</span><span class="p">[</span><span class="s2">&quot;Data&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">articles</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="n">to_keep</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;PUBLISHED_ON&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;TITLE&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;SUBTITLE&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;URL&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;BODY&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;KEYWORDS&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;SENTIMENT&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;STATUS&quot;</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="n">filtered_articles</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">article</span> <span class="ow">in</span> <span class="n">articles</span><span class="p">:</span>
+            <span class="n">filtered_articles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="n">k</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span> <span class="n">article</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">article</span> <span class="ow">and</span> <span class="n">k</span> <span class="o">!=</span> <span class="s2">&quot;PUBLISHED_ON&quot;</span>
+                    <span class="k">else</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="n">article</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+                    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">to_keep</span>
+                    <span class="k">if</span> <span class="n">article</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">&quot;sponsored&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">article</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">query</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">filtered_articles</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">filtered_articles</span>
+        <span class="n">to_return</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="n">_get_search_query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">article</span> <span class="ow">in</span> <span class="n">filtered_articles</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">k</span> <span class="ow">in</span> <span class="n">article</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="s2">&quot;body&quot;</span><span class="p">,</span> <span class="s2">&quot;keywords&quot;</span><span class="p">)):</span>
+                <span class="k">continue</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">article</span><span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">article</span><span class="p">[</span><span class="s2">&quot;body&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">article</span><span class="p">[</span><span class="s2">&quot;keywords&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">list_of_str</span> <span class="ow">and</span> <span class="n">_find_news</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">):</span>
+                <span class="n">to_return</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">list_of_str</span> <span class="ow">and</span> <span class="n">_find_news</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">):</span>
+                <span class="n">to_return</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">article</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">to_return</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="FmpData">
+<a class="viewcode-back" href="../../../bbstrader.core.html#bbstrader.core.data.FmpData">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FmpData</span><span class="p">(</span><span class="n">Toolkit</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    FMPData class for fetching data from Financial Modeling Prep API</span>
+<span class="sd">    using the Toolkit class from financetoolkit package.</span>
+
+<span class="sd">    See `financetoolkit` for more details.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">api_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">symbols</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span> <span class="o">=</span> <span class="s2">&quot;AAPL&quot;</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">tickers</span><span class="o">=</span><span class="n">symbols</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">)</span></div>
+
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">DataBendo</span><span class="p">:</span> <span class="o">...</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023 - 2025, Bertin Balouki SIMYELI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
