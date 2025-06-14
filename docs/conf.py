@@ -10,7 +10,8 @@ import sys
 from unittest.mock import MagicMock
 
 
-sys.path.insert(0, os.path.abspath('..'))
+os.system('pip install ..')
+sys.path.insert(0, os.path.abspath('../bbstrader'))
 
 class Mock(MagicMock):
     @classmethod
