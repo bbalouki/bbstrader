@@ -886,28 +886,28 @@ class Trade(RiskManagement):
         """Return all opened order's tickets"""
         current_orders = self.get_current_orders() or []
         opened_orders = set(current_orders + self.opened_orders)
-        return opened_orders if len(opened_orders) != 0 else None
+        return list(opened_orders) if len(opened_orders) != 0 else None
 
     @property
     def positions(self):
         """Return all opened position's tickets"""
         current_positions = self.get_current_positions() or []
         opened_positions = set(current_positions + self.opened_positions)
-        return opened_positions if len(opened_positions) != 0 else None
+        return list(opened_positions) if len(opened_positions) != 0 else None
 
     @property
     def buypos(self):
         """Return all buy  opened position's tickets"""
         buy_positions = self.get_current_buys() or []
         buy_positions = set(buy_positions + self.buy_positions)
-        return buy_positions if len(buy_positions) != 0 else None
+        return list(buy_positions) if len(buy_positions) != 0 else None
 
     @property
     def sellpos(self):
         """Return all sell  opened position's tickets"""
         sell_positions = self.get_current_sells() or []
         sell_positions = set(sell_positions + self.sell_positions)
-        return sell_positions if len(sell_positions) != 0 else None
+        return list(sell_positions) if len(sell_positions) != 0 else None
 
     @property
     def bepos(self):

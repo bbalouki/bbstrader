@@ -620,6 +620,18 @@ class Account(object):
             if not isinstance(symbol_type, SymbolType) or symbol_type not in patterns:
                 raise ValueError(f"Unsupported symbol type: {symbol_type}")
 
+        def check_etfs(info):
+            err_msg = (
+                f"{info.name} doesn't have 'ETF' in its description. "
+                "If this is intended, set check_etf=False."
+            )
+            if (
+                symbol_type == SymbolType.ETFs
+                and check_etf
+                and "ETF" not in info.description
+            ):
+                raise ValueError(err_msg)
+
         if save:
             max_lengh = max([len(s.name) for s in symbols])
             file_path = f"{file_name}.txt"
@@ -633,15 +645,7 @@ class Account(object):
                         pattern = re.compile(patterns[symbol_type])
                         match = re.search(pattern, info.path)
                         if match:
-                            if (
-                                symbol_type == SymbolType.ETFs
-                                and check_etf
-                                and "ETF" not in info.description
-                            ):
-                                raise ValueError(
-                                    f"{info.name} doesn't have 'ETF' in its description. "
-                                    "If this is intended, set check_etf=False."
-                                )
+                            check_etfs(info)
                             self._write_symbol(file, info, include_desc, max_lengh)
                             symbol_list.append(s.name)
 
@@ -654,15 +658,7 @@ class Account(object):
                     pattern = re.compile(patterns[symbol_type])  # , re.IGNORECASE
                     match = re.search(pattern, info.path)
                     if match:
-                        if (
-                            symbol_type == SymbolType.ETFs
-                            and check_etf
-                            and "ETF" not in info.description
-                        ):
-                            raise ValueError(
-                                f"{info.name} doesn't have 'ETF' in its description. "
-                                "If this is intended, set check_etf=False."
-                            )
+                        check_etfs(info)
                         symbol_list.append(s.name)
 
         # Print a summary of the retrieved symbols
@@ -764,7 +760,10 @@ class Account(object):
             This mthods works primarly with Admirals Group AS products and Pepperstone Group Limited,
             For other brokers use `get_symbols()` or this method will use it by default.
         """
-        if self.broker not in [AdmiralMarktsGroup(), PepperstoneGroupLimited()]:
+        if (
+            self.broker != AdmiralMarktsGroup()
+            or self.broker != PepperstoneGroupLimited()
+        ):
             return self.get_symbols(symbol_type=SymbolType.FOREX)
         else:
             fx_categories = {
@@ -817,21 +816,22 @@ class Account(object):
             This mthods works primarly with Admirals Group AS products and Pepperstone Group Limited,
             For other brokers use `get_symbols()` or this method will use it by default.
         """
-
-        if self.broker not in [AdmiralMarktsGroup(), PepperstoneGroupLimited()]:
-            stocks = self.get_symbols(symbol_type=SymbolType.STOCKS)
-            return stocks
+        
+        if (
+            self.broker != AdmiralMarktsGroup()
+            or self.broker != PepperstoneGroupLimited()
+        ):
+            return self.get_symbols(symbol_type=SymbolType.STOCKS)
         else:
+            stocks, etfs = [], []
             country_map = _COUNTRY_MAP_
             stocks = self._get_symbols_by_category(
                 SymbolType.STOCKS, country_code, country_map
             )
-            if etf:
-                etfs = self._get_symbols_by_category(
-                    SymbolType.ETFs, country_code, country_map
-                )
-                return stocks + etfs
-            return stocks
+            etfs = self._get_symbols_by_category(
+                SymbolType.ETFs, country_code, country_map
+            )
+            return stocks + etfs if etf else stocks
 
     def get_stocks_from_exchange(
         self, exchange_code: str = "XNYS", etf=True
@@ -875,19 +875,17 @@ class Account(object):
             For other brokers use `get_symbols()` or this method will use it by default.
         """
         if self.broker != AdmiralMarktsGroup():
-            stocks = self.get_symbols(symbol_type=SymbolType.STOCKS)
-            return stocks
+            return self.get_symbols(symbol_type=SymbolType.STOCKS)
         else:
+            stocks, etfs = [], []
             exchange_map = AMG_EXCHANGES
             stocks = self._get_symbols_by_category(
                 SymbolType.STOCKS, exchange_code, exchange_map
             )
-            if etf:
-                etfs = self._get_symbols_by_category(
+            etfs = self._get_symbols_by_category(
                     SymbolType.ETFs, exchange_code, exchange_map
-                )
-                return stocks + etfs
-            return stocks
+            )
+            return stocks + etfs if etf else stocks
 
     def get_future_symbols(self, category: str = "ALL") -> List[str]:
         """
@@ -929,22 +927,22 @@ class Account(object):
                 info = self.get_symbol_info(symbol)
                 if info.name.startswith("_"):
                     if "XAU" in info.name:
-                        future_type["metals"].append(info.name)
+                        futures_types["metals"].append(info.name)
                     if "oil" in info.name.lower():
-                        future_type["energies"].append(info.name)
+                        futures_types["energies"].append(info.name)
                     name = info.name.split("_")[1]
                     if name in commodities:
                         _info = self.get_symbol_info(name)
                         if "Metals" in _info.path:
-                            future_type["metals"].append(info.name)
+                            futures_types["metals"].append(info.name)
                         elif "Energies" in _info.path:
-                            future_type["energies"].append(info.name)
+                            futures_types["energies"].append(info.name)
                         elif "Agricultures" in _info.path:
-                            future_type["agricultures"].append(info.name)
+                            futures_types["agricultures"].append(info.name)
 
                 elif info.name.startswith("#"):
                     if "Index" not in info.path:
-                        future_type["bonds"].append(info.name)
+                        futures_types["bonds"].append(info.name)
             return futures_types[category]
 
     def get_symbol_info(self, symbol: str) -> Union[SymbolInfo, None]:
@@ -969,12 +967,16 @@ class Account(object):
                 return None
             else:
                 symbol_info_dict = symbol_info._asdict()
-                time = datetime.fromtimestamp(symbol_info.time)
+                time = (
+                    datetime.fromtimestamp(symbol_info.time)
+                    if isinstance(symbol_info.time, int)
+                    else symbol_info.time
+                )
                 symbol_info_dict["time"] = time
                 return SymbolInfo(**symbol_info_dict)
         except Exception as e:
             msg = self._symbol_info_msg(symbol)
-            raise_mt5_error(message=f"{e + msg}")
+            raise_mt5_error(message=f"{str(e)} {msg}")
 
     def show_symbol_info(self, symbol: str):
         """
@@ -1015,12 +1017,16 @@ class Account(object):
                 return None
             else:
                 info_dict = tick_info._asdict()
-                time = datetime.fromtimestamp(tick_info.time)
+                time = (
+                    datetime.fromtimestamp(tick_info.time)
+                    if isinstance(tick_info.time, int)
+                    else tick_info.time
+                )
                 info_dict["time"] = time
                 return TickInfo(**info_dict)
         except Exception as e:
             msg = self._symbol_info_msg(symbol)
-            raise_mt5_error(message=f"{e + msg}")
+            raise_mt5_error(message=f"{str(e)} {msg}")
 
     def show_tick_info(self, symbol: str):
         """
