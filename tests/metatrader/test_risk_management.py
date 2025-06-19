@@ -389,34 +389,34 @@ class TestRiskManagement(unittest.TestCase):
         self.risk_manager.rr = original_rr # Reset
 
 
-    # def test_get_currency_risk(self):
-    #     # Allows self.risk_manager.currency_risk() to run.
-    #     # Expected 'currency_risk' key from currency_risk() with setUp mocks is var_loss_value = 5.0
-    #     expected_risk_value = 5.0
+    def test_get_currency_risk(self):
+        # Allows self.risk_manager.currency_risk() to run.
+        # Expected 'currency_risk' key from currency_risk() with setUp mocks is var_loss_value = 5.0
+        expected_risk_value = 5.0
         
-    #     result = self.risk_manager.get_currency_risk() # This is the method under test
+        result = self.risk_manager.get_currency_risk() # This is the method under test
         
-    #     self.assertEqual(result, round(expected_risk_value, 2))
+        self.assertEqual(result, round(expected_risk_value, 2))
 
-    # def test_expected_profit(self):
-    #     # Allows self.risk_manager.get_currency_risk() (and thus currency_risk()) to run.
-    #     # self.risk_manager.rr is 1.5 from setUp.
-    #     # Expected currency_risk from get_currency_risk() is 5.0.
-    #     expected_profit_value = round(5.0 * 1.5, 2) # 7.5
+    def test_expected_profit(self):
+        # Allows self.risk_manager.get_currency_risk() (and thus currency_risk()) to run.
+        # self.risk_manager.rr is 1.5 from setUp.
+        # Expected currency_risk from get_currency_risk() is 5.0.
+        expected_profit_value = round(5.0 * 1.5, 2) # 7.5
         
-    #     result = self.risk_manager.expected_profit()
+        result = self.risk_manager.expected_profit()
         
-    #     self.assertEqual(result, expected_profit_value)
+        self.assertEqual(result, expected_profit_value)
 
 
-    # def test_volume(self):
-    #     # Allows self.risk_manager.currency_risk() to run.
-    #     # Expected 'volume' from currency_risk() with setUp mocks is 490.
-    #     expected_volume_val = 491
+    def test_volume(self):
+        # Allows self.risk_manager.currency_risk() to run.
+        # Expected 'volume' from currency_risk() with setUp mocks is 490.
+        expected_volume_val = 491
         
-    #     result = self.risk_manager.volume() # This is the method under test
+        result = self.risk_manager.volume() # This is the method under test
         
-    #     self.assertEqual(result, expected_volume_val)
+        self.assertEqual(result, expected_volume_val)
 
     def test__convert_time_frame(self):
         self.assertEqual(self.risk_manager._convert_time_frame("1m"), TIMEFRAMES["1m"])
