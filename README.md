@@ -10,11 +10,24 @@
 
 [Dcoumentation](https://bbstrader.readthedocs.io/en/latest/index.html)
 
-BBSTrader is a trading system suite developed for MetaTrader 5 (MT5) and IBKR platforms (coming soon), designed to offer a comprehensive set of tools for developing, backtesting, executing, and managing a wide array of trading strategies. It targets algorithmic traders, quantitative analysts, and developers looking to build, test, and deploy trading strategies. With an emphasis on algorithmic and quantitative trading, BBSTrader aims to provide users with a robust platform for exploring and deploying sophisticated trading strategies.
+## Table of Contents
+- [Overview](#overview)
+- [Features](#features)
+- [Core Components](#core-components)
+- [Getting Started](#getting-started)
+- [Usage Examples](#usage-examples)
+- [Configuration](#configuration)
+- [Documentation](#documentation)
+- [Customization and Contribution](#customization-and-contribution)
+- [Contributing to `bbstrader`](#contributing-to-bbstrader)
+- [Disclaimer](#disclaimer)
+- [License](#license)
+
+`bbstrader` is a trading system suite developed for MetaTrader 5 (MT5) and IBKR platforms (coming soon), designed to offer a comprehensive set of tools for developing, backtesting, executing, and managing a wide array of trading strategies. It targets algorithmic traders, quantitative analysts, and developers looking to build, test, and deploy trading strategies. With an emphasis on algorithmic and quantitative trading, `bbstrader` aims to provide users with a robust platform for exploring and deploying sophisticated trading strategies.
 
 ## Overview
 
-BBSTrader aims to empower traders by providing a comprehensive and flexible suite of tools that simplify the development-to-deployment pipeline for algorithmic trading strategies. Our philosophy centers on offering powerful, accessible technology to navigate the complexities of financial markets, enabling users to efficiently design, test, and execute their trading ideas. By focusing on robust analytics and seamless platform integration, BBSTrader strives to be an indispensable partner for traders seeking to enhance their market analysis and execution capabilities.
+`bbstrader` aims to empower traders by providing a comprehensive and flexible suite of tools that simplify the development-to-deployment pipeline for algorithmic trading strategies. Our philosophy centers on offering powerful, accessible technology to navigate the complexities of financial markets, enabling users to efficiently design, test, and execute their trading ideas. By focusing on robust analytics and seamless platform integration, `bbstrader` strives to be an indispensable partner for traders seeking to enhance their market analysis and execution capabilities.
 
 ## Features
 
@@ -30,7 +43,7 @@ You can read the full documentation [here](https://bbstrader.readthedocs.io/en/l
 
 ## Core Components
 
-BBSTrader is organized into several key modules, each designed to address specific aspects of the trading workflow:
+`bbstrader` is organized into several key modules, each designed to address specific aspects of the trading workflow:
 
 ### Backtesting Engine (`btengine`)
 The **`btengine`** module enables traders to rigorously test their trading strategies using historical market data. It features an event-driven architecture, provides comprehensive performance metrics, and supports parameter optimization to evaluate and refine strategies before live deployment.
@@ -54,24 +67,24 @@ The **`trading`** module serves as a higher-level interface for implementing and
 Currently under development, the **`ibkr`** module aims to provide integration with the Interactive Brokers platform. It is expected to offer functionalities similar to the `metatrader` module, including account interaction, order execution, and position management for IBKR users.
 
 ### Core Utilities (`core`)
-The **`core`** module is the backbone of BBSTrader, providing fundamental data structures, utility functions, configuration management, and shared functionalities. These components are used across the entire BBSTrader ecosystem to ensure consistency and efficiency.
+The **`core`** module is the backbone of `bbstrader`, providing fundamental data structures, utility functions, configuration management, and shared functionalities. These components are used across the entire `bbstrader` ecosystem to ensure consistency and efficiency.
 
 ### Configuration (`config`)
-This **`config`** component handles the management of all system settings, including API keys, broker executable paths, database connections, and logging configurations, making it easier to customize BBSTrader to specific user environments.
+This **`config`** component handles the management of all system settings, including API keys, broker executable paths, database connections, and logging configurations, making it easier to customize `bbstrader` to specific user environments.
 
 ### Compatibility Layer (`compat`)
-The **`compat`** module is designed to enhance cross-platform development and testing. It achieves this by mocking the MetaTrader 5 environment, allowing developers on non-Windows systems to work with BBSTrader's core functionalities without needing a live MT5 instance.
+The **`compat`** module is designed to enhance cross-platform development and testing. It achieves this by mocking the MetaTrader 5 environment, allowing developers on non-Windows systems to work with `bbstrader`'s core functionalities without needing a live MT5 instance.
 
 ## Getting Started
 
-To begin using BBSTrader, please ensure your system meets the following prerequisites and follow the installation steps.
+To begin using `bbstrader`, please ensure your system meets the following prerequisites and follow the installation steps.
 
 ### Prerequisites
 
 *   **Python**: Python 3.8+ is required.
 *   **MetaTrader 5 (MT5)**:
     *   The MetaTrader 5 platform must be installed on your system (primarily for Windows users needing live trading or direct MT5 interaction).
-    *   An active trading account with a MetaTrader 5 broker. BBSTrader currently supports:
+    *   An active trading account with a MetaTrader 5 broker. `bbstrader` currently supports:
         *   [Admirals Group AS](https://cabinet.a-partnership.com/visit/?bta=35537&brand=admiralmarkets) (for Stocks, ETFs, Indices, Commodities, Futures, Forex)
         *   [Just Global Markets Ltd.](https://one.justmarkets.link/a/tufvj0xugm/registration/trader) (for Stocks, Crypto, Indices, Commodities, Forex)
         *   [FTMO](https://trader.ftmo.com/?affiliates=JGmeuQqepAZLMcdOEQRp) (Proprietary Firm)
@@ -82,7 +95,7 @@ To begin using BBSTrader, please ensure your system meets the following prerequi
 
 ### Installation
 
-It is highly recommended to install BBSTrader in a virtual environment to manage dependencies effectively.
+It is highly recommended to install `bbstrader` in a virtual environment to manage dependencies effectively.
 
 1.  **Create and activate a virtual environment:**
 
@@ -97,7 +110,7 @@ It is highly recommended to install BBSTrader in a virtual environment to manage
         venv\Scripts\activate
         ```
 
-2.  **Install BBSTrader:**
+2.  **Install `bbstrader`:**
 
     *   **For Windows users (with MetaTrader 5):**
         To include the official MetaTrader 5 package (which is Windows-only), install using:
@@ -110,21 +123,15 @@ It is highly recommended to install BBSTrader in a virtual environment to manage
         pip install bbstrader
         ```
 
-3.  **Install IBKR API client (Optional):**
-    If you plan to use the Interactive Brokers integration, install the `ibapi` package:
-    ```bash
-    pip install ibapi
-    ```
-
-With these steps completed, you are ready to explore the features and modules of BBSTrader!
+With these steps completed, you are ready to explore the features and modules of `bbstrader`!
 
 ## Usage Examples
 
-This section provides examples of how to use BBSTrader for various tasks. Remember to replace placeholder values (like account numbers, server names, file paths, and strategy parameters) with your actual details.
+This section provides examples of how to use `bbstrader` for various tasks. Remember to replace placeholder values (like account numbers, server names, file paths, and strategy parameters) with your actual details.
 
 ### Connecting to MetaTrader 5 (Conceptual)
 
-BBSTrader scripts and modules that interact with MetaTrader 5 handle the connection process internally, typically based on your configuration (`~/.bbstrader/config/config.ini` or environment variables).
+`bbstrader` scripts and modules that interact with MetaTrader 5 handle the connection process internally, typically based on your configuration (`~/.bbstrader/config/config.ini` or environment variables).
 
 If you were to connect to MetaTrader 5 manually using the `MetaTrader5` library, it would look something like this:
 
@@ -155,7 +162,7 @@ else:
 # Shutdown connection
 mt5.shutdown()
 ```
-**Note:** BBSTrader's `metatrader` module and execution scripts abstract this process, using configured credentials and settings.
+**Note:** `bbstrader`'s `metatrader` module and execution scripts abstract this process, using configured credentials and settings.
 
 ### Programmatic Backtesting Example
 
@@ -180,11 +187,11 @@ This will typically output performance metrics and charts to a results directory
 
 ### Command-Line Interface (CLI) Examples
 
-BBSTrader provides a CLI for various operations, including running live strategies, backtests, and utilities like the trade copier.
+`bbstrader` provides a CLI for various operations, including running live strategies, backtests, and utilities like the trade copier.
 
 #### CLI - Running a Live Strategy
 
-To run a live strategy, you first need to define its parameters in an `execution.json` file. By default, BBSTrader looks for this file at `~/.bbstrader/execution/execution.json`.
+To run a live strategy, you first need to define its parameters in an `execution.json` file. By default, `bbstrader` looks for this file at `~/.bbstrader/execution/execution.json`.
 
 1.  **Create `execution.json`**:
     Create the directory `~/.bbstrader/execution/` if it doesn't exist. Inside, create `execution.json` with content like this for an `SMAStrategy`:
@@ -203,7 +210,7 @@ To run a live strategy, you first need to define its parameters in an `execution
       }
     }
     ```
-    Replace `MY_MT5_ACCOUNT_1` with your account identifier used in BBSTrader's configuration. Adjust strategy parameters as needed.
+    Replace `MY_MT5_ACCOUNT_1` with your account identifier used in `bbstrader`'s configuration. Adjust strategy parameters as needed.
 
 2.  **Run the strategy via CLI**:
     Open your terminal and run:
@@ -231,7 +238,7 @@ python -m bbstrader --run backtest --strategy SMAStrategy
 
 #### CLI - Trade Copier
 
-BBSTrader includes a trade copier utility to replicate trades between different MetaTrader 5 accounts.
+`bbstrader` includes a trade copier utility to replicate trades between different MetaTrader 5 accounts.
 
 To see the available options for the trade copier:
 ```bash
@@ -241,11 +248,11 @@ This will display detailed instructions on how to specify source and target acco
 
 ## Configuration
 
-BBSTrader uses a combination of user-defined JSON files and internal Python scripts for configuration. Understanding these will help you customize the system to your needs.
+`bbstrader` uses a combination of user-defined JSON files and internal Python scripts for configuration. Understanding these will help you customize the system to your needs.
 
 ### User Configuration Directory: `~/.bbstrader/`
 
-BBSTrader uses a hidden directory in your user's home folder, `~/.bbstrader/`, to store user-specific files. This typically includes:
+`bbstrader` uses a hidden directory in your user's home folder, `~/.bbstrader/`, to store user-specific files. This typically includes:
 *   `execution/execution.json`: For live strategy execution parameters.
 *   `logs/`: Default directory for log files.
 *   Potentially other configuration files for different modules in the future.
@@ -271,10 +278,10 @@ You may need to create the `~/.bbstrader/` directory and its subdirectories (lik
 
 *   The file `bbstrader/config.py` within the installed package contains a dictionary named `BROKERS_PATHS`. This dictionary maps broker shortnames (e.g., "AMG", "FTMO") to the default installation paths of their MetaTrader 5 `terminal64.exe`.
 *   **Customization**:
-    *   If your MT5 terminal is installed in a non-standard location, or you use a broker not listed, BBSTrader might not find the terminal.
+    *   If your MT5 terminal is installed in a non-standard location, or you use a broker not listed, `bbstrader` might not find the terminal.
     *   Ideally, future versions might support environment variables or a user-specific configuration file to override these paths.
     *   Currently, the most direct way to change these is by modifying `bbstrader/config.py` in your Python environment's `site-packages` directory. This should be done with caution as changes might be overwritten during package updates.
-    *   Alternatively, when initializing `MetaTrader5` in your custom scripts, you can often pass the `path` argument directly to `mt5.initialize(path="C:\\path\\to\\your\\terminal64.exe", ...)`. BBSTrader's internal scripts might not use this method by default.
+    *   Alternatively, when initializing `MetaTrader5` in your custom scripts, you can often pass the `path` argument directly to `mt5.initialize(path="C:\\path\\to\\your\\terminal64.exe", ...)`. `bbstrader`'s internal scripts might not use this method by default.
 
 ### Logging Configuration (`bbstrader/config.py`)
 
@@ -286,11 +293,11 @@ You may need to create the `~/.bbstrader/` directory and its subdirectories (lik
     *   If enabled (usually by default for CLI operations), console logging is set to `DEBUG` level, providing more verbose output.
 *   **Customization**:
     *   You can modify logging behavior (e.g., log levels, output formats, log file location) by editing the `config_logger` function in `bbstrader/config.py` within your `site-packages`. This is subject to the same caveats as modifying broker paths (potential overwrites on update).
-    *   For programmatic use, you can re-configure logging after importing BBSTrader modules if needed, though this might affect internal BBSTrader logging.
+    *   For programmatic use, you can re-configure logging after importing `bbstrader` modules if needed, though this might affect internal `bbstrader` logging.
 
 ### General Advice
 
-*   For detailed configuration options specific to certain modules or advanced use cases, always refer to the official BBSTrader documentation (if available) or consult the source code of the respective modules.
+*   For detailed configuration options specific to certain modules or advanced use cases, always refer to the official `bbstrader` documentation (if available) or consult the source code of the respective modules.
 *   Keep an eye on the `~/.bbstrader/` directory for any new configuration files or logs that might appear as you use different features.
 
 ## Documentation
@@ -305,7 +312,7 @@ Additionally, the codebase is commented and includes docstrings, which can be a 
 
 `bbstrader`'s modular design allows for easy customization and extension. Traders and developers are encouraged to modify existing strategies, add new ones, or enhance the system's capabilities. Contributions to the `bbstrader` project are welcome.
 
-## Contributing to BBSTrader
+## Contributing to `bbstrader`
 
 We warmly welcome contributions from the trading and development community! Whether you're interested in fixing bugs, adding new features, or improving documentation, your help is invaluable to making `bbstrader` more robust and versatile. Here's how you can contribute:
 
@@ -338,7 +345,7 @@ Please include the following in your bug report:
 
 ### Requesting Features
 
-We are always open to suggestions for new features and improvements! If you have an idea that could make BBSTrader better, please submit it via GitHub Issues.
+We are always open to suggestions for new features and improvements! If you have an idea that could make `bbstrader` better, please submit it via GitHub Issues.
 
 [**Request a Feature on GitHub**](https://github.com/bbalouki/bbstrader/issues)
 

@@ -331,8 +331,18 @@ FINANCIAL_LEXICON = {
 
 class TopicModeler(object):
     def __init__(self):
-        self.nlp = spacy.load("en_core_web_sm")
-        self.nlp.disable_pipes("ner")
+        nltk.download("punkt", quiet=True)
+        nltk.download("stopwords", quiet=True)
+
+        try:
+            self.nlp = spacy.load("en_core_web_sm")
+            self.nlp.disable_pipes("ner")
+        except OSError:
+            raise RuntimeError(
+                "The SpaCy model 'en_core_web_sm' is not installed.\n"
+                "Please install it by running:\n"
+                "   python -m spacy download en_core_web_sm"
+            )
 
     def preprocess_texts(self, texts: list[str]):
         def clean_doc(Doc):
