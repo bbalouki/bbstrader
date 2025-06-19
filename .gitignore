@@ -4,7 +4,7 @@ test.py
 __pycache__
 *.egg-info
 *.code-workspace
-.pytest_cache
+*cache
 .backtests
 *.egg-info
 dist/

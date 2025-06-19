@@ -36,3 +36,5 @@ tweepy
 beautifulsoup4
 textblob
 vaderSentiment
+pytest 
+pytest-mock

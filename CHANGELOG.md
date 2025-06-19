@@ -1,5 +1,8 @@
 # Changes
 
+## 0.3.0
+- Update bbstrader with new features
+
 ## 0.2.099
 - Bug Fix and Minors Updates
 
