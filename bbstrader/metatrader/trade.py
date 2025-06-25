@@ -134,8 +134,9 @@ class TradeSignal:
     def __repr__(self):
         return (
             f"TradeSignal(id={self.id}, symbol='{self.symbol}', action='{self.action.value}', "
-            f"price={self.price}, stoplimit={self.stoplimit}), comment='{self.comment}'"
+            f"price={self.price}, stoplimit={self.stoplimit}, comment='{self.comment or ''}')"
         )
+
 
 class TradingMode(Enum):
     BACKTEST = "BACKTEST"
@@ -143,6 +144,7 @@ class TradingMode(Enum):
 
     def isbacktest(self) -> bool:
         return self == TradingMode.BACKTEST
+
     def islive(self) -> bool:
         return self == TradingMode.LIVE
 
@@ -740,10 +742,8 @@ class Trade(RiskManagement):
             self.check_order(request)
             result = self.send_order(request)
         except Exception as e:
-            print(f"{self.current_datetime()} -", end=" ")
-            trade_retcode_message(
-                result.retcode, display=True, add_msg=f"{e}{addtionnal}"
-            )
+            msg = trade_retcode_message(result.retcode)
+            LOGGER.error(f"Trade Order Request, {msg}{addtionnal}, {e}")
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
             if result.retcode == Mt5.TRADE_RETCODE_INVALID_FILL:  # 10030
                 for fill in FILLING_TYPE:
@@ -773,10 +773,8 @@ class Trade(RiskManagement):
                         self.check_order(request)
                         result = self.send_order(request)
                     except Exception as e:
-                        print(f"{self.current_datetime()} -", end=" ")
-                        trade_retcode_message(
-                            result.retcode, display=True, add_msg=f"{e}{addtionnal}"
-                        )
+                        msg = trade_retcode_message(result.retcode)
+                        LOGGER.error(f"Trade Order Request, {msg}{addtionnal}, {e}")
                     if result.retcode == Mt5.TRADE_RETCODE_DONE:
                         break
                     tries += 1
@@ -787,7 +785,7 @@ class Trade(RiskManagement):
             if type != "BMKT" or type != "SMKT":
                 self.opened_orders.append(result.order)
             long_msg = (
-                f"1. {pos} Order #{result.order} Sent, Symbol: {self.symbol}, Price: @{price}, "
+                f"1. {pos} Order #{result.order} Sent, Symbol: {self.symbol}, Price: @{round(price, 5)}, "
                 f"Lot(s): {result.volume}, Sl: {self.get_stop_loss()}, "
                 f"Tp: {self.get_take_profit()}"
             )
@@ -808,7 +806,7 @@ class Trade(RiskManagement):
                             profit = round(self.get_account_info().profit, 5)
                             order_info = (
                                 f"2. {order_type} Position Opened, Symbol: {self.symbol}, Price: @{round(position.price_open, 5)}, "
-                                f"Sl: @{position.sl} Tp: @{position.tp}"
+                                f"Sl: @{round(position.sl, 5)} Tp: @{round(position.tp, 5)}"
                             )
                             LOGGER.info(order_info)
                             pos_info = (
@@ -1294,10 +1292,8 @@ class Trade(RiskManagement):
             self.check_order(request)
             result = self.send_order(request)
         except Exception as e:
-            print(f"{self.current_datetime()} -", end=" ")
-            trade_retcode_message(
-                result.retcode, display=True, add_msg=f"{e}{addtionnal}"
-            )
+            msg = trade_retcode_message(result.retcode)
+            LOGGER.error(f"Break-Even Order Request, {msg}{addtionnal}, Error: {e}")
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
             msg = trade_retcode_message(result.retcode)
             if result.retcode != Mt5.TRADE_RETCODE_NO_CHANGES:
@@ -1314,17 +1310,15 @@ class Trade(RiskManagement):
                         self.check_order(request)
                         result = self.send_order(request)
                     except Exception as e:
-                        print(f"{self.current_datetime()} -", end=" ")
-                        trade_retcode_message(
-                            result.retcode, display=True, add_msg=f"{e}{addtionnal}"
-                        )
+                        msg = trade_retcode_message(result.retcode)
+                        LOGGER.error(f"Break-Even Order Request, {msg}{addtionnal}, Error: {e}")
                     if result.retcode == Mt5.TRADE_RETCODE_DONE:
                         break
                 tries += 1
         if result.retcode == Mt5.TRADE_RETCODE_DONE:
             msg = trade_retcode_message(result.retcode)
             LOGGER.info(f"Break-Even Order {msg}{addtionnal}")
-            info = f"Stop loss set to Break-even, Position: #{tiket}, Symbol: {self.symbol}, Price: @{price}"
+            info = f"Stop loss set to Break-even, Position: #{tiket}, Symbol: {self.symbol}, Price: @{round(price, 5)}"
             LOGGER.info(info)
             self.break_even_status.append(tiket)
 
@@ -1402,10 +1396,8 @@ class Trade(RiskManagement):
             self.check_order(request)
             result = self.send_order(request)
         except Exception as e:
-            print(f"{self.current_datetime()} -", end=" ")
-            trade_retcode_message(
-                result.retcode, display=True, add_msg=f"{e}{addtionnal}"
-            )
+            msg = trade_retcode_message(result.retcode)
+            LOGGER.error(f"Closing {type.capitalize()} Request, {msg}{addtionnal}, Error: {e}")
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
             if result.retcode == Mt5.TRADE_RETCODE_INVALID_FILL:  # 10030
                 for fill in FILLING_TYPE:
@@ -1417,7 +1409,8 @@ class Trade(RiskManagement):
                 self._retcodes.append(result.retcode)
                 msg = trade_retcode_message(result.retcode)
                 LOGGER.error(
-                    f"Closing Order Request, {type.capitalize()}: #{ticket}, RETCODE={result.retcode}: {msg}{addtionnal}"
+                    f"Closing Order Request, {type.capitalize()}: #{ticket}, "
+                    f"RETCODE={result.retcode}: {msg}{addtionnal}"
                 )
             else:
                 tries = 0
@@ -1427,17 +1420,18 @@ class Trade(RiskManagement):
                         self.check_order(request)
                         result = self.send_order(request)
                     except Exception as e:
-                        print(f"{self.current_datetime()} -", end=" ")
-                        trade_retcode_message(
-                            result.retcode, display=True, add_msg=f"{e}{addtionnal}"
-                        )
+                        msg = trade_retcode_message(result.retcode)
+                        LOGGER.error(f"Closing {type.capitalize()} Request, {msg}{addtionnal}, Error: {e}")
                     if result.retcode == Mt5.TRADE_RETCODE_DONE:
                         break
                     tries += 1
         if result.retcode == Mt5.TRADE_RETCODE_DONE:
             msg = trade_retcode_message(result.retcode)
             LOGGER.info(f"Closing Order {msg}{addtionnal}")
-            info = f"{type.capitalize()} #{ticket} closed, Symbol: {self.symbol}, Price: @{request.get('price', 0.0)}"
+            info = (
+                f"{type.capitalize()} #{ticket} closed, Symbol: {self.symbol},"
+                f"Price: @{round(request.get('price', 0.0), 5)}"
+            )
             LOGGER.info(info)
             return True
         else:
@@ -1466,7 +1460,7 @@ class Trade(RiskManagement):
         orders = self.get_orders(ticket=ticket) or []
         if len(orders) == 0:
             LOGGER.error(
-                f"Order #{ticket} not found, SYMBOL={self.symbol}, PRICE={price}"
+                f"Order #{ticket} not found, SYMBOL={self.symbol}, PRICE={round(price, 5)}"
             )
             return
         order = orders[0]
@@ -1482,7 +1476,8 @@ class Trade(RiskManagement):
         result = self.send_order(request)
         if result.retcode == Mt5.TRADE_RETCODE_DONE:
             LOGGER.info(
-                f"Order #{ticket} modified, SYMBOL={self.symbol}, PRICE={price}, SL={sl}, TP={tp}, STOP_LIMIT={stoplimit}"
+                f"Order #{ticket} modified, SYMBOL={self.symbol}, PRICE={round(price, 5)},"
+                f"SL={round(sl, 5)}, TP={round(tp, 5)}, STOP_LIMIT={round(stoplimit, 5)}"
             )
         else:
             msg = trade_retcode_message(result.retcode)
