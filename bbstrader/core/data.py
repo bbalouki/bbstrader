@@ -149,7 +149,7 @@ class FmpNews(object):
             try:
                 articles = pd.read_csv("latest_fmp_articles.csv")
                 articles = articles.to_dict(orient="records")
-                if self._last_date(articles[0]["date"]) < end_date:
+                if self._last_date(articles[0]["date"]).hour < end_date.hour:
                     articles = self.get_articles(**kwargs)
                 else:
                     return articles
@@ -161,7 +161,9 @@ class FmpNews(object):
             df.to_csv("latest_fmp_articles.csv", index=False)
         return articles
 
-    def get_news(self, query, source="articles", articles=None, symbol=None, **kwargs):
+    def get_news(
+        self, query, source="articles", articles=None, symbol: str = None, **kwargs
+    ):
         """
         Retrieves relevant financial news based on the specified source.
 
@@ -183,6 +185,10 @@ class FmpNews(object):
                         Returns an empty list if no relevant news is found.
         """
         query = _get_search_query(query)
+        if symbol is not None:
+            symbol = symbol.replace("-", "").split("=")[
+                0
+            ]  # if symbol is a yahoo finance ticker
         source_methods = {
             "articles": lambda: self.get_latest_articles(articles=articles, save=True),
             "releases": lambda: self.get_releases(symbol=symbol, **kwargs),
@@ -191,6 +197,8 @@ class FmpNews(object):
             "forex": lambda: self.get_forex_news(symbol=symbol, **kwargs),
         }
         news_source = source_methods.get(source, lambda: [])()
+        if source == "articles":
+            symbol = None  # Articles do not require a symbol filter
         news = self.parse_news(news_source, symbol=symbol)
         return _filter_news(news, query)
 
@@ -203,7 +211,7 @@ class FinancialNews(object):
 
     """
 
-    def _fetch_news(self, url, query, asset_type, n_news, headline_tag) -> List[str]:
+    def _fetch_news(self, url, query, n_news, headline_tag) -> List[str]:
         headers = {"User-Agent": "Mozilla/5.0"}
         try:
             response = requests.get(url, headers=headers)
@@ -224,32 +232,60 @@ class FinancialNews(object):
         ]
         return headlines[:n_news]
 
-    def get_yahoo_finance_news(self, query, asset_type="stock", n_news=10):
+    def get_yahoo_finance_news(self, query: str, asset_type="stock", n_news=10):
         """
         Fetches recent Yahoo Finance news headlines for a given financial asset.
 
         Args:
             query (str): The asset symbol or name (e.g., "AAPL").
-            asset_type (str, optional): The type of asset (e.g., "stock", "etf"). Defaults to "stock".
+            asset_type (str, optional): The type of asset (e.g., "stock", "etf"). Defaults to "stock",
+                supported types include:
+                - "stock": Stock symbols (e.g., AAPL, MSFT)
+                - "etf": Exchange-traded funds (e.g., SPY, QQQ)
+                - "future": Futures contracts (e.g., CL=F for crude oil)
+                - "forex": Forex pairs (e.g., EURUSD=X, USDJPY=X)
+                - "crypto": Cryptocurrency pairs (e.g., BTC-USD, ETH-USD)
+                - "index": Stock market indices (e.g., ^GSPC for S&P 500)
             n_news (int, optional): The number of news headlines to return. Defaults to 10.
+
+        Note:
+            For commotities and bonds, use the "Future" asset type.
 
         Returns:
             list[str]: A list of Yahoo Finance news headlines relevant to the query.
         """
+        if asset_type == "forex" or asset_type == "future":
+            assert (
+                "=" in query
+            ), "Forex query must contain '=' for currency pairs (e.g., EURUSD=X, CL=F)"
+        if asset_type == "crypto":
+            assert (
+                "-" in query
+            ), "Crypto query must contain '-' for crypto pairs (e.g., BTC-USD, ETH-USD)"
+        if asset_type == "index":
+            assert query.startswith(
+                "^"
+            ), "Index query must start with '^' (e.g., ^GSPC for S&P 500)"
         url = (
             f"https://finance.yahoo.com/quote/{query}/news"
-            if asset_type in ["stock", "etf"]
+            if asset_type in ["stock", "etf", "index", "future", "forex"]
             else "https://finance.yahoo.com/news"
         )
-        return self._fetch_news(url, query, asset_type, n_news, "h3")
+        return self._fetch_news(url, query, n_news, "h3")
 
-    def get_google_finance_news(self, query, asset_type="stock", n_news=10):
+    def get_google_finance_news(self, query: str, asset_type="stock", n_news=10):
         """
         Fetches recent Google Finance news headlines for a given financial asset.
 
         Args:
             query (str): The asset symbol or name (e.g., "AAPL").
             asset_type (str, optional): The type of asset (e.g., "stock", "crypto"). Defaults to "stock".
+                Supported types include:
+                - "stock": Stock symbols (e.g., AAPL, MSFT)
+                - "etf": Exchange-traded funds (e.g., SPY, QQQ)
+                - "future": Futures contracts (e.g., CL=F or crude oil)
+                - "forex": Forex pairs (e.g., EURUSD, USDJPY)
+                - "crypto": Cryptocurrency pairs (e.g., BTCUSD, ETHUSD)
             n_news (int, optional): The number of news headlines to return. Defaults to 10.
 
         Returns:
@@ -258,20 +294,18 @@ class FinancialNews(object):
         search_terms = {
             "stock": f"{query} stock OR {query} shares OR {query} market",
             "etf": f"{query} ETF OR {query} fund OR {query} exchange-traded fund",
-            "futures": f"{query} futures OR {query} price OR {query} market",
-            "commodity": f"{query} price OR {query} futures OR {query} market",
+            "future": f"{query} futures OR {query} price OR {query} market",
             "forex": f"{query} forex OR {query} exchange rate OR {query} market",
             "crypto": f"{query} cryptocurrency OR {query} price OR {query} market",
-            "bond": f"{query} bond OR {query} yield OR {query} interest rate",
             "index": f"{query} index OR {query} stock market OR {query} performance",
         }
         search_query = search_terms.get(asset_type, query)
         url = f"https://news.google.com/search?q={search_query.replace(' ', '+')}"
-        return self._fetch_news(url, query, asset_type, n_news, "a")
+        return self._fetch_news(url, query, n_news, "a")
 
     def get_reddit_posts(
         self,
-        symbol,
+        symbol: str,
         client_id=None,
         client_secret=None,
         user_agent=None,
@@ -294,8 +328,8 @@ class FinancialNews(object):
                 - "stock": Searches in stock-related subreddits (e.g., wallstreetbets, stocks).
                 - "forex": Searches in forex-related subreddits.
                 - "commodities": Searches in commodity-related subreddits (e.g., gold, oil).
-                - "etfs": Searches in ETF-related subreddits.
-                - "futures": Searches in futures and options trading subreddits.
+                - "etf": Searches in ETF-related subreddits.
+                - "future": Searches in futures and options trading subreddits.
                 - "crypto": Searches in cryptocurrency-related subreddits.
                 - If an unrecognized asset class is provided, defaults to stock-related subreddits.
             n_posts (int, optional): The number of posts to return per subreddit. Defaults to 10.
@@ -317,15 +351,36 @@ class FinancialNews(object):
         """
 
         reddit = praw.Reddit(
-            client_id=client_id, client_secret=client_secret, user_agent=user_agent
+            client_id=client_id,
+            client_secret=client_secret,
+            user_agent=user_agent,
+            check_for_updates=False,
+            comment_kind="t1",
+            message_kind="t4",
+            redditor_kind="t2",
+            submission_kind="t3",
+            subreddit_kind="t5",
+            trophy_kind="t6",
+            oauth_url="https://oauth.reddit.com",
+            reddit_url="https://www.reddit.com",
+            short_url="https://redd.it",
+            timeout=16,
+            ratelimit_seconds=5,
         )
-
+        assert reddit.read_only
         subreddit_mapping = {
             "stock": ["wallstreetbets", "stocks", "investing", "StockMarket"],
             "forex": ["Forex", "ForexTrading", "DayTrading"],
-            "commodities": ["Commodities", "Gold", "Silverbugs", "oil"],
             "etfs": ["ETFs", "investing"],
-            "futures": ["FuturesTrading", "OptionsTrading", "DayTrading"],
+            "futures": [
+                "FuturesTrading",
+                "OptionsTrading",
+                "DayTrading",
+                "Commodities",
+                "Gold",
+                "Silverbugs",
+                "oil",
+            ],
             "crypto": ["CryptoCurrency", "Bitcoin", "ethereum", "altcoin"],
         }
         try:
@@ -473,16 +528,23 @@ class FinancialNews(object):
         maximum = 100
         if limit > maximum:
             raise ValueError(f"Number of total news articles allowed is {maximum}")
-
-        response = requests.get(
-            "https://data-api.coindesk.com/news/v1/article/list",
-            params={"lang": lang, "limit": limit},
-            headers={"Content-type": "application/json; charset=UTF-8"},
-        )
-        json_response = response.json()
-        articles = json_response["Data"]
-        if len(articles) == 0:
+        try:
+            response = requests.get(
+                "https://data-api.coindesk.com/news/v1/article/list",
+                params={"lang": lang, "limit": limit},
+                headers={"Content-type": "application/json; charset=UTF-8"},
+            )
+            response.raise_for_status()
+            json_response = response.json()
+        except requests.exceptions.RequestException:
             return []
+        if (
+            response.status_code != 200
+            or "Data" not in json_response
+            or len(json_response["Data"]) == 0
+        ):
+            return []
+        articles = json_response["Data"]
         to_keep = [
             "PUBLISHED_ON",
             "TITLE",
@@ -495,10 +557,11 @@ class FinancialNews(object):
         ]
         filtered_articles = []
         for article in articles:
+            keys = article.keys()
             filtered_articles.append(
                 {
                     k.lower(): article[k]
-                    if k in article and k != "PUBLISHED_ON"
+                    if k in keys and k != "PUBLISHED_ON"
                     else datetime.fromtimestamp(article[k])
                     for k in to_keep
                     if article[k] is not None and "sponsored" not in str(article[k])
