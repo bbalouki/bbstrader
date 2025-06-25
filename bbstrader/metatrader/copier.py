@@ -489,7 +489,7 @@ class TradeCopier(object):
 
     def get_positions(self, destination: dict):
         source_positions = self.source_positions() or []
-        dest_symbols = get_copy_symbols(destination)
+        dest_symbols = get_copy_symbols(destination, self.source)
         dest_positions = self.destination_positions(destination) or []
         source_positions = self.filter_positions_and_orders(
             source_positions, symbols=dest_symbols
@@ -501,7 +501,7 @@ class TradeCopier(object):
 
     def get_orders(self, destination: dict):
         source_orders = self.source_orders() or []
-        dest_symbols = get_copy_symbols(destination)
+        dest_symbols = get_copy_symbols(destination, self.source)
         dest_orders = self.destination_orders(destination) or []
         source_orders = self.filter_positions_and_orders(
             source_orders, symbols=dest_symbols
@@ -753,6 +753,8 @@ def RunMultipleCopier(
 
 def _strtodict(string: str) -> dict:
     string = string.strip().replace("\n", "").replace(" ", "").replace('"""', "")
+    if string.endswith(","):
+        string = string[:-1]
     return dict(item.split(":") for item in string.split(","))
 
 
