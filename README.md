@@ -88,10 +88,7 @@ To begin using `bbstrader`, please ensure your system meets the following prereq
         *   [Admirals Group AS](https://cabinet.a-partnership.com/visit/?bta=35537&brand=admiralmarkets) (for Stocks, ETFs, Indices, Commodities, Futures, Forex)
         *   [Just Global Markets Ltd.](https://one.justmarkets.link/a/tufvj0xugm/registration/trader) (for Stocks, Crypto, Indices, Commodities, Forex)
         *   [FTMO](https://trader.ftmo.com/?affiliates=JGmeuQqepAZLMcdOEQRp) (Proprietary Firm)
-*   **Interactive Brokers (IBKR)** (Optional, for IBKR integration):
-    *   Interactive Brokers Trader Workstation (TWS) or IB Gateway must be installed and running.
-    *   An active account with Interactive Brokers.
-    *   The Python client library for the IBKR API: `ibapi`.
+
 
 ### Installation
 

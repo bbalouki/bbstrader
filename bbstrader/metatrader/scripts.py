@@ -2,9 +2,18 @@ import argparse
 import sys
 
 from bbstrader.metatrader.copier import RunCopier, config_copier
+from bbstrader.apps._copier import main as RunCopyAPP
 
 
 def copier_args(parser: argparse.ArgumentParser):
+    parser.add_argument(
+        "-m",
+        "--mode",
+        type=str,
+        default="CLI",
+        choices=("CLI", "GUI"),
+        help="Run the copier in the terminal or using the GUI",
+    )
     parser.add_argument(
         "-s", "--source", type=str, nargs="?", default=None, help="Source section name"
     )
@@ -52,6 +61,7 @@ def copy_trades(unknown):
         python -m bbstrader --run copier [options]
 
     Options:
+        -m, --mode: CLI for terminal app and GUI for Desktop app
         -s, --source: Source Account section name
         -d, --destinations: Destination Account section names (multiple allowed)
         -i, --interval: Update interval in seconds
@@ -67,15 +77,19 @@ def copy_trades(unknown):
     copy_parser = copier_args(copy_parser)
     copy_args = copy_parser.parse_args(unknown)
 
-    source, destinations = config_copier(
-        source_section=copy_args.source,
-        dest_sections=copy_args.destinations,
-        inifile=copy_args.config,
-    )
-    RunCopier(
-        source,
-        destinations,
-        copy_args.interval,
-        copy_args.start,
-        copy_args.end,
-    )
+    if copy_args.mode == "GUI":
+        RunCopyAPP()
+    
+    elif copy_args.mode == "CLI":
+        source, destinations = config_copier(
+            source_section=copy_args.source,
+            dest_sections=copy_args.destinations,
+            inifile=copy_args.config,
+        )
+        RunCopier(
+            source,
+            destinations,
+            copy_args.interval,
+            copy_args.start,
+            copy_args.end,
+        )

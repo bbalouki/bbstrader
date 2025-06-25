@@ -14,6 +14,7 @@ __all__ = [
     "TerminalInfo",
     "AccountInfo",
     "SymbolInfo",
+    "SymbolType",
     "TickInfo",
     "TradeRequest",
     "OrderCheckResult",

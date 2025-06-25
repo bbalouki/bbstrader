@@ -1,10 +1,11 @@
 import multiprocessing
+import threading
 import time
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Literal, Tuple
 
-from loguru import logger
+from loguru import logger as log
 
 from bbstrader.config import BBSTRADER_DIR
 from bbstrader.metatrader.account import Account, check_mt5_connection
@@ -20,12 +21,14 @@ except ImportError:
 __all__ = ["TradeCopier", "RunCopier", "RunMultipleCopier", "config_copier"]
 
 
-logger.add(
+log.add(
     f"{BBSTRADER_DIR}/logs/copier.log",
     enqueue=True,
     level="INFO",
     format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {name} | {message}",
 )
+global logger
+logger = log
 
 
 def fix_lot(fixed):
@@ -113,11 +116,21 @@ def calculate_copy_lot(
         raise ValueError("Invalid mode selected")
 
 
-def get_copy_symbols(destination: dict = None):
+def get_copy_symbols(destination: dict, source: dict):
     symbols = destination.get("symbols", "all")
-    account = Account(**destination)
+    src_account = Account(**source)
+    dest_account = Account(**destination)
     if symbols == "all" or symbols == "*":
-        return account.get_symbols()
+        src_symbols = src_account.get_symbols()
+        dest_symbols = dest_account.get_symbols()
+        for s in src_symbols:
+            if s not in dest_symbols:
+                err_msg = (
+                    f"To use 'all' or '*', Source account@{src_account.number} "
+                    f"and destination account@{dest_account.number} "
+                    f"must be the same type and have the same symbols"
+                )
+                raise ValueError(err_msg)
     elif isinstance(symbols, (list, dict)):
         return symbols
     elif isinstance(symbols, str):
@@ -125,22 +138,6 @@ def get_copy_symbols(destination: dict = None):
             return symbols.split(",")
         if " " in symbols:
             return symbols.split()
-
-
-def get_copy_symbol(symbol, destination: dict = None, type="destination"):
-    symbols = get_copy_symbols(destination)
-    if isinstance(symbols, list):
-        if symbol in symbols:
-            return symbol
-    if isinstance(symbols, dict):
-        if type == "destination":
-            if symbol in symbols.keys():
-                return symbols[symbol]
-        if type == "source":
-            for k, v in symbols.items():
-                if v == symbol:
-                    return k
-    raise ValueError(f"Symbol {symbol} not found in {type} account")
 
 
 class TradeCopier(object):
@@ -159,7 +156,10 @@ class TradeCopier(object):
         "sleeptime",
         "start_time",
         "end_time",
+        "shutdown_event",
+        "custom_logger",
     )
+    shutdown_event: threading.Event
 
     def __init__(
         self,
@@ -168,6 +168,8 @@ class TradeCopier(object):
         sleeptime: float = 0.1,
         start_time: str = None,
         end_time: str = None,
+        shutdown_event=None,
+        custom_logger=None,
     ):
         """
         Initializes the ``TradeCopier`` instance, setting up the source and destination trading accounts for trade copying.
@@ -245,8 +247,15 @@ class TradeCopier(object):
         self.sleeptime = sleeptime
         self.start_time = start_time
         self.end_time = end_time
-        self.errors = set()
+        self.shutdown_event = shutdown_event
+        self._add_logger(custom_logger)
         self._add_copy()
+        self.errors = set()
+
+    def _add_logger(self, custom_logger):
+        if custom_logger:
+            global logger
+            logger = custom_logger
 
     def _add_copy(self):
         self.source["copy"] = True
@@ -268,6 +277,21 @@ class TradeCopier(object):
     def destination_positions(self, destination: dict, symbol=None):
         check_mt5_connection(**destination)
         return Account(**destination).get_positions(symbol=symbol)
+
+    def get_copy_symbol(self, symbol, destination: dict = None, type="destination"):
+        symbols = get_copy_symbols(destination, self.source)
+        if isinstance(symbols, list):
+            if symbol in symbols:
+                return symbol
+        if isinstance(symbols, dict):
+            if type == "destination":
+                if symbol in symbols.keys():
+                    return symbols[symbol]
+            if type == "source":
+                for k, v in symbols.items():
+                    if v == symbol:
+                        return k
+        raise ValueError(f"Symbol {symbol} not found in {type} account")
 
     def isorder_modified(self, source: TradeOrder, dest: TradeOrder):
         if source.type == dest.type and source.ticket == dest.magic:
@@ -315,7 +339,7 @@ class TradeCopier(object):
             return
         check_mt5_connection(**destination)
         volume = trade.volume if hasattr(trade, "volume") else trade.volume_initial
-        symbol = get_copy_symbol(trade.symbol, destination)
+        symbol = self.get_copy_symbol(trade.symbol, destination)
         lot = calculate_copy_lot(
             volume,
             symbol,
@@ -326,7 +350,9 @@ class TradeCopier(object):
             dest_eqty=Account(**destination).get_account_info().margin_free,
         )
 
-        trade_instance = Trade(symbol=symbol, **destination, max_risk=100.0, logger=None)
+        trade_instance = Trade(
+            symbol=symbol, **destination, max_risk=100.0, logger=None
+        )
         try:
             action = action_type[trade.type]
         except KeyError:
@@ -463,7 +489,7 @@ class TradeCopier(object):
 
     def get_positions(self, destination: dict):
         source_positions = self.source_positions() or []
-        dest_symbols = get_copy_symbols(destination)
+        dest_symbols = get_copy_symbols(destination, self.source)
         dest_positions = self.destination_positions(destination) or []
         source_positions = self.filter_positions_and_orders(
             source_positions, symbols=dest_symbols
@@ -475,7 +501,7 @@ class TradeCopier(object):
 
     def get_orders(self, destination: dict):
         source_orders = self.source_orders() or []
-        dest_symbols = get_copy_symbols(destination)
+        dest_symbols = get_copy_symbols(destination, self.source)
         dest_orders = self.destination_orders(destination) or []
         source_orders = self.filter_positions_and_orders(
             source_orders, symbols=dest_symbols
@@ -511,7 +537,7 @@ class TradeCopier(object):
         source_ids = [order.ticket for order in source_orders]
         for destination_order in destination_orders:
             if destination_order.magic not in source_ids:
-                src_symbol = get_copy_symbol(
+                src_symbol = self.get_copy_symbol(
                     destination_order.symbol, destination, type="source"
                 )
                 self.remove_order(src_symbol, destination_order, destination)
@@ -547,7 +573,7 @@ class TradeCopier(object):
         if not destination.get("copy", False):
             raise ValueError("Destination account not set to copy mode")
         return destination.get("copy_what", "all")
-    
+
     def copy_orders(self, destination: dict):
         what = self._copy_what(destination)
         if what not in ["all", "orders"]:
@@ -587,7 +613,7 @@ class TradeCopier(object):
         source_ids = [pos.ticket for pos in source_positions]
         for destination_position in destination_positions:
             if destination_position.magic not in source_ids:
-                src_symbol = get_copy_symbol(
+                src_symbol = self.get_copy_symbol(
                     destination_position.symbol, destination, type="source"
                 )
                 self.remove_position(src_symbol, destination_position, destination)
@@ -612,8 +638,15 @@ class TradeCopier(object):
         logger.info("Trade Copier Running ...")
         logger.info(f"Source Account: {self.source.get('login')}")
         while True:
+            if self.shutdown_event and self.shutdown_event.is_set():
+                logger.info(
+                    "Shutdown event received, stopping Trade Copier gracefully."
+                )
+                break
             try:
                 for destination in self.destinations:
+                    if self.shutdown_event and self.shutdown_event.is_set():
+                        break
                     if destination.get("path") == self.source.get("path"):
                         err_msg = "Source and destination accounts are on the same \
                             MetaTrader 5 installation which is not allowed."
@@ -623,18 +656,52 @@ class TradeCopier(object):
                     self.copy_positions(destination)
                     Mt5.shutdown()
                     time.sleep(0.1)
+
+                if self.shutdown_event and self.shutdown_event.is_set():
+                    logger.info(
+                        "Shutdown event received during destination processing, exiting."
+                    )
+                    break
+
             except KeyboardInterrupt:
-                logger.info("Stopping the Trade Copier ...")
-                exit(0)
+                logger.info("KeyboardInterrupt received, stopping the Trade Copier ...")
+                if self.shutdown_event:
+                    self.shutdown_event.set()
+                break
             except Exception as e:
                 self.log_error(e)
+                if self.shutdown_event and self.shutdown_event.is_set():
+                    logger.error(
+                        "Error occurred after shutdown signaled, exiting loop."
+                    )
+                    break
+
+            # Check shutdown event before sleeping
+            if self.shutdown_event and self.shutdown_event.is_set():
+                logger.info("Shutdown event checked before sleep, exiting.")
+                break
             time.sleep(self.sleeptime)
+        logger.info("Trade Copier has shut down.")
 
 
 def RunCopier(
-    source: dict, destinations: list, sleeptime: float, start_time: str, end_time: str
+    source: dict,
+    destinations: list,
+    sleeptime: float,
+    start_time: str,
+    end_time: str,
+    shutdown_event=None,
+    custom_logger=None,
 ):
-    copier = TradeCopier(source, destinations, sleeptime, start_time, end_time)
+    copier = TradeCopier(
+        source,
+        destinations,
+        sleeptime,
+        start_time,
+        end_time,
+        shutdown_event,
+        custom_logger,
+    )
     copier.run()
 
 
@@ -644,6 +711,8 @@ def RunMultipleCopier(
     start_delay: float = 1.0,
     start_time: str = None,
     end_time: str = None,
+    shutdown_event=None,
+    custom_logger=None,
 ):
     processes = []
 
@@ -661,10 +730,16 @@ def RunMultipleCopier(
             )
             continue
         logger.info(f"Starting process for source account @{source.get('login')}")
-
         process = multiprocessing.Process(
             target=RunCopier,
-            args=(source, destinations, sleeptime, start_time, end_time),
+            args=(
+                source,
+                destinations,
+                sleeptime,
+                start_time,
+                end_time,
+            ),
+            kwargs=dict(shutdown_event=shutdown_event, custom_logger=custom_logger),
         )
         processes.append(process)
         process.start()
@@ -672,13 +747,14 @@ def RunMultipleCopier(
         if start_delay:
             time.sleep(start_delay)
 
-    # Wait for all processes to complete
     for process in processes:
         process.join()
 
 
 def _strtodict(string: str) -> dict:
     string = string.strip().replace("\n", "").replace(" ", "").replace('"""', "")
+    if string.endswith(","):
+        string = string[:-1]
     return dict(item.split(":") for item in string.split(","))
 
 

@@ -1,5 +1,9 @@
 # Changes
 
+# 0.3.1
+- Add GUI support For copy trading
+- Add downloable Trade copier
+
 ## 0.3.0
 - Update bbstrader with new features
 

@@ -1,14 +1,16 @@
+import contextlib
+import os
 import re
 import time
 from datetime import datetime
-from typing import Dict
+from typing import Dict, List, Tuple
 
 import dash
 import matplotlib.pyplot as plt
 import nltk
 import pandas as pd
 import plotly.express as px
-import spacy
+import en_core_web_sm
 from dash import dcc, html
 from dash.dependencies import Input, Output
 from nltk.corpus import stopwords
@@ -17,6 +19,7 @@ from textblob import TextBlob
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 from bbstrader.core.data import FinancialNews
+
 
 __all__ = [
     "TopicModeler",
@@ -335,15 +338,14 @@ class TopicModeler(object):
         nltk.download("stopwords", quiet=True)
 
         try:
-            self.nlp = spacy.load("en_core_web_sm")
+            self.nlp = en_core_web_sm.load()
             self.nlp.disable_pipes("ner")
         except OSError:
-            raise RuntimeError(
-                "The SpaCy model 'en_core_web_sm' is not installed.\n"
-                "Please install it by running:\n"
-                "   python -m spacy download en_core_web_sm"
+            raise OSError(
+                "SpaCy model 'en_core_web_sm' not found. "
+                "Please install it using 'python -m spacy download en_core_web_sm'."
             )
-
+        
     def preprocess_texts(self, texts: list[str]):
         def clean_doc(Doc):
             doc = []
@@ -392,22 +394,25 @@ class SentimentAnalyzer(object):
         - Downloads NLTK tokenization (`punkt`) and stopwords.
         - Loads the `en_core_web_sm` SpaCy model with Named Entity Recognition (NER) disabled.
         - Initializes VADER's SentimentIntensityAnalyzer for sentiment scoring.
+
+        Args:
+            use_spacy (bool): If True, uses SpaCy for lemmatization. Defaults to False.
         """
         nltk.download("punkt", quiet=True)
         nltk.download("stopwords", quiet=True)
 
-        try:
-            self.nlp = spacy.load("en_core_web_sm")
-            self.nlp.disable_pipes("ner")
-        except OSError:
-            raise RuntimeError(
-                "The SpaCy model 'en_core_web_sm' is not installed.\n"
-                "Please install it by running:\n"
-                "   python -m spacy download en_core_web_sm"
-            )
-
         self.analyzer = SentimentIntensityAnalyzer()
         self._stopwords = set(stopwords.words("english"))
+
+        try:
+            self.nlp = en_core_web_sm.load()
+            self.nlp.disable_pipes("ner")
+        except OSError:
+            raise OSError(
+                "SpaCy model 'en_core_web_sm' not found. "
+                "Please install it using 'python -m spacy download en_core_web_sm'."
+            )
+        self.news = FinancialNews()
 
     def preprocess_text(self, text: str):
         """
@@ -425,13 +430,18 @@ class SentimentAnalyzer(object):
         Returns:
             str: The cleaned and lemmatized text.
         """
+        if not isinstance(text, str):
+            raise ValueError(f"{self.__class__.__name__}: preprocess_text expects a string, got {type(text)}")
         text = text.lower()
         text = re.sub(r"http\S+", "", text)
         text = re.sub(r"[^a-zA-Z\s]", "", text)
+
         words = word_tokenize(text)
         words = [word for word in words if word not in self._stopwords]
+
         doc = self.nlp(" ".join(words))
         words = [t.lemma_ for t in doc if t.lemma_ != "-PRON-"]
+
         return " ".join(words)
 
     def analyze_sentiment(self, texts, lexicon=None, textblob=False) -> float:
@@ -470,7 +480,7 @@ class SentimentAnalyzer(object):
         return avg_sentiment
 
     def get_sentiment_for_tickers(
-        self, tickers, lexicon=None, asset_type="stock", top_news=10, **kwargs
+        self, tickers: List[str] | List[Tuple[str, str]], lexicon=None, asset_type="stock", top_news=10, **kwargs
     ) -> Dict[str, float]:
         """
         Computes sentiment scores for a list of financial tickers based on news and social media data.
@@ -487,9 +497,18 @@ class SentimentAnalyzer(object):
         3. Computes an overall sentiment score using a weighted average approach.
 
         Args:
-            tickers (list of str): A list of stock, forex, crypto, or other asset tickers.
+            tickers (List[str] | List[Tuple[str, str]]): A list of asset tickers to analyze
+                - if using tuples, the first element is the ticker and the second is the asset type.
+                - if using a single string, the asset type must be specified or the default is "stock".
             lexicon (dict, optional): A custom sentiment lexicon to update VADER's default lexicon.
-            asset_type (str, optional): The type of asset (e.g., "stock", "forex", "crypto"). Defaults to "stock".
+            asset_type (str, optional): The type of asset, Defaults to "stock",                
+                supported types include:
+                - "stock": Stock symbols (e.g., AAPL, MSFT)
+                - "etf": Exchange-traded funds (e.g., SPY, QQQ)
+                - "future": Futures contracts (e.g., CL=F for crude oil)
+                - "forex": Forex pairs (e.g., EURUSD=X, USDJPY=X)
+                - "crypto": Cryptocurrency pairs (e.g., BTC-USD, ETH-USD)
+                - "index": Stock market indices (e.g., ^GSPC for S&P 500)
             top_news (int, optional): Number of news articles/posts to fetch per source. Defaults to 10.
             **kwargs: Additional parameters for API authentication and data retrieval, including:
                 - fmp_api (str): API key for Financial Modeling Prep.
@@ -500,63 +519,85 @@ class SentimentAnalyzer(object):
                              - Positive values indicate positive sentiment.
                              - Negative values indicate negative sentiment.
                              - Zero indicates neutral sentiment.
+        Notes:
+            The tickers names must follow yahoo finance conventions.
         """
         sentiment_results = {}
-        rd_params = ["client_id", "client_secret", "user_agent"]
-        news = FinancialNews()
-        for ticker in tickers:
-            # Collect data
-            sources = 0
-            yahoo_news = news.get_yahoo_finance_news(
-                ticker, asset_type=asset_type, n_news=top_news
-            )
-            google_news = news.get_google_finance_news(
-                ticker, asset_type=asset_type, n_news=top_news
-            )
-            reddit_posts = news.get_reddit_posts(
-                ticker, n_posts=top_news, **{k: kwargs.get(k) for k in rd_params}
-            )
-            coindesk_news = news.get_coindesk_news(query=ticker, list_of_str=True)
-            fmp_source_news = []
-            fmp_news = news.get_fmp_news(kwargs.get("fmp_api"))
-            for source in ["articles"]:  # , "releases", asset_type]:
-                try:
-                    source_news = fmp_news.get_news(
-                        ticker, source=source, symbol=ticker, **kwargs
+        rd_params = {"client_id", "client_secret", "user_agent"}
+        fm_params = {"start", "end", "page", "limit"}
+        with open(os.devnull, 'w') as devnull:
+            with contextlib.redirect_stdout(devnull), contextlib.redirect_stderr(devnull):
+                for asset in tickers:
+                    if isinstance(asset, tuple):
+                        ticker, asset_type = asset
+                    if asset_type not in [
+                        "stock",
+                        "etf",
+                        "future",
+                        "forex",
+                        "crypto",
+                        "index",
+                    ]:
+                        raise ValueError(
+                            f"Unsupported asset type '{asset_type}'. "
+                            "Supported types: stock, etf, future, forex, crypto, index."
+                        )
+                    # Collect data
+                    sources = 0
+                    yahoo_news = self.news.get_yahoo_finance_news(
+                        ticker, asset_type=asset_type, n_news=top_news
                     )
-                    fmp_source_news += source_news
-                except Exception:
-                    source_news = []
-            if any([len(s) > 0 for s in [yahoo_news, google_news]]):
-                sources += 1
-            for source in [reddit_posts, fmp_source_news, coindesk_news]:
-                if len(source) > 0:
-                    sources += 1
-            # Compute sentiment
-            news_sentiment = self.analyze_sentiment(
-                yahoo_news + google_news, lexicon=lexicon
-            )
-            reddit_sentiment = self.analyze_sentiment(
-                reddit_posts, lexicon=lexicon, textblob=True
-            )
-            fmp_sentiment = self.analyze_sentiment(
-                fmp_source_news, lexicon=lexicon, textblob=True
-            )
-            coindesk_sentiment = self.analyze_sentiment(
-                coindesk_news, lexicon=lexicon, textblob=True
-            )
+                    google_news = self.news.get_google_finance_news(
+                        ticker, asset_type=asset_type, n_news=top_news
+                    )
+                    reddit_posts = []
+                    if all(kwargs.get(rd) for rd in rd_params):
+                        reddit_posts = self.news.get_reddit_posts(
+                            ticker, n_posts=top_news, **{k: kwargs.get(k) for k in rd_params}
+                        )
+                    coindesk_news = self.news.get_coindesk_news(query=ticker, list_of_str=True)
+                    fmp_source_news = []
+                    if kwargs.get("fmp_api"):
+                        fmp_news = self.news.get_fmp_news(kwargs.get("fmp_api"))
+                        for src in ["articles"]:  # , "releases", asset_type]:
+                            try:
+                                source_news = fmp_news.get_news(
+                                    ticker, source=src, symbol=ticker, **{k: kwargs.get(k) for k in fm_params}
+                                )
+                                fmp_source_news += source_news
+                            except Exception:
+                                continue
+                    if any([len(s) > 0 for s in [yahoo_news, google_news]]):
+                        sources += 1
+                    for source in [reddit_posts, fmp_source_news, coindesk_news]:
+                        if len(source) > 0:
+                            sources += 1
+                    # Compute sentiment
+                    news_sentiment = self.analyze_sentiment(
+                        yahoo_news + google_news, lexicon=lexicon
+                    )
+                    reddit_sentiment = self.analyze_sentiment(
+                        reddit_posts, lexicon=lexicon, textblob=True
+                    )
+                    fmp_sentiment = self.analyze_sentiment(
+                        fmp_source_news, lexicon=lexicon, textblob=True
+                    )
+                    coindesk_sentiment = self.analyze_sentiment(
+                        coindesk_news, lexicon=lexicon, textblob=True
+                    )
 
-            # Weighted average sentiment score
-            if sources != 0:
-                overall_sentiment = (
-                    news_sentiment
-                    + reddit_sentiment
-                    + fmp_sentiment
-                    + coindesk_sentiment
-                ) / sources
-            else:
-                overall_sentiment = 0.0
-            sentiment_results[ticker] = overall_sentiment
+                    # Weighted average sentiment score
+                    if sources != 0:
+                        overall_sentiment = (
+                            news_sentiment
+                            + reddit_sentiment
+                            + fmp_sentiment
+                            + coindesk_sentiment
+                        ) / sources
+                    else:
+                        overall_sentiment = 0.0
+                    sentiment_results[ticker] = overall_sentiment
+                    time.sleep(1)  # To avoid hitting API rate limits
 
         return sentiment_results
 
@@ -651,8 +692,10 @@ class SentimentAnalyzer(object):
         bar and scatter plots. It fetches new sentiment data at specified intervals.
 
         Args:
-            tickers (list[str]):
-                A list of asset tickers (e.g., ["AAPL", "GOOGL", "TSLA"]).
+            tickers (List[str] | List[Tuple[str, str]]):
+                A list of financial asset tickers to analyze.
+                - If using tuples, the first element is the ticker and the second is the asset type.
+                - If using a single string, the asset type must be specified or defaults to "stock".
             asset_type (str, optional):
                 The type of financial asset ("stock", "forex", "crypto"). Defaults to "stock".
             lexicon (dict, optional):

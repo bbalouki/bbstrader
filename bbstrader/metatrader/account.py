@@ -760,10 +760,7 @@ class Account(object):
             This mthods works primarly with Admirals Group AS products and Pepperstone Group Limited,
             For other brokers use `get_symbols()` or this method will use it by default.
         """
-        if (
-            self.broker != AdmiralMarktsGroup()
-            or self.broker != PepperstoneGroupLimited()
-        ):
+        if self.broker not in [AdmiralMarktsGroup(), PepperstoneGroupLimited()]:
             return self.get_symbols(symbol_type=SymbolType.FOREX)
         else:
             fx_categories = {
@@ -816,11 +813,8 @@ class Account(object):
             This mthods works primarly with Admirals Group AS products and Pepperstone Group Limited,
             For other brokers use `get_symbols()` or this method will use it by default.
         """
-        
-        if (
-            self.broker != AdmiralMarktsGroup()
-            or self.broker != PepperstoneGroupLimited()
-        ):
+
+        if self.broker not in [AdmiralMarktsGroup(), PepperstoneGroupLimited()]:
             return self.get_symbols(symbol_type=SymbolType.STOCKS)
         else:
             stocks, etfs = [], []
@@ -883,7 +877,7 @@ class Account(object):
                 SymbolType.STOCKS, exchange_code, exchange_map
             )
             etfs = self._get_symbols_by_category(
-                    SymbolType.ETFs, exchange_code, exchange_map
+                SymbolType.ETFs, exchange_code, exchange_map
             )
             return stocks + etfs if etf else stocks
 

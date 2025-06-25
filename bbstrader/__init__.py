@@ -7,7 +7,7 @@ __author__ = "Bertin Balouki SIMYELI"
 __copyright__ = "2023-2025 Bertin Balouki SIMYELI"
 __email__ = "bertin@bbstrader.com"
 __license__ = "MIT"
-__version__ = "0.2.0"
+__version__ = "0.3.1"
 
 from bbstrader import compat  # noqa: F401
 from bbstrader import core  # noqa: F401
