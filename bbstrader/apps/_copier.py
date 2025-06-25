@@ -4,6 +4,7 @@ import threading
 import tkinter as tk
 from pathlib import Path
 from tkinter import filedialog, messagebox, scrolledtext, ttk
+import traceback
 
 from loguru import logger
 from PIL import Image, ImageTk
@@ -570,18 +571,26 @@ def main():
     """
     Main function to initialize and run the Trade Copier GUI.
     """
-    root = tk.Tk()
-    root.iconbitmap(os.path.abspath(ICON_PATH))
-    app = TradeCopierApp(root)
+    try:
+        root = tk.Tk()
+        root.iconbitmap(os.path.abspath(ICON_PATH))
+        app = TradeCopierApp(root)
 
-    def on_closing():
-        if app.copier_thread and app.copier_thread.is_alive():
-            app.log_message("Window closed, stopping copier thread...")
-            app.stop_copier()
-        root.destroy()
+        def on_closing():
+            if app.copier_thread and app.copier_thread.is_alive():
+                app.log_message("Window closed, stopping copier thread...")
+                app.stop_copier()
+            root.destroy()
 
-    root.protocol("WM_DELETE_WINDOW", on_closing)
-    root.mainloop()
+        root.protocol("WM_DELETE_WINDOW", on_closing)
+        root.mainloop()
+    except KeyboardInterrupt:
+        sys.exit(0)
+    except Exception as e:
+        error_details = f"{e}\n\n{traceback.format_exc()}"
+        messagebox.showerror("Fatal Error", error_details)
+        sys.exit(1)
+
 
 
 if __name__ == "__main__":
