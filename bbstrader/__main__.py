@@ -49,19 +49,23 @@ def main():
     if ("-h" in sys.argv or "--help" in sys.argv) and args.run is None:
         print(Fore.WHITE + USAGE_TEXT)
         sys.exit(0)
-
-    match args.run:
-        case Module.COPIER.value:
-            copy_trades(unknown)
-        case Module.BACKTEST.value:
-            backtest(unknown)
-        case Module.EXECUTION.value:
-            execute_strategy(unknown)
-        case Module.NEWS_FEED.value:
-            send_news_feed(unknown)
-        case _:
-            print(Fore.RED + f"Unknown module: {args.run}")
-            sys.exit(1)
+    try:
+        match args.run:
+            case Module.COPIER.value:
+                copy_trades(unknown)
+            case Module.BACKTEST.value:
+                backtest(unknown)
+            case Module.EXECUTION.value:
+                execute_strategy(unknown)
+            case Module.NEWS_FEED.value:
+                send_news_feed(unknown)
+            case _:
+                print(Fore.RED + f"Unknown module: {args.run}")
+                sys.exit(1)
+    except KeyboardInterrupt:
+        sys.exit(0)
+    except Exception:
+        sys.exit(1)
 
 
 if __name__ == "__main__":
