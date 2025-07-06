@@ -638,6 +638,8 @@ def raise_mt5_error(message: Optional[str] = None):
     Raises:
         MT5TerminalError: A specific exception based on the error code.
     """
+    if message and isinstance(message, Exception):
+        message = str(message)
     error = _ERROR_CODE_TO_EXCEPTION_.get(MT5.last_error()[0])
     if error is not None:
         raise Exception(f"{error(None)} {message or MT5.last_error()[1]}")

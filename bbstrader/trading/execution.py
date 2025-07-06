@@ -9,7 +9,7 @@ from loguru import logger as log
 
 from bbstrader.btengine.strategy import MT5Strategy, Strategy
 from bbstrader.config import BBSTRADER_DIR
-from bbstrader.metatrader.account import Account, check_mt5_connection
+from bbstrader.metatrader.account import check_mt5_connection
 from bbstrader.metatrader.trade import Trade, TradeAction, TradingMode
 from bbstrader.trading.utils import send_message
 
@@ -338,7 +338,7 @@ class Mt5ExecutionEngine:
             expert_ids = [expert_ids]
         return expert_ids
 
-    def _init_strategy(self, **kwargs) -> Strategy | MT5Strategy:
+    def _init_strategy(self, **kwargs) -> MT5Strategy:
         try:
             check_mt5_connection(**kwargs)
             strategy = self.strategy_cls(
@@ -356,7 +356,7 @@ class Mt5ExecutionEngine:
         return strategy
 
     def _get_signal_info(self, signal, symbol, price, stoplimit):
-        account = Account(**self.kwargs)
+        account =  self.strategy.account
         symbol_info = account.get_symbol_info(symbol)
 
         common_data = {
@@ -941,7 +941,7 @@ class Mt5ExecutionEngine:
                 self._handle_period_end_actions(today)
             except KeyboardInterrupt:
                 logger.info(
-                    f"Stopping Execution Engine for {self.STRATEGY} on {self.ACCOUNT}"
+                    f"Stopping Execution Engine for {self.STRATEGY} STRATEGY on {self.ACCOUNT} Account"
                 )
                 break
             except Exception as e:
@@ -952,7 +952,7 @@ class Mt5ExecutionEngine:
     def stop(self):
         """Stops the execution engine."""
         self._running = False
-        logger.info(f"Stopping Execution Engine for {self.STRATEGY} on {self.ACCOUNT}")
+        logger.info(f"Stopping Execution Engine for {self.STRATEGY} STRATEGY on {self.ACCOUNT} Account")
         logger.info("Execution Engine stopped successfully.")
 
 

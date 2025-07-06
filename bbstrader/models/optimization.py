@@ -153,7 +153,7 @@ def optimized_weights(prices=None, returns=None, rfr=0.0, freq=252, method="equa
     freq : int, optional
         Number of days for calculating portfolio weights, such as 252 for a year's worth of daily returns (default is 252).
     method : str, optional
-        Optimization method to use ('markowitz', 'hrp', or 'equal') (default is 'markowitz').
+        Optimization method to use ('markowitz', 'hrp', or 'equal') (default is 'equal').
 
     Returns
     -------

@@ -98,7 +98,7 @@ class SimExecutionHandler(ExecutionHandler):
             self.events.put(fill_event)
             self.logger.info(
                 f"{event.direction} ORDER FILLED: SYMBOL={event.symbol}, "
-                f"QUANTITY={event.quantity}, PRICE @{event.price} EXCHANGE={fill_event.exchange}",
+                f"QUANTITY={event.quantity}, PRICE @{round(event.price, 5)} EXCHANGE={fill_event.exchange}",
                 custom_time=fill_event.timeindex,
             )
 
@@ -264,7 +264,7 @@ class MT5ExecutionHandler(ExecutionHandler):
             self.events.put(fill_event)
             self.logger.info(
                 f"{direction} ORDER FILLED: SYMBOL={symbol}, QUANTITY={quantity}, "
-                f"PRICE @{price} EXCHANGE={fill_event.exchange}",
+                f"PRICE @{round(event.price, 5)} EXCHANGE={fill_event.exchange}",
                 custom_time=fill_event.timeindex,
             )
 

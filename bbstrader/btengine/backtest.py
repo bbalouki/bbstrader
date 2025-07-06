@@ -248,14 +248,13 @@ def run_backtest(
 
         start_date (datetime): Start date of the backtest.
 
-        data_handler (DataHandler): An instance of the `DataHandler` class, responsible for managing
+        data_handler (DataHandler): A subclass of the `DataHandler` class, responsible for managing
             and processing market data. Available options include `CSVDataHandler`,
-            `MT5DataHandler`, and `YFDataHandler`. Ensure that the `DataHandler`
-            instance is initialized before passing it to the function.
+            `MT5DataHandler`, and `YFDataHandler`.
 
         strategy (Strategy): The trading strategy to be employed during the backtest.
-            The strategy must be an instance of `Strategy` and should include the following attributes:
-            - `bars` (DataHandler): The `DataHandler` instance for the strategy.
+            The strategy must be a subclass of `Strategy` and should include the following attributes:
+            - `bars` (DataHandler): The `DataHandler` class for the strategy.
             - `events` (Queue): Queue instance for managing events.
             - `symbol_list` (List[str]): List of symbols to trade.
             - `mode` (str): 'live' or 'backtest'.
@@ -307,9 +306,9 @@ def run_backtest(
         >>> run_backtest(
         ...     symbol_list=symbol_list,
         ...     start_date=start,
-        ...     data_handler=MT5DataHandler(),
-        ...     strategy=StockIndexSTBOTrading(),
-        ...     exc_handler=MT5ExecutionHandler(),
+        ...     data_handler=MT5DataHandler,
+        ...     strategy=StockIndexSTBOTrading,
+        ...     exc_handler=MT5ExecutionHandler,
         ...     initial_capital=100000.0,
         ...     heartbeat=0.0,
         ...     **kwargs

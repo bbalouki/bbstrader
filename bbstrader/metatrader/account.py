@@ -1,7 +1,7 @@
 import os
 import re
 import urllib.request
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any, Dict, List, Literal, Optional, Tuple, Union
 
 import pandas as pd
@@ -55,7 +55,7 @@ BROKERS_TIMEZONES = {
 }
 
 _ADMIRAL_MARKETS_URL_ = (
-    "https://cabinet.a-partnership.com/visit/?bta=35537&brand=admiralmarkets"
+    "https://one.justmarkets.link/a/tufvj0xugm/registration/trader"
 )
 _JUST_MARKETS_URL_ = "https://one.justmarkets.link/a/tufvj0xugm/registration/trader"
 _FTMO_URL_ = "https://trader.ftmo.com/?affiliates=JGmeuQqepAZLMcdOEQRp"
@@ -138,7 +138,7 @@ AMG_EXCHANGES = {
 }
 
 
-def check_mt5_connection(**kwargs):
+def check_mt5_connection(**kwargs) -> bool:
     """
     Initialize the connection to the MetaTrader 5 terminal.
 
@@ -165,6 +165,7 @@ def check_mt5_connection(**kwargs):
     timeout = kwargs.get("timeout", 60_000)
     portable = kwargs.get("portable", False)
 
+    init = False
     if path is None and (login or password or server):
         raise ValueError(
             "You must provide a path to the terminal executable file"
@@ -189,6 +190,7 @@ def check_mt5_connection(**kwargs):
             raise_mt5_error(INIT_MSG)
     except Exception:
         raise_mt5_error(INIT_MSG)
+    return init
 
 
 def shutdown_mt5():
@@ -1527,3 +1529,31 @@ class Account(object):
         else:
             history_orders = [TradeOrder(**td._asdict()) for td in history_orders]
             return tuple(history_orders)
+
+    def get_today_deals(self, id,  group=None) -> List[TradeDeal]:
+        """
+        Get all today deals for a specific symbol or group of symbols
+
+        Args:
+            id (int): strategy or expert id
+            group (str): Symbol or group or symbol
+        Returns:
+            List[TradeDeal]: List of today deals
+        """
+        date_from = datetime.now() - timedelta(days=2)
+        history = (
+            self.get_trades_history(date_from=date_from, group=group, to_df=False) or []
+        )
+        positions_ids = set(
+            [deal.position_id for deal in history if deal.magic == id]
+        )
+        today_deals = []
+        for position in positions_ids:
+            deal = self.get_trades_history(
+                date_from=date_from, position=position, to_df=False
+            )
+            if deal is not None and len(deal) == 2:
+                deal_time = datetime.fromtimestamp(deal[1].time)
+                if deal_time.date() == datetime.now().date():
+                    today_deals.append(deal[1])
+        return today_deals

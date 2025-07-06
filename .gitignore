@@ -15,3 +15,6 @@ notes.txt
 *.csv
 *.h5
 *ipynb_checkpoints/
+*.exe
+*.iss
+cmd.ps1

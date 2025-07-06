@@ -1,7 +1,7 @@
 import os
 import time
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
 from logging import Logger
 from pathlib import Path
@@ -16,7 +16,6 @@ from bbstrader.config import BBSTRADER_DIR, config_logger
 from bbstrader.metatrader.account import INIT_MSG, check_mt5_connection
 from bbstrader.metatrader.risk import RiskManagement
 from bbstrader.metatrader.utils import (
-    TradeDeal,
     TradePosition,
     raise_mt5_error,
     trade_retcode_message,
@@ -31,6 +30,9 @@ except ImportError:
 __all__ = [
     "Trade",
     "create_trade_instance",
+    "TradeAction",
+    "TradeSignal",
+    "TradingMode",
 ]
 
 log.add(
@@ -1132,9 +1134,9 @@ class Trade(RiskManagement):
         be = self.get_break_even()
         if trail_after_points is not None:
             if isinstance(trail_after_points, int):
-                assert (
-                    trail_after_points > be
-                ), "trail_after_points must be greater than break even or set to None"
+                assert trail_after_points > be, (
+                    "trail_after_points must be greater than break even or set to None"
+                )
             trail_after_points = self._get_trail_after_points(trail_after_points)
         if positions is not None:
             for position in positions:
@@ -1311,7 +1313,9 @@ class Trade(RiskManagement):
                         result = self.send_order(request)
                     except Exception as e:
                         msg = trade_retcode_message(result.retcode)
-                        LOGGER.error(f"Break-Even Order Request, {msg}{addtionnal}, Error: {e}")
+                        LOGGER.error(
+                            f"Break-Even Order Request, {msg}{addtionnal}, Error: {e}"
+                        )
                     if result.retcode == Mt5.TRADE_RETCODE_DONE:
                         break
                 tries += 1
@@ -1397,7 +1401,9 @@ class Trade(RiskManagement):
             result = self.send_order(request)
         except Exception as e:
             msg = trade_retcode_message(result.retcode)
-            LOGGER.error(f"Closing {type.capitalize()} Request, {msg}{addtionnal}, Error: {e}")
+            LOGGER.error(
+                f"Closing {type.capitalize()} Request, {msg}{addtionnal}, Error: {e}"
+            )
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
             if result.retcode == Mt5.TRADE_RETCODE_INVALID_FILL:  # 10030
                 for fill in FILLING_TYPE:
@@ -1421,7 +1427,9 @@ class Trade(RiskManagement):
                         result = self.send_order(request)
                     except Exception as e:
                         msg = trade_retcode_message(result.retcode)
-                        LOGGER.error(f"Closing {type.capitalize()} Request, {msg}{addtionnal}, Error: {e}")
+                        LOGGER.error(
+                            f"Closing {type.capitalize()} Request, {msg}{addtionnal}, Error: {e}"
+                        )
                     if result.retcode == Mt5.TRADE_RETCODE_DONE:
                         break
                     tries += 1
@@ -1665,32 +1673,8 @@ class Trade(RiskManagement):
             comment=comment,
         )
 
-    def get_today_deals(self, group=None) -> List[TradeDeal]:
-        """
-        Get all today deals for a specific symbol or group of symbols
-
-        Args:
-            group (str): Symbol or group or symbol
-        Returns:
-            List[TradeDeal]: List of today deals
-        """
-        date_from = datetime.now() - timedelta(days=2)
-        history = (
-            self.get_trades_history(date_from=date_from, group=group, to_df=False) or []
-        )
-        positions_ids = set(
-            [deal.position_id for deal in history if deal.magic == self.expert_id]
-        )
-        today_deals = []
-        for position in positions_ids:
-            deal = self.get_trades_history(
-                date_from=date_from, position=position, to_df=False
-            )
-            if deal is not None and len(deal) == 2:
-                deal_time = datetime.fromtimestamp(deal[1].time)
-                if deal_time.date() == datetime.now().date():
-                    today_deals.append(deal[1])
-        return today_deals
+    def get_today_deals(self, group=None):
+        return super().get_today_deals(self.expert_id, group=group)
 
     def is_max_trades_reached(self) -> bool:
         """
