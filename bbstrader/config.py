@@ -3,8 +3,8 @@ from pathlib import Path
 from typing import List
 
 
-TERMINAL = "\\terminal64.exe"
-BASE_FOLDER = "C:\\Program Files\\"
+TERMINAL = "/terminal64.exe"
+BASE_FOLDER = "C:/Program Files/"
 
 AMG_PATH = BASE_FOLDER + "Admirals Group MT5 Terminal" + TERMINAL
 PGL_PATH = BASE_FOLDER + "Pepperstone MetaTrader 5" + TERMINAL

@@ -44,6 +44,7 @@ _COMMD_SUPPORTED_ = [
     "Copper",
     "XCUUSD",
     "NatGas",
+    "NATGAS",
     "Gasoline",
 ]
 

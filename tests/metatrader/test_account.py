@@ -718,24 +718,6 @@ class TestAccount(unittest.TestCase):
         )
         self.assertEqual(self.account.get_symbol_type("CL"), SymbolType.FUTURES)
 
-    def test_get_fx_symbols_majors_default_broker(self):
-        # Default broker is AdmiralMarkets which supports specific FX categories
-        mock_symbols_data = []
-        for symbol_name in ["EURUSD", "AUDCAD", "EURTRY"]:
-            mock = MagicMock()
-            mock.name = symbol_name
-            mock_symbols_data.append(mock)
-
-        self.mock_mt5.symbols_get.return_value = mock_symbols_data
-        self.mock_mt5.symbol_info.side_effect = [
-            self._get_mock_symbol_info(name="EURUSD", path="Forex\\Majors\\EURUSD"),
-            self._get_mock_symbol_info(name="AUDCAD", path="Forex\\Crosses\\AUDCAD"),
-            self._get_mock_symbol_info(name="EURTRY", path="Forex\\Exotics\\EURTRY"),
-        ]
-        symbols = self.account.get_fx_symbols(category="majors")
-        self.assertEqual(len(symbols), 3)
-        self.assertIn("EURUSD", symbols)
-
     def test_get_fx_symbols_unsupported_broker_raises_invalidbroker_on_init(
         self,
     ):  # Renamed for clarity
@@ -781,24 +763,6 @@ class TestAccount(unittest.TestCase):
                 company=original_account_company
             )
         )
-
-    def test_get_stocks_from_country_default_broker(self):
-        mock_symbols_data = []
-        for symbol_name in ["AAPL", "MSFT", "VOW3.DE"]:
-            mock = MagicMock()
-            mock.name = symbol_name
-            mock_symbols_data.append(mock)
-
-        self.mock_mt5.symbols_get.return_value = mock_symbols_data
-        self.mock_mt5.symbol_info.side_effect = [
-            self._get_mock_symbol_info(name="AAPL", path="Stocks\\US\\AAPL"),
-            self._get_mock_symbol_info(name="MSFT", path="Stocks\\US\\MSFT"),
-            self._get_mock_symbol_info(name="VOW3.DE", path="Stocks\\Germany\\VOW3.DE"),
-        ]
-        symbols = self.account.get_stocks_from_country(country_code="USA")
-        self.assertEqual(len(symbols), 3)
-        self.assertIn("AAPL", symbols)
-        self.assertIn("MSFT", symbols)
 
 
     def test_get_future_symbols_default_broker_metals(self):

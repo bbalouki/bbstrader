@@ -6,11 +6,11 @@ from datetime import datetime
 from typing import Dict, List, Tuple
 
 import dash
+import en_core_web_sm
 import matplotlib.pyplot as plt
 import nltk
 import pandas as pd
 import plotly.express as px
-import en_core_web_sm
 from dash import dcc, html
 from dash.dependencies import Input, Output
 from nltk.corpus import stopwords
@@ -19,7 +19,6 @@ from textblob import TextBlob
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 from bbstrader.core.data import FinancialNews
-
 
 __all__ = [
     "TopicModeler",
@@ -345,7 +344,7 @@ class TopicModeler(object):
                 "SpaCy model 'en_core_web_sm' not found. "
                 "Please install it using 'python -m spacy download en_core_web_sm'."
             )
-        
+
     def preprocess_texts(self, texts: list[str]):
         def clean_doc(Doc):
             doc = []
@@ -431,7 +430,9 @@ class SentimentAnalyzer(object):
             str: The cleaned and lemmatized text.
         """
         if not isinstance(text, str):
-            raise ValueError(f"{self.__class__.__name__}: preprocess_text expects a string, got {type(text)}")
+            raise ValueError(
+                f"{self.__class__.__name__}: preprocess_text expects a string, got {type(text)}"
+            )
         text = text.lower()
         text = re.sub(r"http\S+", "", text)
         text = re.sub(r"[^a-zA-Z\s]", "", text)
@@ -480,7 +481,12 @@ class SentimentAnalyzer(object):
         return avg_sentiment
 
     def get_sentiment_for_tickers(
-        self, tickers: List[str] | List[Tuple[str, str]], lexicon=None, asset_type="stock", top_news=10, **kwargs
+        self,
+        tickers: List[str] | List[Tuple[str, str]],
+        lexicon=None,
+        asset_type="stock",
+        top_news=10,
+        **kwargs,
     ) -> Dict[str, float]:
         """
         Computes sentiment scores for a list of financial tickers based on news and social media data.
@@ -501,7 +507,7 @@ class SentimentAnalyzer(object):
                 - if using tuples, the first element is the ticker and the second is the asset type.
                 - if using a single string, the asset type must be specified or the default is "stock".
             lexicon (dict, optional): A custom sentiment lexicon to update VADER's default lexicon.
-            asset_type (str, optional): The type of asset, Defaults to "stock",                
+            asset_type (str, optional): The type of asset, Defaults to "stock",
                 supported types include:
                 - "stock": Stock symbols (e.g., AAPL, MSFT)
                 - "etf": Exchange-traded funds (e.g., SPY, QQQ)
@@ -525,11 +531,13 @@ class SentimentAnalyzer(object):
         sentiment_results = {}
         rd_params = {"client_id", "client_secret", "user_agent"}
         fm_params = {"start", "end", "page", "limit"}
-        with open(os.devnull, 'w') as devnull:
-            with contextlib.redirect_stdout(devnull), contextlib.redirect_stderr(devnull):
-                for asset in tickers:
-                    if isinstance(asset, tuple):
-                        ticker, asset_type = asset
+        with open(os.devnull, "w") as devnull:
+            with contextlib.redirect_stdout(devnull), contextlib.redirect_stderr(
+                devnull
+            ):
+                for ticker in tickers:
+                    if isinstance(ticker, tuple):
+                        ticker, asset_type = ticker
                     if asset_type not in [
                         "stock",
                         "etf",
@@ -553,16 +561,23 @@ class SentimentAnalyzer(object):
                     reddit_posts = []
                     if all(kwargs.get(rd) for rd in rd_params):
                         reddit_posts = self.news.get_reddit_posts(
-                            ticker, n_posts=top_news, **{k: kwargs.get(k) for k in rd_params}
+                            ticker,
+                            n_posts=top_news,
+                            **{k: kwargs.get(k) for k in rd_params},
                         )
-                    coindesk_news = self.news.get_coindesk_news(query=ticker, list_of_str=True)
+                    coindesk_news = self.news.get_coindesk_news(
+                        query=ticker, list_of_str=True
+                    )
                     fmp_source_news = []
                     if kwargs.get("fmp_api"):
                         fmp_news = self.news.get_fmp_news(kwargs.get("fmp_api"))
                         for src in ["articles"]:  # , "releases", asset_type]:
                             try:
                                 source_news = fmp_news.get_news(
-                                    ticker, source=src, symbol=ticker, **{k: kwargs.get(k) for k in fm_params}
+                                    ticker,
+                                    source=src,
+                                    symbol=ticker,
+                                    **{k: kwargs.get(k) for k in fm_params},
                                 )
                                 fmp_source_news += source_news
                             except Exception:
