@@ -1,15 +1,16 @@
 import os
 import sys
 import threading
+import time
 import tkinter as tk
+import traceback
 from pathlib import Path
 from tkinter import filedialog, messagebox, scrolledtext, ttk
-import traceback
 
 from loguru import logger
 from PIL import Image, ImageTk
 
-from bbstrader.metatrader.copier import RunCopier
+from bbstrader.metatrader.copier import TradeCopier
 
 
 def resource_path(relative_path):
@@ -35,8 +36,7 @@ class TradeCopierApp(object):
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
 
-        self.copier_thread = None
-        self.shutdown_event = threading.Event()
+        self.trade_copier = None
 
         self.main_frame = self.add_main_frame()
         self.main_frame.columnconfigure(0, weight=1)
@@ -483,24 +483,22 @@ class TradeCopierApp(object):
         end_time = self.end_time_entry.get() if self.end_time_entry.get() else None
 
         self.log_message("Starting Trade Copier...")
-        self.shutdown_event.clear()
+        if hasattr(self, "trade_copier") and self.trade_copier:
+            self.trade_copier.stop()
         try:
-            self.copier_thread = threading.Thread(
-                target=RunCopier,
-                args=(
-                    source_config,
-                    destinations_config,
-                    sleeptime,
-                    start_time,
-                    end_time,
-                ),
-                kwargs=dict(shutdown_event=self.shutdown_event, custom_logger=logger),
-                daemon=True,
+            self.trade_copier = TradeCopier(
+                source_config,
+                destinations_config,
+                sleeptime=sleeptime,
+                start_time=start_time,
+                end_time=end_time,
+                custom_logger=logger,
             )
-            self.copier_thread.start()
+
+            threading.Thread(target=self.trade_copier.run, daemon=True).start()
             self.start_button.config(state=tk.DISABLED)
             self.stop_button.config(state=tk.NORMAL)
-            self.log_message("Trade Copier thread started.")
+            self.log_message("Trade Copier started.")
         except Exception as e:
             messagebox.showerror("Error Starting Copier", str(e))
             self.log_message(f"Error starting copier: {e}")
@@ -508,25 +506,20 @@ class TradeCopierApp(object):
             self.stop_button.config(state=tk.DISABLED)
 
     def stop_copier(self):
-        self.log_message("Attempting to stop Trade Copier thread...")
-        if self.copier_thread and self.copier_thread.is_alive():
+        self.log_message("Attempting to stop Trade Copier ...")
+        if self.trade_copier and self.trade_copier.running:
             try:
-                self.shutdown_event.set()
-                self.copier_thread.join(timeout=10)
-                if self.copier_thread.is_alive():
-                    self.log_message(
-                        "Copier thread did not stop gracefully after 10 seconds."
-                    )
-                else:
-                    self.log_message("Trade Copier thread stopped.")
+                self.trade_copier.stop()
+                time.sleep(5)  # Give some time for the thread to stop
+                if not self.trade_copier.running:
+                    self.log_message("Trade Copier  stopped successfully.")
             except Exception as e:
-                self.log_message(f"Error stopping copier thread: {e}")
+                self.log_message(f"Error stopping copier : {e}")
                 messagebox.showerror("Error Stopping Copier", str(e))
         else:
-            self.log_message("Copier thread not running or already stopped.")
+            self.log_message("Trade Copier not running or already stopped.")
 
-        self.copier_thread = None
-        self.shutdown_event.clear()
+        self.trade_copier = None  # Reset the copier instance
         self.start_button.config(state=tk.NORMAL)
         self.stop_button.config(state=tk.DISABLED)
 
@@ -577,9 +570,10 @@ def main():
         app = TradeCopierApp(root)
 
         def on_closing():
-            if app.copier_thread and app.copier_thread.is_alive():
-                app.log_message("Window closed, stopping copier thread...")
+            if app.trade_copier and app.trade_copier.running:
+                app.log_message("Window closed, stopping Trade copier...")
                 app.stop_copier()
+            root.quit()
             root.destroy()
 
         root.protocol("WM_DELETE_WINDOW", on_closing)
@@ -590,7 +584,6 @@ def main():
         error_details = f"{e}\n\n{traceback.format_exc()}"
         messagebox.showerror("Fatal Error", error_details)
         sys.exit(1)
-
 
 
 if __name__ == "__main__":

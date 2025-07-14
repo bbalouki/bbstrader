@@ -1,5 +1,4 @@
 import multiprocessing
-import threading
 import time
 from datetime import datetime
 from pathlib import Path
@@ -158,8 +157,8 @@ class TradeCopier(object):
         "end_time",
         "shutdown_event",
         "custom_logger",
+        "_running",
     )
-    shutdown_event: threading.Event
 
     def __init__(
         self,
@@ -168,7 +167,6 @@ class TradeCopier(object):
         sleeptime: float = 0.1,
         start_time: str = None,
         end_time: str = None,
-        shutdown_event=None,
         custom_logger=None,
     ):
         """
@@ -247,10 +245,15 @@ class TradeCopier(object):
         self.sleeptime = sleeptime
         self.start_time = start_time
         self.end_time = end_time
-        self.shutdown_event = shutdown_event
+        self.errors = set()
+        self._running = True
         self._add_logger(custom_logger)
         self._add_copy()
-        self.errors = set()
+    
+    @property
+    def running(self):
+        """Check if the Trade Copier is running."""
+        return self._running
 
     def _add_logger(self, custom_logger):
         if custom_logger:
@@ -261,6 +264,14 @@ class TradeCopier(object):
         self.source["copy"] = True
         for destination in self.destinations:
             destination["copy"] = True
+    
+    def add_destinations(self, destination_accounts: List[dict]):
+        self.stop()
+        destinations = destination_accounts.copy()
+        for destination in destinations:
+            destination["copy"] = True
+            self.destinations.append(destination)
+        self.run()
 
     def source_orders(self, symbol=None):
         check_mt5_connection(**self.source)
@@ -637,16 +648,9 @@ class TradeCopier(object):
     def run(self):
         logger.info("Trade Copier Running ...")
         logger.info(f"Source Account: {self.source.get('login')}")
-        while True:
-            if self.shutdown_event and self.shutdown_event.is_set():
-                logger.info(
-                    "Shutdown event received, stopping Trade Copier gracefully."
-                )
-                break
+        while self._running:
             try:
                 for destination in self.destinations:
-                    if self.shutdown_event and self.shutdown_event.is_set():
-                        break
                     if destination.get("path") == self.source.get("path"):
                         err_msg = "Source and destination accounts are on the same \
                             MetaTrader 5 installation which is not allowed."
@@ -654,34 +658,19 @@ class TradeCopier(object):
                         continue
                     self.copy_orders(destination)
                     self.copy_positions(destination)
-                    Mt5.shutdown()
-                    time.sleep(0.1)
-
-                if self.shutdown_event and self.shutdown_event.is_set():
-                    logger.info(
-                        "Shutdown event received during destination processing, exiting."
-                    )
-                    break
-
+                time.sleep(self.sleeptime)
             except KeyboardInterrupt:
                 logger.info("KeyboardInterrupt received, stopping the Trade Copier ...")
-                if self.shutdown_event:
-                    self.shutdown_event.set()
                 break
             except Exception as e:
                 self.log_error(e)
-                if self.shutdown_event and self.shutdown_event.is_set():
-                    logger.error(
-                        "Error occurred after shutdown signaled, exiting loop."
-                    )
-                    break
-
-            # Check shutdown event before sleeping
-            if self.shutdown_event and self.shutdown_event.is_set():
-                logger.info("Shutdown event checked before sleep, exiting.")
-                break
-            time.sleep(self.sleeptime)
         logger.info("Trade Copier has shut down.")
+    
+    def stop(self):
+        """Stop the Trade Copier."""
+        self._running = False
+        logger.info(f"Stopping Trade Copier for source account @{self.source.get('login')} ...")
+        logger.info("Trade Copier stopped successfully.")
 
 
 def RunCopier(
@@ -690,7 +679,6 @@ def RunCopier(
     sleeptime: float,
     start_time: str,
     end_time: str,
-    shutdown_event=None,
     custom_logger=None,
 ):
     copier = TradeCopier(
@@ -699,7 +687,6 @@ def RunCopier(
         sleeptime,
         start_time,
         end_time,
-        shutdown_event,
         custom_logger,
     )
     copier.run()
@@ -707,7 +694,7 @@ def RunCopier(
 
 def RunMultipleCopier(
     accounts: List[dict],
-    sleeptime: float = 0.1,
+    sleeptime: float = 0.01,
     start_delay: float = 1.0,
     start_time: str = None,
     end_time: str = None,
@@ -739,7 +726,7 @@ def RunMultipleCopier(
                 start_time,
                 end_time,
             ),
-            kwargs=dict(shutdown_event=shutdown_event, custom_logger=custom_logger),
+            kwargs=dict(custom_logger=custom_logger),
         )
         processes.append(process)
         process.start()
