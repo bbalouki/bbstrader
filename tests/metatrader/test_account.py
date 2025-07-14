@@ -30,6 +30,7 @@ from bbstrader.metatrader.utils import (
     TradePosition,
 )
 
+
 class TestAccount(unittest.TestCase):
     def setUp(self):
         # Patch the MetaTrader5 module
@@ -248,7 +249,7 @@ class TestAccount(unittest.TestCase):
             name="Test Account",
             server="Test Server",
             currency="USD",
-            company=__BROKERS__["AMG"], 
+            company=__BROKERS__["AMG"],
         )
 
         self.account.show_account_info()
@@ -764,7 +765,6 @@ class TestAccount(unittest.TestCase):
             )
         )
 
-
     def test_get_future_symbols_default_broker_metals(self):
         # AdmiralMarkets specific logic for futures categories
         mock_symbols_data = []
@@ -943,6 +943,14 @@ class TestAccount(unittest.TestCase):
             self.mock_mt5.ORDER_TYPE_BUY, "EURUSD", 0.1, 1.1000
         )
 
+    def test_calculate_profit_success(self):
+        self.mock_mt5.order_calc_profit.return_value = 150.75
+        margin = self.account.calculate_profit("buy", "EURUSD", 0.1, 1.1000, 1.2000)
+        self.assertEqual(margin, 150.75)
+        self.mock_mt5.order_calc_profit.assert_called_once_with(
+            self.mock_mt5.ORDER_TYPE_BUY, "EURUSD", 0.1, 1.1000, 1.2000
+        )
+
     def test_calculate_margin_error(self):
         self.mock_mt5.order_calc_margin.side_effect = Exception("Calculation error")
         self.mock_mt5.last_error.return_value = (
@@ -953,6 +961,19 @@ class TestAccount(unittest.TestCase):
             self.account.calculate_margin(
                 action="sell", symbol="GBPUSD", lot=0.5, price=1.2500
             )
+        self.assertTrue(
+            "Calc error detail" in str(context.exception)
+            or "Calculation error" in str(context.exception)
+        )
+
+    def test_calculate_profit_error(self):
+        self.mock_mt5.order_calc_profit.side_effect = Exception("Calculation error")
+        self.mock_mt5.last_error.return_value = (
+            self.mock_mt5.RES_E_FAIL,
+            "Calc error detail",
+        )  # 1 is often generic MT5.RES_E_FAIL
+        with self.assertRaises(Exception) as context:
+            self.account.calculate_profit("sell", "GBPUSD", 0.5, 1.2500, 1.3500)
         self.assertTrue(
             "Calc error detail" in str(context.exception)
             or "Calculation error" in str(context.exception)

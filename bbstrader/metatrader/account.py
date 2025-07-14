@@ -54,9 +54,7 @@ BROKERS_TIMEZONES = {
     "PGL": "Europe/Helsinki",
 }
 
-_ADMIRAL_MARKETS_URL_ = (
-    "https://one.justmarkets.link/a/tufvj0xugm/registration/trader"
-)
+_ADMIRAL_MARKETS_URL_ = "https://one.justmarkets.link/a/tufvj0xugm/registration/trader"
 _JUST_MARKETS_URL_ = "https://one.justmarkets.link/a/tufvj0xugm/registration/trader"
 _FTMO_URL_ = "https://trader.ftmo.com/?affiliates=JGmeuQqepAZLMcdOEQRp"
 _ADMIRAL_MARKETS_PRODUCTS_ = [
@@ -144,7 +142,7 @@ def check_mt5_connection(**kwargs) -> bool:
 
     Args:
         path (str, optional): The path to the MetaTrader 5 terminal executable file.
-            Defaults to None (e.g., "C:\\Program Files\\MetaTrader 5\\terminal64.exe").
+            Defaults to None (e.g., "C:/Program Files/MetaTrader 5/terminal64.exe").
         login (int, optional): The login ID of the trading account. Defaults to None.
         password (str, optional): The password of the trading account. Defaults to None.
         server (str, optional): The name of the trade server to which the client terminal is connected.
@@ -393,6 +391,7 @@ class Account(object):
         password: Optional[str] = None,
         server: Optional[str] = None,
         timeout: Optional[int] = 60_000,
+        path: Optional[str] = None,
     ) -> Union[AccountInfo, None]:
         """
         Get info on the current trading account or a specific account .
@@ -410,6 +409,8 @@ class Account(object):
                  If not specified, the value of 60 000 (60 seconds) is applied.
                  If the connection is not established within the specified time,
                  the call is forcibly terminated and the exception is generated.
+            path (str, optional): The path to the MetaTrader 5 terminal executable file.
+                Defaults to None (e.g., "C:/Program Files/MetaTrader 5/terminal64.exe").
 
         Returns:
         -   AccountInfo in the form of a Namedtuple structure.
@@ -421,6 +422,15 @@ class Account(object):
         # connect to the trade account specifying a password and a server
         if account is not None and password is not None and server is not None:
             try:
+                # If a path is provided, initialize the MT5 terminal with it
+                if path is not None:
+                    check_mt5_connection(
+                        path=path,
+                        login=account,
+                        password=password,
+                        server=server,
+                        timeout=timeout,
+                    )
                 authorized = mt5.login(
                     account, password=password, server=server, timeout=timeout
                 )
@@ -1081,6 +1091,39 @@ class Account(object):
         except Exception as e:
             raise_mt5_error(e)
 
+    def calculate_profit(
+        self,
+        action: Literal["buy", "sell"],
+        symbol: str,
+        lot: float,
+        price_open: float,
+        price_close: float,
+    ) -> float:
+        """
+        Calculate profit in the account currency for a specified trading operation.
+
+        Args:
+            action (str): The trading action, either 'buy' or 'sell'.
+            symbol (str): The symbol of the financial instrument.
+            lot (float): The lot size of the order.
+            price_open (float): The price at which to position was opened.
+            price_close (float): The price at which to position was closed.
+
+        Returns:
+            float: The profit value
+
+        Raises:
+            MT5TerminalError: A specific exception based on the error code.
+
+        """
+        actions = {"buy": mt5.ORDER_TYPE_BUY, "sell": mt5.ORDER_TYPE_SELL}
+        try:
+            return mt5.order_calc_profit(
+                actions[action], symbol, lot, price_open, price_close
+            )
+        except Exception as e:
+            raise_mt5_error(e)
+
     def check_order(self, request: Dict[str, Any]) -> OrderCheckResult:
         """
         Check funds sufficiency for performing a required trading operation.
@@ -1530,7 +1573,7 @@ class Account(object):
             history_orders = [TradeOrder(**td._asdict()) for td in history_orders]
             return tuple(history_orders)
 
-    def get_today_deals(self, id,  group=None) -> List[TradeDeal]:
+    def get_today_deals(self, id, group=None) -> List[TradeDeal]:
         """
         Get all today deals for a specific symbol or group of symbols
 
@@ -1544,9 +1587,7 @@ class Account(object):
         history = (
             self.get_trades_history(date_from=date_from, group=group, to_df=False) or []
         )
-        positions_ids = set(
-            [deal.position_id for deal in history if deal.magic == id]
-        )
+        positions_ids = set([deal.position_id for deal in history if deal.magic == id])
         today_deals = []
         for position in positions_ids:
             deal = self.get_trades_history(

@@ -26,13 +26,13 @@ try:
 except ImportError:
     import bbstrader.compat  # noqa: F401
 
-
 __all__ = [
     "Trade",
     "create_trade_instance",
     "TradeAction",
     "TradeSignal",
     "TradingMode",
+    "generate_signal",
 ]
 
 log.add(
@@ -138,6 +138,38 @@ class TradeSignal:
             f"TradeSignal(id={self.id}, symbol='{self.symbol}', action='{self.action.value}', "
             f"price={self.price}, stoplimit={self.stoplimit}, comment='{self.comment or ''}')"
         )
+
+
+def generate_signal(
+    id: int,
+    symbol: str,
+    action: TradeAction,
+    price: float = None,
+    stoplimit: float = None,
+    comment: str = None,
+) -> TradeSignal:
+    """
+    Generates a trade signal for MetaTrader 5.
+
+    Args:
+        id (int): Unique identifier for the trade signal.
+        symbol (str): The symbol for which the trade signal is generated.
+        action (TradeAction): The action to be taken (e.g., BUY, SELL).
+        price (float, optional): The price at which to execute the trade.
+        stoplimit (float, optional): The stop limit price for the trade.
+        comment (str, optional): Additional comments for the trade.
+
+    Returns:
+        TradeSignal: A TradeSignal object containing the details of the trade signal.
+    """
+    return TradeSignal(
+        id=id,
+        symbol=symbol,
+        action=action,
+        price=price,
+        stoplimit=stoplimit,
+        comment=comment,
+    )
 
 
 class TradingMode(Enum):

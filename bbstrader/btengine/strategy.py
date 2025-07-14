@@ -12,14 +12,16 @@ from loguru import logger
 from bbstrader.btengine.data import DataHandler
 from bbstrader.btengine.event import Events, FillEvent, SignalEvent
 from bbstrader.config import BBSTRADER_DIR
-from bbstrader.metatrader.account import (
+from bbstrader.metatrader import (
     Account,
     AdmiralMarktsGroup,
     PepperstoneGroupLimited,
+    TradeOrder,
+    Rates,
+    TradeSignal, 
+    TradingMode,
+    SymbolType
 )
-from bbstrader.metatrader.rates import Rates
-from bbstrader.metatrader.trade import TradeSignal, TradingMode
-from bbstrader.metatrader.utils import SymbolType
 from bbstrader.models.optimization import optimized_weights
 
 __all__ = ["Strategy", "MT5Strategy"]
@@ -766,6 +768,29 @@ class MT5Strategy(Strategy):
             )
             return prices
         return np.array([])
+    
+    def get_active_orders(self, symbol: str, strategy_id: int, order_type: int = None) -> List[TradeOrder]:
+        """
+        Get the active orders for a given symbol and strategy.
+
+        Args:
+            symbol : The symbol for the trade.
+            strategy_id : The unique identifier for the strategy.
+            order_type : The type of order to filter by (optional):
+                    "BUY_LIMIT": 2
+                    "SELL_LIMIT": 3
+                    "BUY_STOP": 4
+                    "SELL_STOP": 5
+                    "BUY_STOP_LIMIT": 6
+                    "SELL_STOP_LIMIT": 7
+
+        Returns:
+            List[TradeOrder] : A list of active orders for the given symbol and strategy.
+        """
+        orders = [o for o in self.orders if o.symbol == symbol and o.magic == strategy_id]
+        if order_type is not None and len(orders) > 0:
+            orders = [o for o in orders if o.type == order_type]
+        return orders
 
     def exit_positions(self, position, prices, asset, th: float = 0.01):
         if len(prices) == 0:

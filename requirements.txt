@@ -6,14 +6,10 @@ lightgbm
 dash
 nltk
 spacy
-pmdarima
 pyportfolioopt
 alphalens-reloaded
 pandas_ta
 yfinance
-hmmlearn
-arch
-hurst
 filterpy
 pykalman
 CurrencyConverter
@@ -38,3 +34,4 @@ textblob
 vaderSentiment
 pytest 
 pytest-mock
+sumy

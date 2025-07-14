@@ -37,6 +37,8 @@ _TF_MAPPING = {
     "D1": 1440,
 }
 
+MT5_ENGINE_TIMEFRAMES = list(_TF_MAPPING.keys())
+
 TradingDays = ["monday", "tuesday", "wednesday", "thursday", "friday"]
 WEEK_DAYS = TradingDays + ["saturday", "sunday"]
 FRIDAY = "friday"
@@ -318,7 +320,7 @@ class Mt5ExecutionEngine:
         if self.debug_mode:
             raise ValueError(msg).with_traceback(e.__traceback__)
         else:
-            logger.error(f"{msg, repr(e)}")
+            logger.error(f"{msg}: {type(e).__name__}: {str(e)}")
 
     def _max_trades(self, mtrades):
         max_trades = {
@@ -512,6 +514,7 @@ class Mt5ExecutionEngine:
                 or (period_type == "day" and closing)
                 or (period_type == "24/7" and closing)
             ):
+                logger.info(f"{self.ACCOUNT} Closing all positions and orders for {symbol} ...")
                 for id in self.expert_ids:
                     trade.close_positions(
                         position_type="all", id=id, comment=self.comment
@@ -627,7 +630,7 @@ class Mt5ExecutionEngine:
             )
             pass
 
-    def _handle_auto_trade(self, sigmsg, symbol) -> bool:
+    def _auto_trade(self, sigmsg, symbol) -> bool:
         if self.notify:
             self._send_notification(sigmsg, symbol)
         if self.auto_trade:
@@ -649,7 +652,7 @@ class Mt5ExecutionEngine:
     def _open_buy(
         self, signal, symbol, id, trade: Trade, price, stoplimit, sigmsg, msg, comment
     ):
-        if not self._handle_auto_trade(sigmsg, symbol):
+        if not self._auto_trade(sigmsg, symbol):
             return
         if not self._check_retcode(trade, "BMKT"):
             logger.info(msg)
@@ -666,7 +669,7 @@ class Mt5ExecutionEngine:
     def _open_sell(
         self, signal, symbol, id, trade: Trade, price, stoplimit, sigmsg, msg, comment
     ):
-        if not self._handle_auto_trade(sigmsg, symbol):
+        if not self._auto_trade(sigmsg, symbol):
             return
         if not self._check_retcode(trade, "SMKT"):
             logger.info(msg)
@@ -947,7 +950,6 @@ class Mt5ExecutionEngine:
             except Exception as e:
                 msg = f"Running Execution Engine, STRATEGY={self.STRATEGY} , ACCOUNT={self.ACCOUNT}"
                 self._print_exc(msg, e)
-                continue
 
     def stop(self):
         """Stops the execution engine."""

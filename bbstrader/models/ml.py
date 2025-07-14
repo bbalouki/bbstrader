@@ -1,6 +1,5 @@
 import os
 import warnings
-from datetime import datetime
 from itertools import product
 from time import time
 
@@ -19,6 +18,7 @@ from alphalens.utils import (
     rate_of_return,
     std_conversion,
 )
+from loguru import logger as log
 from scipy.stats import spearmanr
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 
@@ -165,6 +165,7 @@ class LightGBModel(object):
         datastore: pd.HDFStore = "lgbdata.h5",
         trainstore: pd.HDFStore = "lgbtrain.h5",
         outstore: pd.HDFStore = "lgbout.h5",
+        logger=None,
     ):
         """
         Args:
@@ -173,10 +174,12 @@ class LightGBModel(object):
             datastore (str): The path to the HDF5 file for storing the model data.
             trainstore (str): The path to the HDF5 file for storing the training data.
             outstore (str): The path to the HDF5 file for storing the output data.
+            logger (Logger): Optional logger instance for logging messages. If not provided, a default logger will be used.
         """
         self.datastore = datastore
         self.trainstore = trainstore
         self.outstore = outstore
+        self.logger = logger or log
         if data is not None:
             data.reset_index().to_hdf(path_or_buf=self.datastore, key="model_data")
 
@@ -243,11 +246,15 @@ class LightGBModel(object):
                     multi_level_index=False,
                     auto_adjust=True,
                 )
+                if prices.empty:
+                    continue
                 prices["symbol"] = ticker
                 data.append(prices)
             except:  # noqa: E722
                 continue
         data = pd.concat(data)
+        if "Adj Close" in data.columns:
+            data = data.drop(columns=["Adj Close"])
         data = (
             data.rename(columns={s: s.lower().replace(" ", "_") for s in data.columns})
             .set_index("symbol", append=True)
@@ -255,8 +262,6 @@ class LightGBModel(object):
             .sort_index()
             .dropna()
         )
-        if "adj_close" in data.columns:
-            data = data.drop(columns=["adj_close"])
         return data
 
     def download_metadata(self, tickers):
@@ -849,13 +854,23 @@ class LightGBModel(object):
             data = store.select("stock_data")
             data = data.set_index(["symbol", "date"]).sort_index()
             data = data[~data.index.duplicated()]
-        return (
-            data.loc[idx[tickers, start:end], "open"]
-            .unstack("symbol")
-            .sort_index()
-            .shift(-1)
-            .tz_convert("UTC")
-        )
+        try:
+            data = (
+                data.loc[idx[tickers, start:end], "open"]
+                .unstack("symbol")
+                .sort_index()
+                .shift(-1)
+                .tz_convert("UTC")
+            )
+        except TypeError:
+            data = (
+                data.loc[idx[tickers, start:end], "open"]
+                .unstack("symbol")
+                .sort_index()
+                .shift(-1)
+                .tz_localize("UTC")
+            )
+        return data
 
     def plot_ic(self, lgb_ic, lgb_daily_ic, scope_params, lgb_train_params):
         fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(20, 5))
@@ -1086,13 +1101,22 @@ class LightGBModel(object):
         # in order to compute the mean period-wise
         # return earned on an equal-weighted portfolio invested in the daily factor quintiles
         # for various holding periods:
-        factor = (
-            best_predictions.iloc[:, :5]
-            .mean(1)
-            .dropna()
-            .tz_convert("UTC", level="date")
-            .swaplevel()
-        )
+        try:
+            factor = (
+                best_predictions.iloc[:, :5]
+                .mean(1)
+                .dropna()
+                .tz_convert("UTC", level="date")
+                .swaplevel()
+            )
+        except TypeError:
+            factor = (
+                best_predictions.iloc[:, :5]
+                .mean(1)
+                .dropna()
+                .tz_localize("UTC", level="date")
+                .swaplevel()
+            )
         # Create AlphaLens Inputs
         if verbose:
             factor_data = get_clean_factor_and_forward_returns(
@@ -1134,6 +1158,8 @@ class LightGBModel(object):
         elif mode == "live":
             data[labels] = data[labels].fillna(0)
             data = data.sort_index().dropna()
+        else:
+            raise ValueError("Mode must be either 'test' or 'live'.")
 
         lgb_data = lgb.Dataset(
             data=data[features],
@@ -1245,7 +1271,9 @@ class LightGBModel(object):
         Usefull in Live Trading to ensure that the last date in the predictions
         is the previous day, so it predicts today's returns.
         """
+        last_date: pd.Timestamp
         last_date = predictions.index.get_level_values("date").max()
+        now = pd.Timestamp.now(tz="UTC")
         try:
             if last_date.tzinfo is None:
                 last_date = last_date.tz_localize("UTC")
@@ -1253,18 +1281,19 @@ class LightGBModel(object):
                 last_date = last_date.tz_convert("UTC")
             last_date = last_date.normalize()
         except Exception as e:
-            print(f"Error getting last date: {e}")
+            self.logger.error(f"Error getting last date: {e}")
         try:
-            days = 3 if datetime.now().strftime("%A") == "Monday" else 1
-            td = (
-                last_date
-                - (pd.Timestamp.now(tz="UTC") - pd.Timedelta(days=days)).normalize()
-            )
-            assert (
-                td.days == days or last_date == (pd.Timestamp.now(tz="UTC")).normalize()
-            )
+            days = 3 if now.weekday() == 0 else 1
+            time_delta = last_date - (now - pd.Timedelta(days=days)).normalize()
+            assert time_delta.days == days or last_date == now.normalize()
             return True
         except AssertionError:
+            yesterday = (now - pd.Timedelta(days=1)).normalize()
+            last_friday = (now - pd.Timedelta(days=now.weekday() + 3)).normalize()
+            self.logger.debug(
+                f"Last date in predictions ({last_date}) is not equal to \
+                yesterday ({yesterday}) or last Friday ({last_friday})"
+            )
             return False
 
     def clean_stores(self, *stores):
