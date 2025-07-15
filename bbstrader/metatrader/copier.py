@@ -130,6 +130,7 @@ def get_copy_symbols(destination: dict, source: dict):
                     f"must be the same type and have the same symbols"
                 )
                 raise ValueError(err_msg)
+        return dest_symbols
     elif isinstance(symbols, (list, dict)):
         return symbols
     elif isinstance(symbols, str):
@@ -168,6 +169,7 @@ class TradeCopier(object):
         start_time: str = None,
         end_time: str = None,
         custom_logger=None,
+        shutdown_event=None,
     ):
         """
         Initializes the ``TradeCopier`` instance, setting up the source and destination trading accounts for trade copying.
@@ -247,6 +249,7 @@ class TradeCopier(object):
         self.end_time = end_time
         self.errors = set()
         self._running = True
+        self.shutdown_event = shutdown_event
         self._add_logger(custom_logger)
         self._add_copy()
     
@@ -665,6 +668,8 @@ class TradeCopier(object):
             except Exception as e:
                 self.log_error(e)
         logger.info("Trade Copier has shut down.")
+        if self.shutdown_event and self.shutdown_event.is_set():
+            return
     
     def stop(self):
         """Stop the Trade Copier."""
@@ -680,6 +685,7 @@ def RunCopier(
     start_time: str,
     end_time: str,
     custom_logger=None,
+    shutdown_event=None,
 ):
     copier = TradeCopier(
         source,
@@ -688,6 +694,7 @@ def RunCopier(
         start_time,
         end_time,
         custom_logger,
+        shutdown_event,
     )
     copier.run()
 
@@ -726,7 +733,7 @@ def RunMultipleCopier(
                 start_time,
                 end_time,
             ),
-            kwargs=dict(custom_logger=custom_logger),
+            kwargs=dict(custom_logger=custom_logger, shutdown_event=shutdown_event),
         )
         processes.append(process)
         process.start()
