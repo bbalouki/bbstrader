@@ -258,7 +258,7 @@ class Trade(RiskManagement):
         symbol: str = "EURUSD",
         expert_name: str = "bbstrader",
         expert_id: int = EXPERT_ID,
-        version: str = "2.0",
+        version: str = "3.0",
         target: float = 5.0,
         start_time: str = "0:00",
         finishing_time: str = "23:59",
@@ -626,13 +626,15 @@ class Trade(RiskManagement):
             request["tp"] = tp or mm_price + take_profit * point
         self.break_even(mm=mm, id=Id, trail=trail)
         if self.check(comment):
+            if action == "BSTPLMT":
+                _price = stoplimit
             return self.request_result(_price, request, action)
         return False
 
     def _order_type(self):
         return {
             "BMKT": (Mt5.ORDER_TYPE_BUY, "BUY"),
-            "SMKT": (Mt5.ORDER_TYPE_BUY, "SELL"),
+            "SMKT": (Mt5.ORDER_TYPE_SELL, "SELL"),
             "BLMT": (Mt5.ORDER_TYPE_BUY_LIMIT, "BUY_LIMIT"),
             "SLMT": (Mt5.ORDER_TYPE_SELL_LIMIT, "SELL_LIMIT"),
             "BSTP": (Mt5.ORDER_TYPE_BUY_STOP, "BUY_STOP"),
@@ -717,6 +719,8 @@ class Trade(RiskManagement):
             request["tp"] = tp or mm_price - take_profit * point
         self.break_even(mm=mm, id=Id, trail=trail)
         if self.check(comment):
+            if action == "SSTPLMT":
+                _price = stoplimit
             return self.request_result(_price, request, action)
         return False
 
@@ -1573,8 +1577,6 @@ class Trade(RiskManagement):
         symbol = symbol or self.symbol
         Id = id if id is not None else self.expert_id
         positions = self.get_positions(ticket=ticket)
-        buy_price = self.get_tick_info(symbol).ask
-        sell_price = self.get_tick_info(symbol).bid
         deviation = self.get_deviation()
         if positions is not None and len(positions) == 1:
             position = positions[0]
@@ -1586,9 +1588,8 @@ class Trade(RiskManagement):
                     "volume": (position.volume * pct),
                     "type": Mt5.ORDER_TYPE_SELL if buy else Mt5.ORDER_TYPE_BUY,
                     "position": ticket,
-                    "price": sell_price if buy else buy_price,
+                    "price": position.price_current,
                     "deviation": deviation,
-                    "magic": Id,
                     "comment": f"@{self.expert_name}" if comment is None else comment,
                     "type_time": Mt5.ORDER_TIME_GTC,
                     "type_filling": Mt5.ORDER_FILLING_FOK,
