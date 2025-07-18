@@ -7,12 +7,14 @@ from pathlib import Path
 from typing import Dict, List, Literal, Tuple
 
 import psutil
-from loguru import logger as log
 
-from bbstrader.config import BBSTRADER_DIR
+from bbstrader.config import BBSTRADER_DIR 
 from bbstrader.metatrader.account import Account, check_mt5_connection
 from bbstrader.metatrader.trade import FILLING_TYPE
 from bbstrader.metatrader.utils import TradeOrder, TradePosition, trade_retcode_message
+
+from loguru import logger as log 
+
 
 try:
     import MetaTrader5 as Mt5
@@ -21,15 +23,6 @@ except ImportError:
 
 
 __all__ = ["TradeCopier", "RunCopier", "RunMultipleCopier", "config_copier"]
-
-
-class QueueSink:
-    def __init__(self, queue):
-        self.queue = queue
-
-    def write(self, message):
-        self.queue.put(message)
-
 
 log.add(
     f"{BBSTRADER_DIR}/logs/copier.log",
@@ -222,6 +215,7 @@ class TradeCopier(object):
     source_isunique: bool
     destinations: List[dict]
     shutdown_event: Event
+    log_queue: mp.Queue
 
     def __init__(
         self,
@@ -351,21 +345,36 @@ class TradeCopier(object):
             global logger
             logger = custom_logger
 
-        if self.log_queue:
-            try:
-                logger.remove(0)
-            except ValueError:
-                pass  # No logger configured
-            logger.add(
-                QueueSink(self.log_queue),
-                level="INFO",
-                format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}",
-            )
-
     def _add_copy(self):
         self.source["copy"] = self.source.get("copy", True)
         for destination in self.destinations:
             destination["copy"] = destination.get("copy", True)
+
+    def _log_message(self, message, type="info"):
+        if self.log_queue:
+            try:
+                now = datetime.now()
+                formatted = (
+                    now.strftime("%Y-%m-%d %H:%M:%S.")
+                    + f"{int(now.microsecond / 1000):03d}"
+                )
+                space = len("warning")
+                self.log_queue.put(
+                    f"{formatted} |{type.upper()} {' '*(space - len(type))}|  - {message}"
+                )
+            except Exception:
+                pass
+        else:
+            logmethod = logger.info if type == "info" else logger.error
+            logmethod(message)
+
+    def log_error(self, e, symbol=None):
+        error_msg = repr(e)
+        if error_msg not in self.errors:
+            self.errors.add(error_msg)
+            add_msg = f"SYMBOL={symbol}" if symbol else ""
+            message = f"Error encountered: {error_msg}, {add_msg}"
+            self._log_message(message, type="error")
 
     def _validate_source(self):
         if not self.source_isunique:
@@ -390,9 +399,10 @@ class TradeCopier(object):
     def _select_symbol(self, symbol: str, destination: dict):
         selected = Mt5.symbol_select(symbol, True)
         if not selected:
-            logger(
+            self._log_message(
                 f"Failed to select {destination.get('login')}::{symbol}, error code =",
                 Mt5.last_error(),
+                type="error",
             )
 
     def source_orders(self, symbol=None):
@@ -523,14 +533,15 @@ class TradeCopier(object):
             if result.retcode != Mt5.TRADE_RETCODE_DONE:
                 result = self._update_filling_type(request, result)
             if result.retcode == Mt5.TRADE_RETCODE_DONE:
-                logger.info(
+                self._log_message(
                     f"Copy {action} Order #{trade.ticket} from @{self.source.get('login')}::{trade.symbol} "
-                    f"to @{destination.get('login')}::{symbol}"
+                    f"to @{destination.get('login')}::{symbol}",
                 )
             if result.retcode != Mt5.TRADE_RETCODE_DONE:
-                logger.error(
+                self._log_message(
                     f"Error copying {action} Order #{trade.ticket} from @{self.source.get('login')}::{trade.symbol} "
-                    f"to @{destination.get('login')}::{symbol}, {trade_retcode_message(result.retcode)}"
+                    f"to @{destination.get('login')}::{symbol}, {trade_retcode_message(result.retcode)}",
+                    type="error",
                 )
         except Exception as e:
             self.log_error(e, symbol=symbol)
@@ -554,14 +565,15 @@ class TradeCopier(object):
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
             result = self._update_filling_type(request, result)
         if result.retcode == Mt5.TRADE_RETCODE_DONE:
-            logger.info(
-                f"Modify Order #{ticket} on @{destination.get('login')}::{symbol}, "
+            self._log_message(
+                f"Modify {ORDER_TYPE[source_order.type][1]} Order #{ticket} on @{destination.get('login')}::{symbol}, "
                 f"SOURCE=@{self.source.get('login')}::{source_order.symbol}"
             )
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
-            logger.error(
-                f"Error modifying Order #{ticket} on @{destination.get('login')}::{symbol},"
-                f"SOURCE=@{self.source.get('login')}::{source_order.symbol},  {trade_retcode_message(result.retcode)}"
+            self._log_message(
+                f"Error modifying {ORDER_TYPE[source_order.type][1]} Order #{ticket} on @{destination.get('login')}::{symbol},"
+                f"SOURCE=@{self.source.get('login')}::{source_order.symbol},  {trade_retcode_message(result.retcode)}",
+                type="error",
             )
 
     def remove_order(self, src_symbol, order: TradeOrder, destination: dict):
@@ -575,14 +587,15 @@ class TradeCopier(object):
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
             result = self._update_filling_type(request, result)
         if result.retcode == Mt5.TRADE_RETCODE_DONE:
-            logger.info(
-                f"Close Order #{order.ticket} on @{destination.get('login')}::{order.symbol}, "
+            self._log_message(
+                f"Close {ORDER_TYPE[order.type][1]} Order #{order.ticket}  on @{destination.get('login')}::{order.symbol}, "
                 f"SOURCE=@{self.source.get('login')}::{src_symbol}"
             )
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
-            logger.error(
-                f"Error closing Order #{order.ticket} on @{destination.get('login')}::{order.symbol}, "
-                f"SOURCE=@{self.source.get('login')}::{src_symbol}, {trade_retcode_message(result.retcode)}"
+            self._log_message(
+                f"Error closing {ORDER_TYPE[order.type][1]} Order #{order.ticket} on @{destination.get('login')}::{order.symbol}, "
+                f"SOURCE=@{self.source.get('login')}::{src_symbol}, {trade_retcode_message(result.retcode)}",
+                type="error",
             )
 
     def copy_new_position(self, position: TradePosition, destination: dict):
@@ -604,14 +617,15 @@ class TradeCopier(object):
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
             result = self._update_filling_type(request, result)
         if result.retcode == Mt5.TRADE_RETCODE_DONE:
-            logger.info(
-                f"Modify Position #{ticket} on @{destination.get('login')}::{symbol}, "
+            self._log_message(
+                f"Modify {ORDER_TYPE[source_pos.type][1]} Position #{ticket} on @{destination.get('login')}::{symbol}, "
                 f"SOURCE=@{self.source.get('login')}::{source_pos.symbol}"
             )
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
-            logger.error(
-                f"Error modifying Position #{ticket} on @{destination.get('login')}::{symbol}, "
-                f"SOURCE=@{self.source.get('login')}::{source_pos.symbol}, {trade_retcode_message(result.retcode)}"
+            self._log_message(
+                f"Error modifying {ORDER_TYPE[source_pos.type][1]} Position #{ticket} on @{destination.get('login')}::{symbol}, "
+                f"SOURCE=@{self.source.get('login')}::{source_pos.symbol}, {trade_retcode_message(result.retcode)}",
+                type="error",
             )
 
     def remove_position(self, src_symbol, position: TradePosition, destination: dict):
@@ -636,14 +650,17 @@ class TradeCopier(object):
             result = self._update_filling_type(request, result)
 
         if result.retcode == Mt5.TRADE_RETCODE_DONE:
-            logger.info(
-                f"Close Position #{position.ticket} on @{destination.get('login')}::{position.symbol}, "
+            self._log_message(
+                f"Close {ORDER_TYPE[position.type][1]} Position #{position.ticket} "
+                f"on @{destination.get('login')}::{position.symbol}, "
                 f"SOURCE=@{self.source.get('login')}::{src_symbol}"
             )
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
-            logger.error(
-                f"Error closing Position #{position.ticket} on @{destination.get('login')}::{position.symbol}, "
-                f"SOURCE=@{self.source.get('login')}::{src_symbol},  {trade_retcode_message(result.retcode)}"
+            self._log_message(
+                f"Error closing {ORDER_TYPE[position.type][1]} Position #{position.ticket} "
+                f"on @{destination.get('login')}::{position.symbol}, "
+                f"SOURCE=@{self.source.get('login')}::{src_symbol},  {trade_retcode_message(result.retcode)}",
+                type="error",
             )
 
     def filter_positions_and_orders(self, pos_or_orders, symbols=None):
@@ -821,32 +838,18 @@ class TradeCopier(object):
         self._copy_modified_positions(destination)
         self._copy_closed_position(destination)
 
-    def log_error(self, e, symbol=None):
-        error_msg = repr(e)
-        if error_msg not in self.errors:
-            self.errors.add(error_msg)
-            add_msg = f"SYMBOL={symbol}" if symbol else ""
-            logger.error(f"Error encountered: {error_msg}, {add_msg}")
-
-    def start_copy_process(self, destination: dict, log_queue=None):
+    def start_copy_process(self, destination: dict):
         """
         Worker process: copy orders and positions for a single destination account.
         """
-        if log_queue:
-            logger.add(
-                QueueSink(log_queue),
-                level="INFO",
-                format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}",
-            )
-
         if destination.get("path") == self.source.get("path"):
-            logger.error(
+            self._log_message(
                 f"Source and destination accounts are on the same  "
                 f"MetaTrader 5 installation {self.source.get('path')} which is not allowed."
             )
             return
 
-        logger.info(
+        self._log_message(
             f"Copy started for source @{self.source.get('login')} "
             f" and destination @{destination.get('login')}"
         )
@@ -855,12 +858,14 @@ class TradeCopier(object):
                 self.copy_positions(destination)
                 self.copy_orders(destination)
             except KeyboardInterrupt:
-                logger.info("KeyboardInterrupt received, stopping the Trade Copier ...")
+                self._log_message(
+                    "KeyboardInterrupt received, stopping the Trade Copier ..."
+                )
                 self.stop()
             except Exception as e:
                 self.log_error(e)
 
-        logger.info(
+        self._log_message(
             f"Process exiting for destination @{destination.get('login')} due to shutdown event."
         )
 
@@ -869,15 +874,12 @@ class TradeCopier(object):
         Starts a separate process for each destination account.
         """
         for destination in self.destinations:
-            logger.info(
+            self._log_message(
                 f"Starting process for destination account @{destination.get('login')}"
             )
             process = mp.Process(
                 target=self.start_copy_process,
-                args=(
-                    destination,
-                    self.log_queue,
-                ),
+                args=(destination,),
             )
             self._processes.append(process)
             process.start()
@@ -886,11 +888,11 @@ class TradeCopier(object):
         """
         Single-process mode: sequentially copy for all destinations.
         """
-        logger.info(f"Copy started for source @{self.source.get('login')} ")
+        self._log_message(f"Copy started for source @{self.source.get('login')} ")
         while not self.shutdown_event.is_set():
             for destination in self.destinations:
                 if destination.get("path") == self.source.get("path"):
-                    logger.error(
+                    self._log_message(
                         f"Source and destination accounts are on the same  "
                         f"MetaTrader 5 installation {self.source.get('path')} which is not allowed."
                     )
@@ -900,14 +902,14 @@ class TradeCopier(object):
                     self.copy_positions(destination)
                     time.sleep(self.sleeptime)
                 except KeyboardInterrupt:
-                    logger.info(
+                    self._log_message(
                         "KeyboardInterrupt received, stopping the Trade Copier ..."
                     )
                     self.stop()
                 except Exception as e:
                     self.log_error(e)
 
-        logger.info(
+        self._log_message(
             f"Process exiting for source @{self.source.get('login')} due to shutdown event."
         )
 
@@ -928,7 +930,9 @@ class TradeCopier(object):
                     process.join()
 
         except KeyboardInterrupt:
-            logger.info("KeyboardInterrupt received, stopping the Trade Copier ...")
+            self._log_message(
+                "KeyboardInterrupt received, stopping the Trade Copier ..."
+            )
             self.stop()
             sys.exit(0)
 
@@ -936,13 +940,13 @@ class TradeCopier(object):
             self.log_error(e)
             self.stop()
 
-        logger.info("Trade Copier has shut down.")
+        self._log_message("Trade Copier has shut down.")
 
     def stop(self):
         """
         Stop the Trade Copier gracefully by setting shutdown event and terminating processes.
         """
-        logger.info(
+        self._log_message(
             f"Stopping Trade Copier for source account @{self.source.get('login')} ..."
         )
         self._running = False
@@ -951,7 +955,7 @@ class TradeCopier(object):
         for process in self._processes:
             if process.is_alive():
                 try:
-                    logger.info(
+                    self._log_message(
                         f"Terminating process PID={process.pid} "
                         f"for source account @{self.source.get('login')}"
                     )
@@ -960,7 +964,7 @@ class TradeCopier(object):
                 except psutil.NoSuchProcess:
                     pass
 
-        logger.info("Trade Copier stopped successfully.")
+        self._log_message("Trade Copier stopped successfully.")
 
 
 def RunCopier(
