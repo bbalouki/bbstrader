@@ -1,20 +1,16 @@
 import multiprocessing as mp
-import sys
 import time
 from datetime import datetime
 from multiprocessing.synchronize import Event
 from pathlib import Path
 from typing import Dict, List, Literal, Tuple
 
-import psutil
+from loguru import logger as log
 
-from bbstrader.config import BBSTRADER_DIR 
+from bbstrader.config import BBSTRADER_DIR
 from bbstrader.metatrader.account import Account, check_mt5_connection
 from bbstrader.metatrader.trade import FILLING_TYPE
 from bbstrader.metatrader.utils import TradeOrder, TradePosition, trade_retcode_message
-
-from loguru import logger as log 
-
 
 try:
     import MetaTrader5 as Mt5
@@ -32,6 +28,7 @@ log.add(
 )
 global logger
 logger = log
+
 
 ORDER_TYPE = {
     0: (Mt5.ORDER_TYPE_BUY, "BUY"),
@@ -205,8 +202,7 @@ class TradeCopier(object):
         "shutdown_event",
         "custom_logger",
         "log_queue",
-        "multi_process",
-        "_processes",
+        "_last_session",
         "_running",
     )
 
@@ -226,7 +222,6 @@ class TradeCopier(object):
         start_time: str = None,
         end_time: str = None,
         *,
-        multi_process: bool = False,
         custom_logger=None,
         shutdown_event=None,
         log_queue=None,
@@ -308,8 +303,7 @@ class TradeCopier(object):
             sleeptime (float, optional): The delay between each check from the source account.
             custom_logger (Any, Optional): Used to set a cutum logger (default is ``loguru.logger``)
             shutdown_event (Any, Otional): Use to terminal the copy process when runs in a custum environment like web App or GUI.
-            multi_process (bool): When set to True, each destination account runs in a separate process, default to False.
-
+            log_queue (multiprocessing.Queue, Optional): Use to send log to an external program, usefule in GUI apps
 
         Note:
             The source account and the destination accounts must be connected to different MetaTrader 5 platforms.
@@ -324,15 +318,14 @@ class TradeCopier(object):
         self.start_time = start_time
         self.end_time = end_time
         self.errors = set()
-        self.multi_process = multi_process
         self.log_queue = log_queue
-        self._processes = []
         self._add_logger(custom_logger)
         self._validate_source()
         self._add_copy()
         self.shutdown_event = (
             shutdown_event if shutdown_event is not None else mp.Event()
         )
+        self._last_session = datetime.now().date()
         self._running = True
 
     @property
@@ -369,6 +362,9 @@ class TradeCopier(object):
             logmethod(message)
 
     def log_error(self, e, symbol=None):
+        if datetime.now().date() > self._last_session:
+            self._last_session = datetime.now().date()
+            self.errors.clear()
         error_msg = repr(e)
         if error_msg not in self.errors:
             self.errors.add(error_msg)
@@ -869,102 +865,102 @@ class TradeCopier(object):
             f"Process exiting for destination @{destination.get('login')} due to shutdown event."
         )
 
-    def run_multi_process(self):
-        """
-        Starts a separate process for each destination account.
-        """
-        for destination in self.destinations:
-            self._log_message(
-                f"Starting process for destination account @{destination.get('login')}"
-            )
-            process = mp.Process(
-                target=self.start_copy_process,
-                args=(destination,),
-            )
-            self._processes.append(process)
-            process.start()
-
-    def run_single_process(self):
-        """
-        Single-process mode: sequentially copy for all destinations.
-        """
-        self._log_message(f"Copy started for source @{self.source.get('login')} ")
-        while not self.shutdown_event.is_set():
-            for destination in self.destinations:
-                if destination.get("path") == self.source.get("path"):
-                    self._log_message(
-                        f"Source and destination accounts are on the same  "
-                        f"MetaTrader 5 installation {self.source.get('path')} which is not allowed."
-                    )
-                    continue
-                try:
-                    self.copy_orders(destination)
-                    self.copy_positions(destination)
-                    time.sleep(self.sleeptime)
-                except KeyboardInterrupt:
-                    self._log_message(
-                        "KeyboardInterrupt received, stopping the Trade Copier ..."
-                    )
-                    self.stop()
-                except Exception as e:
-                    self.log_error(e)
-
-        self._log_message(
-            f"Process exiting for source @{self.source.get('login')} due to shutdown event."
-        )
-
     def run(self):
         """
-        Entry point to start the copier in multi-process or single-process mode.
-        Waits for child processes to finish and handles graceful shutdown.
+        Entry point to start the copier.
+        This will loop through the destinations it was given and process them.
         """
+        self._log_message(
+            f"Copier instance started for source @{self.source.get('login')}"
+        )
         try:
-            if self.multi_process:
-                self.run_multi_process()
-            else:
-                self.run_single_process()
+            while not self.shutdown_event.is_set():
+                for destination in self.destinations:
+                    if self.shutdown_event.is_set():
+                        break
 
-            # In multi-process mode, wait for children to exit
-            if self.multi_process:
-                for process in self._processes:
-                    process.join()
+                    if destination.get("path") == self.source.get("path"):
+                        self._log_message(
+                            f"Source and destination accounts are on the same "
+                            f"MetaTrader 5 installation {self.source.get('path')} which is not allowed."
+                        )
+                        continue
+                    try:
+                        self.copy_positions(destination)
+                        self.copy_orders(destination)
+                    except Exception as e:
+                        self.log_error(e)
+                time.sleep(self.sleeptime)
 
         except KeyboardInterrupt:
             self._log_message(
-                "KeyboardInterrupt received, stopping the Trade Copier ..."
+                "KeyboardInterrupt received, stopping the copier instance..."
             )
-            self.stop()
-            sys.exit(0)
+            self.shutdown_event.set()
 
-        except Exception as e:
-            self.log_error(e)
-            self.stop()
-
-        self._log_message("Trade Copier has shut down.")
+        self._log_message(
+            f"Copier instance for source @{self.source.get('login')} is shutting down."
+        )
 
     def stop(self):
         """
-        Stop the Trade Copier gracefully by setting shutdown event and terminating processes.
+        Stop the Trade Copier gracefully by setting the shutdown event.
         """
-        self._log_message(
-            f"Stopping Trade Copier for source account @{self.source.get('login')} ..."
-        )
-        self._running = False
-        self.shutdown_event.set()
-
-        for process in self._processes:
-            if process.is_alive():
-                try:
-                    self._log_message(
-                        f"Terminating process PID={process.pid} "
-                        f"for source account @{self.source.get('login')}"
-                    )
-                    psutil.Process(process.pid).terminate()
-                    process.join()
-                except psutil.NoSuchProcess:
-                    pass
-
+        if self._running:
+            self._log_message(
+                f"Signaling stop for Trade Copier on source account @{self.source.get('login')}..."
+            )
+            self._running = False
+            self.shutdown_event.set()
         self._log_message("Trade Copier stopped successfully.")
+
+
+def copier_worker_process(
+    source_config: dict,
+    destination_config: dict,
+    sleeptime: float,
+    start_time: str,
+    end_time: str,
+    /,
+    custom_logger=None,
+    shutdown_event=None,
+    log_queue=None,
+):
+    """A top-level worker function for handling a single source-to-destination copy task.
+
+    This function is the cornerstone of the robust, multi-process architecture. It is
+    designed to be the `target` of a `multiprocessing.Process`. By being a top-level
+    function, it avoids pickling issues on Windows and ensures that each copy task
+    runs in a completely isolated process.
+
+    A controller (like a GUI or a master script) should spawn one process with this
+    target for each destination account it needs to manage.
+
+    Args:
+        source_config (dict): Configuration dictionary for the source account.
+            Must contain 'login', 'password', 'server', and 'path'.
+        destination_config (dict): Configuration dictionary for a *single*
+            destination account.
+        sleeptime (float): The time in seconds to wait between copy cycles.
+        start_time (str): The time of day to start copying (e.g., "08:00").
+        end_time (str): The time of day to stop copying (e.g., "22:00").
+        custom_logger: An optional custom logger instance.
+        shutdown_event (multiprocessing.Event): An event object that, when set,
+            will signal this process to terminate gracefully.
+        log_queue (multiprocessing.Queue): A queue for sending log messages back
+            to the parent process in a thread-safe manner.
+    """
+    copier = TradeCopier(
+        source_config,
+        [destination_config],
+        sleeptime=sleeptime,
+        start_time=start_time,
+        end_time=end_time,
+        custom_logger=custom_logger,
+        shutdown_event=shutdown_event,
+        log_queue=log_queue,
+    )
+    copier.start_copy_process(destination_config)
 
 
 def RunCopier(
@@ -974,18 +970,40 @@ def RunCopier(
     start_time: str,
     end_time: str,
     /,
-    multi_process: bool = False,
     custom_logger=None,
     shutdown_event=None,
     log_queue=None,
 ):
+    """Initializes and runs a TradeCopier instance in a single process.
+
+    This function serves as a straightforward wrapper to start a copying session
+    that handles one source account and one or more destination accounts
+    *sequentially* within the same thread. It does not create any new processes itself.
+
+    This is useful for:
+    - Simpler, command-line based use cases.
+    - Scenarios where parallelism is not required.
+    - As the target for `RunMultipleCopier`, where each process handles a
+      full source-to-destinations session.
+
+    Args:
+        source (dict): Configuration dictionary for the source account.
+        destinations (list): A list of configuration dictionaries, one for each
+            destination account to be processed sequentially.
+        sleeptime (float): The time in seconds to wait after completing a full
+            cycle through all destinations.
+        start_time (str): The time of day to start copying (e.g., "08:00").
+        end_time (str): The time of day to stop copying (e.g., "22:00").
+        custom_logger: An optional custom logger instance.
+        shutdown_event (multiprocessing.Event): An event to signal shutdown.
+        log_queue (multiprocessing.Queue): A queue for log messages.
+    """
     copier = TradeCopier(
         source,
         destinations,
-        sleeptime,
-        start_time,
-        end_time,
-        multi_process=multi_process,
+        sleeptime=sleeptime,
+        start_time=start_time,
+        end_time=end_time,
         custom_logger=custom_logger,
         shutdown_event=shutdown_event,
         log_queue=log_queue,
@@ -999,11 +1017,41 @@ def RunMultipleCopier(
     start_delay: float = 1.0,
     start_time: str = None,
     end_time: str = None,
-    multi_process: bool = False,
     shutdown_event=None,
     custom_logger=None,
     log_queue=None,
 ):
+    """Manages multiple, independent trade copying sessions in parallel.
+
+    This function acts as a high-level manager that takes a list of account
+    setups and creates a separate, dedicated process for each one. Each process
+    is responsible for copying from one source account to its associated list of
+    destination accounts.
+
+    The parallelism occurs at the **source account level**. Within each spawned
+    process, the destinations for that source are handled sequentially by `RunCopier`.
+
+    Example `accounts` structure:
+    [
+        { "source": {...}, "destinations": [{...}, {...}] },  # -> Process 1
+        { "source": {...}, "destinations": [{...}] }          # -> Process 2
+    ]
+
+    Args:
+        accounts (List[dict]): A list of account configurations. Each item in the
+            list must be a dictionary with a 'source' key and a 'destinations' key.
+        sleeptime (float): The sleep time passed down to each `RunCopier` process.
+        start_delay (float): A delay in seconds between starting each new process.
+            This helps prevent resource contention by staggering the initialization
+            of multiple MetaTrader 5 terminals.
+        start_time (str): The start time passed down to each `RunCopier` process.
+        end_time (str): The end time passed down to each `RunCopier` process.
+        shutdown_event (multiprocessing.Event): An event to signal shutdown to all
+            child processes.
+        custom_logger: An optional custom logger instance.
+        log_queue (multiprocessing.Queue): A queue for aggregating log messages
+            from all child processes.
+    """
     processes = []
 
     for account in accounts:
@@ -1014,9 +1062,9 @@ def RunMultipleCopier(
             logger.warning("Skipping account due to missing source or destinations.")
             continue
         paths = set([source.get("path")] + [dest.get("path") for dest in destinations])
-        if len(paths) == 1:
+        if len(paths) == 1 and len(destinations) >= 1:
             logger.warning(
-                "Skipping account due to same MetaTrader 5 installation path."
+                "Skipping account: source and destination cannot share the same MetaTrader 5 terminal path."
             )
             continue
         logger.info(f"Starting process for source account @{source.get('login')}")
@@ -1030,7 +1078,6 @@ def RunMultipleCopier(
                 end_time,
             ),
             kwargs=dict(
-                multi_process=multi_process,
                 custom_logger=custom_logger,
                 shutdown_event=shutdown_event,
                 log_queue=log_queue,

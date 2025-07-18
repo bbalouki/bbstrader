@@ -1,8 +1,9 @@
 import argparse
+import multiprocessing
 import sys
 
 from bbstrader.apps._copier import main as RunCopyAPP
-from bbstrader.metatrader.copier import RunCopier, config_copier
+from bbstrader.metatrader.copier import RunCopier, config_copier, copier_worker_process
 
 
 def copier_args(parser: argparse.ArgumentParser):
@@ -93,11 +94,28 @@ def copy_trades(unknown):
             dest_sections=copy_args.destinations,
             inifile=copy_args.config,
         )
-        RunCopier(
-            source,
-            destinations,
-            copy_args.interval,
-            copy_args.start,
-            copy_args.end,
-            multi_process=copy_args.multiprocess,
-        )
+        if copy_args.multiprocess:
+            copier_processes = []
+            for dest_config in destinations:
+                process = multiprocessing.Process(
+                    target=copier_worker_process,
+                    args=(
+                        source,
+                        dest_config,
+                        copy_args.interval,
+                        copy_args.start,
+                        copy_args.end,
+                    ),
+                )
+                process.start()
+                copier_processes.append(process)
+            for process in copier_processes:
+                process.join()
+        else:
+            RunCopier(
+                source,
+                destinations,
+                copy_args.interval,
+                copy_args.start,
+                copy_args.end,
+            )
