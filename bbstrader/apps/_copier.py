@@ -5,10 +5,11 @@ import tkinter as tk
 import traceback
 from pathlib import Path
 from tkinter import filedialog, messagebox, scrolledtext, ttk
+from typing import List
 
 from PIL import Image, ImageTk
 
-from bbstrader.metatrader.copier import RunCopier, get_symbols_from_string
+from bbstrader.metatrader.copier import copier_worker_process, get_symbols_from_string
 
 
 def resource_path(relative_path):
@@ -27,6 +28,8 @@ LOGO_PATH = resource_path("assets/bbstrader_logo.png")
 
 
 class TradeCopierApp(object):
+    copier_processes: List[multiprocessing.Process]
+
     def __init__(self, root: tk.Tk):
         root.title(TITLE)
         root.geometry("1600x900")
@@ -397,9 +400,9 @@ class TradeCopierApp(object):
             pass
         finally:
             if (
-                hasattr(self, "copier_process")
-                and self.copier_process
-                and self.copier_process.is_alive()
+                hasattr(self, "copier_processes")
+                and self.copier_processes
+                and any(p.is_alive() for p in self.copier_processes)
             ):
                 self.root.after(100, self.check_log_queue)
 
@@ -497,43 +500,46 @@ class TradeCopierApp(object):
 
         self.log_message("Starting Trade Copier...")
 
-        # Defensive: if process is running, stop first
-        if (
-            hasattr(self, "copier_process")
-            and self.copier_process
-            and self.copier_process.is_alive()
+        # Defensive: if a process is running, stop it first
+        if hasattr(self, "copier_processes") and any(
+            p.is_alive() for p in self.copier_processes
         ):
-            self.log_message("Existing copier process found, stopping it first...")
+            self.log_message("Existing copier processes found, stopping them first...")
             self.stop_copier()
 
         try:
             # Create shared shutdown event and log queue
             self.shutdown_event = multiprocessing.Event()
             self.log_queue = multiprocessing.Queue()
+            self.copier_processes = []
 
-            self.copier_process = multiprocessing.Process(
-                target=RunCopier,
-                args=(
-                    source_config,
-                    destinations_config,
-                    sleeptime,
-                    start_time,
-                    end_time,
-                ),
-                kwargs=dict(
-                    multi_process=True,
-                    shutdown_event=self.shutdown_event,
-                    log_queue=self.log_queue,
-                ),
-            )
-            self.copier_process.start()
+            # Spawn one process for each destination
+            for dest_config in destinations_config:
+                process = multiprocessing.Process(
+                    target=copier_worker_process,
+                    args=(
+                        source_config,
+                        dest_config,
+                        sleeptime,
+                        start_time,
+                        end_time,
+                    ),
+                    kwargs=dict(
+                        shutdown_event=self.shutdown_event,
+                        log_queue=self.log_queue,
+                    ),
+                )
+                process.start()
+                self.copier_processes.append(process)
 
             # Start checking the log queue
             self.root.after(100, self.check_log_queue)
 
             self.start_button.config(state=tk.DISABLED)
             self.stop_button.config(state=tk.NORMAL)
-            self.log_message("Trade Copier started.")
+            self.log_message(
+                f"Trade Copier started with {len(self.copier_processes)} processes."
+            )
         except Exception as e:
             messagebox.showerror("Error Starting Copier", str(e))
             self.log_message(f"Error starting copier: {e}")
@@ -541,40 +547,39 @@ class TradeCopierApp(object):
             self.stop_button.config(state=tk.DISABLED)
 
     def stop_copier(self):
-        self.log_message("Attempting to stop Trade Copier ...")
+        self.log_message("Attempting to stop all Trade Copier processes...")
 
-        if (
-            hasattr(self, "copier_process")
-            and self.copier_process
-            and self.copier_process.is_alive()
-        ):
-            try:
-                # Signal shutdown
-                if hasattr(self, "shutdown_event") and self.shutdown_event:
-                    self.shutdown_event.set()
+        if not hasattr(self, "copier_processes") or not self.copier_processes:
+            self.log_message("No copier processes were running.")
+            self.start_button.config(state=tk.NORMAL)
+            self.stop_button.config(state=tk.DISABLED)
+            return
 
-                # Wait for the process to exit
-                self.copier_process.join(timeout=10)
+        # Signal all processes to shut down
+        if hasattr(self, "shutdown_event") and self.shutdown_event:
+            self.shutdown_event.set()
 
-                if not self.copier_process.is_alive():
-                    self.log_message("Trade Copier stopped successfully.")
-                else:
+        # Join all processes
+        for process in self.copier_processes:
+            if process.is_alive():
+                process.join(timeout=5)  # Wait for a graceful exit
+                if process.is_alive():  # If it's still running, terminate it
+                    self.log_message(
+                        f"Process {process.pid} did not exit gracefully, terminating."
+                    )
                     try:
-                        self.copier_process.terminate()
+                        process.terminate()
                     except Exception:
                         pass
-            except Exception as e:
-                self.log_message(f"Error stopping copier: {e}")
-                messagebox.showerror("Error Stopping Copier", str(e))
-        else:
-            self.log_message("Trade Copier not running or already stopped.")
+
+        self.log_message("All Trade Copier processes stopped.")
 
         # Final check of the queue
         if hasattr(self, "log_queue") and self.log_queue:
             self.check_log_queue()
 
         # Cleanup references
-        self.copier_process = None
+        self.copier_processes = []
         self.shutdown_event = None
         self.log_queue = None
 
