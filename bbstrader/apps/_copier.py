@@ -6,7 +6,6 @@ import traceback
 from pathlib import Path
 from tkinter import filedialog, messagebox, scrolledtext, ttk
 
-from loguru import logger
 from PIL import Image, ImageTk
 
 from bbstrader.metatrader.copier import RunCopier, get_symbols_from_string
@@ -388,6 +387,21 @@ class TradeCopierApp(object):
         self.log_text.configure(state="disabled")
         self.log_text.see(tk.END)
 
+    def check_log_queue(self):
+        try:
+            while True:
+                message = self.log_queue.get_nowait()
+                self.log_message(message.strip())
+        except Exception:  # queue empty
+            pass
+        finally:
+            if (
+                hasattr(self, "copier_process")
+                and self.copier_process
+                and self.copier_process.is_alive()
+            ):
+                self.root.after(100, self.check_log_queue)
+
     def _handle_symbols(self, symbols_str: str):
         symbols = symbols_str.strip().replace("\n", "").replace('"""', "")
         if symbols in ["all", "*"]:
@@ -449,16 +463,6 @@ class TradeCopierApp(object):
         if not self._validate_inputs():
             return
 
-        def gui_safe_logger(msg):
-            # Ensure GUI thread safety
-            self.log_text.after(0, self.log_message(msg))
-
-        logger.add(
-            gui_safe_logger,
-            level="DEBUG",
-            format="{time:YYYY-MM-DD HH:mm:ss} {level} {message}",
-        )
-
         source_config = {
             "login": int(self.source_login_entry.get().strip()),
             "password": self.source_password_entry.get().strip(),
@@ -502,8 +506,10 @@ class TradeCopierApp(object):
             self.stop_copier()
 
         try:
-            # Create shared shutdown event
+            # Create shared shutdown event and log queue
             self.shutdown_event = multiprocessing.Event()
+            self.log_queue = multiprocessing.Queue()
+
             self.copier_process = multiprocessing.Process(
                 target=RunCopier,
                 args=(
@@ -514,11 +520,15 @@ class TradeCopierApp(object):
                     end_time,
                 ),
                 kwargs=dict(
-                    multi_process=True,
+                    multi_process=False,
                     shutdown_event=self.shutdown_event,
+                    log_queue=self.log_queue,
                 ),
             )
             self.copier_process.start()
+
+            # Start checking the log queue
+            self.root.after(100, self.check_log_queue)
 
             self.start_button.config(state=tk.DISABLED)
             self.stop_button.config(state=tk.NORMAL)
@@ -553,9 +563,14 @@ class TradeCopierApp(object):
         else:
             self.log_message("Trade Copier not running or already stopped.")
 
+        # Final check of the queue
+        if hasattr(self, "log_queue") and self.log_queue:
+            self.check_log_queue()
+
         # Cleanup references
         self.copier_process = None
         self.shutdown_event = None
+        self.log_queue = None
 
         self.start_button.config(state=tk.NORMAL)
         self.stop_button.config(state=tk.DISABLED)

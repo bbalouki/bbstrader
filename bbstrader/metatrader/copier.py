@@ -23,6 +23,14 @@ except ImportError:
 __all__ = ["TradeCopier", "RunCopier", "RunMultipleCopier", "config_copier"]
 
 
+class QueueSink:
+    def __init__(self, queue):
+        self.queue = queue
+
+    def write(self, message):
+        self.queue.put(message)
+
+
 log.add(
     f"{BBSTRADER_DIR}/logs/copier.log",
     enqueue=True,
@@ -35,12 +43,12 @@ logger = log
 ORDER_TYPE = {
     0: (Mt5.ORDER_TYPE_BUY, "BUY"),
     1: (Mt5.ORDER_TYPE_SELL, "SELL"),
-    2: (Mt5.ORDER_TYPE_BUY_LIMIT, "BUY_LIMIT"),
-    3: (Mt5.ORDER_TYPE_SELL_LIMIT, "SELL_LIMIT"),
-    4: (Mt5.ORDER_TYPE_BUY_STOP, "BUY_STOP"),
-    5: (Mt5.ORDER_TYPE_SELL_STOP, "SELL_STOP"),
-    6: (Mt5.ORDER_TYPE_BUY_STOP_LIMIT, "BUY_STOP_LIMIT"),
-    7: (Mt5.ORDER_TYPE_SELL_STOP_LIMIT, "SELL_STOP_LIMIT"),
+    2: (Mt5.ORDER_TYPE_BUY_LIMIT, "BUY LIMIT"),
+    3: (Mt5.ORDER_TYPE_SELL_LIMIT, "SELL LIMIT"),
+    4: (Mt5.ORDER_TYPE_BUY_STOP, "BUY STOP"),
+    5: (Mt5.ORDER_TYPE_SELL_STOP, "SELL STOP"),
+    6: (Mt5.ORDER_TYPE_BUY_STOP_LIMIT, "BUY STOP LIMIT"),
+    7: (Mt5.ORDER_TYPE_SELL_STOP_LIMIT, "SELL STOP LIMIT"),
 }
 
 
@@ -203,6 +211,7 @@ class TradeCopier(object):
         "end_time",
         "shutdown_event",
         "custom_logger",
+        "log_queue",
         "multi_process",
         "_processes",
         "_running",
@@ -226,6 +235,7 @@ class TradeCopier(object):
         multi_process: bool = False,
         custom_logger=None,
         shutdown_event=None,
+        log_queue=None,
     ):
         """
         Initializes the ``TradeCopier`` instance, setting up the source and destination trading accounts for trade copying.
@@ -321,6 +331,7 @@ class TradeCopier(object):
         self.end_time = end_time
         self.errors = set()
         self.multi_process = multi_process
+        self.log_queue = log_queue
         self._processes = []
         self._add_logger(custom_logger)
         self._validate_source()
@@ -339,6 +350,17 @@ class TradeCopier(object):
         if custom_logger:
             global logger
             logger = custom_logger
+
+        if self.log_queue:
+            try:
+                logger.remove(0)
+            except ValueError:
+                pass  # No logger configured
+            logger.add(
+                QueueSink(self.log_queue),
+                level="INFO",
+                format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}",
+            )
 
     def _add_copy(self):
         self.source["copy"] = self.source.get("copy", True)
@@ -806,10 +828,17 @@ class TradeCopier(object):
             add_msg = f"SYMBOL={symbol}" if symbol else ""
             logger.error(f"Error encountered: {error_msg}, {add_msg}")
 
-    def start_copy_process(self, destination: dict):
+    def start_copy_process(self, destination: dict, log_queue=None):
         """
         Worker process: copy orders and positions for a single destination account.
         """
+        if log_queue:
+            logger.add(
+                QueueSink(log_queue),
+                level="INFO",
+                format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}",
+            )
+
         if destination.get("path") == self.source.get("path"):
             logger.error(
                 f"Source and destination accounts are on the same  "
@@ -843,7 +872,13 @@ class TradeCopier(object):
             logger.info(
                 f"Starting process for destination account @{destination.get('login')}"
             )
-            process = mp.Process(target=self.start_copy_process, args=(destination,))
+            process = mp.Process(
+                target=self.start_copy_process,
+                args=(
+                    destination,
+                    self.log_queue,
+                ),
+            )
             self._processes.append(process)
             process.start()
 
@@ -851,6 +886,7 @@ class TradeCopier(object):
         """
         Single-process mode: sequentially copy for all destinations.
         """
+        logger.info(f"Copy started for source @{self.source.get('login')} ")
         while not self.shutdown_event.is_set():
             for destination in self.destinations:
                 if destination.get("path") == self.source.get("path"):
@@ -937,6 +973,7 @@ def RunCopier(
     multi_process: bool = False,
     custom_logger=None,
     shutdown_event=None,
+    log_queue=None,
 ):
     copier = TradeCopier(
         source,
@@ -947,6 +984,7 @@ def RunCopier(
         multi_process=multi_process,
         custom_logger=custom_logger,
         shutdown_event=shutdown_event,
+        log_queue=log_queue,
     )
     copier.run()
 
@@ -960,6 +998,7 @@ def RunMultipleCopier(
     multi_process: bool = False,
     shutdown_event=None,
     custom_logger=None,
+    log_queue=None,
 ):
     processes = []
 
@@ -990,6 +1029,7 @@ def RunMultipleCopier(
                 multi_process=multi_process,
                 custom_logger=custom_logger,
                 shutdown_event=shutdown_event,
+                log_queue=log_queue,
             ),
         )
         processes.append(process)
