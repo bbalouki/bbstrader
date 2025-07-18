@@ -1,8 +1,8 @@
 import argparse
 import sys
 
-from bbstrader.metatrader.copier import RunCopier, config_copier
 from bbstrader.apps._copier import main as RunCopyAPP
+from bbstrader.metatrader.copier import RunCopier, config_copier
 
 
 def copier_args(parser: argparse.ArgumentParser):
@@ -52,6 +52,12 @@ def copier_args(parser: argparse.ArgumentParser):
         default=None,
         help="End time in HH:MM format",
     )
+    parser.add_argument(
+        "-M",
+        "--multiprocess",
+        action="store_true",
+        help="Run each destination account in a separate process.",
+    )
     return parser
 
 
@@ -65,6 +71,7 @@ def copy_trades(unknown):
         -s, --source: Source Account section name
         -d, --destinations: Destination Account section names (multiple allowed)
         -i, --interval: Update interval in seconds
+        -M, --multiprocess: When set to True, each destination account runs in a separate process.
         -c, --config: .ini file or path (default: ~/.bbstrader/copier/copier.ini)
         -t, --start: Start time in HH:MM format
         -e, --end: End time in HH:MM format
@@ -79,7 +86,7 @@ def copy_trades(unknown):
 
     if copy_args.mode == "GUI":
         RunCopyAPP()
-    
+
     elif copy_args.mode == "CLI":
         source, destinations = config_copier(
             source_section=copy_args.source,
@@ -92,4 +99,5 @@ def copy_trades(unknown):
             copy_args.interval,
             copy_args.start,
             copy_args.end,
+            multi_process=copy_args.multiprocess,
         )

@@ -1,7 +1,6 @@
+import multiprocessing
 import os
 import sys
-import threading
-import time
 import tkinter as tk
 import traceback
 from pathlib import Path
@@ -10,7 +9,7 @@ from tkinter import filedialog, messagebox, scrolledtext, ttk
 from loguru import logger
 from PIL import Image, ImageTk
 
-from bbstrader.metatrader.copier import TradeCopier
+from bbstrader.metatrader.copier import RunCopier, get_symbols_from_string
 
 
 def resource_path(relative_path):
@@ -35,8 +34,6 @@ class TradeCopierApp(object):
         self.root = root
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
-
-        self.trade_copier = None
 
         self.main_frame = self.add_main_frame()
         self.main_frame.columnconfigure(0, weight=1)
@@ -84,6 +81,7 @@ class TradeCopierApp(object):
         )
         source_frame.grid(row=0, column=0, padx=5, pady=5, sticky=(tk.W, tk.E, tk.N))
         source_frame.columnconfigure(1, weight=1)
+        source_frame.columnconfigure(3, weight=1)
 
         ttk.Label(source_frame, text="Login").grid(
             row=0, column=0, sticky=tk.W, padx=5, pady=2
@@ -114,6 +112,21 @@ class TradeCopierApp(object):
             command=lambda: self.browse_path(self.source_path_entry),
         )
         source_path_browse_button.grid(row=3, column=2, sticky=tk.W, padx=5, pady=2)
+
+        right_frame = ttk.Frame(source_frame)
+        right_frame.grid(row=0, column=3, rowspan=2, sticky=tk.NW, padx=5, pady=2)
+
+        # Source ID
+        ttk.Label(right_frame, text="Source ID").pack(side=tk.LEFT, padx=(0, 2))
+        self.source_id_entry = ttk.Entry(right_frame, width=20)
+        self.source_id_entry.pack(side=tk.LEFT)
+
+        # Allow copy from others checkbox
+        self.allow_copy_var = tk.BooleanVar(value=False)
+        self.allow_copy_check = ttk.Checkbutton(
+            source_frame, text="Allow Others Sources", variable=self.allow_copy_var
+        )
+        self.allow_copy_check.grid(row=1, column=3, sticky=tk.W, padx=5, pady=2)
 
     def add_destination_accounts_frame(self, main_frame):
         # --- Destination Accounts Scrollable Area ---
@@ -379,13 +392,8 @@ class TradeCopierApp(object):
         symbols = symbols_str.strip().replace("\n", "").replace('"""', "")
         if symbols in ["all", "*"]:
             return symbols
-        elif ":" in symbols:
-            symbols = dict(item.split(":") for item in symbols.split(","))
-        elif " " in symbols and "," not in symbols:
-            symbols = symbols.split()
-        elif "," in symbols:
-            symbols = symbols.replace(" ", "").split(",")
-        return symbols
+        else:
+            return get_symbols_from_string(symbols)
 
     def _validate_inputs(self):
         if (
@@ -442,7 +450,7 @@ class TradeCopierApp(object):
             return
 
         def gui_safe_logger(msg):
-            # Ensures GUI thread safety
+            # Ensure GUI thread safety
             self.log_text.after(0, self.log_message(msg))
 
         logger.add(
@@ -456,6 +464,8 @@ class TradeCopierApp(object):
             "password": self.source_password_entry.get().strip(),
             "server": self.source_server_entry.get().strip(),
             "path": self.source_path_entry.get().strip(),
+            "id": int(self.source_id_entry.get().strip()),
+            "unique": not self.allow_copy_var.get(),
         }
 
         destinations_config = []
@@ -477,25 +487,39 @@ class TradeCopierApp(object):
             destinations_config.append(dest)
 
         sleeptime = float(self.sleeptime_entry.get())
-        start_time = (
-            self.start_time_entry.get() if self.start_time_entry.get() else None
-        )
-        end_time = self.end_time_entry.get() if self.end_time_entry.get() else None
+        start_time = self.start_time_entry.get() or None
+        end_time = self.end_time_entry.get() or None
 
         self.log_message("Starting Trade Copier...")
-        if hasattr(self, "trade_copier") and self.trade_copier:
-            self.trade_copier.stop()
-        try:
-            self.trade_copier = TradeCopier(
-                source_config,
-                destinations_config,
-                sleeptime=sleeptime,
-                start_time=start_time,
-                end_time=end_time,
-                custom_logger=logger,
-            )
 
-            threading.Thread(target=self.trade_copier.run, daemon=True).start()
+        # Defensive: if process is running, stop first
+        if (
+            hasattr(self, "copier_process")
+            and self.copier_process
+            and self.copier_process.is_alive()
+        ):
+            self.log_message("Existing copier process found, stopping it first...")
+            self.stop_copier()
+
+        try:
+            # Create shared shutdown event
+            self.shutdown_event = multiprocessing.Event()
+            self.copier_process = multiprocessing.Process(
+                target=RunCopier,
+                args=(
+                    source_config,
+                    destinations_config,
+                    sleeptime,
+                    start_time,
+                    end_time,
+                ),
+                kwargs=dict(
+                    multi_process=True,
+                    shutdown_event=self.shutdown_event,
+                ),
+            )
+            self.copier_process.start()
+
             self.start_button.config(state=tk.DISABLED)
             self.stop_button.config(state=tk.NORMAL)
             self.log_message("Trade Copier started.")
@@ -507,19 +531,32 @@ class TradeCopierApp(object):
 
     def stop_copier(self):
         self.log_message("Attempting to stop Trade Copier ...")
-        if self.trade_copier and self.trade_copier.running:
+
+        if (
+            hasattr(self, "copier_process")
+            and self.copier_process
+            and self.copier_process.is_alive()
+        ):
             try:
-                self.trade_copier.stop()
-                time.sleep(5)  # Give some time for the thread to stop
-                if not self.trade_copier.running:
-                    self.log_message("Trade Copier  stopped successfully.")
+                # Signal shutdown
+                if hasattr(self, "shutdown_event") and self.shutdown_event:
+                    self.shutdown_event.set()
+
+                # Wait for the process to exit
+                self.copier_process.join(timeout=10)
+
+                if not self.copier_process.is_alive():
+                    self.log_message("Trade Copier stopped successfully.")
             except Exception as e:
-                self.log_message(f"Error stopping copier : {e}")
+                self.log_message(f"Error stopping copier: {e}")
                 messagebox.showerror("Error Stopping Copier", str(e))
         else:
             self.log_message("Trade Copier not running or already stopped.")
 
-        self.trade_copier = None  # Reset the copier instance
+        # Cleanup references
+        self.copier_process = None
+        self.shutdown_event = None
+
         self.start_button.config(state=tk.NORMAL)
         self.stop_button.config(state=tk.DISABLED)
 
@@ -570,15 +607,25 @@ def main():
         app = TradeCopierApp(root)
 
         def on_closing():
-            if app.trade_copier and app.trade_copier.running:
-                app.log_message("Window closed, stopping Trade copier...")
-                app.stop_copier()
-            root.quit()
-            root.destroy()
+            try:
+                if (
+                    hasattr(app, "copier_process")
+                    and app.copier_process
+                    and app.copier_process.is_alive()
+                ):
+                    app.log_message("Window closed, stopping Trade Copier...")
+                    app.stop_copier()
+            except Exception as stop_error:
+                app.log_message(f"Error while stopping copier on exit: {stop_error}")
+            finally:
+                root.quit()
+                root.destroy()
 
         root.protocol("WM_DELETE_WINDOW", on_closing)
         root.mainloop()
+
     except KeyboardInterrupt:
+        app.stop_copier()
         sys.exit(0)
     except Exception as e:
         error_details = f"{e}\n\n{traceback.format_exc()}"
@@ -587,4 +634,5 @@ def main():
 
 
 if __name__ == "__main__":
+    multiprocessing.freeze_support()
     main()
