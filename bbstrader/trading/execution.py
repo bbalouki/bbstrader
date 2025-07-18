@@ -325,7 +325,7 @@ class Mt5ExecutionEngine:
     def _max_trades(self, mtrades):
         max_trades = {
             symbol: mtrades[symbol]
-            if mtrades is not None and symbol in mtrades
+            if mtrades is not None and isinstance(mtrades, dict) and symbol in mtrades
             else self.trades_instances[symbol].max_trade()
             for symbol in self.symbols
         }
@@ -358,7 +358,7 @@ class Mt5ExecutionEngine:
         return strategy
 
     def _get_signal_info(self, signal, symbol, price, stoplimit):
-        account =  self.strategy.account
+        account = self.strategy.account
         symbol_info = account.get_symbol_info(symbol)
 
         common_data = {
@@ -514,7 +514,9 @@ class Mt5ExecutionEngine:
                 or (period_type == "day" and closing)
                 or (period_type == "24/7" and closing)
             ):
-                logger.info(f"{self.ACCOUNT} Closing all positions and orders for {symbol} ...")
+                logger.info(
+                    f"{self.ACCOUNT} Closing all positions and orders for {symbol} ..."
+                )
                 for id in self.expert_ids:
                     trade.close_positions(
                         position_type="all", id=id, comment=self.comment
@@ -636,7 +638,9 @@ class Mt5ExecutionEngine:
         if self.auto_trade:
             return True
         if not self.auto_trade:
-            prompt = f"{sigmsg} \n Enter Y/Yes to accept or N/No to reject this order : "
+            prompt = (
+                f"{sigmsg} \n Enter Y/Yes to accept or N/No to reject this order : "
+            )
             if self.prompt_callback is not None:
                 auto_trade = self.prompt_callback(prompt)
             else:
@@ -954,7 +958,9 @@ class Mt5ExecutionEngine:
     def stop(self):
         """Stops the execution engine."""
         self._running = False
-        logger.info(f"Stopping Execution Engine for {self.STRATEGY} STRATEGY on {self.ACCOUNT} Account")
+        logger.info(
+            f"Stopping Execution Engine for {self.STRATEGY} STRATEGY on {self.ACCOUNT} Account"
+        )
         logger.info("Execution Engine stopped successfully.")
 
 
