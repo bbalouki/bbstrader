@@ -119,6 +119,7 @@ class TradeCopierApp(object):
         ttk.Label(right_frame, text="Source ID").pack(side=tk.LEFT, padx=(0, 2))
         self.source_id_entry = ttk.Entry(right_frame, width=20)
         self.source_id_entry.pack(side=tk.LEFT)
+        self.source_id_entry.insert(0, "0")
 
         # Allow copy from others checkbox
         self.allow_copy_var = tk.BooleanVar(value=False)
@@ -520,7 +521,7 @@ class TradeCopierApp(object):
                     end_time,
                 ),
                 kwargs=dict(
-                    multi_process=False,
+                    multi_process=True,
                     shutdown_event=self.shutdown_event,
                     log_queue=self.log_queue,
                 ),
@@ -557,6 +558,11 @@ class TradeCopierApp(object):
 
                 if not self.copier_process.is_alive():
                     self.log_message("Trade Copier stopped successfully.")
+                else:
+                    try:
+                        self.copier_process.terminate()
+                    except Exception:
+                        pass
             except Exception as e:
                 self.log_message(f"Error stopping copier: {e}")
                 messagebox.showerror("Error Stopping Copier", str(e))
