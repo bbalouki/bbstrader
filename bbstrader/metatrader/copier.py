@@ -18,7 +18,13 @@ except ImportError:
     import bbstrader.compat  # noqa: F401
 
 
-__all__ = ["TradeCopier", "RunCopier", "RunMultipleCopier", "config_copier"]
+__all__ = [
+    "TradeCopier",
+    "copier_worker_process",
+    "RunCopier",
+    "RunMultipleCopier",
+    "config_copier",
+]
 
 log.add(
     f"{BBSTRADER_DIR}/logs/copier.log",
@@ -351,7 +357,7 @@ class TradeCopier(object):
                     now.strftime("%Y-%m-%d %H:%M:%S.")
                     + f"{int(now.microsecond / 1000):03d}"
                 )
-                space = len("warning")
+                space = len("warning") # longest log name
                 self.log_queue.put(
                     f"{formatted} |{type.upper()} {' '*(space - len(type))}|  - {message}"
                 )
