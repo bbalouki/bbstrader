@@ -2,6 +2,7 @@ import contextlib
 import os
 import re
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from typing import Dict, List, Tuple
 
@@ -480,6 +481,89 @@ class SentimentAnalyzer(object):
         )
         return avg_sentiment
 
+    def _get_sentiment_for_one_ticker(
+        self,
+        ticker: str,
+        asset_type: str,
+        lexicon=None,
+        top_news=10,
+        **kwargs,
+    ) -> float:
+        rd_params = {"client_id", "client_secret", "user_agent"}
+        fm_params = {"start", "end", "page", "limit"}
+
+        # 1. Collect data from all sources
+        yahoo_news = self.news.get_yahoo_finance_news(
+            ticker, asset_type=asset_type, n_news=top_news
+        )
+        google_news = self.news.get_google_finance_news(
+            ticker, asset_type=asset_type, n_news=top_news
+        )
+
+        reddit_posts = []
+        if all(kwargs.get(rd) for rd in rd_params):
+            reddit_posts = self.news.get_reddit_posts(
+                ticker,
+                n_posts=top_news,
+                **{k: kwargs.get(k) for k in rd_params},
+            )
+
+        coindesk_news = self.news.get_coindesk_news(query=ticker, list_of_str=True)
+
+        fmp_source_news = []
+        if kwargs.get("fmp_api"):
+            fmp_news_client = self.news.get_fmp_news(kwargs.get("fmp_api"))
+            for src in ["articles"]:
+                try:
+                    source_news = fmp_news_client.get_news(
+                        ticker,
+                        source=src,
+                        symbol=ticker,
+                        **{k: kwargs.get(k) for k in fm_params},
+                    )
+                    fmp_source_news.extend(source_news)
+                except Exception:
+                    continue
+
+        # 2. Analyze sentiment for each source
+        news_sentiment = self.analyze_sentiment(
+            yahoo_news + google_news, lexicon=lexicon
+        )
+        reddit_sentiment = self.analyze_sentiment(
+            reddit_posts, lexicon=lexicon, textblob=True
+        )
+        fmp_sentiment = self.analyze_sentiment(
+            fmp_source_news, lexicon=lexicon, textblob=True
+        )
+        coindesk_sentiment = self.analyze_sentiment(
+            coindesk_news, lexicon=lexicon, textblob=True
+        )
+
+        # 3. Compute weighted average sentiment score
+        sentiments = [
+            news_sentiment,
+            reddit_sentiment,
+            fmp_sentiment,
+            coindesk_sentiment,
+        ]
+        # Count how many sources provided data to get a proper average
+        num_sources = sum(
+            1
+            for source_data in [
+                yahoo_news + google_news,
+                reddit_posts,
+                fmp_source_news,
+                coindesk_news,
+            ]
+            if source_data
+        )
+
+        if num_sources == 0:
+            return 0.0
+
+        overall_sentiment = sum(sentiments) / num_sources
+        return overall_sentiment
+
     def get_sentiment_for_tickers(
         self,
         tickers: List[str] | List[Tuple[str, str]],
@@ -528,91 +612,57 @@ class SentimentAnalyzer(object):
         Notes:
             The tickers names must follow yahoo finance conventions.
         """
+
         sentiment_results = {}
-        rd_params = {"client_id", "client_secret", "user_agent"}
-        fm_params = {"start", "end", "page", "limit"}
+
+        # Suppress stdout/stderr from underlying  libraries during execution
         with open(os.devnull, "w") as devnull:
             with contextlib.redirect_stdout(devnull), contextlib.redirect_stderr(
                 devnull
             ):
-                for ticker in tickers:
-                    if isinstance(ticker, tuple):
-                        ticker, asset_type = ticker
-                    if asset_type not in [
-                        "stock",
-                        "etf",
-                        "future",
-                        "forex",
-                        "crypto",
-                        "index",
-                    ]:
-                        raise ValueError(
-                            f"Unsupported asset type '{asset_type}'. "
-                            "Supported types: stock, etf, future, forex, crypto, index."
-                        )
-                    # Collect data
-                    sources = 0
-                    yahoo_news = self.news.get_yahoo_finance_news(
-                        ticker, asset_type=asset_type, n_news=top_news
-                    )
-                    google_news = self.news.get_google_finance_news(
-                        ticker, asset_type=asset_type, n_news=top_news
-                    )
-                    reddit_posts = []
-                    if all(kwargs.get(rd) for rd in rd_params):
-                        reddit_posts = self.news.get_reddit_posts(
-                            ticker,
-                            n_posts=top_news,
-                            **{k: kwargs.get(k) for k in rd_params},
-                        )
-                    coindesk_news = self.news.get_coindesk_news(
-                        query=ticker, list_of_str=True
-                    )
-                    fmp_source_news = []
-                    if kwargs.get("fmp_api"):
-                        fmp_news = self.news.get_fmp_news(kwargs.get("fmp_api"))
-                        for src in ["articles"]:  # , "releases", asset_type]:
-                            try:
-                                source_news = fmp_news.get_news(
-                                    ticker,
-                                    source=src,
-                                    symbol=ticker,
-                                    **{k: kwargs.get(k) for k in fm_params},
-                                )
-                                fmp_source_news += source_news
-                            except Exception:
-                                continue
-                    if any([len(s) > 0 for s in [yahoo_news, google_news]]):
-                        sources += 1
-                    for source in [reddit_posts, fmp_source_news, coindesk_news]:
-                        if len(source) > 0:
-                            sources += 1
-                    # Compute sentiment
-                    news_sentiment = self.analyze_sentiment(
-                        yahoo_news + google_news, lexicon=lexicon
-                    )
-                    reddit_sentiment = self.analyze_sentiment(
-                        reddit_posts, lexicon=lexicon, textblob=True
-                    )
-                    fmp_sentiment = self.analyze_sentiment(
-                        fmp_source_news, lexicon=lexicon, textblob=True
-                    )
-                    coindesk_sentiment = self.analyze_sentiment(
-                        coindesk_news, lexicon=lexicon, textblob=True
-                    )
+                with ThreadPoolExecutor() as executor:
+                    # Map each future to its ticker for easy result lookup
+                    future_to_ticker = {}
+                    for ticker_info in tickers:
+                        # Normalize input to (ticker, asset_type)
+                        if isinstance(ticker_info, tuple):
+                            ticker_symbol, ticker_asset_type = ticker_info
+                        else:
+                            ticker_symbol, ticker_asset_type = ticker_info, asset_type
 
-                    # Weighted average sentiment score
-                    if sources != 0:
-                        overall_sentiment = (
-                            news_sentiment
-                            + reddit_sentiment
-                            + fmp_sentiment
-                            + coindesk_sentiment
-                        ) / sources
-                    else:
-                        overall_sentiment = 0.0
-                    sentiment_results[ticker] = overall_sentiment
-                    time.sleep(1)  # To avoid hitting API rate limits
+                        if ticker_asset_type not in [
+                            "stock",
+                            "etf",
+                            "future",
+                            "forex",
+                            "crypto",
+                            "index",
+                        ]:
+                            raise ValueError(
+                                f"Unsupported asset type '{ticker_asset_type}' for {ticker_symbol}."
+                            )
+
+                        # Submit the job to the thread pool
+                        future = executor.submit(
+                            self._get_sentiment_for_one_ticker,
+                            ticker=ticker_symbol,
+                            asset_type=ticker_asset_type,
+                            lexicon=lexicon,
+                            top_news=top_news,
+                            **kwargs,
+                        )
+                        future_to_ticker[future] = ticker_symbol
+
+                    # Collect results as they are completed
+                    for future in as_completed(future_to_ticker):
+                        ticker_symbol = future_to_ticker[future]
+                        try:
+                            sentiment_score = future.result()
+                            sentiment_results[ticker_symbol] = sentiment_score
+                        except Exception:
+                            sentiment_results[ticker_symbol] = (
+                                0.0  # Assign a neutral score on error
+                            )
 
         return sentiment_results
 
