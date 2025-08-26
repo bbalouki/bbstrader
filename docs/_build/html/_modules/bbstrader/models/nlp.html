@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>bbstrader.models.nlp &mdash; bbstrader 0.3.0 documentation</title>
+  <title>bbstrader.models.nlp &mdash; bbstrader 0.3.3 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=e259d695"></script>
+      <script src="../../../_static/documentation_options.js?v=d5a15cff"></script>
       <script src="../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -69,17 +69,21 @@
            <div itemprop="articleBody">
              
   <h1>Source code for bbstrader.models.nlp</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">contextlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">concurrent.futures</span><span class="w"> </span><span class="kn">import</span> <span class="n">ThreadPoolExecutor</span><span class="p">,</span> <span class="n">as_completed</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">dash</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">en_core_web_sm</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">nltk</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">plotly.express</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">px</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">spacy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bbstrader.core.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">FinancialNews</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dash</span><span class="w"> </span><span class="kn">import</span> <span class="n">dcc</span><span class="p">,</span> <span class="n">html</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dash.dependencies</span><span class="w"> </span><span class="kn">import</span> <span class="n">Input</span><span class="p">,</span> <span class="n">Output</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">nltk.corpus</span><span class="w"> </span><span class="kn">import</span> <span class="n">stopwords</span>
@@ -87,11 +91,10 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">textblob</span><span class="w"> </span><span class="kn">import</span> <span class="n">TextBlob</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">vaderSentiment.vaderSentiment</span><span class="w"> </span><span class="kn">import</span> <span class="n">SentimentIntensityAnalyzer</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">bbstrader.core.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">FinancialNews</span>
-
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">&quot;TopicModeler&quot;</span><span class="p">,</span>
     <span class="s2">&quot;SentimentAnalyzer&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LEXICON&quot;</span><span class="p">,</span>
     <span class="s2">&quot;EQUITY_LEXICON&quot;</span><span class="p">,</span>
     <span class="s2">&quot;FOREX_LEXICON&quot;</span><span class="p">,</span>
     <span class="s2">&quot;COMMODITIES_LEXICON&quot;</span><span class="p">,</span>
@@ -399,13 +402,33 @@
     <span class="o">**</span><span class="n">BONDS_LEXICON</span><span class="p">,</span>
 <span class="p">}</span>
 
+<span class="n">LEXICON</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;stock&quot;</span><span class="p">:</span> <span class="n">EQUITY_LEXICON</span><span class="p">,</span>
+    <span class="s2">&quot;etf&quot;</span><span class="p">:</span> <span class="n">EQUITY_LEXICON</span><span class="p">,</span>
+    <span class="s2">&quot;future&quot;</span><span class="p">:</span> <span class="n">FINANCIAL_LEXICON</span><span class="p">,</span>
+    <span class="s2">&quot;forex&quot;</span><span class="p">:</span> <span class="n">FOREX_LEXICON</span><span class="p">,</span>
+    <span class="s2">&quot;crypto&quot;</span><span class="p">:</span> <span class="n">CRYPTO_LEXICON</span><span class="p">,</span>
+    <span class="s2">&quot;index&quot;</span><span class="p">:</span> <span class="n">EQUITY_LEXICON</span><span class="p">,</span>
+    <span class="s2">&quot;bond&quot;</span><span class="p">:</span> <span class="n">BONDS_LEXICON</span><span class="p">,</span>
+    <span class="s2">&quot;commodity&quot;</span><span class="p">:</span> <span class="n">COMMODITIES_LEXICON</span><span class="p">,</span>
+<span class="p">}</span>
+
 
 <div class="viewcode-block" id="TopicModeler">
 <a class="viewcode-back" href="../../../bbstrader.models.html#bbstrader.models.nlp.TopicModeler">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">TopicModeler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">nlp</span> <span class="o">=</span> <span class="n">spacy</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;en_core_web_sm&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">nlp</span><span class="o">.</span><span class="n">disable_pipes</span><span class="p">(</span><span class="s2">&quot;ner&quot;</span><span class="p">)</span>
+        <span class="n">nltk</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="s2">&quot;punkt&quot;</span><span class="p">,</span> <span class="n">quiet</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">nltk</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="s2">&quot;stopwords&quot;</span><span class="p">,</span> <span class="n">quiet</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nlp</span> <span class="o">=</span> <span class="n">en_core_web_sm</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nlp</span><span class="o">.</span><span class="n">disable_pipes</span><span class="p">(</span><span class="s2">&quot;ner&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">OSError</span><span class="p">(</span>
+                <span class="s2">&quot;SpaCy model &#39;en_core_web_sm&#39; not found. &quot;</span>
+                <span class="s2">&quot;Please install it using &#39;python -m spacy download en_core_web_sm&#39;.&quot;</span>
+            <span class="p">)</span>
 
 <div class="viewcode-block" id="TopicModeler.preprocess_texts">
 <a class="viewcode-back" href="../../../bbstrader.models.html#bbstrader.models.nlp.TopicModeler.preprocess_texts">[docs]</a>
@@ -446,11 +469,6 @@
 <span class="sd">    analysis using VADER (SentimentIntensityAnalyzer) and optional TextBlob</span>
 <span class="sd">    for enhanced polarity scoring.</span>
 
-<span class="sd">    Attributes:</span>
-<span class="sd">        nlp (spacy.Language): A SpaCy NLP pipeline for tokenization and lemmatization,</span>
-<span class="sd">                               with Named Entity Recognition (NER) disabled.</span>
-<span class="sd">        analyzer (SentimentIntensityAnalyzer): An instance of VADER&#39;s sentiment analyzer</span>
-<span class="sd">                                               for financial sentiment scoring.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -461,22 +479,23 @@
 <span class="sd">        - Downloads NLTK tokenization (`punkt`) and stopwords.</span>
 <span class="sd">        - Loads the `en_core_web_sm` SpaCy model with Named Entity Recognition (NER) disabled.</span>
 <span class="sd">        - Initializes VADER&#39;s SentimentIntensityAnalyzer for sentiment scoring.</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">nltk</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="s2">&quot;punkt&quot;</span><span class="p">,</span> <span class="n">quiet</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">nltk</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="s2">&quot;stopwords&quot;</span><span class="p">,</span> <span class="n">quiet</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-        <span class="k">try</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">nlp</span> <span class="o">=</span> <span class="n">spacy</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;en_core_web_sm&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">nlp</span><span class="o">.</span><span class="n">disable_pipes</span><span class="p">(</span><span class="s2">&quot;ner&quot;</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="s2">&quot;The SpaCy model &#39;en_core_web_sm&#39; is not installed.</span><span class="se">\n</span><span class="s2">&quot;</span>
-                <span class="s2">&quot;Please install it by running:</span><span class="se">\n</span><span class="s2">&quot;</span>
-                <span class="s2">&quot;   python -m spacy download en_core_web_sm&quot;</span>
-            <span class="p">)</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">analyzer</span> <span class="o">=</span> <span class="n">SentimentIntensityAnalyzer</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_stopwords</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">stopwords</span><span class="o">.</span><span class="n">words</span><span class="p">(</span><span class="s2">&quot;english&quot;</span><span class="p">))</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nlp</span> <span class="o">=</span> <span class="n">en_core_web_sm</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nlp</span><span class="o">.</span><span class="n">disable_pipes</span><span class="p">(</span><span class="s2">&quot;ner&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">OSError</span><span class="p">(</span>
+                <span class="s2">&quot;SpaCy model &#39;en_core_web_sm&#39; not found. &quot;</span>
+                <span class="s2">&quot;Please install it using &#39;python -m spacy download en_core_web_sm&#39;.&quot;</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">news</span> <span class="o">=</span> <span class="n">FinancialNews</span><span class="p">()</span>
 
 <div class="viewcode-block" id="SentimentAnalyzer.preprocess_text">
 <a class="viewcode-back" href="../../../bbstrader.models.html#bbstrader.models.nlp.SentimentAnalyzer.preprocess_text">[docs]</a>
@@ -496,13 +515,20 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            str: The cleaned and lemmatized text.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: preprocess_text expects a string, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">text</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
         <span class="n">text</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
         <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;http\S+&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
         <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[^a-zA-Z\s]&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+
         <span class="n">words</span> <span class="o">=</span> <span class="n">word_tokenize</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
         <span class="n">words</span> <span class="o">=</span> <span class="p">[</span><span class="n">word</span> <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">words</span> <span class="k">if</span> <span class="n">word</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stopwords</span><span class="p">]</span>
+
         <span class="n">doc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlp</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">words</span><span class="p">))</span>
         <span class="n">words</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">lemma_</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">doc</span> <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">lemma_</span> <span class="o">!=</span> <span class="s2">&quot;-PRON-&quot;</span><span class="p">]</span>
+
         <span class="k">return</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">words</span><span class="p">)</span></div>
 
 
@@ -544,10 +570,98 @@
         <span class="k">return</span> <span class="n">avg_sentiment</span></div>
 
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_sentiment_for_one_ticker</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">ticker</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">asset_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">lexicon</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">top_news</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="n">rd_params</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;client_id&quot;</span><span class="p">,</span> <span class="s2">&quot;client_secret&quot;</span><span class="p">,</span> <span class="s2">&quot;user_agent&quot;</span><span class="p">}</span>
+        <span class="n">fm_params</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;start&quot;</span><span class="p">,</span> <span class="s2">&quot;end&quot;</span><span class="p">,</span> <span class="s2">&quot;page&quot;</span><span class="p">,</span> <span class="s2">&quot;limit&quot;</span><span class="p">}</span>
+
+        <span class="c1"># 1. Collect data from all sources</span>
+        <span class="n">yahoo_news</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">news</span><span class="o">.</span><span class="n">get_yahoo_finance_news</span><span class="p">(</span>
+            <span class="n">ticker</span><span class="p">,</span> <span class="n">asset_type</span><span class="o">=</span><span class="n">asset_type</span><span class="p">,</span> <span class="n">n_news</span><span class="o">=</span><span class="n">top_news</span>
+        <span class="p">)</span>
+        <span class="n">google_news</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">news</span><span class="o">.</span><span class="n">get_google_finance_news</span><span class="p">(</span>
+            <span class="n">ticker</span><span class="p">,</span> <span class="n">asset_type</span><span class="o">=</span><span class="n">asset_type</span><span class="p">,</span> <span class="n">n_news</span><span class="o">=</span><span class="n">top_news</span>
+        <span class="p">)</span>
+
+        <span class="n">reddit_posts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rd</span><span class="p">)</span> <span class="k">for</span> <span class="n">rd</span> <span class="ow">in</span> <span class="n">rd_params</span><span class="p">):</span>
+            <span class="n">reddit_posts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">news</span><span class="o">.</span><span class="n">get_reddit_posts</span><span class="p">(</span>
+                <span class="n">ticker</span><span class="p">,</span>
+                <span class="n">n_posts</span><span class="o">=</span><span class="n">top_news</span><span class="p">,</span>
+                <span class="o">**</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">rd_params</span><span class="p">},</span>
+            <span class="p">)</span>
+
+        <span class="n">coindesk_news</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">news</span><span class="o">.</span><span class="n">get_coindesk_news</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="n">ticker</span><span class="p">,</span> <span class="n">list_of_str</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">fmp_source_news</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fmp_api&quot;</span><span class="p">):</span>
+            <span class="n">fmp_news_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">news</span><span class="o">.</span><span class="n">get_fmp_news</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fmp_api&quot;</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">src</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;articles&quot;</span><span class="p">]:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">source_news</span> <span class="o">=</span> <span class="n">fmp_news_client</span><span class="o">.</span><span class="n">get_news</span><span class="p">(</span>
+                        <span class="n">ticker</span><span class="p">,</span>
+                        <span class="n">source</span><span class="o">=</span><span class="n">src</span><span class="p">,</span>
+                        <span class="n">symbol</span><span class="o">=</span><span class="n">ticker</span><span class="p">,</span>
+                        <span class="o">**</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">fm_params</span><span class="p">},</span>
+                    <span class="p">)</span>
+                    <span class="n">fmp_source_news</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">source_news</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                    <span class="k">continue</span>
+
+        <span class="c1"># 2. Analyze sentiment for each source</span>
+        <span class="n">news_sentiment</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">analyze_sentiment</span><span class="p">(</span>
+            <span class="n">yahoo_news</span> <span class="o">+</span> <span class="n">google_news</span><span class="p">,</span> <span class="n">lexicon</span><span class="o">=</span><span class="n">lexicon</span>
+        <span class="p">)</span>
+        <span class="n">reddit_sentiment</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">analyze_sentiment</span><span class="p">(</span>
+            <span class="n">reddit_posts</span><span class="p">,</span> <span class="n">lexicon</span><span class="o">=</span><span class="n">lexicon</span><span class="p">,</span> <span class="n">textblob</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+        <span class="n">fmp_sentiment</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">analyze_sentiment</span><span class="p">(</span>
+            <span class="n">fmp_source_news</span><span class="p">,</span> <span class="n">lexicon</span><span class="o">=</span><span class="n">lexicon</span><span class="p">,</span> <span class="n">textblob</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+        <span class="n">coindesk_sentiment</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">analyze_sentiment</span><span class="p">(</span>
+            <span class="n">coindesk_news</span><span class="p">,</span> <span class="n">lexicon</span><span class="o">=</span><span class="n">lexicon</span><span class="p">,</span> <span class="n">textblob</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+
+        <span class="c1"># 3. Compute weighted average sentiment score</span>
+        <span class="n">sentiments</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">news_sentiment</span><span class="p">,</span>
+            <span class="n">reddit_sentiment</span><span class="p">,</span>
+            <span class="n">fmp_sentiment</span><span class="p">,</span>
+            <span class="n">coindesk_sentiment</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="c1"># Count how many sources provided data to get a proper average</span>
+        <span class="n">num_sources</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
+            <span class="mi">1</span>
+            <span class="k">for</span> <span class="n">source_data</span> <span class="ow">in</span> <span class="p">[</span>
+                <span class="n">yahoo_news</span> <span class="o">+</span> <span class="n">google_news</span><span class="p">,</span>
+                <span class="n">reddit_posts</span><span class="p">,</span>
+                <span class="n">fmp_source_news</span><span class="p">,</span>
+                <span class="n">coindesk_news</span><span class="p">,</span>
+            <span class="p">]</span>
+            <span class="k">if</span> <span class="n">source_data</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">num_sources</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">0.0</span>
+
+        <span class="n">overall_sentiment</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">sentiments</span><span class="p">)</span> <span class="o">/</span> <span class="n">num_sources</span>
+        <span class="k">return</span> <span class="n">overall_sentiment</span>
+
 <div class="viewcode-block" id="SentimentAnalyzer.get_sentiment_for_tickers">
 <a class="viewcode-back" href="../../../bbstrader.models.html#bbstrader.models.nlp.SentimentAnalyzer.get_sentiment_for_tickers">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_sentiment_for_tickers</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">tickers</span><span class="p">,</span> <span class="n">lexicon</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">asset_type</span><span class="o">=</span><span class="s2">&quot;stock&quot;</span><span class="p">,</span> <span class="n">top_news</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">tickers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]],</span>
+        <span class="n">lexicon</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">asset_type</span><span class="o">=</span><span class="s2">&quot;stock&quot;</span><span class="p">,</span>
+        <span class="n">top_news</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes sentiment scores for a list of financial tickers based on news and social media data.</span>
@@ -564,9 +678,18 @@
 <span class="sd">        3. Computes an overall sentiment score using a weighted average approach.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            tickers (list of str): A list of stock, forex, crypto, or other asset tickers.</span>
+<span class="sd">            tickers (List[str] | List[Tuple[str, str]]): A list of asset tickers to analyze</span>
+<span class="sd">                - if using tuples, the first element is the ticker and the second is the asset type.</span>
+<span class="sd">                - if using a single string, the asset type must be specified or the default is &quot;stock&quot;.</span>
 <span class="sd">            lexicon (dict, optional): A custom sentiment lexicon to update VADER&#39;s default lexicon.</span>
-<span class="sd">            asset_type (str, optional): The type of asset (e.g., &quot;stock&quot;, &quot;forex&quot;, &quot;crypto&quot;). Defaults to &quot;stock&quot;.</span>
+<span class="sd">            asset_type (str, optional): The type of asset, Defaults to &quot;stock&quot;,</span>
+<span class="sd">                supported types include:</span>
+<span class="sd">                - &quot;stock&quot;: Stock symbols (e.g., AAPL, MSFT)</span>
+<span class="sd">                - &quot;etf&quot;: Exchange-traded funds (e.g., SPY, QQQ)</span>
+<span class="sd">                - &quot;future&quot;: Futures contracts (e.g., CL=F for crude oil)</span>
+<span class="sd">                - &quot;forex&quot;: Forex pairs (e.g., EURUSD=X, USDJPY=X)</span>
+<span class="sd">                - &quot;crypto&quot;: Cryptocurrency pairs (e.g., BTC-USD, ETH-USD)</span>
+<span class="sd">                - &quot;index&quot;: Stock market indices (e.g., ^GSPC for S&amp;P 500)</span>
 <span class="sd">            top_news (int, optional): Number of news articles/posts to fetch per source. Defaults to 10.</span>
 <span class="sd">            **kwargs: Additional parameters for API authentication and data retrieval, including:</span>
 <span class="sd">                - fmp_api (str): API key for Financial Modeling Prep.</span>
@@ -577,63 +700,61 @@
 <span class="sd">                             - Positive values indicate positive sentiment.</span>
 <span class="sd">                             - Negative values indicate negative sentiment.</span>
 <span class="sd">                             - Zero indicates neutral sentiment.</span>
+<span class="sd">        Notes:</span>
+<span class="sd">            The tickers names must follow yahoo finance conventions.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">sentiment_results</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">rd_params</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;client_id&quot;</span><span class="p">,</span> <span class="s2">&quot;client_secret&quot;</span><span class="p">,</span> <span class="s2">&quot;user_agent&quot;</span><span class="p">]</span>
-        <span class="n">news</span> <span class="o">=</span> <span class="n">FinancialNews</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">ticker</span> <span class="ow">in</span> <span class="n">tickers</span><span class="p">:</span>
-            <span class="c1"># Collect data</span>
-            <span class="n">sources</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="n">yahoo_news</span> <span class="o">=</span> <span class="n">news</span><span class="o">.</span><span class="n">get_yahoo_finance_news</span><span class="p">(</span>
-                <span class="n">ticker</span><span class="p">,</span> <span class="n">asset_type</span><span class="o">=</span><span class="n">asset_type</span><span class="p">,</span> <span class="n">n_news</span><span class="o">=</span><span class="n">top_news</span>
-            <span class="p">)</span>
-            <span class="n">google_news</span> <span class="o">=</span> <span class="n">news</span><span class="o">.</span><span class="n">get_google_finance_news</span><span class="p">(</span>
-                <span class="n">ticker</span><span class="p">,</span> <span class="n">asset_type</span><span class="o">=</span><span class="n">asset_type</span><span class="p">,</span> <span class="n">n_news</span><span class="o">=</span><span class="n">top_news</span>
-            <span class="p">)</span>
-            <span class="n">reddit_posts</span> <span class="o">=</span> <span class="n">news</span><span class="o">.</span><span class="n">get_reddit_posts</span><span class="p">(</span>
-                <span class="n">ticker</span><span class="p">,</span> <span class="n">n_posts</span><span class="o">=</span><span class="n">top_news</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">rd_params</span><span class="p">}</span>
-            <span class="p">)</span>
-            <span class="n">coindesk_news</span> <span class="o">=</span> <span class="n">news</span><span class="o">.</span><span class="n">get_coindesk_news</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="n">ticker</span><span class="p">,</span> <span class="n">list_of_str</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">fmp_source_news</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="n">fmp_news</span> <span class="o">=</span> <span class="n">news</span><span class="o">.</span><span class="n">get_fmp_news</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fmp_api&quot;</span><span class="p">))</span>
-            <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;articles&quot;</span><span class="p">]:</span>  <span class="c1"># , &quot;releases&quot;, asset_type]:</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="n">source_news</span> <span class="o">=</span> <span class="n">fmp_news</span><span class="o">.</span><span class="n">get_news</span><span class="p">(</span>
-                        <span class="n">ticker</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">,</span> <span class="n">symbol</span><span class="o">=</span><span class="n">ticker</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
-                    <span class="p">)</span>
-                    <span class="n">fmp_source_news</span> <span class="o">+=</span> <span class="n">source_news</span>
-                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-                    <span class="n">source_news</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="p">[</span><span class="n">yahoo_news</span><span class="p">,</span> <span class="n">google_news</span><span class="p">]]):</span>
-                <span class="n">sources</span> <span class="o">+=</span> <span class="mi">1</span>
-            <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="p">[</span><span class="n">reddit_posts</span><span class="p">,</span> <span class="n">fmp_source_news</span><span class="p">,</span> <span class="n">coindesk_news</span><span class="p">]:</span>
-                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">source</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="n">sources</span> <span class="o">+=</span> <span class="mi">1</span>
-            <span class="c1"># Compute sentiment</span>
-            <span class="n">news_sentiment</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">analyze_sentiment</span><span class="p">(</span>
-                <span class="n">yahoo_news</span> <span class="o">+</span> <span class="n">google_news</span><span class="p">,</span> <span class="n">lexicon</span><span class="o">=</span><span class="n">lexicon</span>
-            <span class="p">)</span>
-            <span class="n">reddit_sentiment</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">analyze_sentiment</span><span class="p">(</span>
-                <span class="n">reddit_posts</span><span class="p">,</span> <span class="n">lexicon</span><span class="o">=</span><span class="n">lexicon</span><span class="p">,</span> <span class="n">textblob</span><span class="o">=</span><span class="kc">True</span>
-            <span class="p">)</span>
-            <span class="n">fmp_sentiment</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">analyze_sentiment</span><span class="p">(</span>
-                <span class="n">fmp_source_news</span><span class="p">,</span> <span class="n">lexicon</span><span class="o">=</span><span class="n">lexicon</span><span class="p">,</span> <span class="n">textblob</span><span class="o">=</span><span class="kc">True</span>
-            <span class="p">)</span>
-            <span class="n">coindesk_sentiment</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">analyze_sentiment</span><span class="p">(</span>
-                <span class="n">coindesk_news</span><span class="p">,</span> <span class="n">lexicon</span><span class="o">=</span><span class="n">lexicon</span><span class="p">,</span> <span class="n">textblob</span><span class="o">=</span><span class="kc">True</span>
-            <span class="p">)</span>
 
-            <span class="c1"># Weighted average sentiment score</span>
-            <span class="k">if</span> <span class="n">sources</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">overall_sentiment</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="n">news_sentiment</span>
-                    <span class="o">+</span> <span class="n">reddit_sentiment</span>
-                    <span class="o">+</span> <span class="n">fmp_sentiment</span>
-                    <span class="o">+</span> <span class="n">coindesk_sentiment</span>
-                <span class="p">)</span> <span class="o">/</span> <span class="n">sources</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">overall_sentiment</span> <span class="o">=</span> <span class="mf">0.0</span>
-            <span class="n">sentiment_results</span><span class="p">[</span><span class="n">ticker</span><span class="p">]</span> <span class="o">=</span> <span class="n">overall_sentiment</span>
+        <span class="n">sentiment_results</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># Suppress stdout/stderr from underlying  libraries during execution</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">devnull</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">devnull</span><span class="p">:</span>
+            <span class="k">with</span> <span class="p">(</span>
+                <span class="n">contextlib</span><span class="o">.</span><span class="n">redirect_stdout</span><span class="p">(</span><span class="n">devnull</span><span class="p">),</span>
+                <span class="n">contextlib</span><span class="o">.</span><span class="n">redirect_stderr</span><span class="p">(</span><span class="n">devnull</span><span class="p">),</span>
+            <span class="p">):</span>
+                <span class="k">with</span> <span class="n">ThreadPoolExecutor</span><span class="p">()</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+                    <span class="c1"># Map each future to its ticker for easy result lookup</span>
+                    <span class="n">future_to_ticker</span> <span class="o">=</span> <span class="p">{}</span>
+                    <span class="k">for</span> <span class="n">ticker_info</span> <span class="ow">in</span> <span class="n">tickers</span><span class="p">:</span>
+                        <span class="c1"># Normalize input to (ticker, asset_type)</span>
+                        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ticker_info</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+                            <span class="n">ticker_symbol</span><span class="p">,</span> <span class="n">ticker_asset_type</span> <span class="o">=</span> <span class="n">ticker_info</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">ticker_symbol</span><span class="p">,</span> <span class="n">ticker_asset_type</span> <span class="o">=</span> <span class="n">ticker_info</span><span class="p">,</span> <span class="n">asset_type</span>
+
+                        <span class="k">if</span> <span class="n">ticker_asset_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span>
+                            <span class="s2">&quot;stock&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;etf&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;future&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;forex&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;crypto&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;index&quot;</span><span class="p">,</span>
+                        <span class="p">]:</span>
+                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                                <span class="sa">f</span><span class="s2">&quot;Unsupported asset type &#39;</span><span class="si">{</span><span class="n">ticker_asset_type</span><span class="si">}</span><span class="s2">&#39; for </span><span class="si">{</span><span class="n">ticker_symbol</span><span class="si">}</span><span class="s2">.&quot;</span>
+                            <span class="p">)</span>
+
+                        <span class="c1"># Submit the job to the thread pool</span>
+                        <span class="n">future</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_get_sentiment_for_one_ticker</span><span class="p">,</span>
+                            <span class="n">ticker</span><span class="o">=</span><span class="n">ticker_symbol</span><span class="p">,</span>
+                            <span class="n">asset_type</span><span class="o">=</span><span class="n">ticker_asset_type</span><span class="p">,</span>
+                            <span class="n">lexicon</span><span class="o">=</span><span class="n">lexicon</span><span class="p">,</span>
+                            <span class="n">top_news</span><span class="o">=</span><span class="n">top_news</span><span class="p">,</span>
+                            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+                        <span class="p">)</span>
+                        <span class="n">future_to_ticker</span><span class="p">[</span><span class="n">future</span><span class="p">]</span> <span class="o">=</span> <span class="n">ticker_symbol</span>
+
+                    <span class="c1"># Collect results as they are completed</span>
+                    <span class="k">for</span> <span class="n">future</span> <span class="ow">in</span> <span class="n">as_completed</span><span class="p">(</span><span class="n">future_to_ticker</span><span class="p">):</span>
+                        <span class="n">ticker_symbol</span> <span class="o">=</span> <span class="n">future_to_ticker</span><span class="p">[</span><span class="n">future</span><span class="p">]</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="n">sentiment_score</span> <span class="o">=</span> <span class="n">future</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+                            <span class="n">sentiment_results</span><span class="p">[</span><span class="n">ticker_symbol</span><span class="p">]</span> <span class="o">=</span> <span class="n">sentiment_score</span>
+                        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                            <span class="n">sentiment_results</span><span class="p">[</span><span class="n">ticker_symbol</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                                <span class="mf">0.0</span>  <span class="c1"># Assign a neutral score on error</span>
+                            <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">sentiment_results</span></div>
 
@@ -737,8 +858,10 @@
 <span class="sd">        bar and scatter plots. It fetches new sentiment data at specified intervals.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            tickers (list[str]):</span>
-<span class="sd">                A list of asset tickers (e.g., [&quot;AAPL&quot;, &quot;GOOGL&quot;, &quot;TSLA&quot;]).</span>
+<span class="sd">            tickers (List[str] | List[Tuple[str, str]]):</span>
+<span class="sd">                A list of financial asset tickers to analyze.</span>
+<span class="sd">                - If using tuples, the first element is the ticker and the second is the asset type.</span>
+<span class="sd">                - If using a single string, the asset type must be specified or defaults to &quot;stock&quot;.</span>
 <span class="sd">            asset_type (str, optional):</span>
 <span class="sd">                The type of financial asset (&quot;stock&quot;, &quot;forex&quot;, &quot;crypto&quot;). Defaults to &quot;stock&quot;.</span>
 <span class="sd">            lexicon (dict, optional):</span>

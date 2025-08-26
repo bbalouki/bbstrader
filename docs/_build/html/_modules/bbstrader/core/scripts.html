@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>bbstrader.core.scripts &mdash; bbstrader 0.3.0 documentation</title>
+  <title>bbstrader.core.scripts &mdash; bbstrader 0.3.3 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=e259d695"></script>
+      <script src="../../../_static/documentation_options.js?v=d5a15cff"></script>
       <script src="../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -75,6 +75,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">textwrap</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Literal</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">nltk</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
@@ -99,9 +100,9 @@
 
 
 
-<div class="viewcode-block" id="format_article_for_telegram">
-<a class="viewcode-back" href="../../../bbstrader.core.html#bbstrader.core.scripts.format_article_for_telegram">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">format_article_for_telegram</span><span class="p">(</span><span class="n">article</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<div class="viewcode-block" id="format_coindesk_article">
+<a class="viewcode-back" href="../../../bbstrader.core.html#bbstrader.core.scripts.format_coindesk_article">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">format_coindesk_article</span><span class="p">(</span><span class="n">article</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span>
         <span class="n">k</span> <span class="ow">in</span> <span class="n">article</span>
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">(</span>
@@ -130,18 +131,45 @@
 
 
 
+<div class="viewcode-block" id="format_fmp_article">
+<a class="viewcode-back" href="../../../bbstrader.core.html#bbstrader.core.scripts.format_fmp_article">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">format_fmp_article</span><span class="p">(</span><span class="n">article</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">k</span> <span class="ow">in</span> <span class="n">article</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="s2">&quot;date&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">,</span> <span class="s2">&quot;tickers&quot;</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">summary</span> <span class="o">=</span> <span class="n">summarize_text</span><span class="p">(</span><span class="n">article</span><span class="p">[</span><span class="s2">&quot;content&quot;</span><span class="p">])</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;📰 </span><span class="si">{</span><span class="n">article</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;Published Date: </span><span class="si">{</span><span class="n">article</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;Keywords: </span><span class="si">{</span><span class="n">article</span><span class="p">[</span><span class="s1">&#39;tickers&#39;</span><span class="p">]</span><span class="si">}</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;🔍 Summary</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">textwrap</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">summary</span><span class="p">,</span><span class="w"> </span><span class="n">width</span><span class="o">=</span><span class="mi">80</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">text</span></div>
+
+
+
 <div class="viewcode-block" id="send_articles">
 <a class="viewcode-back" href="../../../bbstrader.core.html#bbstrader.core.scripts.send_articles">[docs]</a>
-<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">send_articles</span><span class="p">(</span><span class="n">articles</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">token</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mi">15</span><span class="p">):</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">send_articles</span><span class="p">(</span>
+    <span class="n">articles</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span>
+    <span class="n">token</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">source</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;coindesk&quot;</span><span class="p">,</span> <span class="s2">&quot;fmp&quot;</span><span class="p">],</span>
+    <span class="n">interval</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
+<span class="p">):</span>
     <span class="k">for</span> <span class="n">article</span> <span class="ow">in</span> <span class="n">articles</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">article</span><span class="p">[</span><span class="s2">&quot;published_on&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="n">interval</span><span class="p">):</span>
-            <span class="n">article</span><span class="p">[</span><span class="s2">&quot;published_on&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">article</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;published_on&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span>
-                <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span>
-            <span class="p">)</span>
-            <span class="n">message</span> <span class="o">=</span> <span class="n">format_article_for_telegram</span><span class="p">(</span><span class="n">article</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">message</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
-                <span class="k">return</span>
-            <span class="k">await</span> <span class="n">send_telegram_message</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">message</span><span class="p">)</span></div>
+        <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">source</span> <span class="o">==</span> <span class="s2">&quot;coindesk&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">article</span><span class="p">[</span><span class="s2">&quot;published_on&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="n">interval</span><span class="p">):</span>
+                <span class="n">article</span><span class="p">[</span><span class="s2">&quot;published_on&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">article</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;published_on&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span>
+                    <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span>
+                <span class="p">)</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">format_coindesk_article</span><span class="p">(</span><span class="n">article</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">format_fmp_article</span><span class="p">(</span><span class="n">article</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">message</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">await</span> <span class="n">send_telegram_message</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">message</span><span class="p">)</span></div>
 
 
 
@@ -160,6 +188,7 @@
 <span class="s2">        -q, --query: The news to look for (default: &quot;&quot;)</span>
 <span class="s2">        -t, --token: Telegram bot token</span>
 <span class="s2">        -I, --id: Telegram Chat id</span>
+<span class="s2">            --fmp: Financial Modeling Prop Api Key</span>
 <span class="s2">        -i, --interval: Interval in minutes to fetch news (default: 15)</span>
 
 <span class="s2">    Note:</span>
@@ -184,6 +213,9 @@
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-I&quot;</span><span class="p">,</span> <span class="s2">&quot;--id&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Telegram Chat id&quot;</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--fmp&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Financial Modeling Prop Api Key&quot;</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">&quot;-i&quot;</span><span class="p">,</span>
         <span class="s2">&quot;--interval&quot;</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
@@ -194,20 +226,34 @@
 
     <span class="n">nltk</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="s2">&quot;punkt&quot;</span><span class="p">,</span> <span class="n">quiet</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">news</span> <span class="o">=</span> <span class="n">FinancialNews</span><span class="p">()</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;Starting the News Feed on </span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">interval</span><span class="si">}</span><span class="s2"> minutes&quot;</span>
-    <span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Starting the News Feed on </span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">interval</span><span class="si">}</span><span class="s2"> minutes&quot;</span><span class="p">)</span>
     <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">articles</span> <span class="o">=</span> <span class="n">news</span><span class="o">.</span><span class="n">get_coindesk_news</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">query</span><span class="p">)</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">articles</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">interval</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
-                <span class="k">continue</span>
-            <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">send_articles</span><span class="p">(</span><span class="n">articles</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
+            <span class="n">fmp_articles</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">coindesk_articles</span> <span class="o">=</span> <span class="n">news</span><span class="o">.</span><span class="n">get_coindesk_news</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">query</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">fmp</span><span class="p">:</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">interval</span><span class="p">)</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="n">start</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">)</span>
+                <span class="n">end</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">)</span>
+                <span class="n">fmp_articles</span> <span class="o">=</span> <span class="n">news</span><span class="o">.</span><span class="n">get_fmp_news</span><span class="p">(</span><span class="n">api</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">fmp</span><span class="p">)</span><span class="o">.</span><span class="n">get_latest_articles</span><span class="p">(</span>
+                    <span class="n">save</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">end</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">coindesk_articles</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+                    <span class="n">send_articles</span><span class="p">(</span>
+                        <span class="n">coindesk_articles</span><span class="p">,</span>
+                        <span class="n">args</span><span class="o">.</span><span class="n">token</span><span class="p">,</span>
+                        <span class="n">args</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                        <span class="s2">&quot;coindesk&quot;</span><span class="p">,</span>
+                        <span class="n">interval</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">interval</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fmp_articles</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">send_articles</span><span class="p">(</span><span class="n">fmp_articles</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s2">&quot;fmp&quot;</span><span class="p">))</span>
             <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">interval</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Stopping the News Feed ...&quot;</span><span class="p">)</span>
-            <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div>
 

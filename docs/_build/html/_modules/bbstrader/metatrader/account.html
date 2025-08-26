@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>bbstrader.metatrader.account &mdash; bbstrader 0.3.0 documentation</title>
+  <title>bbstrader.metatrader.account &mdash; bbstrader 0.3.3 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=e259d695"></script>
+      <script src="../../../_static/documentation_options.js?v=d5a15cff"></script>
       <script src="../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -72,12 +72,10 @@
 <span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">urllib.request</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">currency_converter</span><span class="w"> </span><span class="kn">import</span> <span class="n">SINGLE_DAY_ECB_URL</span><span class="p">,</span> <span class="n">CurrencyConverter</span>
-
 <span class="kn">from</span><span class="w"> </span><span class="nn">bbstrader.metatrader.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">AccountInfo</span><span class="p">,</span>
     <span class="n">BookInfo</span><span class="p">,</span>
@@ -94,6 +92,7 @@
     <span class="n">TradeRequest</span><span class="p">,</span>
     <span class="n">raise_mt5_error</span><span class="p">,</span>
 <span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">currency_converter</span><span class="w"> </span><span class="kn">import</span> <span class="n">SINGLE_DAY_ECB_URL</span><span class="p">,</span> <span class="n">CurrencyConverter</span>
 
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">MetaTrader5</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mt5</span>
@@ -104,6 +103,7 @@
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">&quot;Account&quot;</span><span class="p">,</span>
     <span class="s2">&quot;Broker&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MetaQuotes&quot;</span><span class="p">,</span>
     <span class="s2">&quot;AdmiralMarktsGroup&quot;</span><span class="p">,</span>
     <span class="s2">&quot;JustGlobalMarkets&quot;</span><span class="p">,</span>
     <span class="s2">&quot;PepperstoneGroupLimited&quot;</span><span class="p">,</span>
@@ -112,6 +112,7 @@
 <span class="p">]</span>
 
 <span class="n">__BROKERS__</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;MQL&quot;</span><span class="p">:</span> <span class="s2">&quot;MetaQuotes Ltd.&quot;</span><span class="p">,</span>
     <span class="s2">&quot;AMG&quot;</span><span class="p">:</span> <span class="s2">&quot;Admirals Group AS&quot;</span><span class="p">,</span>
     <span class="s2">&quot;JGM&quot;</span><span class="p">:</span> <span class="s2">&quot;Just Global Markets Ltd.&quot;</span><span class="p">,</span>
     <span class="s2">&quot;FTMO&quot;</span><span class="p">:</span> <span class="s2">&quot;FTMO S.R.O.&quot;</span><span class="p">,</span>
@@ -125,9 +126,7 @@
     <span class="s2">&quot;PGL&quot;</span><span class="p">:</span> <span class="s2">&quot;Europe/Helsinki&quot;</span><span class="p">,</span>
 <span class="p">}</span>
 
-<span class="n">_ADMIRAL_MARKETS_URL_</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="s2">&quot;https://cabinet.a-partnership.com/visit/?bta=35537&amp;brand=admiralmarkets&quot;</span>
-<span class="p">)</span>
+<span class="n">_ADMIRAL_MARKETS_URL_</span> <span class="o">=</span> <span class="s2">&quot;https://one.justmarkets.link/a/tufvj0xugm/registration/trader&quot;</span>
 <span class="n">_JUST_MARKETS_URL_</span> <span class="o">=</span> <span class="s2">&quot;https://one.justmarkets.link/a/tufvj0xugm/registration/trader&quot;</span>
 <span class="n">_FTMO_URL_</span> <span class="o">=</span> <span class="s2">&quot;https://trader.ftmo.com/?affiliates=JGmeuQqepAZLMcdOEQRp&quot;</span>
 <span class="n">_ADMIRAL_MARKETS_PRODUCTS_</span> <span class="o">=</span> <span class="p">[</span>
@@ -140,14 +139,13 @@
 <span class="p">]</span>
 <span class="n">_JUST_MARKETS_PRODUCTS_</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Stocks&quot;</span><span class="p">,</span> <span class="s2">&quot;Crypto&quot;</span><span class="p">,</span> <span class="s2">&quot;indices&quot;</span><span class="p">,</span> <span class="s2">&quot;Commodities&quot;</span><span class="p">,</span> <span class="s2">&quot;Forex&quot;</span><span class="p">]</span>
 
-<span class="n">SUPPORTED_BROKERS</span> <span class="o">=</span> <span class="p">[</span><span class="n">__BROKERS__</span><span class="p">[</span><span class="n">b</span><span class="p">]</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;AMG&quot;</span><span class="p">,</span> <span class="s2">&quot;JGM&quot;</span><span class="p">,</span> <span class="s2">&quot;FTMO&quot;</span><span class="p">}]</span>
+<span class="n">SUPPORTED_BROKERS</span> <span class="o">=</span> <span class="p">[</span><span class="n">__BROKERS__</span><span class="p">[</span><span class="n">b</span><span class="p">]</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;MQL&quot;</span><span class="p">,</span> <span class="s2">&quot;AMG&quot;</span><span class="p">,</span> <span class="s2">&quot;JGM&quot;</span><span class="p">,</span> <span class="s2">&quot;FTMO&quot;</span><span class="p">}]</span>
 <span class="n">INIT_MSG</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">* Ensure you have a good and stable internet connexion</span><span class="se">\n</span><span class="s2">&quot;</span>
-    <span class="sa">f</span><span class="s2">&quot;* Ensure you have an activete MT5 terminal install on your machine</span><span class="se">\n</span><span class="s2">&quot;</span>
-    <span class="sa">f</span><span class="s2">&quot;* Ensure you have an active MT5 Account with </span><span class="si">{</span><span class="s1">&#39; or &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SUPPORTED_BROKERS</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-    <span class="sa">f</span><span class="s2">&quot;* If you want to trade </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_ADMIRAL_MARKETS_PRODUCTS_</span><span class="p">)</span><span class="si">}</span><span class="s2">, See [</span><span class="si">{</span><span class="n">_ADMIRAL_MARKETS_URL_</span><span class="si">}</span><span class="s2">]</span><span class="se">\n</span><span class="s2">&quot;</span>
-    <span class="sa">f</span><span class="s2">&quot;* If you want to trade </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_JUST_MARKETS_PRODUCTS_</span><span class="p">)</span><span class="si">}</span><span class="s2">, See [</span><span class="si">{</span><span class="n">_JUST_MARKETS_URL_</span><span class="si">}</span><span class="s2">]</span><span class="se">\n</span><span class="s2">&quot;</span>
-    <span class="sa">f</span><span class="s2">&quot;* If you are looking for a prop firm, See [</span><span class="si">{</span><span class="n">_FTMO_URL_</span><span class="si">}</span><span class="s2">]</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">* Check your internet connection</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="sa">f</span><span class="s2">&quot;* Make sure MT5 is installed and active</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="sa">f</span><span class="s2">&quot;* Looking for a boker? See [</span><span class="si">{</span><span class="n">_ADMIRAL_MARKETS_URL_</span><span class="si">}</span><span class="s2">] &quot;</span>
+    <span class="sa">f</span><span class="s2">&quot;or [</span><span class="si">{</span><span class="n">_JUST_MARKETS_URL_</span><span class="si">}</span><span class="s2">]</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="sa">f</span><span class="s2">&quot;* Looking for a prop firm? See [</span><span class="si">{</span><span class="n">_FTMO_URL_</span><span class="si">}</span><span class="s2">]</span><span class="se">\n</span><span class="s2">&quot;</span>
 <span class="p">)</span>
 
 <span class="n">amg_url</span> <span class="o">=</span> <span class="n">_ADMIRAL_MARKETS_URL_</span>
@@ -211,13 +209,22 @@
 
 <div class="viewcode-block" id="check_mt5_connection">
 <a class="viewcode-back" href="../../../bbstrader.metatrader.html#bbstrader.metatrader.account.check_mt5_connection">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">check_mt5_connection</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">check_mt5_connection</span><span class="p">(</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">login</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">password</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">server</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">timeout</span><span class="o">=</span><span class="mi">60_000</span><span class="p">,</span>
+    <span class="n">portable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Initialize the connection to the MetaTrader 5 terminal.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        path (str, optional): The path to the MetaTrader 5 terminal executable file.</span>
-<span class="sd">            Defaults to None (e.g., &quot;C:\\Program Files\\MetaTrader 5\\terminal64.exe&quot;).</span>
+<span class="sd">            Defaults to None (e.g., &quot;C:/Program Files/MetaTrader 5/terminal64.exe&quot;).</span>
 <span class="sd">        login (int, optional): The login ID of the trading account. Defaults to None.</span>
 <span class="sd">        password (str, optional): The password of the trading account. Defaults to None.</span>
 <span class="sd">        server (str, optional): The name of the trade server to which the client terminal is connected.</span>
@@ -231,13 +238,13 @@
 <span class="sd">        - Follow these instructions to lunch each terminal in portable mode first:</span>
 <span class="sd">            https://www.metatrader5.com/en/terminal/help/start_advanced/start#configuration_file</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">path</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;path&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-    <span class="n">login</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;login&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-    <span class="n">password</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;password&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-    <span class="n">server</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;server&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-    <span class="n">timeout</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;timeout&quot;</span><span class="p">,</span> <span class="mi">60_000</span><span class="p">)</span>
-    <span class="n">portable</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;portable&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
-
+    <span class="k">if</span> <span class="n">login</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">server</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">account_info</span> <span class="o">=</span> <span class="n">mt5</span><span class="o">.</span><span class="n">account_info</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">account_info</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">account_info</span><span class="o">.</span><span class="n">login</span> <span class="o">==</span> <span class="n">login</span> <span class="ow">and</span> <span class="n">account_info</span><span class="o">.</span><span class="n">server</span> <span class="o">==</span> <span class="n">server</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">True</span>
+        
+    <span class="n">init</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span><span class="n">login</span> <span class="ow">or</span> <span class="n">password</span> <span class="ow">or</span> <span class="n">server</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
             <span class="s2">&quot;You must provide a path to the terminal executable file&quot;</span>
@@ -261,7 +268,8 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">init</span><span class="p">:</span>
             <span class="n">raise_mt5_error</span><span class="p">(</span><span class="n">INIT_MSG</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-        <span class="n">raise_mt5_error</span><span class="p">(</span><span class="n">INIT_MSG</span><span class="p">)</span></div>
+        <span class="n">raise_mt5_error</span><span class="p">(</span><span class="n">INIT_MSG</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">init</span></div>
 
 
 
@@ -295,6 +303,14 @@
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">)&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="MetaQuotes">
+<a class="viewcode-back" href="../../../bbstrader.metatrader.html#bbstrader.metatrader.account.MetaQuotes">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MetaQuotes</span><span class="p">(</span><span class="n">Broker</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">__BROKERS__</span><span class="p">[</span><span class="s2">&quot;MQL&quot;</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 
@@ -351,6 +367,7 @@
 
 <span class="n">BROKERS</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Broker</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;FTMO&quot;</span><span class="p">:</span> <span class="n">FTMO</span><span class="p">(),</span>
+    <span class="s2">&quot;MQL&quot;</span><span class="p">:</span> <span class="n">MetaQuotes</span><span class="p">(),</span>
     <span class="s2">&quot;AMG&quot;</span><span class="p">:</span> <span class="n">AdmiralMarktsGroup</span><span class="p">(),</span>
     <span class="s2">&quot;JGM&quot;</span><span class="p">:</span> <span class="n">JustGlobalMarkets</span><span class="p">(),</span>
     <span class="s2">&quot;PGL&quot;</span><span class="p">:</span> <span class="n">PepperstoneGroupLimited</span><span class="p">(),</span>
@@ -487,6 +504,7 @@
         <span class="n">password</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">server</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">timeout</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">60_000</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">AccountInfo</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get info on the current trading account or a specific account .</span>
@@ -504,6 +522,8 @@
 <span class="sd">                 If not specified, the value of 60 000 (60 seconds) is applied.</span>
 <span class="sd">                 If the connection is not established within the specified time,</span>
 <span class="sd">                 the call is forcibly terminated and the exception is generated.</span>
+<span class="sd">            path (str, optional): The path to the MetaTrader 5 terminal executable file.</span>
+<span class="sd">                Defaults to None (e.g., &quot;C:/Program Files/MetaTrader 5/terminal64.exe&quot;).</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">        -   AccountInfo in the form of a Namedtuple structure.</span>
@@ -515,6 +535,15 @@
         <span class="c1"># connect to the trade account specifying a password and a server</span>
         <span class="k">if</span> <span class="n">account</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">password</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">server</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># If a path is provided, initialize the MT5 terminal with it</span>
+                <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">check_mt5_connection</span><span class="p">(</span>
+                        <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span>
+                        <span class="n">login</span><span class="o">=</span><span class="n">account</span><span class="p">,</span>
+                        <span class="n">password</span><span class="o">=</span><span class="n">password</span><span class="p">,</span>
+                        <span class="n">server</span><span class="o">=</span><span class="n">server</span><span class="p">,</span>
+                        <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
+                    <span class="p">)</span>
                 <span class="n">authorized</span> <span class="o">=</span> <span class="n">mt5</span><span class="o">.</span><span class="n">login</span><span class="p">(</span>
                     <span class="n">account</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">password</span><span class="p">,</span> <span class="n">server</span><span class="o">=</span><span class="n">server</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span>
                 <span class="p">)</span>
@@ -877,10 +906,7 @@
 <span class="sd">            This mthods works primarly with Admirals Group AS products and Pepperstone Group Limited,</span>
 <span class="sd">            For other brokers use `get_symbols()` or this method will use it by default.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">broker</span> <span class="o">!=</span> <span class="n">AdmiralMarktsGroup</span><span class="p">()</span>
-            <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">broker</span> <span class="o">!=</span> <span class="n">PepperstoneGroupLimited</span><span class="p">()</span>
-        <span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">broker</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="n">AdmiralMarktsGroup</span><span class="p">(),</span> <span class="n">PepperstoneGroupLimited</span><span class="p">()]:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_symbols</span><span class="p">(</span><span class="n">symbol_type</span><span class="o">=</span><span class="n">SymbolType</span><span class="o">.</span><span class="n">FOREX</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">fx_categories</span> <span class="o">=</span> <span class="p">{</span>
@@ -936,11 +962,8 @@
 <span class="sd">            This mthods works primarly with Admirals Group AS products and Pepperstone Group Limited,</span>
 <span class="sd">            For other brokers use `get_symbols()` or this method will use it by default.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        
-        <span class="k">if</span> <span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">broker</span> <span class="o">!=</span> <span class="n">AdmiralMarktsGroup</span><span class="p">()</span>
-            <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">broker</span> <span class="o">!=</span> <span class="n">PepperstoneGroupLimited</span><span class="p">()</span>
-        <span class="p">):</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">broker</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="n">AdmiralMarktsGroup</span><span class="p">(),</span> <span class="n">PepperstoneGroupLimited</span><span class="p">()]:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_symbols</span><span class="p">(</span><span class="n">symbol_type</span><span class="o">=</span><span class="n">SymbolType</span><span class="o">.</span><span class="n">STOCKS</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">stocks</span><span class="p">,</span> <span class="n">etfs</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
@@ -1006,7 +1029,7 @@
                 <span class="n">SymbolType</span><span class="o">.</span><span class="n">STOCKS</span><span class="p">,</span> <span class="n">exchange_code</span><span class="p">,</span> <span class="n">exchange_map</span>
             <span class="p">)</span>
             <span class="n">etfs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_symbols_by_category</span><span class="p">(</span>
-                    <span class="n">SymbolType</span><span class="o">.</span><span class="n">ETFs</span><span class="p">,</span> <span class="n">exchange_code</span><span class="p">,</span> <span class="n">exchange_map</span>
+                <span class="n">SymbolType</span><span class="o">.</span><span class="n">ETFs</span><span class="p">,</span> <span class="n">exchange_code</span><span class="p">,</span> <span class="n">exchange_map</span>
             <span class="p">)</span>
             <span class="k">return</span> <span class="n">stocks</span> <span class="o">+</span> <span class="n">etfs</span> <span class="k">if</span> <span class="n">etf</span> <span class="k">else</span> <span class="n">stocks</span></div>
 
@@ -1226,6 +1249,42 @@
         <span class="n">actions</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;buy&quot;</span><span class="p">:</span> <span class="n">mt5</span><span class="o">.</span><span class="n">ORDER_TYPE_BUY</span><span class="p">,</span> <span class="s2">&quot;sell&quot;</span><span class="p">:</span> <span class="n">mt5</span><span class="o">.</span><span class="n">ORDER_TYPE_SELL</span><span class="p">}</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">mt5</span><span class="o">.</span><span class="n">order_calc_margin</span><span class="p">(</span><span class="n">actions</span><span class="p">[</span><span class="n">action</span><span class="p">],</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">lot</span><span class="p">,</span> <span class="n">price</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">raise_mt5_error</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Account.calculate_profit">
+<a class="viewcode-back" href="../../../bbstrader.metatrader.html#bbstrader.metatrader.account.Account.calculate_profit">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">calculate_profit</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">action</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;buy&quot;</span><span class="p">,</span> <span class="s2">&quot;sell&quot;</span><span class="p">],</span>
+        <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">lot</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">price_open</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">price_close</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate profit in the account currency for a specified trading operation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            action (str): The trading action, either &#39;buy&#39; or &#39;sell&#39;.</span>
+<span class="sd">            symbol (str): The symbol of the financial instrument.</span>
+<span class="sd">            lot (float): The lot size of the order.</span>
+<span class="sd">            price_open (float): The price at which to position was opened.</span>
+<span class="sd">            price_close (float): The price at which to position was closed.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: The profit value</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            MT5TerminalError: A specific exception based on the error code.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;buy&quot;</span><span class="p">:</span> <span class="n">mt5</span><span class="o">.</span><span class="n">ORDER_TYPE_BUY</span><span class="p">,</span> <span class="s2">&quot;sell&quot;</span><span class="p">:</span> <span class="n">mt5</span><span class="o">.</span><span class="n">ORDER_TYPE_SELL</span><span class="p">}</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">mt5</span><span class="o">.</span><span class="n">order_calc_profit</span><span class="p">(</span>
+                <span class="n">actions</span><span class="p">[</span><span class="n">action</span><span class="p">],</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">lot</span><span class="p">,</span> <span class="n">price_open</span><span class="p">,</span> <span class="n">price_close</span>
+            <span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">raise_mt5_error</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div>
 
@@ -1492,7 +1551,7 @@
         <span class="n">group</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">ticket</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">to_df</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">TradeOrder</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">TradeOrder</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get active orders with the ability to filter by symbol or ticket.</span>
 <span class="sd">        There are four call options:</span>
@@ -1695,6 +1754,35 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">history_orders</span> <span class="o">=</span> <span class="p">[</span><span class="n">TradeOrder</span><span class="p">(</span><span class="o">**</span><span class="n">td</span><span class="o">.</span><span class="n">_asdict</span><span class="p">())</span> <span class="k">for</span> <span class="n">td</span> <span class="ow">in</span> <span class="n">history_orders</span><span class="p">]</span>
             <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">history_orders</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Account.get_today_deals">
+<a class="viewcode-back" href="../../../bbstrader.metatrader.html#bbstrader.metatrader.account.Account.get_today_deals">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_today_deals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">TradeDeal</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get all today deals for a specific symbol or group of symbols</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            id (int): strategy or expert id</span>
+<span class="sd">            group (str): Symbol or group or symbol</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            List[TradeDeal]: List of today deals</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">date_from</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">history</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_trades_history</span><span class="p">(</span><span class="n">date_from</span><span class="o">=</span><span class="n">date_from</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">,</span> <span class="n">to_df</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[]</span>
+        <span class="p">)</span>
+        <span class="n">positions_ids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">deal</span><span class="o">.</span><span class="n">position_id</span> <span class="k">for</span> <span class="n">deal</span> <span class="ow">in</span> <span class="n">history</span> <span class="k">if</span> <span class="n">deal</span><span class="o">.</span><span class="n">magic</span> <span class="o">==</span> <span class="nb">id</span><span class="p">])</span>
+        <span class="n">today_deals</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">position</span> <span class="ow">in</span> <span class="n">positions_ids</span><span class="p">:</span>
+            <span class="n">deal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_trades_history</span><span class="p">(</span>
+                <span class="n">date_from</span><span class="o">=</span><span class="n">date_from</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="n">position</span><span class="p">,</span> <span class="n">to_df</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">deal</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">deal</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">deal_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="n">deal</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">time</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">deal_time</span><span class="o">.</span><span class="n">date</span><span class="p">()</span> <span class="o">==</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">date</span><span class="p">():</span>
+                    <span class="n">today_deals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">deal</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">today_deals</span></div>
 </div>
 
 </pre></div>

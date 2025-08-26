@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>bbstrader.metatrader.trade &mdash; bbstrader 0.3.0 documentation</title>
+  <title>bbstrader.metatrader.trade &mdash; bbstrader 0.3.3 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=e259d695"></script>
+      <script src="../../../_static/documentation_options.js?v=d5a15cff"></script>
       <script src="../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -72,7 +72,7 @@
 <span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">logging</span><span class="w"> </span><span class="kn">import</span> <span class="n">Logger</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
@@ -87,7 +87,6 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">bbstrader.metatrader.account</span><span class="w"> </span><span class="kn">import</span> <span class="n">INIT_MSG</span><span class="p">,</span> <span class="n">check_mt5_connection</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">bbstrader.metatrader.risk</span><span class="w"> </span><span class="kn">import</span> <span class="n">RiskManagement</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">bbstrader.metatrader.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">TradeDeal</span><span class="p">,</span>
     <span class="n">TradePosition</span><span class="p">,</span>
     <span class="n">raise_mt5_error</span><span class="p">,</span>
     <span class="n">trade_retcode_message</span><span class="p">,</span>
@@ -98,10 +97,13 @@
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">bbstrader.compat</span>  <span class="c1"># noqa: F401</span>
 
-
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">&quot;Trade&quot;</span><span class="p">,</span>
     <span class="s2">&quot;create_trade_instance&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TradeAction&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TradeSignal&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TradingMode&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;generate_signal&quot;</span><span class="p">,</span>
 <span class="p">]</span>
 
 <span class="n">log</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
@@ -122,6 +124,8 @@
 <span class="p">]</span>
 
 
+<div class="viewcode-block" id="TradeAction">
+<a class="viewcode-back" href="../../../bbstrader.metatrader.html#bbstrader.metatrader.trade.TradeAction">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">TradeAction</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    An enumeration class for trade actions.</span>
@@ -156,9 +160,12 @@
     <span class="n">EXIT_ALL_ORDERS</span> <span class="o">=</span> <span class="s2">&quot;EXIT_ALL_ORDERS&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span></div>
 
 
+
+<div class="viewcode-block" id="TradeSignal">
+<a class="viewcode-back" href="../../../bbstrader.metatrader.html#bbstrader.metatrader.trade.TradeSignal">[docs]</a>
 <span class="nd">@dataclass</span><span class="p">()</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">TradeSignal</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -205,17 +212,64 @@
     <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;TradeSignal(id=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">, symbol=&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="si">}</span><span class="s2">&#39;, action=&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">action</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&#39;, &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;price=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">price</span><span class="si">}</span><span class="s2">, stoplimit=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">stoplimit</span><span class="si">}</span><span class="s2">), comment=&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">comment</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
-        <span class="p">)</span>
+            <span class="sa">f</span><span class="s2">&quot;price=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">price</span><span class="si">}</span><span class="s2">, stoplimit=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">stoplimit</span><span class="si">}</span><span class="s2">, comment=&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">comment</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="si">}</span><span class="s2">&#39;)&quot;</span>
+        <span class="p">)</span></div>
 
+
+
+<div class="viewcode-block" id="generate_signal">
+<a class="viewcode-back" href="../../../bbstrader.metatrader.html#bbstrader.metatrader.trade.generate_signal">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_signal</span><span class="p">(</span>
+    <span class="nb">id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">action</span><span class="p">:</span> <span class="n">TradeAction</span><span class="p">,</span>
+    <span class="n">price</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">stoplimit</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">comment</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TradeSignal</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates a trade signal for MetaTrader 5.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        id (int): Unique identifier for the trade signal.</span>
+<span class="sd">        symbol (str): The symbol for which the trade signal is generated.</span>
+<span class="sd">        action (TradeAction): The action to be taken (e.g., BUY, SELL).</span>
+<span class="sd">        price (float, optional): The price at which to execute the trade.</span>
+<span class="sd">        stoplimit (float, optional): The stop limit price for the trade.</span>
+<span class="sd">        comment (str, optional): Additional comments for the trade.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        TradeSignal: A TradeSignal object containing the details of the trade signal.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">TradeSignal</span><span class="p">(</span>
+        <span class="nb">id</span><span class="o">=</span><span class="nb">id</span><span class="p">,</span>
+        <span class="n">symbol</span><span class="o">=</span><span class="n">symbol</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="n">action</span><span class="p">,</span>
+        <span class="n">price</span><span class="o">=</span><span class="n">price</span><span class="p">,</span>
+        <span class="n">stoplimit</span><span class="o">=</span><span class="n">stoplimit</span><span class="p">,</span>
+        <span class="n">comment</span><span class="o">=</span><span class="n">comment</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="TradingMode">
+<a class="viewcode-back" href="../../../bbstrader.metatrader.html#bbstrader.metatrader.trade.TradingMode">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">TradingMode</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
     <span class="n">BACKTEST</span> <span class="o">=</span> <span class="s2">&quot;BACKTEST&quot;</span>
     <span class="n">LIVE</span> <span class="o">=</span> <span class="s2">&quot;LIVE&quot;</span>
 
+<div class="viewcode-block" id="TradingMode.isbacktest">
+<a class="viewcode-back" href="../../../bbstrader.metatrader.html#bbstrader.metatrader.trade.TradingMode.isbacktest">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">isbacktest</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span> <span class="o">==</span> <span class="n">TradingMode</span><span class="o">.</span><span class="n">BACKTEST</span>
+        <span class="k">return</span> <span class="bp">self</span> <span class="o">==</span> <span class="n">TradingMode</span><span class="o">.</span><span class="n">BACKTEST</span></div>
+
+
+<div class="viewcode-block" id="TradingMode.islive">
+<a class="viewcode-back" href="../../../bbstrader.metatrader.html#bbstrader.metatrader.trade.TradingMode.islive">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">islive</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span> <span class="o">==</span> <span class="n">TradingMode</span><span class="o">.</span><span class="n">LIVE</span>
+        <span class="k">return</span> <span class="bp">self</span> <span class="o">==</span> <span class="n">TradingMode</span><span class="o">.</span><span class="n">LIVE</span></div>
+</div>
+
 
 
 <span class="n">Buys</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;BMKT&quot;</span><span class="p">,</span> <span class="s2">&quot;BLMT&quot;</span><span class="p">,</span> <span class="s2">&quot;BSTP&quot;</span><span class="p">,</span> <span class="s2">&quot;BSTPLMT&quot;</span><span class="p">]</span>
@@ -295,7 +349,7 @@
         <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;EURUSD&quot;</span><span class="p">,</span>
         <span class="n">expert_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;bbstrader&quot;</span><span class="p">,</span>
         <span class="n">expert_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">EXPERT_ID</span><span class="p">,</span>
-        <span class="n">version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;2.0&quot;</span><span class="p">,</span>
+        <span class="n">version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;3.0&quot;</span><span class="p">,</span>
         <span class="n">target</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">5.0</span><span class="p">,</span>
         <span class="n">start_time</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;0:00&quot;</span><span class="p">,</span>
         <span class="n">finishing_time</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;23:59&quot;</span><span class="p">,</span>
@@ -647,7 +701,7 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;You need to set a price for pending orders&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">_price</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_tick_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="p">)</span><span class="o">.</span><span class="n">ask</span>
+            <span class="n">_price</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_tick_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="p">)</span><span class="o">.</span><span class="n">bid</span>
 
         <span class="n">lot</span> <span class="o">=</span> <span class="n">volume</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_lot</span><span class="p">()</span>
         <span class="n">stop_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_stop_loss</span><span class="p">()</span>
@@ -683,6 +737,8 @@
             <span class="n">request</span><span class="p">[</span><span class="s2">&quot;tp&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tp</span> <span class="ow">or</span> <span class="n">mm_price</span> <span class="o">+</span> <span class="n">take_profit</span> <span class="o">*</span> <span class="n">point</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">break_even</span><span class="p">(</span><span class="n">mm</span><span class="o">=</span><span class="n">mm</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="n">Id</span><span class="p">,</span> <span class="n">trail</span><span class="o">=</span><span class="n">trail</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">check</span><span class="p">(</span><span class="n">comment</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s2">&quot;BSTPLMT&quot;</span><span class="p">:</span>
+                <span class="n">_price</span> <span class="o">=</span> <span class="n">stoplimit</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request_result</span><span class="p">(</span><span class="n">_price</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">False</span></div>
 
@@ -690,7 +746,7 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">_order_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">&quot;BMKT&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">Mt5</span><span class="o">.</span><span class="n">ORDER_TYPE_BUY</span><span class="p">,</span> <span class="s2">&quot;BUY&quot;</span><span class="p">),</span>
-            <span class="s2">&quot;SMKT&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">Mt5</span><span class="o">.</span><span class="n">ORDER_TYPE_BUY</span><span class="p">,</span> <span class="s2">&quot;SELL&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;SMKT&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">Mt5</span><span class="o">.</span><span class="n">ORDER_TYPE_SELL</span><span class="p">,</span> <span class="s2">&quot;SELL&quot;</span><span class="p">),</span>
             <span class="s2">&quot;BLMT&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">Mt5</span><span class="o">.</span><span class="n">ORDER_TYPE_BUY_LIMIT</span><span class="p">,</span> <span class="s2">&quot;BUY_LIMIT&quot;</span><span class="p">),</span>
             <span class="s2">&quot;SLMT&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">Mt5</span><span class="o">.</span><span class="n">ORDER_TYPE_SELL_LIMIT</span><span class="p">,</span> <span class="s2">&quot;SELL_LIMIT&quot;</span><span class="p">),</span>
             <span class="s2">&quot;BSTP&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">Mt5</span><span class="o">.</span><span class="n">ORDER_TYPE_BUY_STOP</span><span class="p">,</span> <span class="s2">&quot;BUY_STOP&quot;</span><span class="p">),</span>
@@ -741,7 +797,7 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;You need to set a price for pending orders&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">_price</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_tick_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="p">)</span><span class="o">.</span><span class="n">bid</span>
+            <span class="n">_price</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_tick_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="p">)</span><span class="o">.</span><span class="n">ask</span>
 
         <span class="n">lot</span> <span class="o">=</span> <span class="n">volume</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_lot</span><span class="p">()</span>
         <span class="n">stop_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_stop_loss</span><span class="p">()</span>
@@ -777,6 +833,8 @@
             <span class="n">request</span><span class="p">[</span><span class="s2">&quot;tp&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tp</span> <span class="ow">or</span> <span class="n">mm_price</span> <span class="o">-</span> <span class="n">take_profit</span> <span class="o">*</span> <span class="n">point</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">break_even</span><span class="p">(</span><span class="n">mm</span><span class="o">=</span><span class="n">mm</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="n">Id</span><span class="p">,</span> <span class="n">trail</span><span class="o">=</span><span class="n">trail</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">check</span><span class="p">(</span><span class="n">comment</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s2">&quot;SSTPLMT&quot;</span><span class="p">:</span>
+                <span class="n">_price</span> <span class="o">=</span> <span class="n">stoplimit</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request_result</span><span class="p">(</span><span class="n">_price</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">False</span></div>
 
@@ -842,10 +900,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">check_order</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
             <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_order</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">current_datetime</span><span class="p">()</span><span class="si">}</span><span class="s2"> -&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
-            <span class="n">trade_retcode_message</span><span class="p">(</span>
-                <span class="n">result</span><span class="o">.</span><span class="n">retcode</span><span class="p">,</span> <span class="n">display</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">add_msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">e</span><span class="si">}{</span><span class="n">addtionnal</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">trade_retcode_message</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">retcode</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Trade Order Request, </span><span class="si">{</span><span class="n">msg</span><span class="si">}{</span><span class="n">addtionnal</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">retcode</span> <span class="o">!=</span> <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_DONE</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">retcode</span> <span class="o">==</span> <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_INVALID_FILL</span><span class="p">:</span>  <span class="c1"># 10030</span>
                 <span class="k">for</span> <span class="n">fill</span> <span class="ow">in</span> <span class="n">FILLING_TYPE</span><span class="p">:</span>
@@ -875,10 +931,8 @@
                         <span class="bp">self</span><span class="o">.</span><span class="n">check_order</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
                         <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_order</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
                     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">current_datetime</span><span class="p">()</span><span class="si">}</span><span class="s2"> -&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
-                        <span class="n">trade_retcode_message</span><span class="p">(</span>
-                            <span class="n">result</span><span class="o">.</span><span class="n">retcode</span><span class="p">,</span> <span class="n">display</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">add_msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">e</span><span class="si">}{</span><span class="n">addtionnal</span><span class="si">}</span><span class="s2">&quot;</span>
-                        <span class="p">)</span>
+                        <span class="n">msg</span> <span class="o">=</span> <span class="n">trade_retcode_message</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">retcode</span><span class="p">)</span>
+                        <span class="n">LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Trade Order Request, </span><span class="si">{</span><span class="n">msg</span><span class="si">}{</span><span class="n">addtionnal</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">retcode</span> <span class="o">==</span> <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_DONE</span><span class="p">:</span>
                         <span class="k">break</span>
                     <span class="n">tries</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -889,7 +943,7 @@
             <span class="k">if</span> <span class="nb">type</span> <span class="o">!=</span> <span class="s2">&quot;BMKT&quot;</span> <span class="ow">or</span> <span class="nb">type</span> <span class="o">!=</span> <span class="s2">&quot;SMKT&quot;</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">opened_orders</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">order</span><span class="p">)</span>
             <span class="n">long_msg</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;1. </span><span class="si">{</span><span class="n">pos</span><span class="si">}</span><span class="s2"> Order #</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">order</span><span class="si">}</span><span class="s2"> Sent, Symbol: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="si">}</span><span class="s2">, Price: @</span><span class="si">{</span><span class="n">price</span><span class="si">}</span><span class="s2">, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;1. </span><span class="si">{</span><span class="n">pos</span><span class="si">}</span><span class="s2"> Order #</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">order</span><span class="si">}</span><span class="s2"> Sent, Symbol: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="si">}</span><span class="s2">, Price: @</span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">price</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">)</span><span class="si">}</span><span class="s2">, &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;Lot(s): </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">volume</span><span class="si">}</span><span class="s2">, Sl: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">get_stop_loss</span><span class="p">()</span><span class="si">}</span><span class="s2">, &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;Tp: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">get_take_profit</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
@@ -910,7 +964,7 @@
                             <span class="n">profit</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_account_info</span><span class="p">()</span><span class="o">.</span><span class="n">profit</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
                             <span class="n">order_info</span> <span class="o">=</span> <span class="p">(</span>
                                 <span class="sa">f</span><span class="s2">&quot;2. </span><span class="si">{</span><span class="n">order_type</span><span class="si">}</span><span class="s2"> Position Opened, Symbol: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="si">}</span><span class="s2">, Price: @</span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">position</span><span class="o">.</span><span class="n">price_open</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">)</span><span class="si">}</span><span class="s2">, &quot;</span>
-                                <span class="sa">f</span><span class="s2">&quot;Sl: @</span><span class="si">{</span><span class="n">position</span><span class="o">.</span><span class="n">sl</span><span class="si">}</span><span class="s2"> Tp: @</span><span class="si">{</span><span class="n">position</span><span class="o">.</span><span class="n">tp</span><span class="si">}</span><span class="s2">&quot;</span>
+                                <span class="sa">f</span><span class="s2">&quot;Sl: @</span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">position</span><span class="o">.</span><span class="n">sl</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">)</span><span class="si">}</span><span class="s2"> Tp: @</span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">position</span><span class="o">.</span><span class="n">tp</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
                             <span class="p">)</span>
                             <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">order_info</span><span class="p">)</span>
                             <span class="n">pos_info</span> <span class="o">=</span> <span class="p">(</span>
@@ -1284,9 +1338,9 @@
         <span class="n">be</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_break_even</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">trail_after_points</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">trail_after_points</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
-                <span class="k">assert</span> <span class="p">(</span>
-                    <span class="n">trail_after_points</span> <span class="o">&gt;</span> <span class="n">be</span>
-                <span class="p">),</span> <span class="s2">&quot;trail_after_points must be greater than break even or set to None&quot;</span>
+                <span class="k">assert</span> <span class="n">trail_after_points</span> <span class="o">&gt;</span> <span class="n">be</span><span class="p">,</span> <span class="p">(</span>
+                    <span class="s2">&quot;trail_after_points must be greater than break even or set to None&quot;</span>
+                <span class="p">)</span>
             <span class="n">trail_after_points</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_trail_after_points</span><span class="p">(</span><span class="n">trail_after_points</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">positions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">position</span> <span class="ow">in</span> <span class="n">positions</span><span class="p">:</span>
@@ -1450,10 +1504,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">check_order</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
             <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_order</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">current_datetime</span><span class="p">()</span><span class="si">}</span><span class="s2"> -&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
-            <span class="n">trade_retcode_message</span><span class="p">(</span>
-                <span class="n">result</span><span class="o">.</span><span class="n">retcode</span><span class="p">,</span> <span class="n">display</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">add_msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">e</span><span class="si">}{</span><span class="n">addtionnal</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">trade_retcode_message</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">retcode</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Break-Even Order Request, </span><span class="si">{</span><span class="n">msg</span><span class="si">}{</span><span class="n">addtionnal</span><span class="si">}</span><span class="s2">, Error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">retcode</span> <span class="o">!=</span> <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_DONE</span><span class="p">:</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="n">trade_retcode_message</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">retcode</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">retcode</span> <span class="o">!=</span> <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_NO_CHANGES</span><span class="p">:</span>
@@ -1470,9 +1522,9 @@
                         <span class="bp">self</span><span class="o">.</span><span class="n">check_order</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
                         <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_order</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
                     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">current_datetime</span><span class="p">()</span><span class="si">}</span><span class="s2"> -&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
-                        <span class="n">trade_retcode_message</span><span class="p">(</span>
-                            <span class="n">result</span><span class="o">.</span><span class="n">retcode</span><span class="p">,</span> <span class="n">display</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">add_msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">e</span><span class="si">}{</span><span class="n">addtionnal</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="n">msg</span> <span class="o">=</span> <span class="n">trade_retcode_message</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">retcode</span><span class="p">)</span>
+                        <span class="n">LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;Break-Even Order Request, </span><span class="si">{</span><span class="n">msg</span><span class="si">}{</span><span class="n">addtionnal</span><span class="si">}</span><span class="s2">, Error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
                         <span class="p">)</span>
                     <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">retcode</span> <span class="o">==</span> <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_DONE</span><span class="p">:</span>
                         <span class="k">break</span>
@@ -1480,7 +1532,7 @@
         <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">retcode</span> <span class="o">==</span> <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_DONE</span><span class="p">:</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="n">trade_retcode_message</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">retcode</span><span class="p">)</span>
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Break-Even Order </span><span class="si">{</span><span class="n">msg</span><span class="si">}{</span><span class="n">addtionnal</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="n">info</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Stop loss set to Break-even, Position: #</span><span class="si">{</span><span class="n">tiket</span><span class="si">}</span><span class="s2">, Symbol: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="si">}</span><span class="s2">, Price: @</span><span class="si">{</span><span class="n">price</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">info</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Stop loss set to Break-even, Position: #</span><span class="si">{</span><span class="n">tiket</span><span class="si">}</span><span class="s2">, Symbol: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="si">}</span><span class="s2">, Price: @</span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">price</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">info</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">break_even_status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tiket</span><span class="p">)</span></div>
 
@@ -1567,9 +1619,9 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">check_order</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
             <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_order</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">current_datetime</span><span class="p">()</span><span class="si">}</span><span class="s2"> -&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
-            <span class="n">trade_retcode_message</span><span class="p">(</span>
-                <span class="n">result</span><span class="o">.</span><span class="n">retcode</span><span class="p">,</span> <span class="n">display</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">add_msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">e</span><span class="si">}{</span><span class="n">addtionnal</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">trade_retcode_message</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">retcode</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Closing </span><span class="si">{</span><span class="nb">type</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span><span class="si">}</span><span class="s2"> Request, </span><span class="si">{</span><span class="n">msg</span><span class="si">}{</span><span class="n">addtionnal</span><span class="si">}</span><span class="s2">, Error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">retcode</span> <span class="o">!=</span> <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_DONE</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">retcode</span> <span class="o">==</span> <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_INVALID_FILL</span><span class="p">:</span>  <span class="c1"># 10030</span>
@@ -1582,7 +1634,8 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_retcodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">retcode</span><span class="p">)</span>
                 <span class="n">msg</span> <span class="o">=</span> <span class="n">trade_retcode_message</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">retcode</span><span class="p">)</span>
                 <span class="n">LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;Closing Order Request, </span><span class="si">{</span><span class="nb">type</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span><span class="si">}</span><span class="s2">: #</span><span class="si">{</span><span class="n">ticket</span><span class="si">}</span><span class="s2">, RETCODE=</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">retcode</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">msg</span><span class="si">}{</span><span class="n">addtionnal</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;Closing Order Request, </span><span class="si">{</span><span class="nb">type</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span><span class="si">}</span><span class="s2">: #</span><span class="si">{</span><span class="n">ticket</span><span class="si">}</span><span class="s2">, &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;RETCODE=</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">retcode</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">msg</span><span class="si">}{</span><span class="n">addtionnal</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">tries</span> <span class="o">=</span> <span class="mi">0</span>
@@ -1592,9 +1645,9 @@
                         <span class="bp">self</span><span class="o">.</span><span class="n">check_order</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
                         <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_order</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
                     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">current_datetime</span><span class="p">()</span><span class="si">}</span><span class="s2"> -&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
-                        <span class="n">trade_retcode_message</span><span class="p">(</span>
-                            <span class="n">result</span><span class="o">.</span><span class="n">retcode</span><span class="p">,</span> <span class="n">display</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">add_msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">e</span><span class="si">}{</span><span class="n">addtionnal</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="n">msg</span> <span class="o">=</span> <span class="n">trade_retcode_message</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">retcode</span><span class="p">)</span>
+                        <span class="n">LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;Closing </span><span class="si">{</span><span class="nb">type</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span><span class="si">}</span><span class="s2"> Request, </span><span class="si">{</span><span class="n">msg</span><span class="si">}{</span><span class="n">addtionnal</span><span class="si">}</span><span class="s2">, Error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
                         <span class="p">)</span>
                     <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">retcode</span> <span class="o">==</span> <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_DONE</span><span class="p">:</span>
                         <span class="k">break</span>
@@ -1602,7 +1655,10 @@
         <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">retcode</span> <span class="o">==</span> <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_DONE</span><span class="p">:</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="n">trade_retcode_message</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">retcode</span><span class="p">)</span>
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Closing Order </span><span class="si">{</span><span class="n">msg</span><span class="si">}{</span><span class="n">addtionnal</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="n">info</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span><span class="si">}</span><span class="s2"> #</span><span class="si">{</span><span class="n">ticket</span><span class="si">}</span><span class="s2"> closed, Symbol: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="si">}</span><span class="s2">, Price: @</span><span class="si">{</span><span class="n">request</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;price&#39;</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">info</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span><span class="si">}</span><span class="s2"> #</span><span class="si">{</span><span class="n">ticket</span><span class="si">}</span><span class="s2"> closed, Symbol: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="si">}</span><span class="s2">,&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Price: @</span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;price&#39;</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">),</span><span class="w"> </span><span class="mi">5</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">info</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">True</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1634,7 +1690,7 @@
         <span class="n">orders</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_orders</span><span class="p">(</span><span class="n">ticket</span><span class="o">=</span><span class="n">ticket</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">orders</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Order #</span><span class="si">{</span><span class="n">ticket</span><span class="si">}</span><span class="s2"> not found, SYMBOL=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="si">}</span><span class="s2">, PRICE=</span><span class="si">{</span><span class="n">price</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Order #</span><span class="si">{</span><span class="n">ticket</span><span class="si">}</span><span class="s2"> not found, SYMBOL=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="si">}</span><span class="s2">, PRICE=</span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">price</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
             <span class="k">return</span>
         <span class="n">order</span> <span class="o">=</span> <span class="n">orders</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -1650,7 +1706,8 @@
         <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_order</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">retcode</span> <span class="o">==</span> <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_DONE</span><span class="p">:</span>
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Order #</span><span class="si">{</span><span class="n">ticket</span><span class="si">}</span><span class="s2"> modified, SYMBOL=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="si">}</span><span class="s2">, PRICE=</span><span class="si">{</span><span class="n">price</span><span class="si">}</span><span class="s2">, SL=</span><span class="si">{</span><span class="n">sl</span><span class="si">}</span><span class="s2">, TP=</span><span class="si">{</span><span class="n">tp</span><span class="si">}</span><span class="s2">, STOP_LIMIT=</span><span class="si">{</span><span class="n">stoplimit</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Order #</span><span class="si">{</span><span class="n">ticket</span><span class="si">}</span><span class="s2"> modified, SYMBOL=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="si">}</span><span class="s2">, PRICE=</span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">price</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">)</span><span class="si">}</span><span class="s2">,&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;SL=</span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">sl</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">)</span><span class="si">}</span><span class="s2">, TP=</span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">tp</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">)</span><span class="si">}</span><span class="s2">, STOP_LIMIT=</span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">stoplimit</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="n">trade_retcode_message</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">retcode</span><span class="p">)</span>
@@ -1712,8 +1769,6 @@
         <span class="n">symbol</span> <span class="o">=</span> <span class="n">symbol</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol</span>
         <span class="n">Id</span> <span class="o">=</span> <span class="nb">id</span> <span class="k">if</span> <span class="nb">id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">expert_id</span>
         <span class="n">positions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_positions</span><span class="p">(</span><span class="n">ticket</span><span class="o">=</span><span class="n">ticket</span><span class="p">)</span>
-        <span class="n">buy_price</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_tick_info</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span><span class="o">.</span><span class="n">ask</span>
-        <span class="n">sell_price</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_tick_info</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span><span class="o">.</span><span class="n">bid</span>
         <span class="n">deviation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_deviation</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">positions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">positions</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">position</span> <span class="o">=</span> <span class="n">positions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -1725,9 +1780,8 @@
                     <span class="s2">&quot;volume&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">position</span><span class="o">.</span><span class="n">volume</span> <span class="o">*</span> <span class="n">pct</span><span class="p">),</span>
                     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">Mt5</span><span class="o">.</span><span class="n">ORDER_TYPE_SELL</span> <span class="k">if</span> <span class="n">buy</span> <span class="k">else</span> <span class="n">Mt5</span><span class="o">.</span><span class="n">ORDER_TYPE_BUY</span><span class="p">,</span>
                     <span class="s2">&quot;position&quot;</span><span class="p">:</span> <span class="n">ticket</span><span class="p">,</span>
-                    <span class="s2">&quot;price&quot;</span><span class="p">:</span> <span class="n">sell_price</span> <span class="k">if</span> <span class="n">buy</span> <span class="k">else</span> <span class="n">buy_price</span><span class="p">,</span>
+                    <span class="s2">&quot;price&quot;</span><span class="p">:</span> <span class="n">position</span><span class="o">.</span><span class="n">price_current</span><span class="p">,</span>
                     <span class="s2">&quot;deviation&quot;</span><span class="p">:</span> <span class="n">deviation</span><span class="p">,</span>
-                    <span class="s2">&quot;magic&quot;</span><span class="p">:</span> <span class="n">Id</span><span class="p">,</span>
                     <span class="s2">&quot;comment&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">expert_name</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">comment</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">comment</span><span class="p">,</span>
                     <span class="s2">&quot;type_time&quot;</span><span class="p">:</span> <span class="n">Mt5</span><span class="o">.</span><span class="n">ORDER_TIME_GTC</span><span class="p">,</span>
                     <span class="s2">&quot;type_filling&quot;</span><span class="p">:</span> <span class="n">Mt5</span><span class="o">.</span><span class="n">ORDER_FILLING_FOK</span><span class="p">,</span>
@@ -1856,32 +1910,8 @@
 
 <div class="viewcode-block" id="Trade.get_today_deals">
 <a class="viewcode-back" href="../../../bbstrader.metatrader.html#bbstrader.metatrader.trade.Trade.get_today_deals">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_today_deals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">TradeDeal</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Get all today deals for a specific symbol or group of symbols</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            group (str): Symbol or group or symbol</span>
-<span class="sd">        Returns:</span>
-<span class="sd">            List[TradeDeal]: List of today deals</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">date_from</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-        <span class="n">history</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">get_trades_history</span><span class="p">(</span><span class="n">date_from</span><span class="o">=</span><span class="n">date_from</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">,</span> <span class="n">to_df</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[]</span>
-        <span class="p">)</span>
-        <span class="n">positions_ids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span>
-            <span class="p">[</span><span class="n">deal</span><span class="o">.</span><span class="n">position_id</span> <span class="k">for</span> <span class="n">deal</span> <span class="ow">in</span> <span class="n">history</span> <span class="k">if</span> <span class="n">deal</span><span class="o">.</span><span class="n">magic</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">expert_id</span><span class="p">]</span>
-        <span class="p">)</span>
-        <span class="n">today_deals</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">position</span> <span class="ow">in</span> <span class="n">positions_ids</span><span class="p">:</span>
-            <span class="n">deal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_trades_history</span><span class="p">(</span>
-                <span class="n">date_from</span><span class="o">=</span><span class="n">date_from</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="n">position</span><span class="p">,</span> <span class="n">to_df</span><span class="o">=</span><span class="kc">False</span>
-            <span class="p">)</span>
-            <span class="k">if</span> <span class="n">deal</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">deal</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-                <span class="n">deal_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="n">deal</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">time</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">deal_time</span><span class="o">.</span><span class="n">date</span><span class="p">()</span> <span class="o">==</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">date</span><span class="p">():</span>
-                    <span class="n">today_deals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">deal</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-        <span class="k">return</span> <span class="n">today_deals</span></div>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_today_deals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_today_deals</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">expert_id</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Trade.is_max_trades_reached">

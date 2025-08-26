@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>bbstrader.metatrader package &mdash; bbstrader 0.3.0 documentation</title>
+  <title>bbstrader.metatrader package &mdash; bbstrader 0.3.3 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=e259d695"></script>
+      <script src="_static/documentation_options.js?v=d5a15cff"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -56,6 +56,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#bbstrader.metatrader.account.Broker"><code class="docutils literal notranslate"><span class="pre">Broker</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#bbstrader.metatrader.account.FTMO"><code class="docutils literal notranslate"><span class="pre">FTMO</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#bbstrader.metatrader.account.JustGlobalMarkets"><code class="docutils literal notranslate"><span class="pre">JustGlobalMarkets</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.metatrader.account.MetaQuotes"><code class="docutils literal notranslate"><span class="pre">MetaQuotes</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#bbstrader.metatrader.account.PepperstoneGroupLimited"><code class="docutils literal notranslate"><span class="pre">PepperstoneGroupLimited</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#bbstrader.metatrader.account.check_mt5_connection"><code class="docutils literal notranslate"><span class="pre">check_mt5_connection()</span></code></a></li>
 </ul>
@@ -71,6 +72,8 @@
 <li class="toctree-l4"><a class="reference internal" href="#bbstrader.metatrader.copier.RunMultipleCopier"><code class="docutils literal notranslate"><span class="pre">RunMultipleCopier()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#bbstrader.metatrader.copier.TradeCopier"><code class="docutils literal notranslate"><span class="pre">TradeCopier</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#bbstrader.metatrader.copier.config_copier"><code class="docutils literal notranslate"><span class="pre">config_copier()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.metatrader.copier.copier_worker_process"><code class="docutils literal notranslate"><span class="pre">copier_worker_process()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.metatrader.copier.get_symbols_from_string"><code class="docutils literal notranslate"><span class="pre">get_symbols_from_string()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#module-bbstrader.metatrader.rates">bbstrader.metatrader.rates module</a><ul>
@@ -91,7 +94,11 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#module-bbstrader.metatrader.trade">bbstrader.metatrader.trade module</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#bbstrader.metatrader.trade.Trade"><code class="docutils literal notranslate"><span class="pre">Trade</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.metatrader.trade.TradeAction"><code class="docutils literal notranslate"><span class="pre">TradeAction</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.metatrader.trade.TradeSignal"><code class="docutils literal notranslate"><span class="pre">TradeSignal</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.metatrader.trade.TradingMode"><code class="docutils literal notranslate"><span class="pre">TradingMode</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#bbstrader.metatrader.trade.create_trade_instance"><code class="docutils literal notranslate"><span class="pre">create_trade_instance()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.metatrader.trade.generate_signal"><code class="docutils literal notranslate"><span class="pre">generate_signal()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#module-bbstrader.metatrader.utils">bbstrader.metatrader.utils module</a><ul>
@@ -111,6 +118,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#bbstrader.metatrader.utils.OrderCheckResult"><code class="docutils literal notranslate"><span class="pre">OrderCheckResult</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#bbstrader.metatrader.utils.OrderSentResult"><code class="docutils literal notranslate"><span class="pre">OrderSentResult</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#bbstrader.metatrader.utils.SymbolInfo"><code class="docutils literal notranslate"><span class="pre">SymbolInfo</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.metatrader.utils.SymbolType"><code class="docutils literal notranslate"><span class="pre">SymbolType</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#bbstrader.metatrader.utils.TerminalInfo"><code class="docutils literal notranslate"><span class="pre">TerminalInfo</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#bbstrader.metatrader.utils.TickInfo"><code class="docutils literal notranslate"><span class="pre">TickInfo</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#bbstrader.metatrader.utils.TimeFrame"><code class="docutils literal notranslate"><span class="pre">TimeFrame</span></code></a></li>
@@ -244,6 +252,32 @@ active orders, open positions, and trading history.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.metatrader.account.Account.calculate_profit">
+<span class="sig-name descname"><span class="pre">calculate_profit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'buy'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'sell'</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">price_open</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">price_close</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/bbstrader/metatrader/account.html#Account.calculate_profit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.account.Account.calculate_profit" title="Link to this definition"></a></dt>
+<dd><p>Calculate profit in the account currency for a specified trading operation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>action</strong> (<em>str</em>) – The trading action, either ‘buy’ or ‘sell’.</p></li>
+<li><p><strong>symbol</strong> (<em>str</em>) – The symbol of the financial instrument.</p></li>
+<li><p><strong>lot</strong> (<em>float</em>) – The lot size of the order.</p></li>
+<li><p><strong>price_open</strong> (<em>float</em>) – The price at which to position was opened.</p></li>
+<li><p><strong>price_close</strong> (<em>float</em>) – The price at which to position was closed.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The profit value</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>MT5TerminalError</strong> – A specific exception based on the error code.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="bbstrader.metatrader.account.Account.check_order">
 <span class="sig-name descname"><span class="pre">check_order</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">request</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#bbstrader.metatrader.utils.OrderCheckResult" title="bbstrader.metatrader.utils.OrderCheckResult"><span class="pre">OrderCheckResult</span></a></span></span><a class="reference internal" href="_modules/bbstrader/metatrader/account.html#Account.check_order"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.account.Account.check_order" title="Link to this definition"></a></dt>
 <dd><p>Check funds sufficiency for performing a required trading operation.</p>
@@ -302,7 +336,7 @@ on Github <a class="reference external" href="https://github.com/alexprengere/cu
 
 <dl class="py method">
 <dt class="sig sig-object py" id="bbstrader.metatrader.account.Account.get_account_info">
-<span class="sig-name descname"><span class="pre">get_account_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">password</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">server</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">60000</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#bbstrader.metatrader.utils.AccountInfo" title="bbstrader.metatrader.utils.AccountInfo"><span class="pre">AccountInfo</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="_modules/bbstrader/metatrader/account.html#Account.get_account_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.account.Account.get_account_info" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_account_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">password</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">server</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">60000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#bbstrader.metatrader.utils.AccountInfo" title="bbstrader.metatrader.utils.AccountInfo"><span class="pre">AccountInfo</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="_modules/bbstrader/metatrader/account.html#Account.get_account_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.account.Account.get_account_info" title="Link to this definition"></a></dt>
 <dd><p>Get info on the current trading account or a specific account .</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -316,6 +350,8 @@ If no server is set, the last used server is applied automaticall</p></li>
 If not specified, the value of 60 000 (60 seconds) is applied.
 If the connection is not established within the specified time,
 the call is forcibly terminated and the exception is generated.</p></li>
+<li><p><strong>path</strong> (<em>str</em><em>, </em><em>optional</em>) – The path to the MetaTrader 5 terminal executable file.
+Defaults to None (e.g., “C:/Program Files/MetaTrader 5/terminal64.exe”).</p></li>
 </ul>
 </dd>
 </dl>
@@ -427,7 +463,7 @@ Return None in case of an error.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="bbstrader.metatrader.account.Account.get_orders">
-<span class="sig-name descname"><span class="pre">get_orders</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ticket</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#bbstrader.metatrader.utils.TradeOrder" title="bbstrader.metatrader.utils.TradeOrder"><span class="pre">TradeOrder</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="_modules/bbstrader/metatrader/account.html#Account.get_orders"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.account.Account.get_orders" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_orders</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ticket</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#bbstrader.metatrader.utils.TradeOrder" title="bbstrader.metatrader.utils.TradeOrder"><span class="pre">TradeOrder</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/bbstrader/metatrader/account.html#Account.get_orders"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.account.Account.get_orders" title="Link to this definition"></a></dt>
 <dd><p>Get active orders with the ability to filter by symbol or ticket.
 There are four call options:</p>
 <ul class="simple">
@@ -693,7 +729,7 @@ For other brokers use <cite>get_symbols()</cite> or this method will use it by d
 
 <dl class="py method">
 <dt class="sig sig-object py" id="bbstrader.metatrader.account.Account.get_symbol_type">
-<span class="sig-name descname"><span class="pre">get_symbol_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">SymbolType</span></span></span><a class="reference internal" href="_modules/bbstrader/metatrader/account.html#Account.get_symbol_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.account.Account.get_symbol_type" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_symbol_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#bbstrader.metatrader.utils.SymbolType" title="bbstrader.metatrader.utils.SymbolType"><span class="pre">SymbolType</span></a></span></span><a class="reference internal" href="_modules/bbstrader/metatrader/account.html#Account.get_symbol_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.account.Account.get_symbol_type" title="Link to this definition"></a></dt>
 <dd><p>Determines the type of a given financial instrument symbol.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -711,7 +747,7 @@ For other brokers use <cite>get_symbols()</cite> or this method will use it by d
 - <cite>SymbolType.CRYPTO</cite></p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>SymbolType</p>
+<dd class="field-odd"><p><a class="reference internal" href="#bbstrader.metatrader.utils.SymbolType" title="bbstrader.metatrader.utils.SymbolType">SymbolType</a></p>
 </dd>
 </dl>
 <ul class="simple">
@@ -721,12 +757,12 @@ For other brokers use <cite>get_symbols()</cite> or this method will use it by d
 
 <dl class="py method">
 <dt class="sig sig-object py" id="bbstrader.metatrader.account.Account.get_symbols">
-<span class="sig-name descname"><span class="pre">get_symbols</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">SymbolType</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'ALL'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_etf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'symbols'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_desc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">display_total</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/bbstrader/metatrader/account.html#Account.get_symbols"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.account.Account.get_symbols" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_symbols</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#bbstrader.metatrader.utils.SymbolType" title="bbstrader.metatrader.utils.SymbolType"><span class="pre">SymbolType</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'ALL'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_etf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'symbols'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_desc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">display_total</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/bbstrader/metatrader/account.html#Account.get_symbols"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.account.Account.get_symbols" title="Link to this definition"></a></dt>
 <dd><p>Get all specified financial instruments from the MetaTrader 5 terminal.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>symbol_type</strong> (<em>SymbolType</em><em> | </em><em>str</em>) – The type of financial instruments to retrieve.</p></li>
+<li><p><strong>symbol_type</strong> (<a class="reference internal" href="#bbstrader.metatrader.utils.SymbolType" title="bbstrader.metatrader.utils.SymbolType"><em>SymbolType</em></a><em> | </em><em>str</em>) – The type of financial instruments to retrieve.</p></li>
 <li><p><strong>ALL</strong> (<em>-</em>) – For all available symbols</p></li>
 <li><p><strong>details.</strong> (<em>- See bbstrader.metatrader.utils.SymbolType for more</em>)</p></li>
 <li><p><strong>check_etf</strong> (<em>bool</em>) – If True and symbol_type is ‘etf’, check if the
@@ -788,6 +824,26 @@ in the output and saved file.</p></li>
 </dl>
 <p class="rubric">Notes</p>
 <p>The <cite>time</cite> property is converted to a <cite>datetime</cite> object using Broker server time.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.metatrader.account.Account.get_today_deals">
+<span class="sig-name descname"><span class="pre">get_today_deals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#bbstrader.metatrader.utils.TradeDeal" title="bbstrader.metatrader.utils.TradeDeal"><span class="pre">TradeDeal</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/bbstrader/metatrader/account.html#Account.get_today_deals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.account.Account.get_today_deals" title="Link to this definition"></a></dt>
+<dd><p>Get all today deals for a specific symbol or group of symbols</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>int</em>) – strategy or expert id</p></li>
+<li><p><strong>group</strong> (<em>str</em>) – Symbol or group or symbol</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of today deals</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[<a class="reference internal" href="#bbstrader.metatrader.utils.TradeDeal" title="bbstrader.metatrader.utils.TradeDeal">TradeDeal</a>]</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -993,6 +1049,12 @@ and those containing “EUR” in symbol names should be excluded afterward.</p>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="bbstrader.metatrader.account.MetaQuotes">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bbstrader.metatrader.account.</span></span><span class="sig-name descname"><span class="pre">MetaQuotes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/metatrader/account.html#MetaQuotes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.account.MetaQuotes" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#bbstrader.metatrader.account.Broker" title="bbstrader.metatrader.account.Broker"><code class="xref py py-class docutils literal notranslate"><span class="pre">Broker</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="bbstrader.metatrader.account.PepperstoneGroupLimited">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bbstrader.metatrader.account.</span></span><span class="sig-name descname"><span class="pre">PepperstoneGroupLimited</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/metatrader/account.html#PepperstoneGroupLimited"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.account.PepperstoneGroupLimited" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#bbstrader.metatrader.account.Broker" title="bbstrader.metatrader.account.Broker"><code class="xref py py-class docutils literal notranslate"><span class="pre">Broker</span></code></a></p>
@@ -1005,13 +1067,13 @@ and those containing “EUR” in symbol names should be excluded afterward.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="bbstrader.metatrader.account.check_mt5_connection">
-<span class="sig-prename descclassname"><span class="pre">bbstrader.metatrader.account.</span></span><span class="sig-name descname"><span class="pre">check_mt5_connection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/metatrader/account.html#check_mt5_connection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.account.check_mt5_connection" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">bbstrader.metatrader.account.</span></span><span class="sig-name descname"><span class="pre">check_mt5_connection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">login</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">password</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">server</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">60000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">portable</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/bbstrader/metatrader/account.html#check_mt5_connection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.account.check_mt5_connection" title="Link to this definition"></a></dt>
 <dd><p>Initialize the connection to the MetaTrader 5 terminal.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>path</strong> (<em>str</em><em>, </em><em>optional</em>) – The path to the MetaTrader 5 terminal executable file.
-Defaults to None (e.g., “C:Program FilesMetaTrader 5terminal64.exe”).</p></li>
+Defaults to None (e.g., “C:/Program Files/MetaTrader 5/terminal64.exe”).</p></li>
 <li><p><strong>login</strong> (<em>int</em><em>, </em><em>optional</em>) – The login ID of the trading account. Defaults to None.</p></li>
 <li><p><strong>password</strong> (<em>str</em><em>, </em><em>optional</em>) – The password of the trading account. Defaults to None.</p></li>
 <li><p><strong>server</strong> (<em>str</em><em>, </em><em>optional</em>) – The name of the trade server to which the client terminal is connected.
@@ -1083,17 +1145,77 @@ price levels. It highlights key levels such as:</p>
 <span id="bbstrader-metatrader-copier-module"></span><h2>bbstrader.metatrader.copier module<a class="headerlink" href="#module-bbstrader.metatrader.copier" title="Link to this heading"></a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="bbstrader.metatrader.copier.RunCopier">
-<span class="sig-prename descclassname"><span class="pre">bbstrader.metatrader.copier.</span></span><span class="sig-name descname"><span class="pre">RunCopier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destinations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sleeptime</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/metatrader/copier.html#RunCopier"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.copier.RunCopier" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-prename descclassname"><span class="pre">bbstrader.metatrader.copier.</span></span><span class="sig-name descname"><span class="pre">RunCopier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destinations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sleeptime</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="positional-only-separator o"><abbr title="Positional-only parameter separator (PEP 570)"><span class="pre">/</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom_logger</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shutdown_event</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_queue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/metatrader/copier.html#RunCopier"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.copier.RunCopier" title="Link to this definition"></a></dt>
+<dd><p>Initializes and runs a TradeCopier instance in a single process.</p>
+<p>This function serves as a straightforward wrapper to start a copying session
+that handles one source account and one or more destination accounts
+<em>sequentially</em> within the same thread. It does not create any new processes itself.</p>
+<p>This is useful for:
+- Simpler, command-line based use cases.
+- Scenarios where parallelism is not required.
+- As the target for <cite>RunMultipleCopier</cite>, where each process handles a</p>
+<blockquote>
+<div><p>full source-to-destinations session.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source</strong> (<em>dict</em>) – Configuration dictionary for the source account.</p></li>
+<li><p><strong>destinations</strong> (<em>list</em>) – A list of configuration dictionaries, one for each
+destination account to be processed sequentially.</p></li>
+<li><p><strong>sleeptime</strong> (<em>float</em>) – The time in seconds to wait after completing a full
+cycle through all destinations.</p></li>
+<li><p><strong>start_time</strong> (<em>str</em>) – The time of day to start copying (e.g., “08:00”).</p></li>
+<li><p><strong>end_time</strong> (<em>str</em>) – The time of day to stop copying (e.g., “22:00”).</p></li>
+<li><p><strong>custom_logger</strong> – An optional custom logger instance.</p></li>
+<li><p><strong>shutdown_event</strong> (<em>multiprocessing.Event</em>) – An event to signal shutdown.</p></li>
+<li><p><strong>log_queue</strong> (<em>multiprocessing.Queue</em>) – A queue for log messages.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="bbstrader.metatrader.copier.RunMultipleCopier">
-<span class="sig-prename descclassname"><span class="pre">bbstrader.metatrader.copier.</span></span><span class="sig-name descname"><span class="pre">RunMultipleCopier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">accounts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sleeptime</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_delay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/metatrader/copier.html#RunMultipleCopier"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.copier.RunMultipleCopier" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-prename descclassname"><span class="pre">bbstrader.metatrader.copier.</span></span><span class="sig-name descname"><span class="pre">RunMultipleCopier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">accounts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sleeptime</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_delay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shutdown_event</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom_logger</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_queue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/metatrader/copier.html#RunMultipleCopier"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.copier.RunMultipleCopier" title="Link to this definition"></a></dt>
+<dd><p>Manages multiple, independent trade copying sessions in parallel.</p>
+<p>This function acts as a high-level manager that takes a list of account
+setups and creates a separate, dedicated process for each one. Each process
+is responsible for copying from one source account to its associated list of
+destination accounts.</p>
+<p>The parallelism occurs at the <strong>source account level</strong>. Within each spawned
+process, the destinations for that source are handled sequentially by <cite>RunCopier</cite>.</p>
+<p>Example <cite>accounts</cite> structure:
+[</p>
+<blockquote>
+<div><p>{ “source”: {…}, “destinations”: [{…}, {…}] },  # -&gt; Process 1
+{ “source”: {…}, “destinations”: [{…}] }          # -&gt; Process 2</p>
+</div></blockquote>
+<p>]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>accounts</strong> (<em>List</em><em>[</em><em>dict</em><em>]</em>) – A list of account configurations. Each item in the
+list must be a dictionary with a ‘source’ key and a ‘destinations’ key.</p></li>
+<li><p><strong>sleeptime</strong> (<em>float</em>) – The sleep time passed down to each <cite>RunCopier</cite> process.</p></li>
+<li><p><strong>start_delay</strong> (<em>float</em>) – A delay in seconds between starting each new process.
+This helps prevent resource contention by staggering the initialization
+of multiple MetaTrader 5 terminals.</p></li>
+<li><p><strong>start_time</strong> (<em>str</em>) – The start time passed down to each <cite>RunCopier</cite> process.</p></li>
+<li><p><strong>end_time</strong> (<em>str</em>) – The end time passed down to each <cite>RunCopier</cite> process.</p></li>
+<li><p><strong>shutdown_event</strong> (<em>multiprocessing.Event</em>) – An event to signal shutdown to all
+child processes.</p></li>
+<li><p><strong>custom_logger</strong> – An optional custom logger instance.</p></li>
+<li><p><strong>log_queue</strong> (<em>multiprocessing.Queue</em>) – A queue for aggregating log messages
+from all child processes.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="bbstrader.metatrader.copier.TradeCopier">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bbstrader.metatrader.copier.</span></span><span class="sig-name descname"><span class="pre">TradeCopier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destinations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sleeptime</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/metatrader/copier.html#TradeCopier"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.copier.TradeCopier" title="Link to this definition"></a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bbstrader.metatrader.copier.</span></span><span class="sig-name descname"><span class="pre">TradeCopier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destinations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="positional-only-separator o"><abbr title="Positional-only parameter separator (PEP 570)"><span class="pre">/</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">sleeptime</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom_logger</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shutdown_event</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_queue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/metatrader/copier.html#TradeCopier"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.copier.TradeCopier" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p><code class="docutils literal notranslate"><span class="pre">TradeCopier</span></code> responsible for copying trading orders and positions from a source account to multiple destination accounts.</p>
 <p>This class facilitates the synchronization of trades between a source account and multiple destination accounts.
@@ -1110,7 +1232,7 @@ It handles copying new orders, modifying existing orders, updating and closing p
 
 <dl class="py method">
 <dt class="sig sig-object py" id="bbstrader.metatrader.copier.TradeCopier.copy_new_trade">
-<span class="sig-name descname"><span class="pre">copy_new_trade</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trade</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#bbstrader.metatrader.utils.TradeOrder" title="bbstrader.metatrader.utils.TradeOrder"><span class="pre">TradeOrder</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#bbstrader.metatrader.utils.TradePosition" title="bbstrader.metatrader.utils.TradePosition"><span class="pre">TradePosition</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">action_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destination</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/metatrader/copier.html#TradeCopier.copy_new_trade"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.copier.TradeCopier.copy_new_trade" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">copy_new_trade</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trade</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#bbstrader.metatrader.utils.TradeOrder" title="bbstrader.metatrader.utils.TradeOrder"><span class="pre">TradeOrder</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#bbstrader.metatrader.utils.TradePosition" title="bbstrader.metatrader.utils.TradePosition"><span class="pre">TradePosition</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">destination</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/metatrader/copier.html#TradeCopier.copy_new_trade"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.copier.TradeCopier.copy_new_trade" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -1121,6 +1243,11 @@ It handles copying new orders, modifying existing orders, updating and closing p
 <dl class="py method">
 <dt class="sig sig-object py" id="bbstrader.metatrader.copier.TradeCopier.copy_positions">
 <span class="sig-name descname"><span class="pre">copy_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">destination</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/metatrader/copier.html#TradeCopier.copy_positions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.copier.TradeCopier.copy_positions" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.copier.TradeCopier.custom_logger">
+<span class="sig-name descname"><span class="pre">custom_logger</span></span><a class="headerlink" href="#bbstrader.metatrader.copier.TradeCopier.custom_logger" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -1135,7 +1262,7 @@ It handles copying new orders, modifying existing orders, updating and closing p
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="bbstrader.metatrader.copier.TradeCopier.destinations">
-<span class="sig-name descname"><span class="pre">destinations</span></span><a class="headerlink" href="#bbstrader.metatrader.copier.TradeCopier.destinations" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">destinations</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#bbstrader.metatrader.copier.TradeCopier.destinations" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -1154,13 +1281,18 @@ It handles copying new orders, modifying existing orders, updating and closing p
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.metatrader.copier.TradeCopier.get_copy_symbol">
+<span class="sig-name descname"><span class="pre">get_copy_symbol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destination</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'destination'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/metatrader/copier.html#TradeCopier.get_copy_symbol"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.copier.TradeCopier.get_copy_symbol" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="bbstrader.metatrader.copier.TradeCopier.get_orders">
-<span class="sig-name descname"><span class="pre">get_orders</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">destination</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/metatrader/copier.html#TradeCopier.get_orders"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.copier.TradeCopier.get_orders" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_orders</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">destination</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#bbstrader.metatrader.utils.TradeOrder" title="bbstrader.metatrader.utils.TradeOrder"><span class="pre">TradeOrder</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#bbstrader.metatrader.utils.TradeOrder" title="bbstrader.metatrader.utils.TradeOrder"><span class="pre">TradeOrder</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/bbstrader/metatrader/copier.html#TradeCopier.get_orders"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.copier.TradeCopier.get_orders" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="bbstrader.metatrader.copier.TradeCopier.get_positions">
-<span class="sig-name descname"><span class="pre">get_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">destination</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/metatrader/copier.html#TradeCopier.get_positions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.copier.TradeCopier.get_positions" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">destination</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#bbstrader.metatrader.utils.TradePosition" title="bbstrader.metatrader.utils.TradePosition"><span class="pre">TradePosition</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#bbstrader.metatrader.utils.TradePosition" title="bbstrader.metatrader.utils.TradePosition"><span class="pre">TradePosition</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/bbstrader/metatrader/copier.html#TradeCopier.get_positions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.copier.TradeCopier.get_positions" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -1184,6 +1316,16 @@ It handles copying new orders, modifying existing orders, updating and closing p
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.metatrader.copier.TradeCopier.log_message">
+<span class="sig-name descname"><span class="pre">log_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'info'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/metatrader/copier.html#TradeCopier.log_message"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.copier.TradeCopier.log_message" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.copier.TradeCopier.log_queue">
+<span class="sig-name descname"><span class="pre">log_queue</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Queue</span></em><a class="headerlink" href="#bbstrader.metatrader.copier.TradeCopier.log_queue" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="bbstrader.metatrader.copier.TradeCopier.modify_order">
 <span class="sig-name descname"><span class="pre">modify_order</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ticket</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#bbstrader.metatrader.utils.TradeOrder" title="bbstrader.metatrader.utils.TradeOrder"><span class="pre">TradeOrder</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">destination</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/metatrader/copier.html#TradeCopier.modify_order"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.copier.TradeCopier.modify_order" title="Link to this definition"></a></dt>
 <dd></dd></dl>
@@ -1191,6 +1333,16 @@ It handles copying new orders, modifying existing orders, updating and closing p
 <dl class="py method">
 <dt class="sig sig-object py" id="bbstrader.metatrader.copier.TradeCopier.modify_position">
 <span class="sig-name descname"><span class="pre">modify_position</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ticket</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#bbstrader.metatrader.utils.TradePosition" title="bbstrader.metatrader.utils.TradePosition"><span class="pre">TradePosition</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">destination</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/metatrader/copier.html#TradeCopier.modify_position"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.copier.TradeCopier.modify_position" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.metatrader.copier.TradeCopier.process_all_orders">
+<span class="sig-name descname"><span class="pre">process_all_orders</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">destination</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/metatrader/copier.html#TradeCopier.process_all_orders"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.copier.TradeCopier.process_all_orders" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.metatrader.copier.TradeCopier.process_all_positions">
+<span class="sig-name descname"><span class="pre">process_all_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">destination</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/metatrader/copier.html#TradeCopier.process_all_positions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.copier.TradeCopier.process_all_positions" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -1206,6 +1358,18 @@ It handles copying new orders, modifying existing orders, updating and closing p
 <dl class="py method">
 <dt class="sig sig-object py" id="bbstrader.metatrader.copier.TradeCopier.run">
 <span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/metatrader/copier.html#TradeCopier.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.copier.TradeCopier.run" title="Link to this definition"></a></dt>
+<dd><p>Entry point: Starts a dedicated worker thread for EACH destination account to run concurrently.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bbstrader.metatrader.copier.TradeCopier.running">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">running</span></span><a class="headerlink" href="#bbstrader.metatrader.copier.TradeCopier.running" title="Link to this definition"></a></dt>
+<dd><p>Check if the Trade Copier is running.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.copier.TradeCopier.shutdown_event">
+<span class="sig-name descname"><span class="pre">shutdown_event</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Event</span></em><a class="headerlink" href="#bbstrader.metatrader.copier.TradeCopier.shutdown_event" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -1220,7 +1384,17 @@ It handles copying new orders, modifying existing orders, updating and closing p
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="bbstrader.metatrader.copier.TradeCopier.source">
-<span class="sig-name descname"><span class="pre">source</span></span><a class="headerlink" href="#bbstrader.metatrader.copier.TradeCopier.source" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">source</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span></em><a class="headerlink" href="#bbstrader.metatrader.copier.TradeCopier.source" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.copier.TradeCopier.source_id">
+<span class="sig-name descname"><span class="pre">source_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#bbstrader.metatrader.copier.TradeCopier.source_id" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.copier.TradeCopier.source_isunique">
+<span class="sig-name descname"><span class="pre">source_isunique</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#bbstrader.metatrader.copier.TradeCopier.source_isunique" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -1233,10 +1407,22 @@ It handles copying new orders, modifying existing orders, updating and closing p
 <span class="sig-name descname"><span class="pre">source_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/metatrader/copier.html#TradeCopier.source_positions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.copier.TradeCopier.source_positions" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.metatrader.copier.TradeCopier.start_copy_process">
+<span class="sig-name descname"><span class="pre">start_copy_process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">destination</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/metatrader/copier.html#TradeCopier.start_copy_process"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.copier.TradeCopier.start_copy_process" title="Link to this definition"></a></dt>
+<dd><p>Worker process: copies orders and positions concurrently for a single destination account.</p>
+</dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="bbstrader.metatrader.copier.TradeCopier.start_time">
 <span class="sig-name descname"><span class="pre">start_time</span></span><a class="headerlink" href="#bbstrader.metatrader.copier.TradeCopier.start_time" title="Link to this definition"></a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.metatrader.copier.TradeCopier.stop">
+<span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/metatrader/copier.html#TradeCopier.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.copier.TradeCopier.stop" title="Link to this definition"></a></dt>
+<dd><p>Stop the Trade Copier gracefully by setting the shutdown event.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -1266,6 +1452,41 @@ It handles copying new orders, modifying existing orders, updating and closing p
 <span class="pre">source,</span> <span class="pre">destinations</span> <span class="pre">=</span> <span class="pre">config_copier(config_file,</span> <span class="pre">&quot;SOURCE&quot;,</span> <span class="pre">[&quot;DEST1&quot;,</span> <span class="pre">&quot;DEST2&quot;])</span>
 <span class="pre">`</span></code></p>
 </dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bbstrader.metatrader.copier.copier_worker_process">
+<span class="sig-prename descclassname"><span class="pre">bbstrader.metatrader.copier.</span></span><span class="sig-name descname"><span class="pre">copier_worker_process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destination_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sleeptime</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="positional-only-separator o"><abbr title="Positional-only parameter separator (PEP 570)"><span class="pre">/</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom_logger</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shutdown_event</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_queue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/metatrader/copier.html#copier_worker_process"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.copier.copier_worker_process" title="Link to this definition"></a></dt>
+<dd><p>A top-level worker function for handling a single source-to-destination copy task.</p>
+<p>This function is the cornerstone of the robust, multi-process architecture. It is
+designed to be the <cite>target</cite> of a <cite>multiprocessing.Process</cite>. By being a top-level
+function, it avoids pickling issues on Windows and ensures that each copy task
+runs in a completely isolated process.</p>
+<p>A controller (like a GUI or a master script) should spawn one process with this
+target for each destination account it needs to manage.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source_config</strong> (<em>dict</em>) – Configuration dictionary for the source account.
+Must contain ‘login’, ‘password’, ‘server’, and ‘path’.</p></li>
+<li><p><strong>destination_config</strong> (<em>dict</em>) – Configuration dictionary for a <em>single</em>
+destination account.</p></li>
+<li><p><strong>sleeptime</strong> (<em>float</em>) – The time in seconds to wait between copy cycles.</p></li>
+<li><p><strong>start_time</strong> (<em>str</em>) – The time of day to start copying (e.g., “08:00”).</p></li>
+<li><p><strong>end_time</strong> (<em>str</em>) – The time of day to stop copying (e.g., “22:00”).</p></li>
+<li><p><strong>custom_logger</strong> – An optional custom logger instance.</p></li>
+<li><p><strong>shutdown_event</strong> (<em>multiprocessing.Event</em>) – An event object that, when set,
+will signal this process to terminate gracefully.</p></li>
+<li><p><strong>log_queue</strong> (<em>multiprocessing.Queue</em>) – A queue for sending log messages back
+to the parent process in a thread-safe manner.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bbstrader.metatrader.copier.get_symbols_from_string">
+<span class="sig-prename descclassname"><span class="pre">bbstrader.metatrader.copier.</span></span><span class="sig-name descname"><span class="pre">get_symbols_from_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbols_string</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/metatrader/copier.html#get_symbols_from_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.copier.get_symbols_from_string" title="Link to this definition"></a></dt>
+<dd></dd></dl>
 
 </section>
 <section id="module-bbstrader.metatrader.rates">
@@ -1308,7 +1529,7 @@ volume</cite> properties returns data in  Broker’s timezone by default.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="bbstrader.metatrader.rates.Rates.get_historical_data">
-<span class="sig-name descname"><span class="pre">get_historical_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">date_from</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datetime</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Timestamp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date_to</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datetime</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Timestamp</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Timestamp('2025-06-14</span> <span class="pre">11:56:46.471387')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">utc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill_na</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lower_colnames</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_csv</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="_modules/bbstrader/metatrader/rates.html#Rates.get_historical_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.rates.Rates.get_historical_data" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_historical_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">date_from</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datetime</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Timestamp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date_to</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datetime</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Timestamp</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Timestamp('2025-08-26</span> <span class="pre">17:41:13.532132')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">utc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill_na</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lower_colnames</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_csv</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="_modules/bbstrader/metatrader/rates.html#Rates.get_historical_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.rates.Rates.get_historical_data" title="Link to this definition"></a></dt>
 <dd><p>Retrieves historical data within a specified date range.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1458,7 +1679,7 @@ and <cite>not percentage change</cite>. If you need the percentage change, multi
 
 <dl class="py function">
 <dt class="sig sig-object py" id="bbstrader.metatrader.rates.download_historical_data">
-<span class="sig-prename descclassname"><span class="pre">bbstrader.metatrader.rates.</span></span><span class="sig-name descname"><span class="pre">download_historical_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeframe</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date_from</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date_to</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Timestamp('2025-06-14</span> <span class="pre">11:56:46.471387')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lower_colnames</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">utc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill_na</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_csv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/metatrader/rates.html#download_historical_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.rates.download_historical_data" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">bbstrader.metatrader.rates.</span></span><span class="sig-name descname"><span class="pre">download_historical_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeframe</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date_from</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date_to</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Timestamp('2025-08-26</span> <span class="pre">17:41:13.532132')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lower_colnames</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">utc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill_na</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_csv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/metatrader/rates.html#download_historical_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.rates.download_historical_data" title="Link to this definition"></a></dt>
 <dd><p>Download historical data from MetaTrader 5 terminal.
 See <cite>Rates.get_historical_data</cite> for more details.</p>
 </dd></dl>
@@ -1739,7 +1960,7 @@ If you want to use the VaR for a different time frame .</p>
 <span id="bbstrader-metatrader-trade-module"></span><h2>bbstrader.metatrader.trade module<a class="headerlink" href="#module-bbstrader.metatrader.trade" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="bbstrader.metatrader.trade.Trade">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bbstrader.metatrader.trade.</span></span><span class="sig-name descname"><span class="pre">Trade</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'EURUSD'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expert_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'bbstrader'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expert_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">98181105</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'2.0'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'0:00'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">finishing_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'23:59'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ending_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'23:59'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">console_log</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Logger</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'bbstrader.log'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/metatrader/trade.html#Trade"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.trade.Trade" title="Link to this definition"></a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bbstrader.metatrader.trade.</span></span><span class="sig-name descname"><span class="pre">Trade</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'EURUSD'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expert_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'bbstrader'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expert_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">98181105</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'3.0'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'0:00'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">finishing_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'23:59'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ending_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'23:59'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">console_log</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Logger</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'bbstrader.log'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/metatrader/trade.html#Trade"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.trade.Trade" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#bbstrader.metatrader.risk.RiskManagement" title="bbstrader.metatrader.risk.RiskManagement"><code class="xref py py-class docutils literal notranslate"><span class="pre">RiskManagement</span></code></a></p>
 <p>Extends the <cite>RiskManagement</cite> class to include specific trading operations,
 incorporating risk management strategies directly into trade executions.
@@ -2093,11 +2314,14 @@ the starting, the finishing, and ending trading time.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="bbstrader.metatrader.trade.Trade.get_today_deals">
-<span class="sig-name descname"><span class="pre">get_today_deals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#bbstrader.metatrader.utils.TradeDeal" title="bbstrader.metatrader.utils.TradeDeal"><span class="pre">TradeDeal</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/bbstrader/metatrader/trade.html#Trade.get_today_deals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.trade.Trade.get_today_deals" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_today_deals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/metatrader/trade.html#Trade.get_today_deals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.trade.Trade.get_today_deals" title="Link to this definition"></a></dt>
 <dd><p>Get all today deals for a specific symbol or group of symbols</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>group</strong> (<em>str</em>) – Symbol or group or symbol</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>int</em>) – strategy or expert id</p></li>
+<li><p><strong>group</strong> (<em>str</em>) – Symbol or group or symbol</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>List of today deals</p>
@@ -2404,6 +2628,280 @@ wen it is closed before be level , tp or sl.</p>
 
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.TradeAction">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bbstrader.metatrader.trade.</span></span><span class="sig-name descname"><span class="pre">TradeAction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/metatrader/trade.html#TradeAction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.trade.TradeAction" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>An enumeration class for trade actions.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.TradeAction.BLMT">
+<span class="sig-name descname"><span class="pre">BLMT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'BLMT'</span></em><a class="headerlink" href="#bbstrader.metatrader.trade.TradeAction.BLMT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.TradeAction.BMKT">
+<span class="sig-name descname"><span class="pre">BMKT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'BMKT'</span></em><a class="headerlink" href="#bbstrader.metatrader.trade.TradeAction.BMKT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.TradeAction.BSTP">
+<span class="sig-name descname"><span class="pre">BSTP</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'BSTP'</span></em><a class="headerlink" href="#bbstrader.metatrader.trade.TradeAction.BSTP" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.TradeAction.BSTPLMT">
+<span class="sig-name descname"><span class="pre">BSTPLMT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'BSTPLMT'</span></em><a class="headerlink" href="#bbstrader.metatrader.trade.TradeAction.BSTPLMT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.TradeAction.BUY">
+<span class="sig-name descname"><span class="pre">BUY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'LONG'</span></em><a class="headerlink" href="#bbstrader.metatrader.trade.TradeAction.BUY" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.TradeAction.EXIT">
+<span class="sig-name descname"><span class="pre">EXIT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'EXIT'</span></em><a class="headerlink" href="#bbstrader.metatrader.trade.TradeAction.EXIT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.TradeAction.EXIT_ALL_ORDERS">
+<span class="sig-name descname"><span class="pre">EXIT_ALL_ORDERS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'EXIT_ALL_ORDERS'</span></em><a class="headerlink" href="#bbstrader.metatrader.trade.TradeAction.EXIT_ALL_ORDERS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.TradeAction.EXIT_ALL_POSITIONS">
+<span class="sig-name descname"><span class="pre">EXIT_ALL_POSITIONS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'EXIT_ALL_POSITIONS'</span></em><a class="headerlink" href="#bbstrader.metatrader.trade.TradeAction.EXIT_ALL_POSITIONS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.TradeAction.EXIT_LIMIT">
+<span class="sig-name descname"><span class="pre">EXIT_LIMIT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'EXIT_LIMIT'</span></em><a class="headerlink" href="#bbstrader.metatrader.trade.TradeAction.EXIT_LIMIT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.TradeAction.EXIT_LONG">
+<span class="sig-name descname"><span class="pre">EXIT_LONG</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'EXIT_LONG'</span></em><a class="headerlink" href="#bbstrader.metatrader.trade.TradeAction.EXIT_LONG" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.TradeAction.EXIT_LONG_LIMIT">
+<span class="sig-name descname"><span class="pre">EXIT_LONG_LIMIT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'EXIT_LONG_LIMIT'</span></em><a class="headerlink" href="#bbstrader.metatrader.trade.TradeAction.EXIT_LONG_LIMIT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.TradeAction.EXIT_LONG_STOP">
+<span class="sig-name descname"><span class="pre">EXIT_LONG_STOP</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'EXIT_LONG_STOP'</span></em><a class="headerlink" href="#bbstrader.metatrader.trade.TradeAction.EXIT_LONG_STOP" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.TradeAction.EXIT_LONG_STOP_LIMIT">
+<span class="sig-name descname"><span class="pre">EXIT_LONG_STOP_LIMIT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'EXIT_LONG_STOP_LIMIT'</span></em><a class="headerlink" href="#bbstrader.metatrader.trade.TradeAction.EXIT_LONG_STOP_LIMIT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.TradeAction.EXIT_LOSINGS">
+<span class="sig-name descname"><span class="pre">EXIT_LOSINGS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'EXIT_LOSINGS'</span></em><a class="headerlink" href="#bbstrader.metatrader.trade.TradeAction.EXIT_LOSINGS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.TradeAction.EXIT_PROFITABLES">
+<span class="sig-name descname"><span class="pre">EXIT_PROFITABLES</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'EXIT_PROFITABLES'</span></em><a class="headerlink" href="#bbstrader.metatrader.trade.TradeAction.EXIT_PROFITABLES" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.TradeAction.EXIT_SHORT">
+<span class="sig-name descname"><span class="pre">EXIT_SHORT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'EXIT_SHORT'</span></em><a class="headerlink" href="#bbstrader.metatrader.trade.TradeAction.EXIT_SHORT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.TradeAction.EXIT_SHORT_LIMIT">
+<span class="sig-name descname"><span class="pre">EXIT_SHORT_LIMIT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'EXIT_SHORT_LIMIT'</span></em><a class="headerlink" href="#bbstrader.metatrader.trade.TradeAction.EXIT_SHORT_LIMIT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.TradeAction.EXIT_SHORT_STOP">
+<span class="sig-name descname"><span class="pre">EXIT_SHORT_STOP</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'EXIT_SHORT_STOP'</span></em><a class="headerlink" href="#bbstrader.metatrader.trade.TradeAction.EXIT_SHORT_STOP" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.TradeAction.EXIT_SHORT_STOP_LIMIT">
+<span class="sig-name descname"><span class="pre">EXIT_SHORT_STOP_LIMIT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'EXIT_SHORT_STOP_LIMIT'</span></em><a class="headerlink" href="#bbstrader.metatrader.trade.TradeAction.EXIT_SHORT_STOP_LIMIT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.TradeAction.EXIT_STOP">
+<span class="sig-name descname"><span class="pre">EXIT_STOP</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'EXIT_STOP'</span></em><a class="headerlink" href="#bbstrader.metatrader.trade.TradeAction.EXIT_STOP" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.TradeAction.LONG">
+<span class="sig-name descname"><span class="pre">LONG</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'LONG'</span></em><a class="headerlink" href="#bbstrader.metatrader.trade.TradeAction.LONG" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.TradeAction.SELL">
+<span class="sig-name descname"><span class="pre">SELL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'SHORT'</span></em><a class="headerlink" href="#bbstrader.metatrader.trade.TradeAction.SELL" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.TradeAction.SHORT">
+<span class="sig-name descname"><span class="pre">SHORT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'SHORT'</span></em><a class="headerlink" href="#bbstrader.metatrader.trade.TradeAction.SHORT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.TradeAction.SLMT">
+<span class="sig-name descname"><span class="pre">SLMT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'SLMT'</span></em><a class="headerlink" href="#bbstrader.metatrader.trade.TradeAction.SLMT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.TradeAction.SMKT">
+<span class="sig-name descname"><span class="pre">SMKT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'SMKT'</span></em><a class="headerlink" href="#bbstrader.metatrader.trade.TradeAction.SMKT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.TradeAction.SSTP">
+<span class="sig-name descname"><span class="pre">SSTP</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'SSTP'</span></em><a class="headerlink" href="#bbstrader.metatrader.trade.TradeAction.SSTP" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.TradeAction.SSTPLMT">
+<span class="sig-name descname"><span class="pre">SSTPLMT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'SSTPLMT'</span></em><a class="headerlink" href="#bbstrader.metatrader.trade.TradeAction.SSTPLMT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.TradeSignal">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bbstrader.metatrader.trade.</span></span><span class="sig-name descname"><span class="pre">TradeSignal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#bbstrader.metatrader.trade.TradeAction" title="bbstrader.metatrader.trade.TradeAction"><span class="pre">TradeAction</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">price</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stoplimit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/metatrader/trade.html#TradeSignal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.trade.TradeSignal" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Represents a trading signal generated by a trading system or strategy.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.TradeSignal.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#bbstrader.metatrader.trade.TradeSignal.id" title="Link to this definition"></a></dt>
+<dd><p>A unique identifier for the trade signal or the strategy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.TradeSignal.symbol">
+<span class="sig-name descname"><span class="pre">symbol</span></span><a class="headerlink" href="#bbstrader.metatrader.trade.TradeSignal.symbol" title="Link to this definition"></a></dt>
+<dd><p>The trading symbol (e.g., stock ticker, forex pair, crypto asset)
+related to the signal.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.TradeSignal.action">
+<span class="sig-name descname"><span class="pre">action</span></span><a class="headerlink" href="#bbstrader.metatrader.trade.TradeSignal.action" title="Link to this definition"></a></dt>
+<dd><p>The trading action to perform.
+Must be an instance of the <cite>TradeAction</cite> enum (e.g., BUY, SELL).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#bbstrader.metatrader.trade.TradeAction" title="bbstrader.metatrader.trade.TradeAction">TradeAction</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.TradeSignal.price">
+<span class="sig-name descname"><span class="pre">price</span></span><a class="headerlink" href="#bbstrader.metatrader.trade.TradeSignal.price" title="Link to this definition"></a></dt>
+<dd><p>The price at which the trade should be executed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float, optional</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.TradeSignal.stoplimit">
+<span class="sig-name descname"><span class="pre">stoplimit</span></span><a class="headerlink" href="#bbstrader.metatrader.trade.TradeSignal.stoplimit" title="Link to this definition"></a></dt>
+<dd><p>A stop-limit price for the trade.
+Must not be set without specifying a price.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float, optional</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.TradeSignal.comment">
+<span class="sig-name descname"><span class="pre">comment</span></span><a class="headerlink" href="#bbstrader.metatrader.trade.TradeSignal.comment" title="Link to this definition"></a></dt>
+<dd><p>An optional comment or description related to the trade signal.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str, optional</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">action</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#bbstrader.metatrader.trade.TradeAction" title="bbstrader.metatrader.trade.TradeAction"><span class="pre">TradeAction</span></a></em><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">comment</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#id1" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id2">
+<span class="sig-name descname"><span class="pre">id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#id2" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id3">
+<span class="sig-name descname"><span class="pre">price</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#id3" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id4">
+<span class="sig-name descname"><span class="pre">stoplimit</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#id4" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id5">
+<span class="sig-name descname"><span class="pre">symbol</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#id5" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.TradingMode">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bbstrader.metatrader.trade.</span></span><span class="sig-name descname"><span class="pre">TradingMode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/metatrader/trade.html#TradingMode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.trade.TradingMode" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.TradingMode.BACKTEST">
+<span class="sig-name descname"><span class="pre">BACKTEST</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'BACKTEST'</span></em><a class="headerlink" href="#bbstrader.metatrader.trade.TradingMode.BACKTEST" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.TradingMode.LIVE">
+<span class="sig-name descname"><span class="pre">LIVE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'LIVE'</span></em><a class="headerlink" href="#bbstrader.metatrader.trade.TradingMode.LIVE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.TradingMode.isbacktest">
+<span class="sig-name descname"><span class="pre">isbacktest</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/bbstrader/metatrader/trade.html#TradingMode.isbacktest"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.trade.TradingMode.isbacktest" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.TradingMode.islive">
+<span class="sig-name descname"><span class="pre">islive</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/bbstrader/metatrader/trade.html#TradingMode.islive"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.trade.TradingMode.islive" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="bbstrader.metatrader.trade.create_trade_instance">
 <span class="sig-prename descclassname"><span class="pre">bbstrader.metatrader.trade.</span></span><span class="sig-name descname"><span class="pre">create_trade_instance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbols</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">daily_risk</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_risk</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pchange_sl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#bbstrader.metatrader.trade.Trade" title="bbstrader.metatrader.trade.Trade"><span class="pre">Trade</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/bbstrader/metatrader/trade.html#create_trade_instance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.trade.create_trade_instance" title="Link to this definition"></a></dt>
@@ -2430,6 +2928,30 @@ wen it is closed before be level , tp or sl.</p>
 based on the importance of the symbol in the portfolio or strategy.
 See bbstrader.metatrader.trade.Trade for more details.</p>
 </div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bbstrader.metatrader.trade.generate_signal">
+<span class="sig-prename descclassname"><span class="pre">bbstrader.metatrader.trade.</span></span><span class="sig-name descname"><span class="pre">generate_signal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#bbstrader.metatrader.trade.TradeAction" title="bbstrader.metatrader.trade.TradeAction"><span class="pre">TradeAction</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">price</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stoplimit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#bbstrader.metatrader.trade.TradeSignal" title="bbstrader.metatrader.trade.TradeSignal"><span class="pre">TradeSignal</span></a></span></span><a class="reference internal" href="_modules/bbstrader/metatrader/trade.html#generate_signal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.trade.generate_signal" title="Link to this definition"></a></dt>
+<dd><p>Generates a trade signal for MetaTrader 5.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>int</em>) – Unique identifier for the trade signal.</p></li>
+<li><p><strong>symbol</strong> (<em>str</em>) – The symbol for which the trade signal is generated.</p></li>
+<li><p><strong>action</strong> (<a class="reference internal" href="#bbstrader.metatrader.trade.TradeAction" title="bbstrader.metatrader.trade.TradeAction"><em>TradeAction</em></a>) – The action to be taken (e.g., BUY, SELL).</p></li>
+<li><p><strong>price</strong> (<em>float</em><em>, </em><em>optional</em>) – The price at which to execute the trade.</p></li>
+<li><p><strong>stoplimit</strong> (<em>float</em><em>, </em><em>optional</em>) – The stop limit price for the trade.</p></li>
+<li><p><strong>comment</strong> (<em>str</em><em>, </em><em>optional</em>) – Additional comments for the trade.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A TradeSignal object containing the details of the trade signal.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#bbstrader.metatrader.trade.TradeSignal" title="bbstrader.metatrader.trade.TradeSignal">TradeSignal</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
@@ -3416,6 +3938,63 @@ See <a class="reference external" href="https://www.mql5.com/en/docs/constants/e
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="bbstrader.metatrader.utils.SymbolType">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bbstrader.metatrader.utils.</span></span><span class="sig-name descname"><span class="pre">SymbolType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/metatrader/utils.html#SymbolType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.utils.SymbolType" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>Represents the type of a symbol.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.utils.SymbolType.BONDS">
+<span class="sig-name descname"><span class="pre">BONDS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'BONDS'</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.SymbolType.BONDS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.utils.SymbolType.COMMODITIES">
+<span class="sig-name descname"><span class="pre">COMMODITIES</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'COMMODITIES'</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.SymbolType.COMMODITIES" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.utils.SymbolType.CRYPTO">
+<span class="sig-name descname"><span class="pre">CRYPTO</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'CRYPTO'</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.SymbolType.CRYPTO" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.utils.SymbolType.ETFs">
+<span class="sig-name descname"><span class="pre">ETFs</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'ETFs'</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.SymbolType.ETFs" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.utils.SymbolType.FOREX">
+<span class="sig-name descname"><span class="pre">FOREX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'FOREX'</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.SymbolType.FOREX" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.utils.SymbolType.FUTURES">
+<span class="sig-name descname"><span class="pre">FUTURES</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'FUTURES'</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.SymbolType.FUTURES" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.utils.SymbolType.INDICES">
+<span class="sig-name descname"><span class="pre">INDICES</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'INDICES'</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.SymbolType.INDICES" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.utils.SymbolType.OPTIONS">
+<span class="sig-name descname"><span class="pre">OPTIONS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'OPTIONS'</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.SymbolType.OPTIONS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.utils.SymbolType.STOCKS">
+<span class="sig-name descname"><span class="pre">STOCKS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'STOCKS'</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.SymbolType.STOCKS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bbstrader.metatrader.utils.SymbolType.unknown">
+<span class="sig-name descname"><span class="pre">unknown</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'UNKNOWN'</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.SymbolType.unknown" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="bbstrader.metatrader.utils.TerminalInfo">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bbstrader.metatrader.utils.</span></span><span class="sig-name descname"><span class="pre">TerminalInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">community_account</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">community_connection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connected</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dlls_allowed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trade_allowed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tradeapi_disabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">email_enabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ftp_enabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">notifications_enabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mqid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">build</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxbars</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">codepage</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ping_last</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">community_balance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">retransmission</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">company</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">language</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">commondata_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/metatrader/utils.html#TerminalInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.metatrader.utils.TerminalInfo" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">NamedTuple</span></code></p>
@@ -3625,107 +4204,107 @@ See <a class="reference external" href="https://www.mql5.com/en/docs/constants/e
 <p>Rrepresent a time frame object</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="bbstrader.metatrader.utils.TimeFrame.D1">
-<span class="sig-name descname"><span class="pre">D1</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='1669970890448'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.D1" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">D1</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='2742256501136'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.D1" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="bbstrader.metatrader.utils.TimeFrame.H1">
-<span class="sig-name descname"><span class="pre">H1</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='1669974399248'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.H1" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">H1</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='2742256704336'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.H1" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="bbstrader.metatrader.utils.TimeFrame.H12">
-<span class="sig-name descname"><span class="pre">H12</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='1669974446800'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.H12" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">H12</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='2742257729296'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.H12" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="bbstrader.metatrader.utils.TimeFrame.H2">
-<span class="sig-name descname"><span class="pre">H2</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='1669973712272'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.H2" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">H2</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='2742257692432'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.H2" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="bbstrader.metatrader.utils.TimeFrame.H3">
-<span class="sig-name descname"><span class="pre">H3</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='1669974426000'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.H3" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">H3</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='2742257043088'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.H3" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="bbstrader.metatrader.utils.TimeFrame.H4">
-<span class="sig-name descname"><span class="pre">H4</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='1669974431184'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.H4" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">H4</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='2742256441424'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.H4" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="bbstrader.metatrader.utils.TimeFrame.H6">
-<span class="sig-name descname"><span class="pre">H6</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='1669952719312'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.H6" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">H6</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='2742257253456'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.H6" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="bbstrader.metatrader.utils.TimeFrame.H8">
-<span class="sig-name descname"><span class="pre">H8</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='1669970715664'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.H8" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">H8</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='2742254233040'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.H8" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="bbstrader.metatrader.utils.TimeFrame.M1">
-<span class="sig-name descname"><span class="pre">M1</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='1669973722256'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.M1" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">M1</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='2742257152848'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.M1" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="bbstrader.metatrader.utils.TimeFrame.M10">
-<span class="sig-name descname"><span class="pre">M10</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='1669974356944'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.M10" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">M10</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='2742257629136'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.M10" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="bbstrader.metatrader.utils.TimeFrame.M12">
-<span class="sig-name descname"><span class="pre">M12</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='1669971384464'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.M12" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">M12</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='2742256456336'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.M12" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="bbstrader.metatrader.utils.TimeFrame.M15">
-<span class="sig-name descname"><span class="pre">M15</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='1669974383632'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.M15" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">M15</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='2742234470608'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.M15" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="bbstrader.metatrader.utils.TimeFrame.M2">
-<span class="sig-name descname"><span class="pre">M2</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='1669974331344'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.M2" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">M2</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='2742252751376'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.M2" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="bbstrader.metatrader.utils.TimeFrame.M20">
-<span class="sig-name descname"><span class="pre">M20</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='1669972662800'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.M20" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">M20</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='2742257043024'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.M20" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="bbstrader.metatrader.utils.TimeFrame.M3">
-<span class="sig-name descname"><span class="pre">M3</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='1669972310992'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.M3" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">M3</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='2742231183888'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.M3" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="bbstrader.metatrader.utils.TimeFrame.M30">
-<span class="sig-name descname"><span class="pre">M30</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='1669974394064'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.M30" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">M30</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='2742224340432'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.M30" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="bbstrader.metatrader.utils.TimeFrame.M4">
-<span class="sig-name descname"><span class="pre">M4</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='1669952720912'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.M4" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">M4</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='2742256458256'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.M4" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="bbstrader.metatrader.utils.TimeFrame.M5">
-<span class="sig-name descname"><span class="pre">M5</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='1669974346576'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.M5" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">M5</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='2742257272592'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.M5" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="bbstrader.metatrader.utils.TimeFrame.M6">
-<span class="sig-name descname"><span class="pre">M6</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='1669974351760'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.M6" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">M6</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='2742257623952'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.M6" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="bbstrader.metatrader.utils.TimeFrame.MN1">
-<span class="sig-name descname"><span class="pre">MN1</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='1669974494928'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.MN1" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">MN1</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='2742256456464'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.MN1" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="bbstrader.metatrader.utils.TimeFrame.W1">
-<span class="sig-name descname"><span class="pre">W1</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='1669971384656'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.W1" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">W1</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;MagicMock</span> <span class="pre">id='2742256441616'&gt;</span></em><a class="headerlink" href="#bbstrader.metatrader.utils.TimeFrame.W1" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>

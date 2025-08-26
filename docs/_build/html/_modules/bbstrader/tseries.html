@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>bbstrader.tseries &mdash; bbstrader 0.3.0 documentation</title>
+  <title>bbstrader.tseries &mdash; bbstrader 0.3.3 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=e259d695"></script>
+      <script src="../../_static/documentation_options.js?v=d5a15cff"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -71,59 +71,34 @@
   <h1>Source code for bbstrader.tseries</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">The `tseries` module is a designed for conducting</span>
-<span class="sd">advanced time series analysis in financial markets.</span>
-<span class="sd">It leverages statistical models and algorithms to perform</span>
-<span class="sd">tasks such as cointegration testing, volatility modeling,</span>
-<span class="sd">and filter-based estimation to assist in trading strategy development,</span>
-<span class="sd">market analysis, and financial data exploration.</span>
+<span class="sd">some simple time series analysis in financial markets.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">pprint</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">combinations</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">pmdarima</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pm</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">statsmodels.api</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sm</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">statsmodels.tsa.stattools</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ts</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">yfinance</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">yf</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">arch</span><span class="w"> </span><span class="kn">import</span> <span class="n">arch_model</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">filterpy.kalman</span><span class="w"> </span><span class="kn">import</span> <span class="n">KalmanFilter</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">hurst</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute_Hc</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pykalman</span><span class="w"> </span><span class="kn">import</span> <span class="n">KalmanFilter</span> <span class="k">as</span> <span class="n">PyKalmanFilter</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.optimize</span><span class="w"> </span><span class="kn">import</span> <span class="n">minimize</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogisticRegressionCV</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">GridSearchCV</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.tree</span><span class="w"> </span><span class="kn">import</span> <span class="n">DecisionTreeClassifier</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">statsmodels.graphics.tsaplots</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_acf</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">statsmodels.stats.diagnostic</span><span class="w"> </span><span class="kn">import</span> <span class="n">acorr_ljungbox</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">statsmodels.tsa.arima.model</span><span class="w"> </span><span class="kn">import</span> <span class="n">ARIMA</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">statsmodels.tsa.stattools</span><span class="w"> </span><span class="kn">import</span> <span class="n">adfuller</span><span class="p">,</span> <span class="n">coint</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">statsmodels.tsa.vector_ar.var_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">VAR</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">statsmodels.tsa.vector_ar.vecm</span><span class="w"> </span><span class="kn">import</span> <span class="n">coint_johansen</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
 
-<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
-
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s2">&quot;load_and_prepare_data&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;fit_best_arima&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;fit_garch&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;predict_next_return&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;get_prediction&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;get_corr&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;run_cadf_test&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;run_hurst_test&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;run_coint_test&quot;</span><span class="p">,</span>
     <span class="s2">&quot;run_kalman_filter&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;ArimaGarchModel&quot;</span><span class="p">,</span>
     <span class="s2">&quot;KalmanFilterModel&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;OrnsteinUhlenbeck&quot;</span><span class="p">,</span>
     <span class="s2">&quot;remove_correlated_assets&quot;</span><span class="p">,</span>
     <span class="s2">&quot;check_stationarity&quot;</span><span class="p">,</span>
     <span class="s2">&quot;remove_stationary_assets&quot;</span><span class="p">,</span>
@@ -141,512 +116,54 @@
 <span class="c1"># *******************************************</span>
 
 
-<div class="viewcode-block" id="load_and_prepare_data">
-<a class="viewcode-back" href="../../bbstrader.html#bbstrader.tseries.load_and_prepare_data">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">load_and_prepare_data</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Prepares financial time series data for analysis.</span>
-
-<span class="sd">    This function takes a pandas DataFrame containing financial data,</span>
-<span class="sd">    calculates logarithmic returns, and the first difference</span>
-<span class="sd">    of these logarithmic returns. It handles missing values</span>
-<span class="sd">    by filling them with zeros.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        df (pd.DataFrame): DataFrame containing at least</span>
-<span class="sd">            a `Close` column with closing prices of a financial asset.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        pd.DataFrame: DataFrame with additional</span>
-<span class="sd">            columns for logarithmic returns (`log_return`)</span>
-<span class="sd">            and the first difference of logarithmic returns (`diff_log_return`),</span>
-<span class="sd">            with `NaN` values filled with `0`.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Load data</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-    <span class="c1"># Calculate logarithmic returns</span>
-    <span class="n">data</span><span class="p">[</span><span class="s2">&quot;log_return&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;Close&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Close&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
-    <span class="c1"># Differencing if necessary</span>
-    <span class="n">data</span><span class="p">[</span><span class="s2">&quot;diff_log_return&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;log_return&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">diff</span><span class="p">()</span>
-    <span class="c1"># Drop NaN values</span>
-    <span class="n">data</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">data</span></div>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_and_prepare_data</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;`load_and_prepare_data` is removed.&quot;</span><span class="p">,</span> <span class="ne">DeprecationWarning</span><span class="p">)</span>
 
 
-
-<div class="viewcode-block" id="fit_best_arima">
-<a class="viewcode-back" href="../../bbstrader.html#bbstrader.tseries.fit_best_arima">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">fit_best_arima</span><span class="p">(</span><span class="n">window_data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Identifies and fits the best `ARIMA` model</span>
-<span class="sd">    based on the Akaike Information Criterion `(AIC)`.</span>
-
-<span class="sd">    Iterates through different combinations of `p` and `q`</span>
-<span class="sd">    parameters (within specified ranges) for the ARIMA model,</span>
-<span class="sd">    fits them to the provided data, and selects the combination</span>
-<span class="sd">    with the lowest `AIC` value.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        window_data (pd.Series or np.ndarray):</span>
-<span class="sd">            Time series data to fit the `ARIMA` model on.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        ARIMA result object: The fitted `ARIMA` model with the lowest `AIC`.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">window_data</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">):</span>
-        <span class="n">window_data</span> <span class="o">=</span> <span class="n">window_data</span><span class="o">.</span><span class="n">values</span>
-
-    <span class="n">window_data</span> <span class="o">=</span> <span class="n">window_data</span><span class="p">[</span><span class="o">~</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">window_data</span><span class="p">)</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">window_data</span><span class="p">))]</span>
-    <span class="c1"># Fit ARIMA model with best parameters</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">auto_arima</span><span class="p">(</span>
-        <span class="n">window_data</span><span class="p">,</span>
-        <span class="n">start_p</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-        <span class="n">start_q</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-        <span class="n">max_p</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
-        <span class="n">max_q</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
-        <span class="n">seasonal</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">stepwise</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">fit_best_arima</span><span class="p">(</span><span class="n">window_data</span><span class="p">):</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+        <span class="s2">&quot;`fit_best_arima` is deprecated, use `pmdarima.auto_arima` instead.&quot;</span><span class="p">,</span>
+        <span class="ne">DeprecationWarning</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">final_order</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">order</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">arch.utility.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConvergenceWarning</span> <span class="k">as</span> <span class="n">ArchWarning</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">statsmodels.tools.sm_exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConvergenceWarning</span> <span class="k">as</span> <span class="n">StatsWarning</span>
-
-    <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
-        <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">StatsWarning</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s2">&quot;statsmodels&quot;</span><span class="p">)</span>
-        <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">ArchWarning</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s2">&quot;arch&quot;</span><span class="p">)</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">best_arima_model</span> <span class="o">=</span> <span class="n">ARIMA</span><span class="p">(</span>
-                <span class="n">window_data</span> <span class="o">+</span> <span class="mf">1e-5</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">final_order</span><span class="p">,</span> <span class="n">missing</span><span class="o">=</span><span class="s2">&quot;drop&quot;</span>
-            <span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
-            <span class="k">return</span> <span class="n">best_arima_model</span>
-        <span class="k">except</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">LinAlgError</span><span class="p">:</span>
-            <span class="c1"># Catch specific linear algebra errors</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;LinAlgError occurred, skipping this data point.&quot;</span><span class="p">)</span>
-            <span class="k">return</span> <span class="kc">None</span>
-        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="c1"># Catch any other unexpected errors and log them</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;An error occurred: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="k">return</span> <span class="kc">None</span></div>
 
 
-
-<div class="viewcode-block" id="fit_garch">
-<a class="viewcode-back" href="../../bbstrader.html#bbstrader.tseries.fit_garch">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">fit_garch</span><span class="p">(</span><span class="n">window_data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Fits an `ARIMA` model to the data to get residuals,</span>
-<span class="sd">    then fits a `GARCH(1,1)` model on these residuals.</span>
-
-<span class="sd">    Utilizes the residuals from the best `ARIMA` model fit to</span>
-<span class="sd">    then model volatility using a `GARCH(1,1)` model.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        window_data (pd.Series or np.ndarray):</span>
-<span class="sd">            Time series data for which to fit the `ARIMA` and `GARCH` models.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        tuple: A tuple containing the `ARIMA` result</span>
-<span class="sd">            object and the `GARCH` result object.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">arima_result</span> <span class="o">=</span> <span class="n">fit_best_arima</span><span class="p">(</span><span class="n">window_data</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">arima_result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
-    <span class="n">resid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">arima_result</span><span class="o">.</span><span class="n">resid</span><span class="p">)</span>
-    <span class="n">resid</span> <span class="o">=</span> <span class="n">resid</span><span class="p">[</span><span class="o">~</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">resid</span><span class="p">)</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">resid</span><span class="p">))]</span>
-    <span class="n">garch_model</span> <span class="o">=</span> <span class="n">arch_model</span><span class="p">(</span><span class="n">resid</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">rescale</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="n">garch_result</span> <span class="o">=</span> <span class="n">garch_model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">disp</span><span class="o">=</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">arima_result</span><span class="p">,</span> <span class="n">garch_result</span></div>
+<span class="k">def</span><span class="w"> </span><span class="nf">fit_garch</span><span class="p">(</span><span class="n">window_data</span><span class="p">):</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+        <span class="s2">&quot;`fit_garch` is deprecated, use `arch.arch_model` instead.&quot;</span><span class="p">,</span>
+        <span class="ne">DeprecationWarning</span><span class="p">,</span>
+    <span class="p">)</span>
 
 
-
-<div class="viewcode-block" id="predict_next_return">
-<a class="viewcode-back" href="../../bbstrader.html#bbstrader.tseries.predict_next_return">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">predict_next_return</span><span class="p">(</span><span class="n">arima_result</span><span class="p">,</span> <span class="n">garch_result</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Predicts the next return value using fitted `ARIMA` and `GARCH` models.</span>
-
-<span class="sd">    Combines the next period forecast from the `ARIMA` model</span>
-<span class="sd">    with the next period volatility forecast from the `GARCH` model</span>
-<span class="sd">    to predict the next return value.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        arima_result (ARIMA result object): The fitted `ARIMA` model result.</span>
-<span class="sd">        garch_result (ARCH result object): The fitted `GARCH` model result.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        float: The predicted next return, adjusted for predicted volatility.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">arima_result</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">garch_result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">return</span> <span class="mi">0</span>
-    <span class="c1"># Predict next value with ARIMA</span>
-    <span class="n">arima_pred</span> <span class="o">=</span> <span class="n">arima_result</span><span class="o">.</span><span class="n">forecast</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="c1"># Predict next volatility with GARCH</span>
-    <span class="n">garch_pred</span> <span class="o">=</span> <span class="n">garch_result</span><span class="o">.</span><span class="n">forecast</span><span class="p">(</span><span class="n">horizon</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">next_volatility</span> <span class="o">=</span> <span class="n">garch_pred</span><span class="o">.</span><span class="n">variance</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
-
-    <span class="c1"># Combine predictions (return + volatility)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arima_pred</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-        <span class="n">pred</span> <span class="o">=</span> <span class="n">arima_pred</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">pred</span> <span class="o">=</span> <span class="n">arima_pred</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">pred</span> <span class="o">+</span> <span class="n">next_volatility</span></div>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+        <span class="s2">&quot;`predict_next_return` is deprecated.&quot;</span><span class="p">,</span>
+        <span class="ne">DeprecationWarning</span><span class="p">,</span>
+    <span class="p">)</span>
 
 
-
-<div class="viewcode-block" id="get_prediction">
-<a class="viewcode-back" href="../../bbstrader.html#bbstrader.tseries.get_prediction">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_prediction</span><span class="p">(</span><span class="n">window_data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Orchestrator function to get the next period&#39;s return prediction.</span>
-
-<span class="sd">    This function ties together the process of fitting</span>
-<span class="sd">    both `ARIMA` and `GARCH` models on the provided data</span>
-<span class="sd">    and then predicting the next period&#39;s return using these models.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        window_data (Union[pd.Series , np.ndarray]):</span>
-<span class="sd">            Time series data to fit the models and predict the next return.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">        float: Predicted next return value.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">arima_result</span><span class="p">,</span> <span class="n">garch_result</span> <span class="o">=</span> <span class="n">fit_garch</span><span class="p">(</span><span class="n">window_data</span><span class="p">)</span>
-    <span class="n">prediction</span> <span class="o">=</span> <span class="n">predict_next_return</span><span class="p">(</span><span class="n">arima_result</span><span class="p">,</span> <span class="n">garch_result</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">prediction</span></div>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_prediction</span><span class="p">(</span><span class="n">window_data</span><span class="p">):</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+        <span class="s2">&quot;`get_prediction` is deprecated, &quot;</span><span class="p">,</span>
+        <span class="ne">DeprecationWarning</span><span class="p">,</span>
+    <span class="p">)</span>
 
 
-
-<div class="viewcode-block" id="ArimaGarchModel">
-<a class="viewcode-back" href="../../bbstrader.html#bbstrader.tseries.ArimaGarchModel">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ArimaGarchModel</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    This class implements a time serie model</span>
-<span class="sd">    that combines `ARIMA (AutoRegressive Integrated Moving Average)`</span>
-<span class="sd">    and `GARCH (Generalized Autoregressive Conditional Heteroskedasticity)` models</span>
-<span class="sd">    to predict future returns based on historical price data.</span>
-
-<span class="sd">    The model is implemented in the following steps:</span>
-<span class="sd">    1. Data Preparation: Load and prepare the historical price data.</span>
-<span class="sd">    2. Modeling: Fit the ARIMA model to the data and then fit the GARCH model to the residuals.</span>
-<span class="sd">    3. Prediction: Predict the next return using the ARIMA model and the next volatility using the GARCH model.</span>
-<span class="sd">    4. Trading Strategy: Execute the trading strategy based on the predictions.</span>
-<span class="sd">    5. Vectorized Backtesting: Backtest the trading strategy using the historical data.</span>
-
-<span class="sd">    Exemple:</span>
-<span class="sd">        &gt;&gt;&gt; import yfinance as yf</span>
-<span class="sd">        &gt;&gt;&gt; from bbstrader.tseries import ArimaGarchModel</span>
-<span class="sd">        &gt;&gt;&gt; from bbstrader.tseries import load_and_prepare_data</span>
-
-<span class="sd">        &gt;&gt;&gt; if __name__ == &#39;__main__&#39;:</span>
-<span class="sd">        &gt;&gt;&gt;     # ARCH SPY Vectorize Backtest</span>
-<span class="sd">        &gt;&gt;&gt;     k = 252</span>
-<span class="sd">        &gt;&gt;&gt;     data = yf.download(&quot;SPY&quot;, start=&quot;2010-01-02&quot;, end=&quot;2015-12-31&quot;)</span>
-<span class="sd">        &gt;&gt;&gt;     arch = ArimaGarchModel(&quot;SPY&quot;, data, k=k)</span>
-<span class="sd">        &gt;&gt;&gt;     df = load_and_prepare_data(data)</span>
-<span class="sd">        &gt;&gt;&gt;     arch.show_arima_garch_results(df[&#39;diff_log_return&#39;].values[-k:])</span>
-<span class="sd">        &gt;&gt;&gt;     arch.backtest_strategy()</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">252</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Initializes the ArimaGarchStrategy class.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            symbol (str): The ticker symbol for the financial instrument.</span>
-<span class="sd">            data (pd.DataFrame): `The raw dataset containing at least the &#39;Close&#39; prices`.</span>
-<span class="sd">            k (int): The window size for rolling prediction in backtesting.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">symbol</span> <span class="o">=</span> <span class="n">symbol</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_and_prepare_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">k</span> <span class="o">=</span> <span class="n">k</span>
-
-    <span class="c1"># Step 1: Data Preparation</span>
-<div class="viewcode-block" id="ArimaGarchModel.load_and_prepare_data">
-<a class="viewcode-back" href="../../bbstrader.html#bbstrader.tseries.ArimaGarchModel.load_and_prepare_data">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">load_and_prepare_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Prepares the dataset by calculating logarithmic returns</span>
-<span class="sd">            and differencing if necessary.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            df (pd.DataFrame): `The raw dataset containing at least the &#39;Close&#39; prices`.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            pd.DataFrame: The dataset with additional columns</span>
-<span class="sd">                for log returns and differenced log returns.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">load_and_prepare_data</span><span class="p">(</span><span class="n">df</span><span class="p">)</span></div>
-
-
-    <span class="c1"># Step 2: Modeling (ARIMA + GARCH)</span>
-<div class="viewcode-block" id="ArimaGarchModel.fit_best_arima">
-<a class="viewcode-back" href="../../bbstrader.html#bbstrader.tseries.ArimaGarchModel.fit_best_arima">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">fit_best_arima</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">window_data</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Fits the ARIMA model to the provided window of data,</span>
-<span class="sd">            selecting the best model based on AIC.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            window_data (np.array): The dataset for a specific window period.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            ARIMA model: The best fitted ARIMA model based on AIC.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">fit_best_arima</span><span class="p">(</span><span class="n">window_data</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="ArimaGarchModel.fit_garch">
-<a class="viewcode-back" href="../../bbstrader.html#bbstrader.tseries.ArimaGarchModel.fit_garch">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">fit_garch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">window_data</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Fits the GARCH model to the residuals of the best ARIMA model.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            window_data (np.array): The dataset for a specific window period.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            tuple: Contains the ARIMA result and GARCH result.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">fit_garch</span><span class="p">(</span><span class="n">window_data</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="ArimaGarchModel.show_arima_garch_results">
-<a class="viewcode-back" href="../../bbstrader.html#bbstrader.tseries.ArimaGarchModel.show_arima_garch_results">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">show_arima_garch_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">window_data</span><span class="p">,</span> <span class="n">acf</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">test_resid</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Displays the ARIMA and GARCH model results, including plotting</span>
-<span class="sd">        ACF of residuals and conducting , Box-Pierce and Ljung-Box tests.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            window_data (np.array): The dataset for a specific window period.</span>
-<span class="sd">            acf (bool, optional): If True, plot the ACF of residuals. Defaults to True.</span>
-
-<span class="sd">            test_resid (bool, optional):</span>
-<span class="sd">                If True, conduct Box-Pierce and Ljung-Box tests on residuals. Defaults to True.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">arima_result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_best_arima</span><span class="p">(</span><span class="n">window_data</span><span class="p">)</span>
-        <span class="n">resid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">arima_result</span><span class="o">.</span><span class="n">resid</span><span class="p">)</span>
-        <span class="n">resid</span> <span class="o">=</span> <span class="n">resid</span><span class="p">[</span><span class="o">~</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">resid</span><span class="p">)</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">resid</span><span class="p">))]</span>
-        <span class="n">garch_model</span> <span class="o">=</span> <span class="n">arch_model</span><span class="p">(</span><span class="n">resid</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">rescale</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="n">garch_result</span> <span class="o">=</span> <span class="n">garch_model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">disp</span><span class="o">=</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
-        <span class="n">residuals</span> <span class="o">=</span> <span class="n">garch_result</span><span class="o">.</span><span class="n">resid</span>
-
-        <span class="c1"># TODO : Plot the ACF of the residuals</span>
-        <span class="k">if</span> <span class="n">acf</span><span class="p">:</span>
-            <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
-            <span class="c1"># Plot the ACF of ARIMA residuals</span>
-            <span class="n">ax1</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">211</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;ACF&quot;</span><span class="p">)</span>
-            <span class="n">plot_acf</span><span class="p">(</span><span class="n">resid</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax1</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;ACF of ARIMA Residuals&quot;</span><span class="p">)</span>
-            <span class="n">ax1</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Lags&quot;</span><span class="p">)</span>
-            <span class="n">ax1</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
-
-            <span class="c1"># Plot the ACF of GARCH residuals on the same axes</span>
-            <span class="n">ax2</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">212</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;ACF&quot;</span><span class="p">)</span>
-            <span class="n">plot_acf</span><span class="p">(</span><span class="n">residuals</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax2</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;ACF of GARCH  Residuals&quot;</span><span class="p">)</span>
-            <span class="n">ax2</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Lags&quot;</span><span class="p">)</span>
-            <span class="n">ax2</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
-
-            <span class="c1"># Plot the figure</span>
-            <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
-            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-
-        <span class="c1"># TODO : Conduct Box-Pierce and Ljung-Box Tests of the residuals</span>
-        <span class="k">if</span> <span class="n">test_resid</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">arima_result</span><span class="o">.</span><span class="n">summary</span><span class="p">())</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">garch_result</span><span class="o">.</span><span class="n">summary</span><span class="p">())</span>
-            <span class="n">bp_test</span> <span class="o">=</span> <span class="n">acorr_ljungbox</span><span class="p">(</span><span class="n">resid</span><span class="p">,</span> <span class="n">return_df</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Box-Pierce and Ljung-Box Tests Results  for ARIMA:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">bp_test</span><span class="p">)</span></div>
-
-
-    <span class="c1"># Step 3: Prediction</span>
-<div class="viewcode-block" id="ArimaGarchModel.predict_next_return">
-<a class="viewcode-back" href="../../bbstrader.html#bbstrader.tseries.ArimaGarchModel.predict_next_return">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">predict_next_return</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arima_result</span><span class="p">,</span> <span class="n">garch_result</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Predicts the next return using the ARIMA model</span>
-<span class="sd">            and the next volatility using the GARCH model.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            arima_result (ARIMA model): The ARIMA model result.</span>
-<span class="sd">            garch_result (GARCH model): The GARCH model result.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            float: The predicted next return.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">predict_next_return</span><span class="p">(</span><span class="n">arima_result</span><span class="p">,</span> <span class="n">garch_result</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="ArimaGarchModel.get_prediction">
-<a class="viewcode-back" href="../../bbstrader.html#bbstrader.tseries.ArimaGarchModel.get_prediction">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_prediction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">window_data</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Generates a prediction for the next return based on a window of data.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            window_data (np.array): The dataset for a specific window period.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            float: The predicted next return.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">get_prediction</span><span class="p">(</span><span class="n">window_data</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="ArimaGarchModel.calculate_signals">
-<a class="viewcode-back" href="../../bbstrader.html#bbstrader.tseries.ArimaGarchModel.calculate_signals">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">calculate_signals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">window_data</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Calculates the trading signal based on the prediction.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            window_data (np.array): The dataset for a specific window period.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            str: The trading signal (&#39;LONG&#39;, &#39;SHORT&#39;, or None).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">prediction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_prediction</span><span class="p">(</span><span class="n">window_data</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">prediction</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">signal</span> <span class="o">=</span> <span class="s2">&quot;LONG&quot;</span>
-        <span class="k">elif</span> <span class="n">prediction</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">signal</span> <span class="o">=</span> <span class="s2">&quot;SHORT&quot;</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">signal</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">return</span> <span class="n">signal</span></div>
-
-
-    <span class="c1"># Step 4: Trading Strategy</span>
-
-<div class="viewcode-block" id="ArimaGarchModel.execute_trading_strategy">
-<a class="viewcode-back" href="../../bbstrader.html#bbstrader.tseries.ArimaGarchModel.execute_trading_strategy">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">execute_trading_strategy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">predictions</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Executes the trading strategy based on a list</span>
-<span class="sd">        of predictions, determining positions to take.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            predictions (list): A list of predicted returns.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            list: A list of positions (1 for &#39;LONG&#39;, -1 for &#39;SHORT&#39;, 0 for &#39;HOLD&#39;).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">positions</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># Long if 1, Short if -1</span>
-        <span class="n">previous_position</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># Initial position</span>
-        <span class="k">for</span> <span class="n">prediction</span> <span class="ow">in</span> <span class="n">predictions</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">prediction</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">current_position</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># Long</span>
-            <span class="k">elif</span> <span class="n">prediction</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">current_position</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>  <span class="c1"># Short</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">current_position</span> <span class="o">=</span> <span class="n">previous_position</span>  <span class="c1"># Hold previous position</span>
-            <span class="n">positions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current_position</span><span class="p">)</span>
-            <span class="n">previous_position</span> <span class="o">=</span> <span class="n">current_position</span>
-
-        <span class="k">return</span> <span class="n">positions</span></div>
-
-
-    <span class="c1"># Step 5: Vectorized Backtesting</span>
-<div class="viewcode-block" id="ArimaGarchModel.generate_predictions">
-<a class="viewcode-back" href="../../bbstrader.html#bbstrader.tseries.ArimaGarchModel.generate_predictions">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">generate_predictions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Generator that yields predictions one by one.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span>
-        <span class="n">window_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">k</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">window_size</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)):</span>
-            <span class="nb">print</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Processing window </span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">window_size</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">window_size</span><span class="si">}</span><span class="s2">...&quot;</span>
-            <span class="p">)</span>
-            <span class="n">window_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;diff_log_return&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="n">window_size</span> <span class="p">:</span> <span class="n">i</span><span class="p">]</span>
-            <span class="n">next_return</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_prediction</span><span class="p">(</span><span class="n">window_data</span><span class="p">)</span>
-            <span class="k">yield</span> <span class="n">next_return</span></div>
-
-
-<div class="viewcode-block" id="ArimaGarchModel.backtest_strategy">
-<a class="viewcode-back" href="../../bbstrader.html#bbstrader.tseries.ArimaGarchModel.backtest_strategy">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">backtest_strategy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Performs a backtest of the strategy over</span>
-<span class="sd">        the entire dataset, plotting cumulative returns.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span>
-        <span class="n">window_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">k</span>
-        <span class="nb">print</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Starting backtesting for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;Window size </span><span class="si">{</span><span class="n">window_size</span><span class="si">}</span><span class="s2">.</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;Total iterations: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">window_size</span><span class="si">}</span><span class="s2">.</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s2">&quot;`ArimaGarchModel` is deprecated, use `pmdarima.auto_arima` and `arch.arch_model` instead.&quot;</span><span class="p">,</span>
+            <span class="ne">DeprecationWarning</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">predictions_generator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_predictions</span><span class="p">()</span>
-
-        <span class="n">positions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute_trading_strategy</span><span class="p">(</span><span class="n">predictions_generator</span><span class="p">)</span>
-
-        <span class="n">strategy_returns</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">positions</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;log_return&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">window_size</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:]</span><span class="o">.</span><span class="n">values</span>
-        <span class="p">)</span>
-        <span class="n">buy_and_hold</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;log_return&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">window_size</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:]</span><span class="o">.</span><span class="n">values</span>
-        <span class="n">buy_and_hold_returns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">buy_and_hold</span><span class="p">)</span>
-        <span class="n">cumulative_returns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">strategy_returns</span><span class="p">)</span>
-        <span class="n">dates</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">window_size</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">plot_cumulative_returns</span><span class="p">(</span><span class="n">cumulative_returns</span><span class="p">,</span> <span class="n">buy_and_hold_returns</span><span class="p">,</span> <span class="n">dates</span><span class="p">)</span>
-
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Backtesting completed !!&quot;</span><span class="p">)</span></div>
-
-
-    <span class="c1"># Function to plot the cumulative returns</span>
-<div class="viewcode-block" id="ArimaGarchModel.plot_cumulative_returns">
-<a class="viewcode-back" href="../../bbstrader.html#bbstrader.tseries.ArimaGarchModel.plot_cumulative_returns">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">plot_cumulative_returns</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">strategy_returns</span><span class="p">,</span> <span class="n">buy_and_hold_returns</span><span class="p">,</span> <span class="n">dates</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Plots the cumulative returns of the ARIMA+GARCH strategy against</span>
-<span class="sd">            a buy-and-hold strategy.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            strategy_returns (np.array): Cumulative returns from the strategy.</span>
-<span class="sd">            buy_and_hold_returns (np.array): Cumulative returns from a buy-and-hold strategy.</span>
-<span class="sd">            dates (pd.Index): The dates corresponding to the returns.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">7</span><span class="p">))</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">dates</span><span class="p">,</span> <span class="n">strategy_returns</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;ARIMA+GARCH &quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">)</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">dates</span><span class="p">,</span> <span class="n">buy_and_hold_returns</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Buy &amp; Hold&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">)</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Time&quot;</span><span class="p">)</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Cumulative Returns&quot;</span><span class="p">)</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ARIMA+GARCH Strategy vs. Buy &amp; Hold on (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
-</div>
-
 
 
 <span class="c1"># *********************************************</span>
 <span class="c1"># STATS TEST (Cointegration , Mean Reverting)*</span>
 <span class="c1"># *********************************************</span>
-<div class="viewcode-block" id="get_corr">
-<a class="viewcode-back" href="../../bbstrader.html#bbstrader.tseries.get_corr">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_corr</span><span class="p">(</span><span class="n">tickers</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]],</span> <span class="n">start</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">end</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Calculates and prints the correlation matrix of the adjusted closing prices</span>
-<span class="sd">    for a given list of stock tickers within a specified date range.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        tickers (Union[List[str] , Tuple[str, ...]]):</span>
-<span class="sd">        A list or tuple of valid stock tickers (e.g., [&#39;AAPL&#39;, &#39;MSFT&#39;, &#39;GOOG&#39;]).</span>
-<span class="sd">        start (str): The start date for the historical data in &#39;YYYY-MM-DD&#39; format.</span>
-<span class="sd">        end (str): The end date for the historical data in &#39;YYYY-MM-DD&#39; format.</span>
-
-<span class="sd">    Example:</span>
-<span class="sd">    &gt;&gt;&gt; from bbstrader.tseries import get_corr</span>
-<span class="sd">    &gt;&gt;&gt; get_corr([&#39;AAPL&#39;, &#39;MSFT&#39;, &#39;GOOG&#39;], &#39;2023-01-01&#39;, &#39;2023-12-31&#39;)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Download historical data</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">yf</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">tickers</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">,</span> <span class="n">multi_level_index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">auto_adjust</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Adj Close&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="s2">&quot;Adj Close&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span> <span class="k">else</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Close&quot;</span><span class="p">]</span>
-
-    <span class="c1"># Calculate correlation matrix</span>
-    <span class="n">correlation_matrix</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">corr</span><span class="p">()</span>
-
-    <span class="c1"># Display the matrix</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">correlation_matrix</span><span class="p">)</span></div>
-
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+        <span class="s2">&quot;`get_corr` is deprecated, use pandas DataFrame&#39;s `corr` method instead.&quot;</span><span class="p">,</span>
+        <span class="ne">DeprecationWarning</span><span class="p">,</span>
+    <span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">plot_price_series</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">ts1</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ts2</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
@@ -721,8 +238,6 @@
     <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 
 
-<div class="viewcode-block" id="run_cadf_test">
-<a class="viewcode-back" href="../../bbstrader.html#bbstrader.tseries.run_cadf_test">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">run_cadf_test</span><span class="p">(</span>
     <span class="n">pair</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]],</span>
     <span class="n">start</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -846,129 +361,25 @@
     <span class="c1"># Calculate and output the CADF test on the residuals</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Cointegration TEST Results:&quot;</span><span class="p">)</span>
     <span class="n">cadf</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">adfuller</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;res&quot;</span><span class="p">],</span> <span class="n">autolag</span><span class="o">=</span><span class="s2">&quot;AIC&quot;</span><span class="p">)</span>
-    <span class="n">pprint</span><span class="o">.</span><span class="n">pprint</span><span class="p">(</span><span class="n">cadf</span><span class="p">)</span></div>
+    <span class="n">pprint</span><span class="o">.</span><span class="n">pprint</span><span class="p">(</span><span class="n">cadf</span><span class="p">)</span>
 
 
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_hurst</span><span class="p">(</span><span class="n">ts</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Returns the Hurst Exponent of the time series vector ts,</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Create the range of lag values</span>
-    <span class="n">lags</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
-
-    <span class="c1"># Calculate the array of the variances of the lagged differences</span>
-    <span class="n">tau</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="n">lag</span><span class="p">:],</span> <span class="n">ts</span><span class="p">[:</span><span class="o">-</span><span class="n">lag</span><span class="p">])))</span> <span class="k">for</span> <span class="n">lag</span> <span class="ow">in</span> <span class="n">lags</span><span class="p">]</span>
-
-    <span class="c1"># Use a linear fit to estimate the Hurst Exponent</span>
-    <span class="n">poly</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">lags</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">tau</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
-
-    <span class="c1"># Return the Hurst exponent from the polyfit output</span>
-    <span class="k">return</span> <span class="n">poly</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mf">2.0</span>
-
-
-<span class="c1"># Function to calculate Hurst Exponent</span>
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">hurst</span><span class="p">(</span><span class="n">time_series</span><span class="p">):</span>
-    <span class="n">H</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">data_range</span> <span class="o">=</span> <span class="n">compute_Hc</span><span class="p">(</span><span class="n">time_series</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;price&quot;</span><span class="p">,</span> <span class="n">simplified</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">H</span>
-
-
-<div class="viewcode-block" id="run_hurst_test">
-<a class="viewcode-back" href="../../bbstrader.html#bbstrader.tseries.run_hurst_test">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">run_hurst_test</span><span class="p">(</span><span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">end</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Calculates and prints the Hurst Exponent for a given stock&#39;s adjusted closing prices</span>
-<span class="sd">    within a specified date range, and for three generated series (Geometric Brownian Motion,</span>
-<span class="sd">    Mean-Reverting, and Trending).</span>
-
-<span class="sd">    The Hurst Exponent is used to determine the long-term memory of a time series.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        symbol (str): A valid stock ticker symbol (e.g., &#39;AAPL&#39;).</span>
-<span class="sd">        start (str): The start date for the historical data in &#39;YYYY-MM-DD&#39; format.</span>
-<span class="sd">        end (str): The end date for the historical data in &#39;YYYY-MM-DD&#39; format.</span>
-
-<span class="sd">    Example:</span>
-<span class="sd">    &gt;&gt;&gt; from bbstrader.tseries import run_hurst_test</span>
-
-<span class="sd">    &gt;&gt;&gt; run_hurst_test(&#39;AAPL&#39;, &#39;2023-01-01&#39;, &#39;2023-12-31&#39;)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">yf</span><span class="o">.</span><span class="n">download</span><span class="p">(</span>
-        <span class="n">symbol</span><span class="p">,</span>
-        <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
-        <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
-        <span class="n">progress</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">multi_level_index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">auto_adjust</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+        <span class="s2">&quot;`run_hurst_test` is deprecated, use `hurst.compute_Hc` instead.&quot;</span><span class="p">,</span>
+        <span class="ne">DeprecationWarning</span><span class="p">,</span>
     <span class="p">)</span>
-
-    <span class="c1"># Create a Geometric Brownian Motion, Mean-Reverting, and Trending Series</span>
-    <span class="n">gbm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">100000</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1000</span><span class="p">)</span>
-    <span class="n">mr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">100000</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1000</span><span class="p">)</span>
-    <span class="n">tr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">100000</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1000</span><span class="p">)</span>
-
-    <span class="c1"># Output the Hurst Exponent for each of the series</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Hurst(GBM):  </span><span class="si">{</span><span class="n">_hurst</span><span class="p">(</span><span class="n">gbm</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Hurst(MR):   </span><span class="si">{</span><span class="n">_hurst</span><span class="p">(</span><span class="n">mr</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Hurst(TR):   </span><span class="si">{</span><span class="n">_hurst</span><span class="p">(</span><span class="n">tr</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Hurst(</span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2">): </span><span class="si">{</span><span class="n">hurst</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;Close&#39;</span><span class="p">])</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
-
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">test_cointegration</span><span class="p">(</span><span class="n">ticker1</span><span class="p">,</span> <span class="n">ticker2</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
-    <span class="c1"># Download historical data</span>
-    <span class="n">stock_data_pair</span> <span class="o">=</span> <span class="n">yf</span><span class="o">.</span><span class="n">download</span><span class="p">(</span>
-        <span class="p">[</span><span class="n">ticker1</span><span class="p">,</span> <span class="n">ticker2</span><span class="p">],</span>
-        <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
-        <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
-        <span class="n">progress</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">multi_level_index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">auto_adjust</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="p">)[</span><span class="s2">&quot;Close&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
-
-    <span class="c1"># Perform Johansen cointegration test</span>
-    <span class="n">result</span> <span class="o">=</span> <span class="n">coint_johansen</span><span class="p">(</span><span class="n">stock_data_pair</span><span class="p">,</span> <span class="n">det_order</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">k_ar_diff</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-
-    <span class="c1"># Get the cointegration rank</span>
-    <span class="n">traces_stats</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">lr1</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Traces Stats: </span><span class="se">\n</span><span class="si">{</span><span class="n">traces_stats</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-    <span class="c1"># Get the critical values for 95% confidence level</span>
-    <span class="n">critical_values</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">cvt</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Critical Values: </span><span class="se">\n</span><span class="si">{</span><span class="n">critical_values</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-    <span class="c1"># Compare the cointegration rank with critical values</span>
-    <span class="k">if</span> <span class="n">traces_stats</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">critical_values</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">ticker1</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="n">ticker2</span><span class="si">}</span><span class="s2"> are cointegrated.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">No cointegration found for </span><span class="si">{</span><span class="n">ticker1</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="n">ticker2</span><span class="si">}</span><span class="s2">.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+        <span class="s2">&quot;`test_cointegration` is deprecated, see statsmodels.tsa.stattools.coint instead.&quot;</span><span class="p">,</span>
+        <span class="ne">DeprecationWarning</span><span class="p">,</span>
+    <span class="p">)</span>
 
 
-<div class="viewcode-block" id="run_coint_test">
-<a class="viewcode-back" href="../../bbstrader.html#bbstrader.tseries.run_coint_test">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">run_coint_test</span><span class="p">(</span><span class="n">tickers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">start</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">end</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Performs pairwise cointegration tests on a list of stock tickers over a specified date range.</span>
-
-<span class="sd">    For each unique pair of tickers, the function downloads historical adjusted closing prices and</span>
-<span class="sd">    tests for cointegration.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        tickers (List[str]): A list of valid stock ticker symbols (e.g., [&#39;AAPL&#39;, &#39;MSFT&#39;, &#39;GOOG&#39;]).</span>
-<span class="sd">        start (str): The start date for the historical data in &#39;YYYY-MM-DD&#39; format.</span>
-<span class="sd">        end (str): The end date for the historical data in &#39;YYYY-MM-DD&#39; format.</span>
-
-<span class="sd">    Example:</span>
-<span class="sd">    &gt;&gt;&gt; from bbstrader.tseries import run_coint_test</span>
-
-<span class="sd">    &gt;&gt;&gt; run_coint_test([&#39;AAPL&#39;, &#39;MSFT&#39;, &#39;GOOG&#39;], &#39;2023-01-01&#39;, &#39;2023-12-31&#39;)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Loop through ticker combinations</span>
-    <span class="k">for</span> <span class="n">ticker1</span><span class="p">,</span> <span class="n">ticker2</span> <span class="ow">in</span> <span class="n">combinations</span><span class="p">(</span><span class="n">tickers</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
-        <span class="n">test_cointegration</span><span class="p">(</span><span class="n">ticker1</span><span class="p">,</span> <span class="n">ticker2</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span></div>
-
+    <span class="n">test_cointegration</span><span class="p">()</span>
 
 
 <span class="c1"># *********************************</span>
@@ -1232,170 +643,12 @@
 
 
 
-<span class="c1"># ******************************************</span>
-<span class="c1">#         ORNSTEIN UHLENBECK PROCESS       *</span>
-<span class="c1"># ******************************************</span>
-
-
-<div class="viewcode-block" id="OrnsteinUhlenbeck">
-<a class="viewcode-back" href="../../bbstrader.html#bbstrader.tseries.OrnsteinUhlenbeck">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">OrnsteinUhlenbeck</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    The Ornstein-Uhlenbeck process is a mathematical model</span>
-<span class="sd">    used to describe the behavior of a mean-reverting stochastic process.</span>
-<span class="sd">    We use it  to model the price dynamics of an asset that tends</span>
-<span class="sd">    to revert to a long-term mean.</span>
-
-<span class="sd">    We Estimate the drift (θ), volatility (σ), and long-term mean (μ)</span>
-<span class="sd">    based on historical price data; then we Simulate the OU process</span>
-<span class="sd">    using the estimated parameters.</span>
-
-<span class="sd">    https://en.wikipedia.org/wiki/Ornstein%E2%80%93Uhlenbeck_process</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prices</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">returns</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">timeframe</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;D1&quot;</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Initializes the OrnsteinUhlenbeck instance.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            prices (np.ndarray) : Historical close prices.</span>
-
-<span class="sd">            retrurns (bool) : Use it to indicate weither</span>
-<span class="sd">                you want  to simulate the returns or your raw data</span>
-
-<span class="sd">            timeframe (str) : The time  frame for the Historical prices</span>
-<span class="sd">                (1m, 5m, 15m, 30m, 1h, 4h, D1)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">prices</span> <span class="o">=</span> <span class="n">prices</span>
-        <span class="k">if</span> <span class="n">returns</span><span class="p">:</span>
-            <span class="n">series</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prices</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">returns</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">pct_change</span><span class="p">()</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span><span class="o">.</span><span class="n">values</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">returns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prices</span>
-
-        <span class="n">time_frame_mapping</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;1m&quot;</span><span class="p">:</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">24</span> <span class="o">*</span> <span class="mi">60</span><span class="p">),</span>  <span class="c1"># 1 minute intervals</span>
-            <span class="s2">&quot;5m&quot;</span><span class="p">:</span> <span class="mi">5</span> <span class="o">/</span> <span class="p">(</span><span class="mi">24</span> <span class="o">*</span> <span class="mi">60</span><span class="p">),</span>  <span class="c1"># 5 minute intervals</span>
-            <span class="s2">&quot;15m&quot;</span><span class="p">:</span> <span class="mi">15</span> <span class="o">/</span> <span class="p">(</span><span class="mi">24</span> <span class="o">*</span> <span class="mi">60</span><span class="p">),</span>  <span class="c1"># 15 minute intervals</span>
-            <span class="s2">&quot;30m&quot;</span><span class="p">:</span> <span class="mi">30</span> <span class="o">/</span> <span class="p">(</span><span class="mi">24</span> <span class="o">*</span> <span class="mi">60</span><span class="p">),</span>  <span class="c1"># 30 minute intervals</span>
-            <span class="s2">&quot;1h&quot;</span><span class="p">:</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">24</span><span class="p">,</span>  <span class="c1"># 1 hour intervals</span>
-            <span class="s2">&quot;4h&quot;</span><span class="p">:</span> <span class="mi">4</span> <span class="o">/</span> <span class="mi">24</span><span class="p">,</span>  <span class="c1"># 4 hour intervals</span>
-            <span class="s2">&quot;D1&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>  <span class="c1"># Daily intervals</span>
-        <span class="p">}</span>
-        <span class="k">if</span> <span class="n">timeframe</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">time_frame_mapping</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unsupported time frame&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tf</span> <span class="o">=</span> <span class="n">time_frame_mapping</span><span class="p">[</span><span class="n">timeframe</span><span class="p">]</span>
-
-        <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimate_parameters</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mu_hat</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># Mean (μ)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">theta_hat</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># Drift (θ)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">sigma_hat</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>  <span class="c1"># Volatility (σ)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Estimated μ: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mu_hat</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Estimated θ: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">theta_hat</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Estimated σ: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">sigma_hat</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-<div class="viewcode-block" id="OrnsteinUhlenbeck.ornstein_uhlenbeck">
-<a class="viewcode-back" href="../../bbstrader.html#bbstrader.tseries.OrnsteinUhlenbeck.ornstein_uhlenbeck">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">ornstein_uhlenbeck</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">X0</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Simulates the Ornstein-Uhlenbeck process.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            mu (float): Estimated long-term mean.</span>
-<span class="sd">            theta (float): Estimated drift.</span>
-<span class="sd">            sigma (float): Estimated volatility.</span>
-<span class="sd">            dt (float): Time step.</span>
-<span class="sd">            X0 (float): Initial value.</span>
-<span class="sd">            n (int): Number of time steps.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            np.ndarray : Simulated process.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
-        <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">X0</span>
-        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
-            <span class="n">dW</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dt</span><span class="p">))</span>
-            <span class="c1"># O-U process differential equation</span>
-            <span class="n">x</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">t</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">theta</span> <span class="o">*</span> <span class="p">(</span><span class="n">mu</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="n">t</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="n">dt</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">sigma</span> <span class="o">*</span> <span class="n">dW</span><span class="p">)</span>
-            <span class="c1"># dW is a Wiener process</span>
-            <span class="c1"># (theta * (mu - x[t-1]) * dt) represents the mean-reverting tendency</span>
-            <span class="c1"># (sigma * dW) represents the random volatility</span>
-        <span class="k">return</span> <span class="n">x</span></div>
-
-
-<div class="viewcode-block" id="OrnsteinUhlenbeck.estimate_parameters">
-<a class="viewcode-back" href="../../bbstrader.html#bbstrader.tseries.OrnsteinUhlenbeck.estimate_parameters">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">estimate_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Estimates the mean-reverting parameters (μ, θ, σ)</span>
-<span class="sd">        using the negative log-likelihood.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            Tuple: Estimated μ, θ, and σ.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">initial_guess</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">returns</span><span class="p">)]</span>
-        <span class="n">result</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_neg_log_likelihood</span><span class="p">,</span> <span class="n">initial_guess</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">returns</span><span class="p">,))</span>
-        <span class="n">mu</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">x</span>
-        <span class="k">return</span> <span class="n">mu</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">sigma</span></div>
-
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_neg_log_likelihood</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">returns</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Calculates the negative</span>
-<span class="sd">            log-likelihood for parameter estimation.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            params (list): List of parameters [mu, theta, sigma].</span>
-<span class="sd">            returns (np.ndarray): Historical returns.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            float: Negative log-likelihood.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">mu</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="n">params</span>
-        <span class="n">dt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf</span>
-        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">returns</span><span class="p">)</span>
-        <span class="n">ou_simulated</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ornstein_uhlenbeck</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">residuals</span> <span class="o">=</span> <span class="n">ou_simulated</span><span class="p">[</span><span class="mi">1</span> <span class="p">:</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">returns</span>
-        <span class="n">neg_ll</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">residuals</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigma</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">n</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span>
-            <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">sigma</span><span class="o">**</span><span class="mi">2</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s2">&quot;`OrnsteinUhlenbeck` is deprecated, use `statsmodels.tsa` instead.&quot;</span><span class="p">,</span>
+            <span class="ne">DeprecationWarning</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="k">return</span> <span class="n">neg_ll</span>
-
-<div class="viewcode-block" id="OrnsteinUhlenbeck.simulate_process">
-<a class="viewcode-back" href="../../bbstrader.html#bbstrader.tseries.OrnsteinUhlenbeck.simulate_process">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">simulate_process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">returns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Simulates the OU process multiple times .</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            returns (np.ndarray): Historical returns.</span>
-<span class="sd">            n (int): Number of simulations to perform.</span>
-<span class="sd">            p (int): Number of time steps.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            np.ndarray: 2D array representing simulated processes.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">returns</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">returns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">returns</span>
-        <span class="k">if</span> <span class="n">p</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">T</span> <span class="o">=</span> <span class="n">p</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">T</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">returns</span><span class="p">)</span>
-        <span class="n">dt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf</span>
-
-        <span class="n">dW_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dt</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">T</span><span class="p">))</span>
-        <span class="n">simulations_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">T</span><span class="p">))</span>
-        <span class="n">simulations_matrix</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">returns</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-
-        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">T</span><span class="p">):</span>
-            <span class="n">simulations_matrix</span><span class="p">[:,</span> <span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">simulations_matrix</span><span class="p">[:,</span> <span class="n">t</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-                <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta_hat</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mu_hat</span> <span class="o">-</span> <span class="n">simulations_matrix</span><span class="p">[:,</span> <span class="n">t</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="n">dt</span>
-                <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_hat</span> <span class="o">*</span> <span class="n">dW_matrix</span><span class="p">[:,</span> <span class="n">t</span><span class="p">]</span>
-            <span class="p">)</span>
-        <span class="k">return</span> <span class="n">simulations_matrix</span></div>
-</div>
-
 
 
 <div class="viewcode-block" id="remove_correlated_assets">

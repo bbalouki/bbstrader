@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>bbstrader.btengine.backtest &mdash; bbstrader 0.3.0 documentation</title>
+  <title>bbstrader.btengine.backtest &mdash; bbstrader 0.3.3 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=e259d695"></script>
+      <script src="../../../_static/documentation_options.js?v=d5a15cff"></script>
       <script src="../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -330,14 +330,13 @@
 
 <span class="sd">        start_date (datetime): Start date of the backtest.</span>
 
-<span class="sd">        data_handler (DataHandler): An instance of the `DataHandler` class, responsible for managing</span>
+<span class="sd">        data_handler (DataHandler): A subclass of the `DataHandler` class, responsible for managing</span>
 <span class="sd">            and processing market data. Available options include `CSVDataHandler`,</span>
-<span class="sd">            `MT5DataHandler`, and `YFDataHandler`. Ensure that the `DataHandler`</span>
-<span class="sd">            instance is initialized before passing it to the function.</span>
+<span class="sd">            `MT5DataHandler`, and `YFDataHandler`.</span>
 
 <span class="sd">        strategy (Strategy): The trading strategy to be employed during the backtest.</span>
-<span class="sd">            The strategy must be an instance of `Strategy` and should include the following attributes:</span>
-<span class="sd">            - `bars` (DataHandler): The `DataHandler` instance for the strategy.</span>
+<span class="sd">            The strategy must be a subclass of `Strategy` and should include the following attributes:</span>
+<span class="sd">            - `bars` (DataHandler): The `DataHandler` class for the strategy.</span>
 <span class="sd">            - `events` (Queue): Queue instance for managing events.</span>
 <span class="sd">            - `symbol_list` (List[str]): List of symbols to trade.</span>
 <span class="sd">            - `mode` (str): &#39;live&#39; or &#39;backtest&#39;.</span>
@@ -389,9 +388,9 @@
 <span class="sd">        &gt;&gt;&gt; run_backtest(</span>
 <span class="sd">        ...     symbol_list=symbol_list,</span>
 <span class="sd">        ...     start_date=start,</span>
-<span class="sd">        ...     data_handler=MT5DataHandler(),</span>
-<span class="sd">        ...     strategy=StockIndexSTBOTrading(),</span>
-<span class="sd">        ...     exc_handler=MT5ExecutionHandler(),</span>
+<span class="sd">        ...     data_handler=MT5DataHandler,</span>
+<span class="sd">        ...     strategy=StockIndexSTBOTrading,</span>
+<span class="sd">        ...     exc_handler=MT5ExecutionHandler,</span>
 <span class="sd">        ...     initial_capital=100000.0,</span>
 <span class="sd">        ...     heartbeat=0.0,</span>
 <span class="sd">        ...     **kwargs</span>
