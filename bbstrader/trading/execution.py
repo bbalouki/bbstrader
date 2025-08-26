@@ -1,7 +1,10 @@
+import concurrent.futures
+import functools
 import multiprocessing as mp
 import sys
 import time
 from datetime import date, datetime
+from multiprocessing.synchronize import Event
 from typing import Callable, Dict, List, Literal, Optional
 
 import pandas as pd
@@ -179,6 +182,8 @@ class Mt5ExecutionEngine:
         mm: bool = True,
         auto_trade: bool = True,
         prompt_callback: Callable = None,
+        multithread: bool = False,
+        shutdown_event: Event = None,
         optimizer: str = "equal",
         trail: bool = True,
         stop_trail: Optional[int] = None,
@@ -207,6 +212,10 @@ class Mt5ExecutionEngine:
                 the user for confimation.
             prompt_callback : Callback function to prompt the user for confirmation.
                 This is useful when integrating with GUI applications.
+             multithread : If True, use a thread pool to process signals in parallel.
+                If False, process them sequentially. Set this to True only if the engine
+                is running in a separate process. Default to False.
+            shutdown_event : Use to terminate the copy process when runs in a custum environment like web App or GUI.
             show_positions_orders : Print open positions and orders. Defaults to False.
             iter_time : Interval to check for signals and `mm`. Defaults to 5.
             use_trade_time : Open trades after the time is completed. Defaults to True.
@@ -251,6 +260,7 @@ class Mt5ExecutionEngine:
         self.mm = mm
         self.auto_trade = auto_trade
         self.prompt_callback = prompt_callback
+        self.multithread = multithread
         self.optimizer = optimizer
         self.trail = trail
         self.stop_trail = stop_trail
@@ -274,6 +284,9 @@ class Mt5ExecutionEngine:
 
         self._initialize_engine(**kwargs)
         self.strategy = self._init_strategy(**kwargs)
+        self.shutdown_event = (
+            shutdown_event if shutdown_event is not None else mp.Event()
+        )
         self._running = True
 
     def __repr__(self):
@@ -316,6 +329,7 @@ class Mt5ExecutionEngine:
     def _print_exc(self, msg: str, e: Exception):
         if isinstance(e, KeyboardInterrupt):
             logger.info("Stopping the Execution Engine ...")
+            self.stop()
             sys.exit(0)
         if self.debug_mode:
             raise ValueError(msg).with_traceback(e.__traceback__)
@@ -866,46 +880,79 @@ class Mt5ExecutionEngine:
                     f"(e.g., if time_frame is 15m, iter_time must be 1.5, 3, 5, 15 etc)"
                 )
 
-    def _handle_signals(self, today, signals, buys, sells):
+    def _handle_one_signal(self, signal, today, buys, sells):
         try:
-            check_mt5_connection(**self.kwargs)
-            for signal in signals:
-                symbol = signal.symbol
-                trade: Trade = self.trades_instances[symbol]
-                if trade.trading_time() and today in self.trading_days:
-                    if signal.action is not None:
-                        action = (
-                            signal.action.value
-                            if isinstance(signal.action, TradeAction)
-                            else signal.action
-                        )
-                        self._run_trade_algorithm(
-                            action,
-                            symbol,
-                            signal.id,
-                            trade,
-                            signal.price,
-                            signal.stoplimit,
-                            buys,
-                            sells,
-                            signal.comment or self.comment,
+            symbol = signal.symbol
+            trade: Trade = self.trades_instances[symbol]
+            if trade.trading_time() and today in self.trading_days:
+                if signal.action is not None:
+                    action = (
+                        signal.action.value
+                        if isinstance(signal.action, TradeAction)
+                        else signal.action
+                    )
+                    self._run_trade_algorithm(
+                        action,
+                        symbol,
+                        signal.id,
+                        trade,
+                        signal.price,
+                        signal.stoplimit,
+                        buys,
+                        sells,
+                        signal.comment or self.comment,
+                    )
+            else:
+                if len(self.symbols) >= 10:
+                    if symbol == self.symbols[-1]:
+                        logger.info(
+                            f"Not trading Time !!!, STRATEGY={self.STRATEGY} , ACCOUNT={self.ACCOUNT}"
                         )
                 else:
-                    if len(self.symbols) >= 10:
-                        if symbol == self.symbols[-1]:
-                            logger.info(
-                                f"Not trading Time !!!, STRATEGY={self.STRATEGY} , ACCOUNT={self.ACCOUNT}"
-                            )
-                    else:
-                        logger.info(
-                            f"Not trading Time !!! SYMBOL={trade.symbol}, STRATEGY={self.STRATEGY} , ACCOUNT={self.ACCOUNT}"
-                        )
-                    self._check(buys[symbol], sells[symbol], symbol)
+                    logger.info(
+                        f"Not trading Time !!! SYMBOL={trade.symbol}, STRATEGY={self.STRATEGY} , ACCOUNT={self.ACCOUNT}"
+                    )
+                self._check(buys[symbol], sells[symbol], symbol)
 
         except Exception as e:
-            msg = f"Handling Signals, SYMBOL={symbol}, STRATEGY={self.STRATEGY} , ACCOUNT={self.ACCOUNT}"
+            msg = (
+                f"Error handling signal for SYMBOL={signal.symbol} (SIGNAL: {action}), "
+                f"STRATEGY={self.STRATEGY}, ACCOUNT={self.ACCOUNT}"
+            )
             self._print_exc(msg, e)
-            pass
+
+    def _handle_all_signals(self, today, signals, buys, sells, max_workers=50):
+        try:
+            check_mt5_connection(**self.kwargs)
+        except Exception as e:
+            msg = "Initial MT5 connection check failed. Aborting signal processing."
+            self._print_exc(msg, e)
+            return
+
+        if not signals:
+            logger.info("No signals to process.")
+            return
+
+        # We want to create a temporary function that
+        # already has the 'today', 'buys', and 'sells' arguments filled in.
+        # This is necessary because executor.map only iterates over one sequence (signals).
+        signal_processor = functools.partial(
+            self._handle_one_signal, today=today, buys=buys, sells=sells
+        )
+        if self.multithread:
+            with concurrent.futures.ThreadPoolExecutor(
+                max_workers=max_workers
+            ) as executor:
+                # 'map' will apply our worker function to every item in the 'signals' list.
+                # It will automatically manage the distribution of tasks to the worker threads.
+                # We wrap it in list() to ensure all tasks are complete before moving on.
+                list(executor.map(signal_processor, signals))
+        else:
+            for signal in signals:
+                try:
+                    signal_processor(signal)
+                except Exception as e:
+                    self._print_exc(f"Failed to process signal {signal}: ", e)
 
     def _handle_period_end_actions(self, today):
         try:
@@ -925,7 +972,7 @@ class Mt5ExecutionEngine:
             pass
 
     def run(self):
-        while self._running:
+        while self._running and not self.shutdown_event.is_set():
             try:
                 check_mt5_connection(**self.kwargs)
                 positions_orders = self._check_positions_orders()
@@ -943,24 +990,27 @@ class Mt5ExecutionEngine:
                         self._check(buys[symbol], sells[symbol], symbol)
                 else:
                     self._update_risk(weights)
-                    self._handle_signals(today, signals, buys, sells)
+                    self._handle_all_signals(today, signals, buys, sells)
                 self._sleep()
                 self._handle_period_end_actions(today)
             except KeyboardInterrupt:
                 logger.info(
                     f"Stopping Execution Engine for {self.STRATEGY} STRATEGY on {self.ACCOUNT} Account"
                 )
-                break
+                self.stop()
+                sys.exit(0)
             except Exception as e:
                 msg = f"Running Execution Engine, STRATEGY={self.STRATEGY} , ACCOUNT={self.ACCOUNT}"
                 self._print_exc(msg, e)
 
     def stop(self):
         """Stops the execution engine."""
-        self._running = False
-        logger.info(
-            f"Stopping Execution Engine for {self.STRATEGY} STRATEGY on {self.ACCOUNT} Account"
-        )
+        if self._running:
+            logger.info(
+                f"Stopping Execution Engine for {self.STRATEGY} STRATEGY on {self.ACCOUNT} Account"
+            )
+            self._running = False
+            self.shutdown_event.set()
         logger.info("Execution Engine stopped successfully.")
 
 
@@ -1008,6 +1058,7 @@ def RunMt5Engines(accounts: Dict[str, Dict], start_delay: float = 1.0):
 
     for account_id, params in accounts.items():
         log.info(f"Starting process for {account_id}")
+        params["multithread"] = True
         process = mp.Process(target=RunMt5Engine, args=(account_id,), kwargs=params)
         process.start()
         processes[process] = account_id

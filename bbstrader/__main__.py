@@ -12,7 +12,7 @@ from bbstrader.metatrader.scripts import copy_trades
 from bbstrader.trading.scripts import execute_strategy
 
 
-class Module(Enum):
+class _Module(Enum):
     COPIER = "copier"
     BACKTEST = "backtest"
     EXECUTION = "execution"
@@ -52,13 +52,13 @@ def main():
         sys.exit(0)
     try:
         match args.run:
-            case Module.COPIER.value:
+            case _Module.COPIER.value:
                 copy_trades(unknown)
-            case Module.BACKTEST.value:
+            case _Module.BACKTEST.value:
                 backtest(unknown)
-            case Module.EXECUTION.value:
+            case _Module.EXECUTION.value:
                 execute_strategy(unknown)
-            case Module.NEWS_FEED.value:
+            case _Module.NEWS_FEED.value:
                 send_news_feed(unknown)
             case _:
                 print(Fore.RED + f"Unknown module: {args.run}")

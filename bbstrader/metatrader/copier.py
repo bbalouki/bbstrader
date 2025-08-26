@@ -1,6 +1,9 @@
+import concurrent.futures as cf
 import multiprocessing as mp
+import threading
 import time
 from datetime import datetime
+from enum import Enum
 from multiprocessing.synchronize import Event
 from pathlib import Path
 from typing import Dict, List, Literal, Tuple
@@ -20,10 +23,11 @@ except ImportError:
 
 __all__ = [
     "TradeCopier",
-    "copier_worker_process",
     "RunCopier",
     "RunMultipleCopier",
     "config_copier",
+    "copier_worker_process",
+    "get_symbols_from_string",
 ]
 
 log.add(
@@ -46,6 +50,17 @@ ORDER_TYPE = {
     6: (Mt5.ORDER_TYPE_BUY_STOP_LIMIT, "BUY STOP LIMIT"),
     7: (Mt5.ORDER_TYPE_SELL_STOP_LIMIT, "SELL STOP LIMIT"),
 }
+
+
+class OrderAction(Enum):
+    COPY_NEW = "COPY_NEW"
+    MODIFY = "MODIFY"
+    CLOSE = "CLOSE"
+    SYNC_REMOVE = "SYNC_REMOVE"
+    SYNC_ADD = "SYNC_ADD"
+
+
+CopyMode = Literal["fix", "multiply", "percentage", "dynamic", "replicate"]
 
 
 def fix_lot(fixed):
@@ -103,15 +118,11 @@ def fixed_lot(lot, symbol, destination) -> float:
     else:
         return _check_lot(round(lot), s_info)
 
-
-Mode = Literal["fix", "multiply", "percentage", "dynamic", "replicate"]
-
-
 def calculate_copy_lot(
     source_lot,
     symbol: str,
     destination: dict,
-    mode: Mode = "dynamic",
+    mode: CopyMode = "dynamic",
     value=None,
     source_eqty: float = None,
     dest_eqty: float = None,
@@ -162,10 +173,10 @@ def get_symbols_from_string(symbols_string: str):
 
 def get_copy_symbols(destination: dict, source: dict) -> List[str] | Dict[str, str]:
     symbols = destination.get("symbols", "all")
-    src_account = Account(**source)
-    dest_account = Account(**destination)
-    if symbols == "all" or symbols == "*":
+    if symbols == "all" or symbols == "*" or  isinstance(symbols, list) :
+        src_account = Account(**source)
         src_symbols = src_account.get_symbols()
+        dest_account = Account(**destination)
         dest_symbols = dest_account.get_symbols()
         for s in src_symbols:
             if s not in dest_symbols:
@@ -308,7 +319,7 @@ class TradeCopier(object):
             end_time (str, optional): The time (HH:MM) from which the copier stop copying from the source.
             sleeptime (float, optional): The delay between each check from the source account.
             custom_logger (Any, Optional): Used to set a cutum logger (default is ``loguru.logger``)
-            shutdown_event (Any, Otional): Use to terminal the copy process when runs in a custum environment like web App or GUI.
+            shutdown_event (Any, Otional): Use to terminate the copy process when runs in a custum environment like web App or GUI.
             log_queue (multiprocessing.Queue, Optional): Use to send log to an external program, usefule in GUI apps
 
         Note:
@@ -349,7 +360,7 @@ class TradeCopier(object):
         for destination in self.destinations:
             destination["copy"] = destination.get("copy", True)
 
-    def _log_message(self, message, type="info"):
+    def log_message(self, message, type="info"):
         if self.log_queue:
             try:
                 now = datetime.now()
@@ -357,15 +368,14 @@ class TradeCopier(object):
                     now.strftime("%Y-%m-%d %H:%M:%S.")
                     + f"{int(now.microsecond / 1000):03d}"
                 )
-                space = len("warning") # longest log name
+                space = len("exception")  # longest log name
                 self.log_queue.put(
-                    f"{formatted} |{type.upper()} {' '*(space - len(type))}|  - {message}"
+                    f"{formatted} |{type.upper()} {' '*(space - len(type))} | - {message}"
                 )
             except Exception:
                 pass
         else:
-            logmethod = logger.info if type == "info" else logger.error
-            logmethod(message)
+            getattr(logger, type)(message)
 
     def log_error(self, e, symbol=None):
         if datetime.now().date() > self._last_session:
@@ -376,7 +386,7 @@ class TradeCopier(object):
             self.errors.add(error_msg)
             add_msg = f"SYMBOL={symbol}" if symbol else ""
             message = f"Error encountered: {error_msg}, {add_msg}"
-            self._log_message(message, type="error")
+            self.log_message(message, type="error")
 
     def _validate_source(self):
         if not self.source_isunique:
@@ -387,23 +397,14 @@ class TradeCopier(object):
                     "Non Unique source account must have a valide ID , (e.g., source['id'] = 1234)"
                 )
 
-    def add_destinations(self, destination_accounts: List[dict]):
-        self.stop()
-        destinations = destination_accounts.copy()
-        for destination in destinations:
-            destination["copy"] = True
-            self.destinations.append(destination)
-        self.run()
-
     def _get_magic(self, ticket: int) -> int:
         return int(str(self.source_id) + str(ticket)) if self.source_id >= 1 else ticket
 
     def _select_symbol(self, symbol: str, destination: dict):
         selected = Mt5.symbol_select(symbol, True)
         if not selected:
-            self._log_message(
-                f"Failed to select {destination.get('login')}::{symbol}, error code =",
-                Mt5.last_error(),
+            self.log_message(
+                f"Failed to select {destination.get('login')}::{symbol}, error code = {Mt5.last_error()}",
                 type="error",
             )
 
@@ -509,7 +510,7 @@ class TradeCopier(object):
         )
         action = ORDER_TYPE[trade.type][1]
         tick = Mt5.symbol_info_tick(symbol)
-        price = tick.ask if trade.type == 0 else tick.bid
+        price = tick.bid if trade.type == 0 else tick.ask
         try:
             request = dict(
                 symbol=symbol,
@@ -535,12 +536,12 @@ class TradeCopier(object):
             if result.retcode != Mt5.TRADE_RETCODE_DONE:
                 result = self._update_filling_type(request, result)
             if result.retcode == Mt5.TRADE_RETCODE_DONE:
-                self._log_message(
+                self.log_message(
                     f"Copy {action} Order #{trade.ticket} from @{self.source.get('login')}::{trade.symbol} "
                     f"to @{destination.get('login')}::{symbol}",
                 )
             if result.retcode != Mt5.TRADE_RETCODE_DONE:
-                self._log_message(
+                self.log_message(
                     f"Error copying {action} Order #{trade.ticket} from @{self.source.get('login')}::{trade.symbol} "
                     f"to @{destination.get('login')}::{symbol}, {trade_retcode_message(result.retcode)}",
                     type="error",
@@ -567,12 +568,12 @@ class TradeCopier(object):
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
             result = self._update_filling_type(request, result)
         if result.retcode == Mt5.TRADE_RETCODE_DONE:
-            self._log_message(
+            self.log_message(
                 f"Modify {ORDER_TYPE[source_order.type][1]} Order #{ticket} on @{destination.get('login')}::{symbol}, "
                 f"SOURCE=@{self.source.get('login')}::{source_order.symbol}"
             )
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
-            self._log_message(
+            self.log_message(
                 f"Error modifying {ORDER_TYPE[source_order.type][1]} Order #{ticket} on @{destination.get('login')}::{symbol},"
                 f"SOURCE=@{self.source.get('login')}::{source_order.symbol},  {trade_retcode_message(result.retcode)}",
                 type="error",
@@ -589,12 +590,12 @@ class TradeCopier(object):
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
             result = self._update_filling_type(request, result)
         if result.retcode == Mt5.TRADE_RETCODE_DONE:
-            self._log_message(
+            self.log_message(
                 f"Close {ORDER_TYPE[order.type][1]} Order #{order.ticket}  on @{destination.get('login')}::{order.symbol}, "
                 f"SOURCE=@{self.source.get('login')}::{src_symbol}"
             )
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
-            self._log_message(
+            self.log_message(
                 f"Error closing {ORDER_TYPE[order.type][1]} Order #{order.ticket} on @{destination.get('login')}::{order.symbol}, "
                 f"SOURCE=@{self.source.get('login')}::{src_symbol}, {trade_retcode_message(result.retcode)}",
                 type="error",
@@ -619,12 +620,12 @@ class TradeCopier(object):
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
             result = self._update_filling_type(request, result)
         if result.retcode == Mt5.TRADE_RETCODE_DONE:
-            self._log_message(
+            self.log_message(
                 f"Modify {ORDER_TYPE[source_pos.type][1]} Position #{ticket} on @{destination.get('login')}::{symbol}, "
                 f"SOURCE=@{self.source.get('login')}::{source_pos.symbol}"
             )
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
-            self._log_message(
+            self.log_message(
                 f"Error modifying {ORDER_TYPE[source_pos.type][1]} Position #{ticket} on @{destination.get('login')}::{symbol}, "
                 f"SOURCE=@{self.source.get('login')}::{source_pos.symbol}, {trade_retcode_message(result.retcode)}",
                 type="error",
@@ -652,13 +653,13 @@ class TradeCopier(object):
             result = self._update_filling_type(request, result)
 
         if result.retcode == Mt5.TRADE_RETCODE_DONE:
-            self._log_message(
+            self.log_message(
                 f"Close {ORDER_TYPE[position.type][1]} Position #{position.ticket} "
                 f"on @{destination.get('login')}::{position.symbol}, "
                 f"SOURCE=@{self.source.get('login')}::{src_symbol}"
             )
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
-            self._log_message(
+            self.log_message(
                 f"Error closing {ORDER_TYPE[position.type][1]} Position #{position.ticket} "
                 f"on @{destination.get('login')}::{position.symbol}, "
                 f"SOURCE=@{self.source.get('login')}::{src_symbol},  {trade_retcode_message(result.retcode)}",
@@ -720,30 +721,40 @@ class TradeCopier(object):
             and int(ticket[: len(id)]) == self.source_id
         )
 
-    def _copy_new_orders(self, destination):
-        source_orders, destination_orders = self.get_orders(destination)
-        # Check for new orders
-        dest_ids = [order.magic for order in destination_orders]
+    def _get_new_orders(
+        self, source_orders, destination_orders, destination
+    ) -> List[Tuple]:
+        actions = []
+        dest_ids = {order.magic for order in destination_orders}
         for source_order in source_orders:
             if self._get_magic(source_order.ticket) not in dest_ids:
                 if not self.slippage(source_order, destination):
-                    self.copy_new_order(source_order, destination)
+                    actions.append((OrderAction.COPY_NEW, source_order, destination))
+        return actions
 
-    def _copy_modified_orders(self, destination):
-        # Check for modified orders
-        source_orders, destination_orders = self.get_orders(destination)
+    def _get_modified_orders(
+        self, source_orders, destination_orders, destination
+    ) -> List[Tuple]:
+        actions = []
+        dest_order_map = {order.magic: order for order in destination_orders}
+
         for source_order in source_orders:
-            for destination_order in destination_orders:
-                if self._get_magic(source_order.ticket) == destination_order.magic:
-                    if self.isorder_modified(source_order, destination_order):
-                        ticket = destination_order.ticket
-                        symbol = destination_order.symbol
-                        self.modify_order(ticket, symbol, source_order, destination)
+            magic_id = self._get_magic(source_order.ticket)
+            if magic_id in dest_order_map:
+                destination_order = dest_order_map[magic_id]
+                if self.isorder_modified(source_order, destination_order):
+                    ticket = destination_order.ticket
+                    symbol = destination_order.symbol
+                    actions.append(
+                        (OrderAction.MODIFY, ticket, symbol, source_order, destination)
+                    )
+        return actions
 
-    def _copy_closed_orders(self, destination):
-        # Check for closed orders
-        source_orders, destination_orders = self.get_orders(destination)
-        source_ids = [self._get_magic(order.ticket) for order in source_orders]
+    def _get_closed_orders(
+        self, source_orders, destination_orders, destination
+    ) -> List[Tuple]:
+        actions = []
+        source_ids = {self._get_magic(order.ticket) for order in source_orders}
         for destination_order in destination_orders:
             if destination_order.magic not in source_ids:
                 if self.source_isunique or self._isvalide_magic(
@@ -752,173 +763,312 @@ class TradeCopier(object):
                     src_symbol = self.get_copy_symbol(
                         destination_order.symbol, destination, type="source"
                     )
-                    self.remove_order(src_symbol, destination_order, destination)
-
-    def _sync_orders(self, destination):
-        # Update orders
-        _, destination_positions = self.get_positions(destination)
-        source_orders, _ = self.get_orders(destination)
-        for destination_position in destination_positions:
-            for source_order in source_orders:
-                if destination_position.magic == self._get_magic(source_order.ticket):
-                    self.remove_position(
-                        source_order.symbol, destination_position, destination
+                    actions.append(
+                        (OrderAction.CLOSE, src_symbol, destination_order, destination)
                     )
-                    if not self.slippage(source_order, destination):
-                        self.copy_new_order(source_order, destination)
+        return actions
+
+    def _get_orders_to_sync(
+        self, source_orders, destination_positions, destination
+    ) -> List[Tuple]:
+        actions = []
+        source_order_map = {
+            self._get_magic(order.ticket): order for order in source_orders
+        }
+
+        for dest_pos in destination_positions:
+            if dest_pos.magic in source_order_map:
+                source_order = source_order_map[dest_pos.magic]
+                actions.append(
+                    (
+                        OrderAction.SYNC_REMOVE,
+                        source_order.symbol,
+                        dest_pos,
+                        destination,
+                    )
+                )
+                if not self.slippage(source_order, destination):
+                    actions.append((OrderAction.SYNC_ADD, source_order, destination))
+        return actions
+
+    def _execute_order_action(self, action_item: Tuple):
+        action_type, *args = action_item
+        try:
+            if action_type == OrderAction.COPY_NEW:
+                self.copy_new_order(*args)
+            elif action_type == OrderAction.MODIFY:
+                self.modify_order(*args)
+            elif action_type == OrderAction.CLOSE:
+                self.remove_order(*args)
+            elif action_type == OrderAction.SYNC_REMOVE:
+                self.remove_position(*args)
+            elif action_type == OrderAction.SYNC_ADD:
+                self.copy_new_order(*args)
+            else:
+                self.log_message(f"Warning: Unknown action type '{action_type.value}'")
+        except Exception as e:
+            self.log_error(
+                f"Error executing action {action_type.value} with args {args}: {e}"
+            )
+
+    def process_all_orders(self, destination, max_workers=10):
+        source_orders, destination_orders = self.get_orders(destination)
+        _, destination_positions = self.get_positions(destination)
+
+        orders_actions = []
+        orders_actions.extend(
+            self._get_new_orders(source_orders, destination_orders, destination)
+        )
+        orders_actions.extend(
+            self._get_modified_orders(source_orders, destination_orders, destination)
+        )
+        orders_actions.extend(
+            self._get_closed_orders(source_orders, destination_orders, destination)
+        )
+        orders_actions.extend(
+            self._get_orders_to_sync(source_orders, destination_positions, destination)
+        )
+
+        if not orders_actions:
+            return
+        with cf.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            list(executor.map(self._execute_order_action, orders_actions))
+
+    def _get_new_positions(
+        self, source_positions, destination_positions, destination
+    ) -> List[Tuple]:
+        actions = []
+        dest_ids = {pos.magic for pos in destination_positions}
+        for source_pos in source_positions:
+            if self._get_magic(source_pos.ticket) not in dest_ids:
+                if not self.slippage(source_pos, destination):
+                    actions.append((OrderAction.COPY_NEW, source_pos, destination))
+        return actions
+
+    def _get_modified_positions(
+        self, source_positions, destination_positions, destination
+    ) -> List[Tuple]:
+        actions = []
+        dest_pos_map = {pos.magic: pos for pos in destination_positions}
+
+        for source_pos in source_positions:
+            magic_id = self._get_magic(source_pos.ticket)
+            if magic_id in dest_pos_map:
+                dest_pos = dest_pos_map[magic_id]
+                if self.isposition_modified(source_pos, dest_pos):
+                    actions.append(
+                        (
+                            OrderAction.MODIFY,
+                            dest_pos.ticket,
+                            dest_pos.symbol,
+                            source_pos,
+                            destination,
+                        )
+                    )
+        return actions
+
+    def _get_closed_positions(
+        self, source_positions, destination_positions, destination
+    ) -> List[Tuple]:
+        actions = []
+        source_ids = {self._get_magic(pos.ticket) for pos in source_positions}
+        for dest_pos in destination_positions:
+            if dest_pos.magic not in source_ids:
+                if self.source_isunique or self._isvalide_magic(dest_pos.magic):
+                    src_symbol = self.get_copy_symbol(
+                        dest_pos.symbol, destination, type="source"
+                    )
+                    actions.append(
+                        (OrderAction.CLOSE, src_symbol, dest_pos, destination)
+                    )
+        return actions
+
+    def _get_positions_to_sync(
+        self, source_positions, destination_orders, destination
+    ) -> List[Tuple]:
+        actions = []
+        dest_order_map = {order.magic: order for order in destination_orders}
+
+        for source_pos in source_positions:
+            magic_id = self._get_magic(source_pos.ticket)
+            if magic_id in dest_order_map:
+                dest_order = dest_order_map[magic_id]
+                # Action 1: Always remove the corresponding order
+                actions.append(
+                    (
+                        OrderAction.SYNC_REMOVE,
+                        source_pos.symbol,
+                        dest_order,
+                        destination,
+                    )
+                )
+
+                # Action 2: Potentially copy a new position
+                if self._copy_what(destination) in ["all", "positions"]:
+                    if not self.slippage(source_pos, destination):
+                        actions.append((OrderAction.SYNC_ADD, source_pos, destination))
+        return actions
+
+    def _execute_position_action(self, action_item: Tuple):
+        """A single worker task that executes one action for either Orders or Positions."""
+        action_type, *args = action_item
+        try:
+            if action_type == OrderAction.COPY_NEW:
+                self.copy_new_position(*args)
+            elif action_type == OrderAction.MODIFY:
+                self.modify_position(*args)
+            elif action_type == OrderAction.CLOSE:
+                self.remove_position(*args)
+            elif action_type == OrderAction.SYNC_REMOVE:
+                self.remove_order(*args)
+            elif action_type == OrderAction.SYNC_ADD:
+                self.copy_new_position(*args)
+            else:
+                self.log_message(f"Warning: Unknown action type '{action_type.value}'")
+        except Exception as e:
+            self.log_error(
+                f"Error executing action {action_type.value} with args {args}: {e}"
+            )
+
+    def process_all_positions(self, destination, max_workers=20):
+        source_positions, destination_positions = self.get_positions(destination)
+        _, destination_orders = self.get_orders(destination)
+
+        positions_actions = []
+        positions_actions.extend(
+            self._get_new_positions(
+                source_positions, destination_positions, destination
+            )
+        )
+        positions_actions.extend(
+            self._get_modified_positions(
+                source_positions, destination_positions, destination
+            )
+        )
+        positions_actions.extend(
+            self._get_closed_positions(
+                source_positions, destination_positions, destination
+            )
+        )
+        positions_actions.extend(
+            self._get_positions_to_sync(
+                source_positions, destination_orders, destination
+            )
+        )
+
+        if not positions_actions:
+            return
+        with cf.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            list(executor.map(self._execute_position_action, positions_actions))
 
     def copy_orders(self, destination: dict):
-        what = self._copy_what(destination)
-        if what not in ["all", "orders"]:
+        if self._copy_what(destination) not in ["all", "orders"]:
             return
         check_mt5_connection(**destination)
-        self._copy_new_orders(destination)
-        self._copy_modified_orders(destination)
-        self._copy_closed_orders(destination)
-        self._sync_positions(what, destination)
-        self._sync_orders(destination)
-
-    def _copy_new_positions(self, destination):
-        source_positions, destination_positions = self.get_positions(destination)
-        # Check for new positions
-        dest_ids = [pos.magic for pos in destination_positions]
-        for source_position in source_positions:
-            if self._get_magic(source_position.ticket) not in dest_ids:
-                if not self.slippage(source_position, destination):
-                    self.copy_new_position(source_position, destination)
-
-    def _copy_modified_positions(self, destination):
-        # Check for modified positions
-        source_positions, destination_positions = self.get_positions(destination)
-        for source_position in source_positions:
-            for destination_position in destination_positions:
-                if (
-                    self._get_magic(source_position.ticket)
-                    == destination_position.magic
-                ):
-                    if self.isposition_modified(source_position, destination_position):
-                        ticket = destination_position.ticket
-                        symbol = destination_position.symbol
-                        self.modify_position(
-                            ticket, symbol, source_position, destination
-                        )
-
-    def _copy_closed_position(self, destination):
-        # Check for closed positions
-        source_positions, destination_positions = self.get_positions(destination)
-        source_ids = [self._get_magic(pos.ticket) for pos in source_positions]
-        for destination_position in destination_positions:
-            if destination_position.magic not in source_ids:
-                if self.source_isunique or self._isvalide_magic(
-                    destination_position.magic
-                ):
-                    src_symbol = self.get_copy_symbol(
-                        destination_position.symbol, destination, type="source"
-                    )
-                    self.remove_position(src_symbol, destination_position, destination)
-
-    def _sync_positions(self, what, destination):
-        # Update postions
-        source_positions, _ = self.get_positions(destination)
-        _, destination_orders = self.get_orders(destination)
-        for source_position in source_positions:
-            for destination_order in destination_orders:
-                if self._get_magic(source_position.ticket) == destination_order.magic:
-                    self.remove_order(
-                        source_position.symbol, destination_order, destination
-                    )
-                    if what in ["all", "positions"]:
-                        if not self.slippage(source_position, destination):
-                            self.copy_new_position(source_position, destination)
+        self.process_all_orders(destination)
 
     def copy_positions(self, destination: dict):
-        what = self._copy_what(destination)
-        if what not in ["all", "positions"]:
+        if self._copy_what(destination) not in ["all", "positions"]:
             return
         check_mt5_connection(**destination)
-        self._copy_new_positions(destination)
-        self._copy_modified_positions(destination)
-        self._copy_closed_position(destination)
+        self.process_all_positions(destination)
 
     def start_copy_process(self, destination: dict):
         """
-        Worker process: copy orders and positions for a single destination account.
+        Worker process: copies orders and positions concurrently for a single destination account.
         """
         if destination.get("path") == self.source.get("path"):
-            self._log_message(
-                f"Source and destination accounts are on the same  "
-                f"MetaTrader 5 installation {self.source.get('path')} which is not allowed."
+            self.log_message(
+                f"Source and destination accounts are on the same MetaTrader 5 "
+                f"installation ({self.source.get('path')}), which is not allowed."
             )
             return
 
-        self._log_message(
-            f"Copy started for source @{self.source.get('login')} "
-            f" and destination @{destination.get('login')}"
+        self.log_message(
+            f"Copy process started for source @{self.source.get('login')} "
+            f"and destination @{destination.get('login')}"
         )
         while not self.shutdown_event.is_set():
             try:
                 self.copy_positions(destination)
                 self.copy_orders(destination)
             except KeyboardInterrupt:
-                self._log_message(
-                    "KeyboardInterrupt received, stopping the Trade Copier ..."
+                self.log_message(
+                    "KeyboardInterrupt received, stopping the Trade Copier..."
                 )
                 self.stop()
             except Exception as e:
-                self.log_error(e)
+                self.log_error(f"An error occurred during the sync cycle: {e}")
+            time.sleep(self.sleeptime)
 
-        self._log_message(
+        self.log_message(
             f"Process exiting for destination @{destination.get('login')} due to shutdown event."
         )
 
     def run(self):
         """
-        Entry point to start the copier.
-        This will loop through the destinations it was given and process them.
+        Entry point: Starts a dedicated worker thread for EACH destination account to run concurrently.
         """
-        self._log_message(
-            f"Copier instance started for source @{self.source.get('login')}"
+        self.log_message(
+            f"Main Copier instance starting for source @{self.source.get('login')}."
         )
+        self.log_message(
+            f"Found {len(self.destinations)} destination accounts to process in parallel."
+        )
+        if len(set([d.get("path") for d in self.destinations])) < len(
+            self.destinations
+        ):
+            self.log_message(
+                "Two or more destination accounts have the same Terminal path, which is not allowed."
+            )
+            return
+
+        worker_threads = []
+
+        for destination in self.destinations:
+            self.log_message(
+                f"Creating worker thread for destination @{destination.get('login')}"
+            )
+            try:
+                thread = threading.Thread(
+                    target=self.start_copy_process,
+                    args=(destination,),
+                    name=f"Worker-{destination.get('login')}",
+                )
+                worker_threads.append(thread)
+                thread.start()
+            except Exception as e:
+                self.log_error(
+                    f"Error executing thread Worker-{destination.get('login')} : {e}"
+                )
+
+        self.log_message(f"All {len(worker_threads)} worker threads have been started.")
         try:
             while not self.shutdown_event.is_set():
-                for destination in self.destinations:
-                    if self.shutdown_event.is_set():
-                        break
-
-                    if destination.get("path") == self.source.get("path"):
-                        self._log_message(
-                            f"Source and destination accounts are on the same "
-                            f"MetaTrader 5 installation {self.source.get('path')} which is not allowed."
-                        )
-                        continue
-                    try:
-                        self.copy_positions(destination)
-                        self.copy_orders(destination)
-                    except Exception as e:
-                        self.log_error(e)
-                time.sleep(self.sleeptime)
-
+                time.sleep(1)
         except KeyboardInterrupt:
-            self._log_message(
-                "KeyboardInterrupt received, stopping the copier instance..."
+            self.log_message(
+                "\nKeyboardInterrupt detected by main thread. Initiating shutdown..."
             )
-            self.shutdown_event.set()
+        finally:
+            self.stop()
+            self.log_message("Waiting for all worker threads to complete...")
+            for thread in worker_threads:
+                thread.join()
 
-        self._log_message(
-            f"Copier instance for source @{self.source.get('login')} is shutting down."
-        )
+            self.log_message("All worker threads have shut down. Copier exiting.")
 
     def stop(self):
         """
         Stop the Trade Copier gracefully by setting the shutdown event.
         """
         if self._running:
-            self._log_message(
+            self.log_message(
                 f"Signaling stop for Trade Copier on source account @{self.source.get('login')}..."
             )
             self._running = False
             self.shutdown_event.set()
-        self._log_message("Trade Copier stopped successfully.")
+        self.log_message("Trade Copier stopped successfully.")
 
 
 def copier_worker_process(

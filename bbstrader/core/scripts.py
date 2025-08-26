@@ -4,6 +4,7 @@ import sys
 import textwrap
 import time
 from datetime import datetime, timedelta
+from typing import List, Literal
 
 import nltk
 from loguru import logger
@@ -25,7 +26,7 @@ def summarize_text(text, sentences_count=5):
     return " ".join(str(sentence) for sentence in summary)
 
 
-def format_article_for_telegram(article: dict) -> str:
+def format_coindesk_article(article: dict) -> str:
     if not all(
         k in article
         for k in (
@@ -53,16 +54,40 @@ def format_article_for_telegram(article: dict) -> str:
     return text
 
 
-async def send_articles(articles: dict, token: str, id: str, interval=15):
+def format_fmp_article(article: dict) -> str:
+    if not all(k in article for k in ("title", "date", "content", "tickers")):
+        return ""
+    summary = summarize_text(article["content"])
+    text = (
+        f"📰 {article['title']}\n"
+        f"Published Date: {article['date']}\n"
+        f"Keywords: {article['tickers']}\n\n"
+        f"🔍 Summary\n"
+        f"{textwrap.fill(summary, width=80)}"
+    )
+    return text
+
+
+async def send_articles(
+    articles: List[dict],
+    token: str,
+    id: str,
+    source: Literal["coindesk", "fmp"],
+    interval=15,
+):
     for article in articles:
-        if article["published_on"] >= datetime.now() - timedelta(minutes=interval):
-            article["published_on"] = article.get("published_on").strftime(
-                "%Y-%m-%d %H:%M:%S"
-            )
-            message = format_article_for_telegram(article)
-            if message == "":
-                return
-            await send_telegram_message(token, id, text=message)
+        message = ""
+        if source == "coindesk":
+            if article["published_on"] >= datetime.now() - timedelta(minutes=interval):
+                article["published_on"] = article.get("published_on").strftime(
+                    "%Y-%m-%d %H:%M:%S"
+                )
+            message = format_coindesk_article(article)
+        else:
+            message = format_fmp_article(article)
+        if message == "":
+            return
+        await send_telegram_message(token, id, text=message)
 
 
 def send_news_feed(unknown):
@@ -78,6 +103,7 @@ def send_news_feed(unknown):
         -q, --query: The news to look for (default: "")
         -t, --token: Telegram bot token
         -I, --id: Telegram Chat id
+            --fmp: Financial Modeling Prop Api Key
         -i, --interval: Interval in minutes to fetch news (default: 15)
 
     Note:
@@ -102,6 +128,9 @@ def send_news_feed(unknown):
     )
     parser.add_argument("-I", "--id", type=str, required=True, help="Telegram Chat id")
     parser.add_argument(
+        "--fmp", type=str, default="", help="Financial Modeling Prop Api Key"
+    )
+    parser.add_argument(
         "-i",
         "--interval",
         type=int,
@@ -112,19 +141,33 @@ def send_news_feed(unknown):
 
     nltk.download("punkt", quiet=True)
     news = FinancialNews()
-    logger.info(
-        f"Starting the News Feed on {args.interval} minutes"
-    )
+    logger.info(f"Starting the News Feed on {args.interval} minutes")
     while True:
         try:
-            articles = news.get_coindesk_news(query=args.query)
-            if len(articles) == 0:
-                time.sleep(args.interval * 60)
-                continue
-            asyncio.run(send_articles(articles, args.token, args.id))
+            fmp_articles = []
+            coindesk_articles = news.get_coindesk_news(query=args.query)
+            if args.fmp:
+                start = datetime.now() - timedelta(minutes=args.interval)
+                start = start.strftime("%Y-%m-%d %H:%M:%S")
+                end = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                fmp_articles = news.get_fmp_news(api=args.fmp).get_latest_articles(
+                    save=True, start=start, end=end
+                )
+            if len(coindesk_articles) != 0:
+                asyncio.run(
+                    send_articles(
+                        coindesk_articles,
+                        args.token,
+                        args.id,
+                        "coindesk",
+                        interval=args.interval,
+                    )
+                )
+            if len(fmp_articles) != 0:
+                asyncio.run(send_articles(fmp_articles, args.token, args.id, "fmp"))
             time.sleep(args.interval * 60)
         except KeyboardInterrupt:
             logger.info("Stopping the News Feed ...")
-            exit(0)
+            sys.exit(0)
         except Exception as e:
             logger.error(e)

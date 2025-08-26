@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 import nltk
 import pandas as pd
 import plotly.express as px
+from bbstrader.core.data import FinancialNews
 from dash import dcc, html
 from dash.dependencies import Input, Output
 from nltk.corpus import stopwords
@@ -19,11 +20,10 @@ from nltk.tokenize import word_tokenize
 from textblob import TextBlob
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
-from bbstrader.core.data import FinancialNews
-
 __all__ = [
     "TopicModeler",
     "SentimentAnalyzer",
+    "LEXICON",
     "EQUITY_LEXICON",
     "FOREX_LEXICON",
     "COMMODITIES_LEXICON",
@@ -331,6 +331,17 @@ FINANCIAL_LEXICON = {
     **BONDS_LEXICON,
 }
 
+LEXICON = {
+    "stock": EQUITY_LEXICON,
+    "etf": EQUITY_LEXICON,
+    "future": FINANCIAL_LEXICON,
+    "forex": FOREX_LEXICON,
+    "crypto": CRYPTO_LEXICON,
+    "index": EQUITY_LEXICON,
+    "bond": BONDS_LEXICON,
+    "commodity": COMMODITIES_LEXICON,
+}
+
 
 class TopicModeler(object):
     def __init__(self):
@@ -379,11 +390,6 @@ class SentimentAnalyzer(object):
     analysis using VADER (SentimentIntensityAnalyzer) and optional TextBlob
     for enhanced polarity scoring.
 
-    Attributes:
-        nlp (spacy.Language): A SpaCy NLP pipeline for tokenization and lemmatization,
-                               with Named Entity Recognition (NER) disabled.
-        analyzer (SentimentIntensityAnalyzer): An instance of VADER's sentiment analyzer
-                                               for financial sentiment scoring.
     """
 
     def __init__(self):
@@ -395,8 +401,6 @@ class SentimentAnalyzer(object):
         - Loads the `en_core_web_sm` SpaCy model with Named Entity Recognition (NER) disabled.
         - Initializes VADER's SentimentIntensityAnalyzer for sentiment scoring.
 
-        Args:
-            use_spacy (bool): If True, uses SpaCy for lemmatization. Defaults to False.
         """
         nltk.download("punkt", quiet=True)
         nltk.download("stopwords", quiet=True)
@@ -617,8 +621,9 @@ class SentimentAnalyzer(object):
 
         # Suppress stdout/stderr from underlying  libraries during execution
         with open(os.devnull, "w") as devnull:
-            with contextlib.redirect_stdout(devnull), contextlib.redirect_stderr(
-                devnull
+            with (
+                contextlib.redirect_stdout(devnull),
+                contextlib.redirect_stderr(devnull),
             ):
                 with ThreadPoolExecutor() as executor:
                     # Map each future to its ticker for easy result lookup

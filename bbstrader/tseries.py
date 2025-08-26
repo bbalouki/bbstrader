@@ -24,8 +24,6 @@ from statsmodels.tsa.vector_ar.var_model import VAR
 from statsmodels.tsa.vector_ar.vecm import coint_johansen
 from tqdm import tqdm
 
-warnings.filterwarnings("ignore")
-
 
 __all__ = [
     "run_kalman_filter",

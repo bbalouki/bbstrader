@@ -190,7 +190,9 @@ class FmpNews(object):
                 0
             ]  # if symbol is a yahoo finance ticker
         source_methods = {
-            "articles": lambda: self.get_latest_articles(articles=articles, save=True),
+            "articles": lambda: self.get_latest_articles(
+                articles=articles, save=True, **kwargs
+            ),
             "releases": lambda: self.get_releases(symbol=symbol, **kwargs),
             "stock": lambda: self.get_stock_news(symbol=symbol, **kwargs),
             "crypto": lambda: self.get_crypto_news(symbol=symbol, **kwargs),

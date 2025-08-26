@@ -361,7 +361,7 @@ class CSVDataHandler(BaseCSVDataHandler):
             csv_dir (str): Absolute directory path to the CSV files.
 
         NOTE:
-        All csv fille can be strored in 'Home/.bbstrader/csv_data'
+        All csv fille can be stored in 'Home/.bbstrader/data/csv_data'
 
         """
         csv_dir = kwargs.get("csv_dir")
@@ -580,7 +580,7 @@ class EODHDataHandler(BaseCSVDataHandler):
                 to_unix_time=unix_end,
             )
 
-    def _forma_data(self, data: List[Dict] | pd.DataFrame) -> pd.DataFrame:
+    def _format_data(self, data: List[Dict] | pd.DataFrame) -> pd.DataFrame:
         if isinstance(data, pd.DataFrame):
             if data.empty or len(data) == 0:
                 raise ValueError("No data found.")
@@ -608,7 +608,7 @@ class EODHDataHandler(BaseCSVDataHandler):
             filepath = os.path.join(cache_dir, f"{symbol}.csv")
             try:
                 data = self._get_data(symbol, self.period)
-                data = self._forma_data(data)
+                data = self._format_data(data)
                 data.to_csv(filepath)
             except Exception as e:
                 raise ValueError(f"Error downloading {symbol}: {e}")

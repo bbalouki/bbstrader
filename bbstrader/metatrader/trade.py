@@ -590,7 +590,7 @@ class Trade(RiskManagement):
             else:
                 raise ValueError("You need to set a price for pending orders")
         else:
-            _price = self.get_tick_info(self.symbol).ask
+            _price = self.get_tick_info(self.symbol).bid
 
         lot = volume or self.get_lot()
         stop_loss = self.get_stop_loss()
@@ -683,7 +683,7 @@ class Trade(RiskManagement):
             else:
                 raise ValueError("You need to set a price for pending orders")
         else:
-            _price = self.get_tick_info(self.symbol).bid
+            _price = self.get_tick_info(self.symbol).ask
 
         lot = volume or self.get_lot()
         stop_loss = self.get_stop_loss()
