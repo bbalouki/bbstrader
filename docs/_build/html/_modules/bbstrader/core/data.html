@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>bbstrader.core.data &mdash; bbstrader 0.3.0 documentation</title>
+  <title>bbstrader.core.data &mdash; bbstrader 0.3.3 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=e259d695"></script>
+      <script src="../../../_static/documentation_options.js?v=d5a15cff"></script>
       <script src="../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -242,7 +242,7 @@
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">articles</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;latest_fmp_articles.csv&quot;</span><span class="p">)</span>
                 <span class="n">articles</span> <span class="o">=</span> <span class="n">articles</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="s2">&quot;records&quot;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_date</span><span class="p">(</span><span class="n">articles</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;date&quot;</span><span class="p">])</span> <span class="o">&lt;</span> <span class="n">end_date</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_date</span><span class="p">(</span><span class="n">articles</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;date&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">hour</span> <span class="o">&lt;</span> <span class="n">end_date</span><span class="o">.</span><span class="n">hour</span><span class="p">:</span>
                     <span class="n">articles</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_articles</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">return</span> <span class="n">articles</span>
@@ -257,7 +257,9 @@
 
 <div class="viewcode-block" id="FmpNews.get_news">
 <a class="viewcode-back" href="../../../bbstrader.core.html#bbstrader.core.data.FmpNews.get_news">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_news</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="s2">&quot;articles&quot;</span><span class="p">,</span> <span class="n">articles</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">symbol</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_news</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="s2">&quot;articles&quot;</span><span class="p">,</span> <span class="n">articles</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Retrieves relevant financial news based on the specified source.</span>
 
@@ -279,14 +281,22 @@
 <span class="sd">                        Returns an empty list if no relevant news is found.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">query</span> <span class="o">=</span> <span class="n">_get_search_query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">symbol</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">symbol</span> <span class="o">=</span> <span class="n">symbol</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">)[</span>
+                <span class="mi">0</span>
+            <span class="p">]</span>  <span class="c1"># if symbol is a yahoo finance ticker</span>
         <span class="n">source_methods</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;articles&quot;</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_latest_articles</span><span class="p">(</span><span class="n">articles</span><span class="o">=</span><span class="n">articles</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+            <span class="s2">&quot;articles&quot;</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_latest_articles</span><span class="p">(</span>
+                <span class="n">articles</span><span class="o">=</span><span class="n">articles</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+            <span class="p">),</span>
             <span class="s2">&quot;releases&quot;</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_releases</span><span class="p">(</span><span class="n">symbol</span><span class="o">=</span><span class="n">symbol</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span>
             <span class="s2">&quot;stock&quot;</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_stock_news</span><span class="p">(</span><span class="n">symbol</span><span class="o">=</span><span class="n">symbol</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span>
             <span class="s2">&quot;crypto&quot;</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_crypto_news</span><span class="p">(</span><span class="n">symbol</span><span class="o">=</span><span class="n">symbol</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span>
             <span class="s2">&quot;forex&quot;</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_forex_news</span><span class="p">(</span><span class="n">symbol</span><span class="o">=</span><span class="n">symbol</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span>
         <span class="p">}</span>
         <span class="n">news_source</span> <span class="o">=</span> <span class="n">source_methods</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="p">[])()</span>
+        <span class="k">if</span> <span class="n">source</span> <span class="o">==</span> <span class="s2">&quot;articles&quot;</span><span class="p">:</span>
+            <span class="n">symbol</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Articles do not require a symbol filter</span>
         <span class="n">news</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_news</span><span class="p">(</span><span class="n">news_source</span><span class="p">,</span> <span class="n">symbol</span><span class="o">=</span><span class="n">symbol</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">_filter_news</span><span class="p">(</span><span class="n">news</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span></div>
 </div>
@@ -303,7 +313,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_fetch_news</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">asset_type</span><span class="p">,</span> <span class="n">n_news</span><span class="p">,</span> <span class="n">headline_tag</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_fetch_news</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">n_news</span><span class="p">,</span> <span class="n">headline_tag</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
         <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;User-Agent&quot;</span><span class="p">:</span> <span class="s2">&quot;Mozilla/5.0&quot;</span><span class="p">}</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
@@ -326,35 +336,63 @@
 
 <div class="viewcode-block" id="FinancialNews.get_yahoo_finance_news">
 <a class="viewcode-back" href="../../../bbstrader.core.html#bbstrader.core.data.FinancialNews.get_yahoo_finance_news">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_yahoo_finance_news</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">asset_type</span><span class="o">=</span><span class="s2">&quot;stock&quot;</span><span class="p">,</span> <span class="n">n_news</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_yahoo_finance_news</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">asset_type</span><span class="o">=</span><span class="s2">&quot;stock&quot;</span><span class="p">,</span> <span class="n">n_news</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Fetches recent Yahoo Finance news headlines for a given financial asset.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            query (str): The asset symbol or name (e.g., &quot;AAPL&quot;).</span>
-<span class="sd">            asset_type (str, optional): The type of asset (e.g., &quot;stock&quot;, &quot;etf&quot;). Defaults to &quot;stock&quot;.</span>
+<span class="sd">            asset_type (str, optional): The type of asset (e.g., &quot;stock&quot;, &quot;etf&quot;). Defaults to &quot;stock&quot;,</span>
+<span class="sd">                supported types include:</span>
+<span class="sd">                - &quot;stock&quot;: Stock symbols (e.g., AAPL, MSFT)</span>
+<span class="sd">                - &quot;etf&quot;: Exchange-traded funds (e.g., SPY, QQQ)</span>
+<span class="sd">                - &quot;future&quot;: Futures contracts (e.g., CL=F for crude oil)</span>
+<span class="sd">                - &quot;forex&quot;: Forex pairs (e.g., EURUSD=X, USDJPY=X)</span>
+<span class="sd">                - &quot;crypto&quot;: Cryptocurrency pairs (e.g., BTC-USD, ETH-USD)</span>
+<span class="sd">                - &quot;index&quot;: Stock market indices (e.g., ^GSPC for S&amp;P 500)</span>
 <span class="sd">            n_news (int, optional): The number of news headlines to return. Defaults to 10.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            For commotities and bonds, use the &quot;Future&quot; asset type.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            list[str]: A list of Yahoo Finance news headlines relevant to the query.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">asset_type</span> <span class="o">==</span> <span class="s2">&quot;forex&quot;</span> <span class="ow">or</span> <span class="n">asset_type</span> <span class="o">==</span> <span class="s2">&quot;future&quot;</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="p">(</span>
+                <span class="s2">&quot;=&quot;</span> <span class="ow">in</span> <span class="n">query</span>
+            <span class="p">),</span> <span class="s2">&quot;Forex query must contain &#39;=&#39; for currency pairs (e.g., EURUSD=X, CL=F)&quot;</span>
+        <span class="k">if</span> <span class="n">asset_type</span> <span class="o">==</span> <span class="s2">&quot;crypto&quot;</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="p">(</span>
+                <span class="s2">&quot;-&quot;</span> <span class="ow">in</span> <span class="n">query</span>
+            <span class="p">),</span> <span class="s2">&quot;Crypto query must contain &#39;-&#39; for crypto pairs (e.g., BTC-USD, ETH-USD)&quot;</span>
+        <span class="k">if</span> <span class="n">asset_type</span> <span class="o">==</span> <span class="s2">&quot;index&quot;</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">query</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span>
+                <span class="s2">&quot;^&quot;</span>
+            <span class="p">),</span> <span class="s2">&quot;Index query must start with &#39;^&#39; (e.g., ^GSPC for S&amp;P 500)&quot;</span>
         <span class="n">url</span> <span class="o">=</span> <span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;https://finance.yahoo.com/quote/</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2">/news&quot;</span>
-            <span class="k">if</span> <span class="n">asset_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;stock&quot;</span><span class="p">,</span> <span class="s2">&quot;etf&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">asset_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;stock&quot;</span><span class="p">,</span> <span class="s2">&quot;etf&quot;</span><span class="p">,</span> <span class="s2">&quot;index&quot;</span><span class="p">,</span> <span class="s2">&quot;future&quot;</span><span class="p">,</span> <span class="s2">&quot;forex&quot;</span><span class="p">]</span>
             <span class="k">else</span> <span class="s2">&quot;https://finance.yahoo.com/news&quot;</span>
         <span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fetch_news</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">asset_type</span><span class="p">,</span> <span class="n">n_news</span><span class="p">,</span> <span class="s2">&quot;h3&quot;</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fetch_news</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">n_news</span><span class="p">,</span> <span class="s2">&quot;h3&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="FinancialNews.get_google_finance_news">
 <a class="viewcode-back" href="../../../bbstrader.core.html#bbstrader.core.data.FinancialNews.get_google_finance_news">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_google_finance_news</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">asset_type</span><span class="o">=</span><span class="s2">&quot;stock&quot;</span><span class="p">,</span> <span class="n">n_news</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_google_finance_news</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">asset_type</span><span class="o">=</span><span class="s2">&quot;stock&quot;</span><span class="p">,</span> <span class="n">n_news</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Fetches recent Google Finance news headlines for a given financial asset.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            query (str): The asset symbol or name (e.g., &quot;AAPL&quot;).</span>
 <span class="sd">            asset_type (str, optional): The type of asset (e.g., &quot;stock&quot;, &quot;crypto&quot;). Defaults to &quot;stock&quot;.</span>
+<span class="sd">                Supported types include:</span>
+<span class="sd">                - &quot;stock&quot;: Stock symbols (e.g., AAPL, MSFT)</span>
+<span class="sd">                - &quot;etf&quot;: Exchange-traded funds (e.g., SPY, QQQ)</span>
+<span class="sd">                - &quot;future&quot;: Futures contracts (e.g., CL=F or crude oil)</span>
+<span class="sd">                - &quot;forex&quot;: Forex pairs (e.g., EURUSD, USDJPY)</span>
+<span class="sd">                - &quot;crypto&quot;: Cryptocurrency pairs (e.g., BTCUSD, ETHUSD)</span>
 <span class="sd">            n_news (int, optional): The number of news headlines to return. Defaults to 10.</span>
 
 <span class="sd">        Returns:</span>
@@ -363,23 +401,21 @@
         <span class="n">search_terms</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;stock&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> stock OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> shares OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> market&quot;</span><span class="p">,</span>
             <span class="s2">&quot;etf&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> ETF OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> fund OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> exchange-traded fund&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;futures&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> futures OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> price OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> market&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;commodity&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> price OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> futures OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> market&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;future&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> futures OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> price OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> market&quot;</span><span class="p">,</span>
             <span class="s2">&quot;forex&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> forex OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> exchange rate OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> market&quot;</span><span class="p">,</span>
             <span class="s2">&quot;crypto&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> cryptocurrency OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> price OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> market&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;bond&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> bond OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> yield OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> interest rate&quot;</span><span class="p">,</span>
             <span class="s2">&quot;index&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> index OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> stock market OR </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2"> performance&quot;</span><span class="p">,</span>
         <span class="p">}</span>
         <span class="n">search_query</span> <span class="o">=</span> <span class="n">search_terms</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">asset_type</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span>
         <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;https://news.google.com/search?q=</span><span class="si">{</span><span class="n">search_query</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;+&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fetch_news</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">asset_type</span><span class="p">,</span> <span class="n">n_news</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fetch_news</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">n_news</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="FinancialNews.get_reddit_posts">
 <a class="viewcode-back" href="../../../bbstrader.core.html#bbstrader.core.data.FinancialNews.get_reddit_posts">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_reddit_posts</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">symbol</span><span class="p">,</span>
+        <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">client_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">client_secret</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">user_agent</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -402,8 +438,8 @@
 <span class="sd">                - &quot;stock&quot;: Searches in stock-related subreddits (e.g., wallstreetbets, stocks).</span>
 <span class="sd">                - &quot;forex&quot;: Searches in forex-related subreddits.</span>
 <span class="sd">                - &quot;commodities&quot;: Searches in commodity-related subreddits (e.g., gold, oil).</span>
-<span class="sd">                - &quot;etfs&quot;: Searches in ETF-related subreddits.</span>
-<span class="sd">                - &quot;futures&quot;: Searches in futures and options trading subreddits.</span>
+<span class="sd">                - &quot;etf&quot;: Searches in ETF-related subreddits.</span>
+<span class="sd">                - &quot;future&quot;: Searches in futures and options trading subreddits.</span>
 <span class="sd">                - &quot;crypto&quot;: Searches in cryptocurrency-related subreddits.</span>
 <span class="sd">                - If an unrecognized asset class is provided, defaults to stock-related subreddits.</span>
 <span class="sd">            n_posts (int, optional): The number of posts to return per subreddit. Defaults to 10.</span>
@@ -425,15 +461,36 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">reddit</span> <span class="o">=</span> <span class="n">praw</span><span class="o">.</span><span class="n">Reddit</span><span class="p">(</span>
-            <span class="n">client_id</span><span class="o">=</span><span class="n">client_id</span><span class="p">,</span> <span class="n">client_secret</span><span class="o">=</span><span class="n">client_secret</span><span class="p">,</span> <span class="n">user_agent</span><span class="o">=</span><span class="n">user_agent</span>
+            <span class="n">client_id</span><span class="o">=</span><span class="n">client_id</span><span class="p">,</span>
+            <span class="n">client_secret</span><span class="o">=</span><span class="n">client_secret</span><span class="p">,</span>
+            <span class="n">user_agent</span><span class="o">=</span><span class="n">user_agent</span><span class="p">,</span>
+            <span class="n">check_for_updates</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">comment_kind</span><span class="o">=</span><span class="s2">&quot;t1&quot;</span><span class="p">,</span>
+            <span class="n">message_kind</span><span class="o">=</span><span class="s2">&quot;t4&quot;</span><span class="p">,</span>
+            <span class="n">redditor_kind</span><span class="o">=</span><span class="s2">&quot;t2&quot;</span><span class="p">,</span>
+            <span class="n">submission_kind</span><span class="o">=</span><span class="s2">&quot;t3&quot;</span><span class="p">,</span>
+            <span class="n">subreddit_kind</span><span class="o">=</span><span class="s2">&quot;t5&quot;</span><span class="p">,</span>
+            <span class="n">trophy_kind</span><span class="o">=</span><span class="s2">&quot;t6&quot;</span><span class="p">,</span>
+            <span class="n">oauth_url</span><span class="o">=</span><span class="s2">&quot;https://oauth.reddit.com&quot;</span><span class="p">,</span>
+            <span class="n">reddit_url</span><span class="o">=</span><span class="s2">&quot;https://www.reddit.com&quot;</span><span class="p">,</span>
+            <span class="n">short_url</span><span class="o">=</span><span class="s2">&quot;https://redd.it&quot;</span><span class="p">,</span>
+            <span class="n">timeout</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+            <span class="n">ratelimit_seconds</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
         <span class="p">)</span>
-
+        <span class="k">assert</span> <span class="n">reddit</span><span class="o">.</span><span class="n">read_only</span>
         <span class="n">subreddit_mapping</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;stock&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;wallstreetbets&quot;</span><span class="p">,</span> <span class="s2">&quot;stocks&quot;</span><span class="p">,</span> <span class="s2">&quot;investing&quot;</span><span class="p">,</span> <span class="s2">&quot;StockMarket&quot;</span><span class="p">],</span>
             <span class="s2">&quot;forex&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Forex&quot;</span><span class="p">,</span> <span class="s2">&quot;ForexTrading&quot;</span><span class="p">,</span> <span class="s2">&quot;DayTrading&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;commodities&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Commodities&quot;</span><span class="p">,</span> <span class="s2">&quot;Gold&quot;</span><span class="p">,</span> <span class="s2">&quot;Silverbugs&quot;</span><span class="p">,</span> <span class="s2">&quot;oil&quot;</span><span class="p">],</span>
             <span class="s2">&quot;etfs&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;ETFs&quot;</span><span class="p">,</span> <span class="s2">&quot;investing&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;futures&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;FuturesTrading&quot;</span><span class="p">,</span> <span class="s2">&quot;OptionsTrading&quot;</span><span class="p">,</span> <span class="s2">&quot;DayTrading&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;futures&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;FuturesTrading&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;OptionsTrading&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;DayTrading&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;Commodities&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;Gold&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;Silverbugs&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;oil&quot;</span><span class="p">,</span>
+            <span class="p">],</span>
             <span class="s2">&quot;crypto&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;CryptoCurrency&quot;</span><span class="p">,</span> <span class="s2">&quot;Bitcoin&quot;</span><span class="p">,</span> <span class="s2">&quot;ethereum&quot;</span><span class="p">,</span> <span class="s2">&quot;altcoin&quot;</span><span class="p">],</span>
         <span class="p">}</span>
         <span class="k">try</span><span class="p">:</span>
@@ -590,16 +647,23 @@
         <span class="n">maximum</span> <span class="o">=</span> <span class="mi">100</span>
         <span class="k">if</span> <span class="n">limit</span> <span class="o">&gt;</span> <span class="n">maximum</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Number of total news articles allowed is </span><span class="si">{</span><span class="n">maximum</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-            <span class="s2">&quot;https://data-api.coindesk.com/news/v1/article/list&quot;</span><span class="p">,</span>
-            <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;lang&quot;</span><span class="p">:</span> <span class="n">lang</span><span class="p">,</span> <span class="s2">&quot;limit&quot;</span><span class="p">:</span> <span class="n">limit</span><span class="p">},</span>
-            <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;Content-type&quot;</span><span class="p">:</span> <span class="s2">&quot;application/json; charset=UTF-8&quot;</span><span class="p">},</span>
-        <span class="p">)</span>
-        <span class="n">json_response</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
-        <span class="n">articles</span> <span class="o">=</span> <span class="n">json_response</span><span class="p">[</span><span class="s2">&quot;Data&quot;</span><span class="p">]</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">articles</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="s2">&quot;https://data-api.coindesk.com/news/v1/article/list&quot;</span><span class="p">,</span>
+                <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;lang&quot;</span><span class="p">:</span> <span class="n">lang</span><span class="p">,</span> <span class="s2">&quot;limit&quot;</span><span class="p">:</span> <span class="n">limit</span><span class="p">},</span>
+                <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;Content-type&quot;</span><span class="p">:</span> <span class="s2">&quot;application/json; charset=UTF-8&quot;</span><span class="p">},</span>
+            <span class="p">)</span>
+            <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+            <span class="n">json_response</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">RequestException</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">200</span>
+            <span class="ow">or</span> <span class="s2">&quot;Data&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">json_response</span>
+            <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">json_response</span><span class="p">[</span><span class="s2">&quot;Data&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span>
+        <span class="p">):</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="n">articles</span> <span class="o">=</span> <span class="n">json_response</span><span class="p">[</span><span class="s2">&quot;Data&quot;</span><span class="p">]</span>
         <span class="n">to_keep</span> <span class="o">=</span> <span class="p">[</span>
             <span class="s2">&quot;PUBLISHED_ON&quot;</span><span class="p">,</span>
             <span class="s2">&quot;TITLE&quot;</span><span class="p">,</span>
@@ -612,10 +676,11 @@
         <span class="p">]</span>
         <span class="n">filtered_articles</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">article</span> <span class="ow">in</span> <span class="n">articles</span><span class="p">:</span>
+            <span class="n">keys</span> <span class="o">=</span> <span class="n">article</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
             <span class="n">filtered_articles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                 <span class="p">{</span>
                     <span class="n">k</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span> <span class="n">article</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
-                    <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">article</span> <span class="ow">and</span> <span class="n">k</span> <span class="o">!=</span> <span class="s2">&quot;PUBLISHED_ON&quot;</span>
+                    <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span> <span class="ow">and</span> <span class="n">k</span> <span class="o">!=</span> <span class="s2">&quot;PUBLISHED_ON&quot;</span>
                     <span class="k">else</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="n">article</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
                     <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">to_keep</span>
                     <span class="k">if</span> <span class="n">article</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">&quot;sponsored&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">article</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>

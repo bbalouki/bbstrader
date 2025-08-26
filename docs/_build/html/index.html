@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Simplified Investment &amp; Trading Toolkit &mdash; bbstrader 0.3.0 documentation</title>
+  <title>Simplified Investment &amp; Trading Toolkit &mdash; bbstrader 0.3.3 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=e259d695"></script>
+      <script src="_static/documentation_options.js?v=d5a15cff"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -89,13 +89,70 @@
 <a class="reference external image-reference" href="https://paypal.me/bertinbalouki?country.x=SN&amp;locale.x=en_US"><img alt="PayPal Me" src="https://img.shields.io/badge/PayPal%20Me-blue?logo=paypal" />
 </a>
 <p><a class="reference external" href="https://bbstrader.readthedocs.io/en/latest/index.html">Dcoumentation</a></p>
-<p>BBSTrader is a trading system suite developed for MetaTrader 5 (MT5) and IBKR platforms (coming soon), designed to offer a comprehensive set of tools for developing, backtesting, executing, and managing a wide array of trading strategies. It targets algorithmic traders, quantitative analysts, and developers looking to build, test, and deploy trading strategies. With an emphasis on algorithmic and quantitative trading, BBSTrader aims to provide users with a robust platform for exploring and deploying sophisticated trading strategies.</p>
+<nav class="contents local" id="table-of-contents">
+<p class="topic-title">Table of Contents</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#overview" id="id1">Overview</a></p></li>
+<li><p><a class="reference internal" href="#features" id="id2">Features</a></p></li>
+<li><p><a class="reference internal" href="#core-components" id="id3">Core Components</a></p>
+<ul>
+<li><p><a class="reference internal" href="#backtesting-engine-btengine" id="id4">Backtesting Engine (<code class="docutils literal notranslate"><span class="pre">btengine</span></code>)</a></p></li>
+<li><p><a class="reference internal" href="#metatrader5-module-metatrader" id="id5">MetaTrader5 Module (<code class="docutils literal notranslate"><span class="pre">metatrader</span></code>)</a></p></li>
+<li><p><a class="reference internal" href="#trading-strategies-trading-strategies" id="id6">Trading Strategies (<code class="docutils literal notranslate"><span class="pre">trading.strategies</span></code>)</a></p></li>
+<li><p><a class="reference internal" href="#models-module-models" id="id7">Models Module (<code class="docutils literal notranslate"><span class="pre">models</span></code>)</a></p></li>
+<li><p><a class="reference internal" href="#time-series-module-tseries" id="id8">Time Series Module (<code class="docutils literal notranslate"><span class="pre">tseries</span></code>)</a></p></li>
+<li><p><a class="reference internal" href="#live-trading-engine-trading" id="id9">Live Trading Engine (<code class="docutils literal notranslate"><span class="pre">trading</span></code>)</a></p></li>
+<li><p><a class="reference internal" href="#interactive-brokers-module-ibkr" id="id10">Interactive Brokers Module (<code class="docutils literal notranslate"><span class="pre">ibkr</span></code>)</a></p></li>
+<li><p><a class="reference internal" href="#core-utilities-core" id="id11">Core Utilities (<code class="docutils literal notranslate"><span class="pre">core</span></code>)</a></p></li>
+<li><p><a class="reference internal" href="#configuration-config" id="id12">Configuration (<code class="docutils literal notranslate"><span class="pre">config</span></code>)</a></p></li>
+<li><p><a class="reference internal" href="#compatibility-layer-compat" id="id13">Compatibility Layer (<code class="docutils literal notranslate"><span class="pre">compat</span></code>)</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#getting-started" id="id14">Getting Started</a></p>
+<ul>
+<li><p><a class="reference internal" href="#prerequisites" id="id15">Prerequisites</a></p></li>
+<li><p><a class="reference internal" href="#installation" id="id16">Installation</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#usage-examples" id="id17">Usage Examples</a></p>
+<ul>
+<li><p><a class="reference internal" href="#connecting-to-metatrader-5-conceptual" id="id18">Connecting to MetaTrader 5 (Conceptual)</a></p></li>
+<li><p><a class="reference internal" href="#programmatic-backtesting-example" id="id19">Programmatic Backtesting Example</a></p></li>
+<li><p><a class="reference internal" href="#backtesting-results" id="id20">Backtesting Results</a></p></li>
+<li><p><a class="reference internal" href="#command-line-interface-cli-examples" id="id21">Command-Line Interface (CLI) Examples</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#configuration" id="id22">Configuration</a></p>
+<ul>
+<li><p><a class="reference internal" href="#user-configuration-directory-bbstrader" id="id23">User Configuration Directory: <code class="docutils literal notranslate"><span class="pre">~/.bbstrader/</span></code></a></p></li>
+<li><p><a class="reference internal" href="#strategy-execution-execution-json" id="id24">Strategy Execution (<code class="docutils literal notranslate"><span class="pre">execution.json</span></code>)</a></p></li>
+<li><p><a class="reference internal" href="#metatrader-5-broker-paths-bbstrader-config-py" id="id25">MetaTrader 5 Broker Paths (<code class="docutils literal notranslate"><span class="pre">bbstrader/config.py</span></code>)</a></p></li>
+<li><p><a class="reference internal" href="#logging-configuration-bbstrader-config-py" id="id26">Logging Configuration (<code class="docutils literal notranslate"><span class="pre">bbstrader/config.py</span></code>)</a></p></li>
+<li><p><a class="reference internal" href="#general-advice" id="id27">General Advice</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#documentation" id="id28">Documentation</a></p></li>
+<li><p><a class="reference internal" href="#customization-and-contribution" id="id29">Customization and Contribution</a></p></li>
+<li><p><a class="reference internal" href="#contributing-to-bbstrader" id="id30">Contributing to <code class="docutils literal notranslate"><span class="pre">bbstrader</span></code></a></p>
+<ul>
+<li><p><a class="reference internal" href="#ways-to-contribute" id="id31">Ways to Contribute</a></p></li>
+<li><p><a class="reference internal" href="#reporting-issues" id="id32">Reporting Issues</a></p></li>
+<li><p><a class="reference internal" href="#requesting-features" id="id33">Requesting Features</a></p></li>
+<li><p><a class="reference internal" href="#how-to-get-started" id="id34">How to Get Started</a></p></li>
+<li><p><a class="reference internal" href="#contribution-guidelines" id="id35">Contribution Guidelines</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#disclaimer" id="id36">Disclaimer</a></p></li>
+<li><p><a class="reference internal" href="#license" id="id37">License</a></p></li>
+</ul>
+</nav>
+<p><code class="docutils literal notranslate"><span class="pre">bbstrader</span></code> is a trading system suite developed for MetaTrader 5 (MT5) and IBKR platforms (coming soon), designed to offer a comprehensive set of tools for developing, backtesting, executing, and managing a wide array of trading strategies. It targets algorithmic traders, quantitative analysts, and developers looking to build, test, and deploy trading strategies. With an emphasis on algorithmic and quantitative trading, <code class="docutils literal notranslate"><span class="pre">bbstrader</span></code> aims to provide users with a robust platform for exploring and deploying sophisticated trading strategies.</p>
 <section id="overview">
-<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
-<p>BBSTrader aims to empower traders by providing a comprehensive and flexible suite of tools that simplify the development-to-deployment pipeline for algorithmic trading strategies. Our philosophy centers on offering powerful, accessible technology to navigate the complexities of financial markets, enabling users to efficiently design, test, and execute their trading ideas. By focusing on robust analytics and seamless platform integration, BBSTrader strives to be an indispensable partner for traders seeking to enhance their market analysis and execution capabilities.</p>
+<h2><a class="toc-backref" href="#id1" role="doc-backlink">Overview</a><a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">bbstrader</span></code> aims to empower traders by providing a comprehensive and flexible suite of tools that simplify the development-to-deployment pipeline for algorithmic trading strategies. Our philosophy centers on offering powerful, accessible technology to navigate the complexities of financial markets, enabling users to efficiently design, test, and execute their trading ideas. By focusing on robust analytics and seamless platform integration, <code class="docutils literal notranslate"><span class="pre">bbstrader</span></code> strives to be an indispensable partner for traders seeking to enhance their market analysis and execution capabilities.</p>
 </section>
 <section id="features">
-<h2>Features<a class="headerlink" href="#features" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id2" role="doc-backlink">Features</a><a class="headerlink" href="#features" title="Link to this heading"></a></h2>
 <ul class="simple">
 <li><p><strong>Comprehensive Backtesting</strong>: Rigorously test strategies with historical data to optimize performance before live deployment.</p></li>
 <li><p><strong>Integrated Risk Management</strong>: Utilize sophisticated techniques to manage risk and adapt to fluctuating market conditions.</p></li>
@@ -108,59 +165,59 @@
 <p>You can read the full documentation <a class="reference external" href="https://bbstrader.readthedocs.io/en/latest/index.html">here</a>.</p>
 </section>
 <section id="core-components">
-<h2>Core Components<a class="headerlink" href="#core-components" title="Link to this heading"></a></h2>
-<p>BBSTrader is organized into several key modules, each designed to address specific aspects of the trading workflow:</p>
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">Core Components</a><a class="headerlink" href="#core-components" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">bbstrader</span></code> is organized into several key modules, each designed to address specific aspects of the trading workflow:</p>
 <section id="backtesting-engine-btengine">
-<h3>Backtesting Engine (<code class="docutils literal notranslate"><span class="pre">btengine</span></code>)<a class="headerlink" href="#backtesting-engine-btengine" title="Link to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id4" role="doc-backlink">Backtesting Engine (<code class="docutils literal notranslate"><span class="pre">btengine</span></code>)</a><a class="headerlink" href="#backtesting-engine-btengine" title="Link to this heading"></a></h3>
 <p>The <strong>``btengine``</strong> module enables traders to rigorously test their trading strategies using historical market data. It features an event-driven architecture, provides comprehensive performance metrics, and supports parameter optimization to evaluate and refine strategies before live deployment.</p>
 </section>
 <section id="metatrader5-module-metatrader">
-<h3>MetaTrader5 Module (<code class="docutils literal notranslate"><span class="pre">metatrader</span></code>)<a class="headerlink" href="#metatrader5-module-metatrader" title="Link to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id5" role="doc-backlink">MetaTrader5 Module (<code class="docutils literal notranslate"><span class="pre">metatrader</span></code>)</a><a class="headerlink" href="#metatrader5-module-metatrader" title="Link to this heading"></a></h3>
 <p>This <strong>``metatrader``</strong> module facilitates direct interaction with the MetaTrader 5 platform. It allows for seamless execution of trading strategies, including managing accounts, sending orders, and monitoring positions and balances in real-time.</p>
 </section>
 <section id="trading-strategies-trading-strategies">
-<h3>Trading Strategies (<code class="docutils literal notranslate"><span class="pre">trading.strategies</span></code>)<a class="headerlink" href="#trading-strategies-trading-strategies" title="Link to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id6" role="doc-backlink">Trading Strategies (<code class="docutils literal notranslate"><span class="pre">trading.strategies</span></code>)</a><a class="headerlink" href="#trading-strategies-trading-strategies" title="Link to this heading"></a></h3>
 <p>The <strong>``trading.strategies``</strong> sub-module offers a collection of pre-built trading strategies, such as those based on ARIMA+GARCH models, Kalman Filters, and Simple Moving Averages. These strategies often come equipped with risk management features, like Hidden Markov Models, and serve as practical examples or starting points for custom development.</p>
 </section>
 <section id="models-module-models">
-<h3>Models Module (<code class="docutils literal notranslate"><span class="pre">models</span></code>)<a class="headerlink" href="#models-module-models" title="Link to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id7" role="doc-backlink">Models Module (<code class="docutils literal notranslate"><span class="pre">models</span></code>)</a><a class="headerlink" href="#models-module-models" title="Link to this heading"></a></h3>
 <p>The <strong>``models``</strong> module provides a versatile framework for implementing and utilizing various types of financial models. This includes statistical models for market analysis, machine learning models for predictive insights, NLP models for sentiment analysis, optimization algorithms for portfolio balancing, and risk management models to safeguard investments.</p>
 </section>
 <section id="time-series-module-tseries">
-<h3>Time Series Module (<code class="docutils literal notranslate"><span class="pre">tseries</span></code>)<a class="headerlink" href="#time-series-module-tseries" title="Link to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id8" role="doc-backlink">Time Series Module (<code class="docutils literal notranslate"><span class="pre">tseries</span></code>)</a><a class="headerlink" href="#time-series-module-tseries" title="Link to this heading"></a></h3>
 <p>Specialized for advanced analysis of financial time series, the <strong>``tseries``</strong> module offers tools for cointegration testing, volatility modeling (e.g., GARCH), and various filtering techniques. These capabilities help in identifying market regimes, understanding asset correlations, and forecasting.</p>
 </section>
 <section id="live-trading-engine-trading">
-<h3>Live Trading Engine (<code class="docutils literal notranslate"><span class="pre">trading</span></code>)<a class="headerlink" href="#live-trading-engine-trading" title="Link to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id9" role="doc-backlink">Live Trading Engine (<code class="docutils literal notranslate"><span class="pre">trading</span></code>)</a><a class="headerlink" href="#live-trading-engine-trading" title="Link to this heading"></a></h3>
 <p>The <strong>``trading``</strong> module serves as a higher-level interface for implementing and managing live trading logic. It coordinates between strategy signals, risk management, and execution modules like <code class="docutils literal notranslate"><span class="pre">metatrader</span></code> and <code class="docutils literal notranslate"><span class="pre">ibkr</span></code> to manage the full lifecycle of trades.</p>
 </section>
 <section id="interactive-brokers-module-ibkr">
-<h3>Interactive Brokers Module (<code class="docutils literal notranslate"><span class="pre">ibkr</span></code>)<a class="headerlink" href="#interactive-brokers-module-ibkr" title="Link to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id10" role="doc-backlink">Interactive Brokers Module (<code class="docutils literal notranslate"><span class="pre">ibkr</span></code>)</a><a class="headerlink" href="#interactive-brokers-module-ibkr" title="Link to this heading"></a></h3>
 <p>Currently under development, the <strong>``ibkr``</strong> module aims to provide integration with the Interactive Brokers platform. It is expected to offer functionalities similar to the <code class="docutils literal notranslate"><span class="pre">metatrader</span></code> module, including account interaction, order execution, and position management for IBKR users.</p>
 </section>
 <section id="core-utilities-core">
-<h3>Core Utilities (<code class="docutils literal notranslate"><span class="pre">core</span></code>)<a class="headerlink" href="#core-utilities-core" title="Link to this heading"></a></h3>
-<p>The <strong>``core``</strong> module is the backbone of BBSTrader, providing fundamental data structures, utility functions, configuration management, and shared functionalities. These components are used across the entire BBSTrader ecosystem to ensure consistency and efficiency.</p>
+<h3><a class="toc-backref" href="#id11" role="doc-backlink">Core Utilities (<code class="docutils literal notranslate"><span class="pre">core</span></code>)</a><a class="headerlink" href="#core-utilities-core" title="Link to this heading"></a></h3>
+<p>The <strong>``core``</strong> module is the backbone of <code class="docutils literal notranslate"><span class="pre">bbstrader</span></code>, providing fundamental data structures, utility functions, configuration management, and shared functionalities. These components are used across the entire <code class="docutils literal notranslate"><span class="pre">bbstrader</span></code> ecosystem to ensure consistency and efficiency.</p>
 </section>
 <section id="configuration-config">
-<h3>Configuration (<code class="docutils literal notranslate"><span class="pre">config</span></code>)<a class="headerlink" href="#configuration-config" title="Link to this heading"></a></h3>
-<p>This <strong>``config``</strong> component handles the management of all system settings, including API keys, broker executable paths, database connections, and logging configurations, making it easier to customize BBSTrader to specific user environments.</p>
+<h3><a class="toc-backref" href="#id12" role="doc-backlink">Configuration (<code class="docutils literal notranslate"><span class="pre">config</span></code>)</a><a class="headerlink" href="#configuration-config" title="Link to this heading"></a></h3>
+<p>This <strong>``config``</strong> component handles the management of all system settings, including API keys, broker executable paths, database connections, and logging configurations, making it easier to customize <code class="docutils literal notranslate"><span class="pre">bbstrader</span></code> to specific user environments.</p>
 </section>
 <section id="compatibility-layer-compat">
-<h3>Compatibility Layer (<code class="docutils literal notranslate"><span class="pre">compat</span></code>)<a class="headerlink" href="#compatibility-layer-compat" title="Link to this heading"></a></h3>
-<p>The <strong>``compat``</strong> module is designed to enhance cross-platform development and testing. It achieves this by mocking the MetaTrader 5 environment, allowing developers on non-Windows systems to work with BBSTrader’s core functionalities without needing a live MT5 instance.</p>
+<h3><a class="toc-backref" href="#id13" role="doc-backlink">Compatibility Layer (<code class="docutils literal notranslate"><span class="pre">compat</span></code>)</a><a class="headerlink" href="#compatibility-layer-compat" title="Link to this heading"></a></h3>
+<p>The <strong>``compat``</strong> module is designed to enhance cross-platform development and testing. It achieves this by mocking the MetaTrader 5 environment, allowing developers on non-Windows systems to work with <code class="docutils literal notranslate"><span class="pre">bbstrader</span></code>’s core functionalities without needing a live MT5 instance.</p>
 </section>
 </section>
 <section id="getting-started">
-<h2>Getting Started<a class="headerlink" href="#getting-started" title="Link to this heading"></a></h2>
-<p>To begin using BBSTrader, please ensure your system meets the following prerequisites and follow the installation steps.</p>
+<h2><a class="toc-backref" href="#id14" role="doc-backlink">Getting Started</a><a class="headerlink" href="#getting-started" title="Link to this heading"></a></h2>
+<p>To begin using <code class="docutils literal notranslate"><span class="pre">bbstrader</span></code>, please ensure your system meets the following prerequisites and follow the installation steps.</p>
 <section id="prerequisites">
-<h3>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id15" role="doc-backlink">Prerequisites</a><a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h3>
 <ul>
-<li><p><strong>Python</strong>: Python 3.8+ is required.</p></li>
+<li><p><strong>Python</strong>: Python 3.10+ is required.</p></li>
 <li><p><strong>MetaTrader 5 (MT5)</strong>:
 *   The MetaTrader 5 platform must be installed on your system (primarily for Windows users needing live trading or direct MT5 interaction).
-*   An active trading account with a MetaTrader 5 broker. BBSTrader currently supports:</p>
+*   An active trading account with a MetaTrader 5 broker. <code class="docutils literal notranslate"><span class="pre">bbstrader</span></code> currently supports:</p>
 <blockquote>
 <div><ul class="simple">
 <li><p><a class="reference external" href="https://cabinet.a-partnership.com/visit/?bta=35537&amp;brand=admiralmarkets">Admirals Group AS</a></p></li>
@@ -169,15 +226,11 @@
 </ul>
 </div></blockquote>
 </li>
-<li><p><strong>Interactive Brokers (IBKR)</strong> (Optional, for IBKR integration):
-*   Interactive Brokers Trader Workstation (TWS) or IB Gateway must be installed and running.
-*   An active account with Interactive Brokers.
-*   The Python client library for the IBKR API: <code class="docutils literal notranslate"><span class="pre">ibapi</span></code>.</p></li>
 </ul>
 </section>
 <section id="installation">
-<h3>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h3>
-<p>It is highly recommended to install BBSTrader in a virtual environment to manage dependencies effectively.</p>
+<h3><a class="toc-backref" href="#id16" role="doc-backlink">Installation</a><a class="headerlink" href="#installation" title="Link to this heading"></a></h3>
+<p>It is highly recommended to install <code class="docutils literal notranslate"><span class="pre">bbstrader</span></code> in a virtual environment to manage dependencies effectively.</p>
 <ol class="arabic">
 <li><p><strong>Create and activate a virtual environment:</strong></p>
 <ul>
@@ -195,7 +248,7 @@ venv\Scripts\activate
 </li>
 </ul>
 </li>
-<li><p><strong>Install BBSTrader:</strong></p>
+<li><p><strong>Install ``bbstrader``:</strong></p>
 <ul>
 <li><p><strong>For Windows users (with MetaTrader 5):</strong>
 To include the official MetaTrader 5 package (which is Windows-only), install using:</p>
@@ -211,22 +264,16 @@ Install the base package. The <code class="docutils literal notranslate"><span c
 </li>
 </ul>
 </li>
-<li><p><strong>Install IBKR API client (Optional):</strong>
-If you plan to use the Interactive Brokers integration, install the <code class="docutils literal notranslate"><span class="pre">ibapi</span></code> package:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>ibapi
-</pre></div>
-</div>
-</li>
 </ol>
-<p>With these steps completed, you are ready to explore the features and modules of BBSTrader!</p>
+<p>With these steps completed, you are ready to explore the features and modules of <code class="docutils literal notranslate"><span class="pre">bbstrader</span></code>!</p>
 </section>
 </section>
 <section id="usage-examples">
-<h2>Usage Examples<a class="headerlink" href="#usage-examples" title="Link to this heading"></a></h2>
-<p>This section provides examples of how to use BBSTrader for various tasks. Remember to replace placeholder values (like account numbers, server names, file paths, and strategy parameters) with your actual details.</p>
+<h2><a class="toc-backref" href="#id17" role="doc-backlink">Usage Examples</a><a class="headerlink" href="#usage-examples" title="Link to this heading"></a></h2>
+<p>This section provides examples of how to use <code class="docutils literal notranslate"><span class="pre">bbstrader</span></code> for various tasks. Remember to replace placeholder values (like account numbers, server names, file paths, and strategy parameters) with your actual details.</p>
 <section id="connecting-to-metatrader-5-conceptual">
-<h3>Connecting to MetaTrader 5 (Conceptual)<a class="headerlink" href="#connecting-to-metatrader-5-conceptual" title="Link to this heading"></a></h3>
-<p>BBSTrader scripts and modules that interact with MetaTrader 5 handle the connection process internally, typically based on your configuration (<code class="docutils literal notranslate"><span class="pre">~/.bbstrader/config/config.ini</span></code> or environment variables).</p>
+<h3><a class="toc-backref" href="#id18" role="doc-backlink">Connecting to MetaTrader 5 (Conceptual)</a><a class="headerlink" href="#connecting-to-metatrader-5-conceptual" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">bbstrader</span></code> scripts and modules that interact with MetaTrader 5 handle the connection process internally, typically based on your configuration (<code class="docutils literal notranslate"><span class="pre">~/.bbstrader/config/config.ini</span></code> or environment variables).</p>
 <p>If you were to connect to MetaTrader 5 manually using the <code class="docutils literal notranslate"><span class="pre">MetaTrader5</span></code> library, it would look something like this:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">MetaTrader5</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mt5</span>
 
@@ -257,11 +304,11 @@ If you plan to use the Interactive Brokers integration, install the <code class=
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>BBSTrader’s <code class="docutils literal notranslate"><span class="pre">metatrader</span></code> module and execution scripts abstract this process, using configured credentials and settings.</p>
+<p><code class="docutils literal notranslate"><span class="pre">bbstrader</span></code>’s <code class="docutils literal notranslate"><span class="pre">metatrader</span></code> module and execution scripts abstract this process, using configured credentials and settings.</p>
 </div>
 </section>
 <section id="programmatic-backtesting-example">
-<h3>Programmatic Backtesting Example<a class="headerlink" href="#programmatic-backtesting-example" title="Link to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id19" role="doc-backlink">Programmatic Backtesting Example</a><a class="headerlink" href="#programmatic-backtesting-example" title="Link to this heading"></a></h3>
 <p>You can run backtests on strategies programmatically. The following example demonstrates how to test the <code class="docutils literal notranslate"><span class="pre">sistbo</span></code> (Stock Index Short Term Buy Only) strategy:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">bbstrader.trading.strategies</span><span class="w"> </span><span class="kn">import</span> <span class="n">test_strategy</span>
 
@@ -275,7 +322,7 @@ If you plan to use the Interactive Brokers integration, install the <code class=
 <p>This will typically output performance metrics and charts to a results directory.</p>
 </section>
 <section id="backtesting-results">
-<h3>Backtesting Results<a class="headerlink" href="#backtesting-results" title="Link to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id20" role="doc-backlink">Backtesting Results</a><a class="headerlink" href="#backtesting-results" title="Link to this heading"></a></h3>
 <img alt="Backtesting Results 1" src="https://github.com/bbalouki/bbstrader/blob/main/assets/bbs_.png?raw=true" />
 <img alt="Backtesting Results 2" src="https://github.com/bbalouki/bbstrader/blob/main/assets/qs_metrics_1.png?raw=true" />
 <img alt="Backtesting Results 3" src="https://github.com/bbalouki/bbstrader/blob/main/assets/qs_metrics_2.png?raw=true" />
@@ -283,10 +330,10 @@ If you plan to use the Interactive Brokers integration, install the <code class=
 <img alt="Backtesting Results 5" src="https://github.com/bbalouki/bbstrader/blob/main/assets/qs_plots_2_.png?raw=true" />
 </section>
 <section id="command-line-interface-cli-examples">
-<h3>Command-Line Interface (CLI) Examples<a class="headerlink" href="#command-line-interface-cli-examples" title="Link to this heading"></a></h3>
-<p>BBSTrader provides a CLI for various operations, including running live strategies, backtests, and utilities like the trade copier.</p>
+<h3><a class="toc-backref" href="#id21" role="doc-backlink">Command-Line Interface (CLI) Examples</a><a class="headerlink" href="#command-line-interface-cli-examples" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">bbstrader</span></code> provides a CLI for various operations, including running live strategies, backtests, and utilities like the trade copier.</p>
 <p><strong>CLI - Running a Live Strategy</strong></p>
-<p>To run a live strategy, you first need to define its parameters in an <code class="docutils literal notranslate"><span class="pre">execution.json</span></code> file. By default, BBSTrader looks for this file at <code class="docutils literal notranslate"><span class="pre">~/.bbstrader/execution/execution.json</span></code>.</p>
+<p>To run a live strategy, you first need to define its parameters in an <code class="docutils literal notranslate"><span class="pre">execution.json</span></code> file. By default, <code class="docutils literal notranslate"><span class="pre">bbstrader</span></code> looks for this file at <code class="docutils literal notranslate"><span class="pre">~/.bbstrader/execution/execution.json</span></code>.</p>
 <ol class="arabic">
 <li><p><strong>Create ``execution.json``</strong>:
 Create the directory <code class="docutils literal notranslate"><span class="pre">~/.bbstrader/execution/</span></code> if it doesn’t exist. Inside, create <code class="docutils literal notranslate"><span class="pre">execution.json</span></code> with content like this for an <code class="docutils literal notranslate"><span class="pre">SMAStrategy</span></code>:</p>
@@ -304,7 +351,7 @@ Create the directory <code class="docutils literal notranslate"><span class="pre
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>Replace <code class="docutils literal notranslate"><span class="pre">MY_MT5_ACCOUNT_1</span></code> with your account identifier used in BBSTrader’s configuration. Adjust strategy parameters as needed.</p>
+<p>Replace <code class="docutils literal notranslate"><span class="pre">MY_MT5_ACCOUNT_1</span></code> with your account identifier used in <code class="docutils literal notranslate"><span class="pre">bbstrader</span></code>’s configuration. Adjust strategy parameters as needed.</p>
 </li>
 <li><p><strong>Run the strategy via CLI</strong>:
 Open your terminal and run:</p>
@@ -329,7 +376,7 @@ Open your terminal and run:</p>
 </pre></div>
 </div>
 <p><strong>CLI - Trade Copier</strong></p>
-<p>BBSTrader includes a trade copier utility to replicate trades between different MetaTrader 5 accounts.</p>
+<p><code class="docutils literal notranslate"><span class="pre">bbstrader</span></code> includes a trade copier utility to replicate trades between different MetaTrader 5 accounts.</p>
 <p>To see the available options for the trade copier:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>bbstrader<span class="w"> </span>--run<span class="w"> </span>copier<span class="w"> </span>--help
 </pre></div>
@@ -338,18 +385,18 @@ Open your terminal and run:</p>
 </section>
 </section>
 <section id="configuration">
-<h2>Configuration<a class="headerlink" href="#configuration" title="Link to this heading"></a></h2>
-<p>BBSTrader uses a combination of user-defined JSON files and internal Python scripts for configuration. Understanding these will help you customize the system to your needs.</p>
+<h2><a class="toc-backref" href="#id22" role="doc-backlink">Configuration</a><a class="headerlink" href="#configuration" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">bbstrader</span></code> uses a combination of user-defined JSON files and internal Python scripts for configuration. Understanding these will help you customize the system to your needs.</p>
 <section id="user-configuration-directory-bbstrader">
-<h3>User Configuration Directory: <code class="docutils literal notranslate"><span class="pre">~/.bbstrader/</span></code><a class="headerlink" href="#user-configuration-directory-bbstrader" title="Link to this heading"></a></h3>
-<p>BBSTrader uses a hidden directory in your user’s home folder, <code class="docutils literal notranslate"><span class="pre">~/.bbstrader/</span></code>, to store user-specific files. This typically includes:
+<h3><a class="toc-backref" href="#id23" role="doc-backlink">User Configuration Directory: <code class="docutils literal notranslate"><span class="pre">~/.bbstrader/</span></code></a><a class="headerlink" href="#user-configuration-directory-bbstrader" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">bbstrader</span></code> uses a hidden directory in your user’s home folder, <code class="docutils literal notranslate"><span class="pre">~/.bbstrader/</span></code>, to store user-specific files. This typically includes:
 *   <code class="docutils literal notranslate"><span class="pre">execution/execution.json</span></code>: For live strategy execution parameters.
 *   <code class="docutils literal notranslate"><span class="pre">logs/</span></code>: Default directory for log files.
 *   Potentially other configuration files for different modules in the future.</p>
 <p>You may need to create the <code class="docutils literal notranslate"><span class="pre">~/.bbstrader/</span></code> directory and its subdirectories (like <code class="docutils literal notranslate"><span class="pre">execution/</span></code> or <code class="docutils literal notranslate"><span class="pre">logs/</span></code>) manually if they don’t exist upon first use.</p>
 </section>
 <section id="strategy-execution-execution-json">
-<h3>Strategy Execution (<code class="docutils literal notranslate"><span class="pre">execution.json</span></code>)<a class="headerlink" href="#strategy-execution-execution-json" title="Link to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id24" role="doc-backlink">Strategy Execution (<code class="docutils literal notranslate"><span class="pre">execution.json</span></code>)</a><a class="headerlink" href="#strategy-execution-execution-json" title="Link to this heading"></a></h3>
 <ul>
 <li><p><strong>Purpose</strong>: Defines parameters for live strategy execution when using the <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">bbstrader</span> <span class="pre">--run</span> <span class="pre">execution</span></code> command.</p></li>
 <li><p><strong>Default Location</strong>: <code class="docutils literal notranslate"><span class="pre">~/.bbstrader/execution/execution.json</span></code>. You’ll likely need to create this file and its parent directory.</p></li>
@@ -371,18 +418,18 @@ Open your terminal and run:</p>
 </ul>
 </section>
 <section id="metatrader-5-broker-paths-bbstrader-config-py">
-<h3>MetaTrader 5 Broker Paths (<code class="docutils literal notranslate"><span class="pre">bbstrader/config.py</span></code>)<a class="headerlink" href="#metatrader-5-broker-paths-bbstrader-config-py" title="Link to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id25" role="doc-backlink">MetaTrader 5 Broker Paths (<code class="docutils literal notranslate"><span class="pre">bbstrader/config.py</span></code>)</a><a class="headerlink" href="#metatrader-5-broker-paths-bbstrader-config-py" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>The file <code class="docutils literal notranslate"><span class="pre">bbstrader/config.py</span></code> within the installed package contains a dictionary named <code class="docutils literal notranslate"><span class="pre">BROKERS_PATHS</span></code>. This dictionary maps broker shortnames (e.g., “AMG”, “FTMO”) to the default installation paths of their MetaTrader 5 <code class="docutils literal notranslate"><span class="pre">terminal64.exe</span></code>.</p></li>
 <li><p><strong>Customization</strong>:
-*   If your MT5 terminal is installed in a non-standard location, or you use a broker not listed, BBSTrader might not find the terminal.
+*   If your MT5 terminal is installed in a non-standard location, or you use a broker not listed, <code class="docutils literal notranslate"><span class="pre">bbstrader</span></code> might not find the terminal.
 *   Ideally, future versions might support environment variables or a user-specific configuration file to override these paths.
 *   Currently, the most direct way to change these is by modifying <code class="docutils literal notranslate"><span class="pre">bbstrader/config.py</span></code> in your Python environment’s <code class="docutils literal notranslate"><span class="pre">site-packages</span></code> directory. This should be done with caution as changes might be overwritten during package updates.
-*   Alternatively, when initializing <code class="docutils literal notranslate"><span class="pre">MetaTrader5</span></code> in your custom scripts, you can often pass the <code class="docutils literal notranslate"><span class="pre">path</span></code> argument directly to <code class="docutils literal notranslate"><span class="pre">mt5.initialize(path=&quot;C:\\path\\to\\your\\terminal64.exe&quot;,</span> <span class="pre">...)</span></code>. BBSTrader’s internal scripts might not use this method by default.</p></li>
+*   Alternatively, when initializing <code class="docutils literal notranslate"><span class="pre">MetaTrader5</span></code> in your custom scripts, you can often pass the <code class="docutils literal notranslate"><span class="pre">path</span></code> argument directly to <code class="docutils literal notranslate"><span class="pre">mt5.initialize(path=&quot;C:\\path\\to\\your\\terminal64.exe&quot;,</span> <span class="pre">...)</span></code>. <code class="docutils literal notranslate"><span class="pre">bbstrader</span></code>’s internal scripts might not use this method by default.</p></li>
 </ul>
 </section>
 <section id="logging-configuration-bbstrader-config-py">
-<h3>Logging Configuration (<code class="docutils literal notranslate"><span class="pre">bbstrader/config.py</span></code>)<a class="headerlink" href="#logging-configuration-bbstrader-config-py" title="Link to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id26" role="doc-backlink">Logging Configuration (<code class="docutils literal notranslate"><span class="pre">bbstrader/config.py</span></code>)</a><a class="headerlink" href="#logging-configuration-bbstrader-config-py" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p><strong>Setup</strong>: The <code class="docutils literal notranslate"><span class="pre">config_logger</span></code> function in <code class="docutils literal notranslate"><span class="pre">bbstrader/config.py</span></code> sets up application-wide logging.</p></li>
 <li><p><strong>Log Files</strong>:
@@ -392,32 +439,32 @@ Open your terminal and run:</p>
 *   If enabled (usually by default for CLI operations), console logging is set to <code class="docutils literal notranslate"><span class="pre">DEBUG</span></code> level, providing more verbose output.</p></li>
 <li><p><strong>Customization</strong>:
 *   You can modify logging behavior (e.g., log levels, output formats, log file location) by editing the <code class="docutils literal notranslate"><span class="pre">config_logger</span></code> function in <code class="docutils literal notranslate"><span class="pre">bbstrader/config.py</span></code> within your <code class="docutils literal notranslate"><span class="pre">site-packages</span></code>. This is subject to the same caveats as modifying broker paths (potential overwrites on update).
-*   For programmatic use, you can re-configure logging after importing BBSTrader modules if needed, though this might affect internal BBSTrader logging.</p></li>
+*   For programmatic use, you can re-configure logging after importing <code class="docutils literal notranslate"><span class="pre">bbstrader</span></code> modules if needed, though this might affect internal <code class="docutils literal notranslate"><span class="pre">bbstrader</span></code> logging.</p></li>
 </ul>
 </section>
 <section id="general-advice">
-<h3>General Advice<a class="headerlink" href="#general-advice" title="Link to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id27" role="doc-backlink">General Advice</a><a class="headerlink" href="#general-advice" title="Link to this heading"></a></h3>
 <ul class="simple">
-<li><p>For detailed configuration options specific to certain modules or advanced use cases, always refer to the official BBSTrader documentation (if available) or consult the source code of the respective modules.</p></li>
+<li><p>For detailed configuration options specific to certain modules or advanced use cases, always refer to the official <code class="docutils literal notranslate"><span class="pre">bbstrader</span></code> documentation (if available) or consult the source code of the respective modules.</p></li>
 <li><p>Keep an eye on the <code class="docutils literal notranslate"><span class="pre">~/.bbstrader/</span></code> directory for any new configuration files or logs that might appear as you use different features.</p></li>
 </ul>
 </section>
 </section>
 <section id="documentation">
-<h2>Documentation<a class="headerlink" href="#documentation" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id28" role="doc-backlink">Documentation</a><a class="headerlink" href="#documentation" title="Link to this heading"></a></h2>
 <p>For comprehensive information, including detailed API references, tutorials, and advanced guides for each module, please refer to our full documentation hosted on ReadTheDocs:</p>
 <p><strong>`View the Full Documentation on ReadTheDocs`_</strong></p>
 <p>Additionally, the codebase is commented and includes docstrings, which can be a valuable resource for understanding the implementation details of specific functions and classes.</p>
 </section>
 <section id="customization-and-contribution">
-<h2>Customization and Contribution<a class="headerlink" href="#customization-and-contribution" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id29" role="doc-backlink">Customization and Contribution</a><a class="headerlink" href="#customization-and-contribution" title="Link to this heading"></a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">bbstrader</span></code>’s modular design allows for easy customization and extension. Traders and developers are encouraged to modify existing strategies, add new ones, or enhance the system’s capabilities. Contributions to the <code class="docutils literal notranslate"><span class="pre">bbstrader</span></code> project are welcome.</p>
 </section>
 <section id="contributing-to-bbstrader">
-<h2>Contributing to BBSTrader<a class="headerlink" href="#contributing-to-bbstrader" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id30" role="doc-backlink">Contributing to <code class="docutils literal notranslate"><span class="pre">bbstrader</span></code></a><a class="headerlink" href="#contributing-to-bbstrader" title="Link to this heading"></a></h2>
 <p>We warmly welcome contributions from the trading and development community! Whether you’re interested in fixing bugs, adding new features, or improving documentation, your help is invaluable to making <code class="docutils literal notranslate"><span class="pre">bbstrader</span></code> more robust and versatile. Here’s how you can contribute:</p>
 <section id="ways-to-contribute">
-<h3>Ways to Contribute<a class="headerlink" href="#ways-to-contribute" title="Link to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id31" role="doc-backlink">Ways to Contribute</a><a class="headerlink" href="#ways-to-contribute" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p><strong>Develop New Strategies</strong>: Implement and share your unique trading strategies or models.</p></li>
 <li><p><strong>Enhance Existing Modules</strong>: Optimize the performance, extend the functionality, or improve the usability of existing modules.</p></li>
@@ -428,7 +475,7 @@ Open your terminal and run:</p>
 </ul>
 </section>
 <section id="reporting-issues">
-<h3>Reporting Issues<a class="headerlink" href="#reporting-issues" title="Link to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id32" role="doc-backlink">Reporting Issues</a><a class="headerlink" href="#reporting-issues" title="Link to this heading"></a></h3>
 <p>If you encounter a bug or unexpected behavior, please help us by reporting it on GitHub Issues. A well-detailed bug report makes it easier and faster to identify and fix the problem.</p>
 <p><strong>`Report an Issue on GitHub`_</strong></p>
 <p>Please include the following in your bug report:</p>
@@ -445,8 +492,8 @@ Open your terminal and run:</p>
 </ul>
 </section>
 <section id="requesting-features">
-<h3>Requesting Features<a class="headerlink" href="#requesting-features" title="Link to this heading"></a></h3>
-<p>We are always open to suggestions for new features and improvements! If you have an idea that could make BBSTrader better, please submit it via GitHub Issues.</p>
+<h3><a class="toc-backref" href="#id33" role="doc-backlink">Requesting Features</a><a class="headerlink" href="#requesting-features" title="Link to this heading"></a></h3>
+<p>We are always open to suggestions for new features and improvements! If you have an idea that could make <code class="docutils literal notranslate"><span class="pre">bbstrader</span></code> better, please submit it via GitHub Issues.</p>
 <p><strong>`Request a Feature on GitHub`_</strong></p>
 <p>When submitting a feature request, please:</p>
 <ul class="simple">
@@ -457,7 +504,7 @@ Open your terminal and run:</p>
 </ul>
 </section>
 <section id="how-to-get-started">
-<h3>How to Get Started<a class="headerlink" href="#how-to-get-started" title="Link to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id34" role="doc-backlink">How to Get Started</a><a class="headerlink" href="#how-to-get-started" title="Link to this heading"></a></h3>
 <ol class="arabic simple">
 <li><p><strong>Fork the Repository</strong>: Start by forking the <code class="docutils literal notranslate"><span class="pre">bbstrader</span></code> repository to your GitHub account.</p></li>
 <li><p><strong>Clone Your Fork</strong>: Clone your forked repository to your local machine to start making changes.</p></li>
@@ -469,7 +516,7 @@ Open your terminal and run:</p>
 </ol>
 </section>
 <section id="contribution-guidelines">
-<h3>Contribution Guidelines<a class="headerlink" href="#contribution-guidelines" title="Link to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id35" role="doc-backlink">Contribution Guidelines</a><a class="headerlink" href="#contribution-guidelines" title="Link to this heading"></a></h3>
 <p>Please adhere to the following guidelines to ensure a smooth contribution process:</p>
 <ul class="simple">
 <li><p><strong>Follow the Coding Standards</strong>: Write clean, readable code and follow the coding conventions used throughout the project.</p></li>
@@ -480,11 +527,11 @@ Open your terminal and run:</p>
 </section>
 </section>
 <section id="disclaimer">
-<h2>Disclaimer<a class="headerlink" href="#disclaimer" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id36" role="doc-backlink">Disclaimer</a><a class="headerlink" href="#disclaimer" title="Link to this heading"></a></h2>
 <p>Trading financial instruments involves a high level of risk and may not be suitable for all investors. The developers of <code class="docutils literal notranslate"><span class="pre">bbstrader</span></code> are not responsible for any financial losses incurred from the use of this software. Trade responsibly and at your own risk.</p>
 </section>
 <section id="license">
-<h2>License<a class="headerlink" href="#license" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id37" role="doc-backlink">License</a><a class="headerlink" href="#license" title="Link to this heading"></a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">bbstrader</span></code> is open source and available under the MIT License.</p>
 <div class="toctree-wrapper compound">
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>

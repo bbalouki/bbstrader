@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>bbstrader.btengine.execution &mdash; bbstrader 0.3.0 documentation</title>
+  <title>bbstrader.btengine.execution &mdash; bbstrader 0.3.3 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=e259d695"></script>
+      <script src="../../../_static/documentation_options.js?v=d5a15cff"></script>
       <script src="../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -179,7 +179,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">fill_event</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">event</span><span class="o">.</span><span class="n">direction</span><span class="si">}</span><span class="s2"> ORDER FILLED: SYMBOL=</span><span class="si">{</span><span class="n">event</span><span class="o">.</span><span class="n">symbol</span><span class="si">}</span><span class="s2">, &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;QUANTITY=</span><span class="si">{</span><span class="n">event</span><span class="o">.</span><span class="n">quantity</span><span class="si">}</span><span class="s2">, PRICE @</span><span class="si">{</span><span class="n">event</span><span class="o">.</span><span class="n">price</span><span class="si">}</span><span class="s2"> EXCHANGE=</span><span class="si">{</span><span class="n">fill_event</span><span class="o">.</span><span class="n">exchange</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;QUANTITY=</span><span class="si">{</span><span class="n">event</span><span class="o">.</span><span class="n">quantity</span><span class="si">}</span><span class="s2">, PRICE @</span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">price</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">)</span><span class="si">}</span><span class="s2"> EXCHANGE=</span><span class="si">{</span><span class="n">fill_event</span><span class="o">.</span><span class="n">exchange</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
                 <span class="n">custom_time</span><span class="o">=</span><span class="n">fill_event</span><span class="o">.</span><span class="n">timeindex</span><span class="p">,</span>
             <span class="p">)</span></div>
 </div>
@@ -351,7 +351,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">fill_event</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">direction</span><span class="si">}</span><span class="s2"> ORDER FILLED: SYMBOL=</span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2">, QUANTITY=</span><span class="si">{</span><span class="n">quantity</span><span class="si">}</span><span class="s2">, &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;PRICE @</span><span class="si">{</span><span class="n">price</span><span class="si">}</span><span class="s2"> EXCHANGE=</span><span class="si">{</span><span class="n">fill_event</span><span class="o">.</span><span class="n">exchange</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;PRICE @</span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">price</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">)</span><span class="si">}</span><span class="s2"> EXCHANGE=</span><span class="si">{</span><span class="n">fill_event</span><span class="o">.</span><span class="n">exchange</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
                 <span class="n">custom_time</span><span class="o">=</span><span class="n">fill_event</span><span class="o">.</span><span class="n">timeindex</span><span class="p">,</span>
             <span class="p">)</span></div>
 </div>

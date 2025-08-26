@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>bbstrader.trading.execution &mdash; bbstrader 0.3.0 documentation</title>
+  <title>bbstrader.trading.execution &mdash; bbstrader 0.3.3 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=e259d695"></script>
+      <script src="../../../_static/documentation_options.js?v=d5a15cff"></script>
       <script src="../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -69,17 +69,21 @@
            <div itemprop="articleBody">
              
   <h1>Source code for bbstrader.trading.execution</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">multiprocessing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mp</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">concurrent.futures</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">multiprocessing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">date</span><span class="p">,</span> <span class="n">datetime</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">multiprocessing.synchronize</span><span class="w"> </span><span class="kn">import</span> <span class="n">Event</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Optional</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span> <span class="k">as</span> <span class="n">log</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">bbstrader.btengine.strategy</span><span class="w"> </span><span class="kn">import</span> <span class="n">MT5Strategy</span><span class="p">,</span> <span class="n">Strategy</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">bbstrader.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">BBSTRADER_DIR</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">bbstrader.metatrader.account</span><span class="w"> </span><span class="kn">import</span> <span class="n">Account</span><span class="p">,</span> <span class="n">check_mt5_connection</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bbstrader.metatrader.account</span><span class="w"> </span><span class="kn">import</span> <span class="n">check_mt5_connection</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">bbstrader.metatrader.trade</span><span class="w"> </span><span class="kn">import</span> <span class="n">Trade</span><span class="p">,</span> <span class="n">TradeAction</span><span class="p">,</span> <span class="n">TradingMode</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">bbstrader.trading.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">send_message</span>
 
@@ -106,6 +110,8 @@
     <span class="s2">&quot;12h&quot;</span><span class="p">:</span> <span class="mi">720</span><span class="p">,</span>
     <span class="s2">&quot;D1&quot;</span><span class="p">:</span> <span class="mi">1440</span><span class="p">,</span>
 <span class="p">}</span>
+
+<span class="n">MT5_ENGINE_TIMEFRAMES</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">_TF_MAPPING</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
 
 <span class="n">TradingDays</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;monday&quot;</span><span class="p">,</span> <span class="s2">&quot;tuesday&quot;</span><span class="p">,</span> <span class="s2">&quot;wednesday&quot;</span><span class="p">,</span> <span class="s2">&quot;thursday&quot;</span><span class="p">,</span> <span class="s2">&quot;friday&quot;</span><span class="p">]</span>
 <span class="n">WEEK_DAYS</span> <span class="o">=</span> <span class="n">TradingDays</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;saturday&quot;</span><span class="p">,</span> <span class="s2">&quot;sunday&quot;</span><span class="p">]</span>
@@ -159,7 +165,7 @@
 <span class="n">log</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
     <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">BBSTRADER_DIR</span><span class="si">}</span><span class="s2">/logs/execution.log&quot;</span><span class="p">,</span>
     <span class="n">enqueue</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">level</span><span class="o">=</span><span class="s2">&quot;INFO&quot;</span><span class="p">,</span>
+    <span class="n">level</span><span class="o">=</span><span class="s2">&quot;DEBUG&quot;</span><span class="p">,</span>
     <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;{time:YYYY-MM-DD HH:mm:ss} | </span><span class="si">{level}</span><span class="s2"> | </span><span class="si">{name}</span><span class="s2"> | </span><span class="si">{message}</span><span class="s2">&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 
@@ -244,9 +250,13 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">symbol_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
         <span class="n">trades_instances</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Trade</span><span class="p">],</span>
-        <span class="n">strategy_cls</span><span class="p">:</span> <span class="n">Strategy</span><span class="p">,</span>
+        <span class="n">strategy_cls</span><span class="p">:</span> <span class="n">Strategy</span> <span class="o">|</span> <span class="n">MT5Strategy</span><span class="p">,</span>
         <span class="o">/</span><span class="p">,</span>
         <span class="n">mm</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">auto_trade</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">prompt_callback</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">multithread</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">shutdown_event</span><span class="p">:</span> <span class="n">Event</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">optimizer</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;equal&quot;</span><span class="p">,</span>
         <span class="n">trail</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">stop_trail</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -260,7 +270,7 @@
         <span class="n">closing_pnl</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">trading_days</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">comment</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">kwargs</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Args:</span>
@@ -270,6 +280,15 @@
 <span class="sd">            mm : Enable Money Management. Defaults to True.</span>
 <span class="sd">            optimizer : Risk management optimizer. Defaults to &#39;equal&#39;.</span>
 <span class="sd">                See `bbstrader.models.optimization` module for more information.</span>
+<span class="sd">            auto_trade :  If set to true, when signal are generated by the strategy class,</span>
+<span class="sd">                the Execution engine will automaticaly open position in other whise it will prompt</span>
+<span class="sd">                the user for confimation.</span>
+<span class="sd">            prompt_callback : Callback function to prompt the user for confirmation.</span>
+<span class="sd">                This is useful when integrating with GUI applications.</span>
+<span class="sd">             multithread : If True, use a thread pool to process signals in parallel.</span>
+<span class="sd">                If False, process them sequentially. Set this to True only if the engine</span>
+<span class="sd">                is running in a separate process. Default to False.</span>
+<span class="sd">            shutdown_event : Use to terminate the copy process when runs in a custum environment like web App or GUI.</span>
 <span class="sd">            show_positions_orders : Print open positions and orders. Defaults to False.</span>
 <span class="sd">            iter_time : Interval to check for signals and `mm`. Defaults to 5.</span>
 <span class="sd">            use_trade_time : Open trades after the time is completed. Defaults to True.</span>
@@ -312,6 +331,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">trades_instances</span> <span class="o">=</span> <span class="n">trades_instances</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">strategy_cls</span> <span class="o">=</span> <span class="n">strategy_cls</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mm</span> <span class="o">=</span> <span class="n">mm</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">auto_trade</span> <span class="o">=</span> <span class="n">auto_trade</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prompt_callback</span> <span class="o">=</span> <span class="n">prompt_callback</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">multithread</span> <span class="o">=</span> <span class="n">multithread</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">optimizer</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">trail</span> <span class="o">=</span> <span class="n">trail</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stop_trail</span> <span class="o">=</span> <span class="n">stop_trail</span>
@@ -335,6 +357,10 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_engine</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_strategy</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shutdown_event</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">shutdown_event</span> <span class="k">if</span> <span class="n">shutdown_event</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">mp</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_running</span> <span class="o">=</span> <span class="kc">True</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">trades</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trades_instances</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
@@ -376,16 +402,17 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">_print_exc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="ne">Exception</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="ne">KeyboardInterrupt</span><span class="p">):</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Stopping the Execution Engine ...&quot;</span><span class="p">)</span>
-            <span class="n">quit</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug_mode</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span><span class="o">.</span><span class="n">with_traceback</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">__traceback__</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">msg</span><span class="p">,</span><span class="w"> </span><span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">msg</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_max_trades</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mtrades</span><span class="p">):</span>
         <span class="n">max_trades</span> <span class="o">=</span> <span class="p">{</span>
             <span class="n">symbol</span><span class="p">:</span> <span class="n">mtrades</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">mtrades</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="n">mtrades</span>
+            <span class="k">if</span> <span class="n">mtrades</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mtrades</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="n">mtrades</span>
             <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">trades_instances</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span><span class="o">.</span><span class="n">max_trade</span><span class="p">()</span>
             <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbols</span>
         <span class="p">}</span>
@@ -400,10 +427,10 @@
             <span class="n">expert_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">expert_ids</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">expert_ids</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_init_strategy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_init_strategy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MT5Strategy</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">check_mt5_connection</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-            <span class="n">strategy</span><span class="p">:</span> <span class="n">MT5Strategy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy_cls</span><span class="p">(</span>
+            <span class="n">strategy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy_cls</span><span class="p">(</span>
                 <span class="n">symbol_list</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">symbols</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">TradingMode</span><span class="o">.</span><span class="n">LIVE</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
             <span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
@@ -418,7 +445,7 @@
         <span class="k">return</span> <span class="n">strategy</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_signal_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signal</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">price</span><span class="p">,</span> <span class="n">stoplimit</span><span class="p">):</span>
-        <span class="n">account</span> <span class="o">=</span> <span class="n">Account</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">account</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">account</span>
         <span class="n">symbol_info</span> <span class="o">=</span> <span class="n">account</span><span class="o">.</span><span class="n">get_symbol_info</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
 
         <span class="n">common_data</span> <span class="o">=</span> <span class="p">{</span>
@@ -430,32 +457,32 @@
         <span class="p">}</span>
 
         <span class="n">info</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="s2">&quot;SIGNAL = </span><span class="si">{signal}</span><span class="s2">, SYMBOL=</span><span class="si">{symbol}</span><span class="s2">, STRATEGY=</span><span class="si">{strategy}</span><span class="s2">, &quot;</span>
+            <span class="s2">&quot;SIGNAL=</span><span class="si">{signal}</span><span class="s2">, SYMBOL=</span><span class="si">{symbol}</span><span class="s2">, STRATEGY=</span><span class="si">{strategy}</span><span class="s2">, &quot;</span>
             <span class="s2">&quot;TIMEFRAME=</span><span class="si">{timeframe}</span><span class="s2">, ACCOUNT=</span><span class="si">{account}</span><span class="s2">&quot;</span>
         <span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">common_data</span><span class="p">)</span>
 
         <span class="n">sigmsg</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="s2">&quot;SIGNAL = </span><span class="si">{signal}</span><span class="s2">,</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="s2">&quot;SYMBOL = </span><span class="si">{symbol}</span><span class="s2">,</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="s2">&quot;TYPE = </span><span class="si">{symbol_type}</span><span class="s2">,</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="s2">&quot;DESCRIPTION = </span><span class="si">{description}</span><span class="s2">,</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="s2">&quot;PRICE = </span><span class="si">{price}</span><span class="s2">,</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="s2">&quot;STOPLIMIT = </span><span class="si">{stoplimit}</span><span class="s2">,</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="s2">&quot;STRATEGY = </span><span class="si">{strategy}</span><span class="s2">,</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="s2">&quot;TIMEFRAME = </span><span class="si">{timeframe}</span><span class="s2">,</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="s2">&quot;BROKER = </span><span class="si">{broker}</span><span class="s2">,</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="s2">&quot;TIMESTAMP = </span><span class="si">{timestamp}</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;SIGNAL=</span><span class="si">{signal}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;SYMBOL=</span><span class="si">{symbol}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;TYPE=</span><span class="si">{symbol_type}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;DESCRIPTION=</span><span class="si">{description}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;PRICE=</span><span class="si">{price}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;STOPLIMIT=</span><span class="si">{stoplimit}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;STRATEGY=</span><span class="si">{strategy}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;TIMEFRAME=</span><span class="si">{timeframe}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;BROKER=</span><span class="si">{broker}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;TIMESTAMP=</span><span class="si">{timestamp}</span><span class="s2">&quot;</span>
         <span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
             <span class="o">**</span><span class="n">common_data</span><span class="p">,</span>
             <span class="n">symbol_type</span><span class="o">=</span><span class="n">account</span><span class="o">.</span><span class="n">get_symbol_type</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="n">symbol_info</span><span class="o">.</span><span class="n">description</span><span class="p">,</span>
-            <span class="n">price</span><span class="o">=</span><span class="n">price</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="n">symbol_info</span><span class="o">.</span><span class="n">description</span> <span class="k">if</span> <span class="n">symbol_info</span> <span class="k">else</span> <span class="s2">&quot;N/A&quot;</span><span class="p">,</span>
+            <span class="n">price</span><span class="o">=</span><span class="n">price</span> <span class="k">if</span> <span class="n">price</span> <span class="k">else</span> <span class="s2">&quot;MARKET&quot;</span><span class="p">,</span>
             <span class="n">stoplimit</span><span class="o">=</span><span class="n">stoplimit</span><span class="p">,</span>
             <span class="n">broker</span><span class="o">=</span><span class="n">account</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
             <span class="n">timestamp</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">),</span>
         <span class="p">)</span>
 
-        <span class="n">msg_template</span> <span class="o">=</span> <span class="s2">&quot;SYMBOL = </span><span class="si">{symbol}</span><span class="s2">, STRATEGY = </span><span class="si">{strategy}</span><span class="s2">, ACCOUNT = </span><span class="si">{account}</span><span class="s2">&quot;</span>
+        <span class="n">msg_template</span> <span class="o">=</span> <span class="s2">&quot;SYMBOL=</span><span class="si">{symbol}</span><span class="s2">, STRATEGY=</span><span class="si">{strategy}</span><span class="s2">, ACCOUNT=</span><span class="si">{account}</span><span class="s2">&quot;</span>
         <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Sending </span><span class="si">{</span><span class="n">signal</span><span class="si">}</span><span class="s2"> Order ... &quot;</span> <span class="o">+</span> <span class="n">msg_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">common_data</span><span class="p">)</span>
         <span class="n">tfmsg</span> <span class="o">=</span> <span class="s2">&quot;Time Frame Not completed !!! &quot;</span> <span class="o">+</span> <span class="n">msg_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">common_data</span><span class="p">)</span>
         <span class="n">riskmsg</span> <span class="o">=</span> <span class="s2">&quot;Risk not allowed !!! &quot;</span> <span class="o">+</span> <span class="n">msg_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">common_data</span><span class="p">)</span>
@@ -574,6 +601,9 @@
                 <span class="ow">or</span> <span class="p">(</span><span class="n">period_type</span> <span class="o">==</span> <span class="s2">&quot;day&quot;</span> <span class="ow">and</span> <span class="n">closing</span><span class="p">)</span>
                 <span class="ow">or</span> <span class="p">(</span><span class="n">period_type</span> <span class="o">==</span> <span class="s2">&quot;24/7&quot;</span> <span class="ow">and</span> <span class="n">closing</span><span class="p">)</span>
             <span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ACCOUNT</span><span class="si">}</span><span class="s2"> Closing all positions and orders for </span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2"> ...&quot;</span>
+                <span class="p">)</span>
                 <span class="k">for</span> <span class="nb">id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">expert_ids</span><span class="p">:</span>
                     <span class="n">trade</span><span class="o">.</span><span class="n">close_positions</span><span class="p">(</span>
                         <span class="n">position_type</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="nb">id</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">comment</span>
@@ -588,7 +618,7 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">_daily_end_checks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">today</span><span class="p">,</span> <span class="n">closing</span><span class="p">,</span> <span class="n">sessionmsg</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">perform_period_end_checks</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">period_end_action</span> <span class="o">==</span> <span class="s2">&quot;break&quot;</span> <span class="ow">and</span> <span class="n">closing</span><span class="p">:</span>
-            <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">period_end_action</span> <span class="o">==</span> <span class="s2">&quot;sleep&quot;</span> <span class="ow">and</span> <span class="n">today</span> <span class="o">!=</span> <span class="n">FRIDAY</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">closing</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_sleep_over_night</span><span class="p">(</span><span class="n">sessionmsg</span><span class="p">)</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">period_end_action</span> <span class="o">==</span> <span class="s2">&quot;sleep&quot;</span> <span class="ow">and</span> <span class="n">today</span> <span class="o">==</span> <span class="n">FRIDAY</span><span class="p">:</span>
@@ -600,7 +630,7 @@
         <span class="k">elif</span> <span class="n">today</span> <span class="o">==</span> <span class="n">FRIDAY</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">perform_period_end_checks</span><span class="p">()</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">period_end_action</span> <span class="o">==</span> <span class="s2">&quot;break&quot;</span> <span class="ow">and</span> <span class="n">closing</span><span class="p">:</span>
-                <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
             <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">period_end_action</span> <span class="o">==</span> <span class="s2">&quot;sleep&quot;</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">closing</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_sleep_over_weekend</span><span class="p">(</span><span class="n">sessionmsg</span><span class="p">)</span>
 
@@ -609,7 +639,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_sleep_over_night</span><span class="p">(</span><span class="n">sessionmsg</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">today</span> <span class="o">==</span> <span class="n">FRIDAY</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_month_ends</span><span class="p">()</span> <span class="ow">and</span> <span class="n">closing</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">perform_period_end_checks</span><span class="p">()</span>
-            <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_sleep_over_weekend</span><span class="p">(</span><span class="n">sessionmsg</span><span class="p">)</span>
 
@@ -689,11 +719,32 @@
             <span class="p">)</span>
             <span class="k">pass</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_auto_trade</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sigmsg</span><span class="p">,</span> <span class="n">symbol</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">notify</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_send_notification</span><span class="p">(</span><span class="n">sigmsg</span><span class="p">,</span> <span class="n">symbol</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">auto_trade</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">auto_trade</span><span class="p">:</span>
+            <span class="n">prompt</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sigmsg</span><span class="si">}</span><span class="s2"> </span><span class="se">\n</span><span class="s2"> Enter Y/Yes to accept or N/No to reject this order : &quot;</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">prompt_callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">auto_trade</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prompt_callback</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">auto_trade</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">auto_trade</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;Y&quot;</span><span class="p">):</span>
+                <span class="n">info</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Order Rejected !!! SYMBOL=</span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2">, STRATEGY=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">STRATEGY</span><span class="si">}</span><span class="s2"> , ACCOUNT=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ACCOUNT</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">info</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">notify</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_send_notification</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="n">symbol</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_open_buy</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">signal</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span> <span class="n">trade</span><span class="p">:</span> <span class="n">Trade</span><span class="p">,</span> <span class="n">price</span><span class="p">,</span> <span class="n">stoplimit</span><span class="p">,</span> <span class="n">sigmsg</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">comment</span>
     <span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">notify</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_send_notification</span><span class="p">(</span><span class="n">sigmsg</span><span class="p">,</span> <span class="n">symbol</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_auto_trade</span><span class="p">(</span><span class="n">sigmsg</span><span class="p">,</span> <span class="n">symbol</span><span class="p">):</span>
+            <span class="k">return</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_retcode</span><span class="p">(</span><span class="n">trade</span><span class="p">,</span> <span class="s2">&quot;BMKT&quot;</span><span class="p">):</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
             <span class="n">trade</span><span class="o">.</span><span class="n">open_buy_position</span><span class="p">(</span>
@@ -709,8 +760,8 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">_open_sell</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">signal</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span> <span class="n">trade</span><span class="p">:</span> <span class="n">Trade</span><span class="p">,</span> <span class="n">price</span><span class="p">,</span> <span class="n">stoplimit</span><span class="p">,</span> <span class="n">sigmsg</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">comment</span>
     <span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">notify</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_send_notification</span><span class="p">(</span><span class="n">sigmsg</span><span class="p">,</span> <span class="n">symbol</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_auto_trade</span><span class="p">(</span><span class="n">sigmsg</span><span class="p">,</span> <span class="n">symbol</span><span class="p">):</span>
+            <span class="k">return</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_retcode</span><span class="p">(</span><span class="n">trade</span><span class="p">,</span> <span class="s2">&quot;SMKT&quot;</span><span class="p">):</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
             <span class="n">trade</span><span class="o">.</span><span class="n">open_sell_position</span><span class="p">(</span>
@@ -902,46 +953,79 @@
                     <span class="sa">f</span><span class="s2">&quot;(e.g., if time_frame is 15m, iter_time must be 1.5, 3, 5, 15 etc)&quot;</span>
                 <span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_handle_signals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">today</span><span class="p">,</span> <span class="n">signals</span><span class="p">,</span> <span class="n">buys</span><span class="p">,</span> <span class="n">sells</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_handle_one_signal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signal</span><span class="p">,</span> <span class="n">today</span><span class="p">,</span> <span class="n">buys</span><span class="p">,</span> <span class="n">sells</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">check_mt5_connection</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">signal</span> <span class="ow">in</span> <span class="n">signals</span><span class="p">:</span>
-                <span class="n">symbol</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">symbol</span>
-                <span class="n">trade</span><span class="p">:</span> <span class="n">Trade</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trades_instances</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span>
-                <span class="k">if</span> <span class="n">trade</span><span class="o">.</span><span class="n">trading_time</span><span class="p">()</span> <span class="ow">and</span> <span class="n">today</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">trading_days</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">signal</span><span class="o">.</span><span class="n">action</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="n">action</span> <span class="o">=</span> <span class="p">(</span>
-                            <span class="n">signal</span><span class="o">.</span><span class="n">action</span><span class="o">.</span><span class="n">value</span>
-                            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">action</span><span class="p">,</span> <span class="n">TradeAction</span><span class="p">)</span>
-                            <span class="k">else</span> <span class="n">signal</span><span class="o">.</span><span class="n">action</span>
-                        <span class="p">)</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_run_trade_algorithm</span><span class="p">(</span>
-                            <span class="n">action</span><span class="p">,</span>
-                            <span class="n">symbol</span><span class="p">,</span>
-                            <span class="n">signal</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
-                            <span class="n">trade</span><span class="p">,</span>
-                            <span class="n">signal</span><span class="o">.</span><span class="n">price</span><span class="p">,</span>
-                            <span class="n">signal</span><span class="o">.</span><span class="n">stoplimit</span><span class="p">,</span>
-                            <span class="n">buys</span><span class="p">,</span>
-                            <span class="n">sells</span><span class="p">,</span>
-                            <span class="n">signal</span><span class="o">.</span><span class="n">comment</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">comment</span><span class="p">,</span>
+            <span class="n">symbol</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">symbol</span>
+            <span class="n">trade</span><span class="p">:</span> <span class="n">Trade</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trades_instances</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">trade</span><span class="o">.</span><span class="n">trading_time</span><span class="p">()</span> <span class="ow">and</span> <span class="n">today</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">trading_days</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">signal</span><span class="o">.</span><span class="n">action</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">action</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">signal</span><span class="o">.</span><span class="n">action</span><span class="o">.</span><span class="n">value</span>
+                        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">action</span><span class="p">,</span> <span class="n">TradeAction</span><span class="p">)</span>
+                        <span class="k">else</span> <span class="n">signal</span><span class="o">.</span><span class="n">action</span>
+                    <span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_run_trade_algorithm</span><span class="p">(</span>
+                        <span class="n">action</span><span class="p">,</span>
+                        <span class="n">symbol</span><span class="p">,</span>
+                        <span class="n">signal</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                        <span class="n">trade</span><span class="p">,</span>
+                        <span class="n">signal</span><span class="o">.</span><span class="n">price</span><span class="p">,</span>
+                        <span class="n">signal</span><span class="o">.</span><span class="n">stoplimit</span><span class="p">,</span>
+                        <span class="n">buys</span><span class="p">,</span>
+                        <span class="n">sells</span><span class="p">,</span>
+                        <span class="n">signal</span><span class="o">.</span><span class="n">comment</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">comment</span><span class="p">,</span>
+                    <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">symbols</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">10</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">symbol</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbols</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;Not trading Time !!!, STRATEGY=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">STRATEGY</span><span class="si">}</span><span class="s2"> , ACCOUNT=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ACCOUNT</span><span class="si">}</span><span class="s2">&quot;</span>
                         <span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">symbols</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">10</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="n">symbol</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbols</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
-                            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-                                <span class="sa">f</span><span class="s2">&quot;Not trading Time !!!, STRATEGY=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">STRATEGY</span><span class="si">}</span><span class="s2"> , ACCOUNT=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ACCOUNT</span><span class="si">}</span><span class="s2">&quot;</span>
-                            <span class="p">)</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-                            <span class="sa">f</span><span class="s2">&quot;Not trading Time !!! SYMBOL=</span><span class="si">{</span><span class="n">trade</span><span class="o">.</span><span class="n">symbol</span><span class="si">}</span><span class="s2">, STRATEGY=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">STRATEGY</span><span class="si">}</span><span class="s2"> , ACCOUNT=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ACCOUNT</span><span class="si">}</span><span class="s2">&quot;</span>
-                        <span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_check</span><span class="p">(</span><span class="n">buys</span><span class="p">[</span><span class="n">symbol</span><span class="p">],</span> <span class="n">sells</span><span class="p">[</span><span class="n">symbol</span><span class="p">],</span> <span class="n">symbol</span><span class="p">)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Not trading Time !!! SYMBOL=</span><span class="si">{</span><span class="n">trade</span><span class="o">.</span><span class="n">symbol</span><span class="si">}</span><span class="s2">, STRATEGY=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">STRATEGY</span><span class="si">}</span><span class="s2"> , ACCOUNT=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ACCOUNT</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_check</span><span class="p">(</span><span class="n">buys</span><span class="p">[</span><span class="n">symbol</span><span class="p">],</span> <span class="n">sells</span><span class="p">[</span><span class="n">symbol</span><span class="p">],</span> <span class="n">symbol</span><span class="p">)</span>
 
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Handling Signals, SYMBOL=</span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2">, STRATEGY=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">STRATEGY</span><span class="si">}</span><span class="s2"> , ACCOUNT=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ACCOUNT</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Error handling signal for SYMBOL=</span><span class="si">{</span><span class="n">signal</span><span class="o">.</span><span class="n">symbol</span><span class="si">}</span><span class="s2"> (SIGNAL: </span><span class="si">{</span><span class="n">action</span><span class="si">}</span><span class="s2">), &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;STRATEGY=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">STRATEGY</span><span class="si">}</span><span class="s2">, ACCOUNT=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ACCOUNT</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_print_exc</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
-            <span class="k">pass</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_handle_all_signals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">today</span><span class="p">,</span> <span class="n">signals</span><span class="p">,</span> <span class="n">buys</span><span class="p">,</span> <span class="n">sells</span><span class="p">,</span> <span class="n">max_workers</span><span class="o">=</span><span class="mi">50</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">check_mt5_connection</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Initial MT5 connection check failed. Aborting signal processing.&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_print_exc</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">signals</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;No signals to process.&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="c1"># We want to create a temporary function that</span>
+        <span class="c1"># already has the &#39;today&#39;, &#39;buys&#39;, and &#39;sells&#39; arguments filled in.</span>
+        <span class="c1"># This is necessary because executor.map only iterates over one sequence (signals).</span>
+        <span class="n">signal_processor</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_handle_one_signal</span><span class="p">,</span> <span class="n">today</span><span class="o">=</span><span class="n">today</span><span class="p">,</span> <span class="n">buys</span><span class="o">=</span><span class="n">buys</span><span class="p">,</span> <span class="n">sells</span><span class="o">=</span><span class="n">sells</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">multithread</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">concurrent</span><span class="o">.</span><span class="n">futures</span><span class="o">.</span><span class="n">ThreadPoolExecutor</span><span class="p">(</span>
+                <span class="n">max_workers</span><span class="o">=</span><span class="n">max_workers</span>
+            <span class="p">)</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+                <span class="c1"># &#39;map&#39; will apply our worker function to every item in the &#39;signals&#39; list.</span>
+                <span class="c1"># It will automatically manage the distribution of tasks to the worker threads.</span>
+                <span class="c1"># We wrap it in list() to ensure all tasks are complete before moving on.</span>
+                <span class="nb">list</span><span class="p">(</span><span class="n">executor</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">signal_processor</span><span class="p">,</span> <span class="n">signals</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">signal</span> <span class="ow">in</span> <span class="n">signals</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">signal_processor</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_print_exc</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to process signal </span><span class="si">{</span><span class="n">signal</span><span class="si">}</span><span class="s2">: &quot;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_handle_period_end_actions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">today</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
@@ -963,7 +1047,7 @@
 <div class="viewcode-block" id="Mt5ExecutionEngine.run">
 <a class="viewcode-back" href="../../../bbstrader.trading.html#bbstrader.trading.execution.Mt5ExecutionEngine.run">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">_running</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">shutdown_event</span><span class="o">.</span><span class="n">is_set</span><span class="p">():</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">check_mt5_connection</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span>
                 <span class="n">positions_orders</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_positions_orders</span><span class="p">()</span>
@@ -981,16 +1065,31 @@
                         <span class="bp">self</span><span class="o">.</span><span class="n">_check</span><span class="p">(</span><span class="n">buys</span><span class="p">[</span><span class="n">symbol</span><span class="p">],</span> <span class="n">sells</span><span class="p">[</span><span class="n">symbol</span><span class="p">],</span> <span class="n">symbol</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_update_risk</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_handle_signals</span><span class="p">(</span><span class="n">today</span><span class="p">,</span> <span class="n">signals</span><span class="p">,</span> <span class="n">buys</span><span class="p">,</span> <span class="n">sells</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_handle_all_signals</span><span class="p">(</span><span class="n">today</span><span class="p">,</span> <span class="n">signals</span><span class="p">,</span> <span class="n">buys</span><span class="p">,</span> <span class="n">sells</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_sleep</span><span class="p">()</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_handle_period_end_actions</span><span class="p">(</span><span class="n">today</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Stopping the Execution Engine ...&quot;</span><span class="p">)</span>
-                <span class="k">break</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Stopping Execution Engine for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">STRATEGY</span><span class="si">}</span><span class="s2"> STRATEGY on </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ACCOUNT</span><span class="si">}</span><span class="s2"> Account&quot;</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+                <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Running Execution Engine, STRATEGY=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">STRATEGY</span><span class="si">}</span><span class="s2"> , ACCOUNT=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ACCOUNT</span><span class="si">}</span><span class="s2">&quot;</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_print_exc</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
-                <span class="k">continue</span></div>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_print_exc</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Mt5ExecutionEngine.stop">
+<a class="viewcode-back" href="../../../bbstrader.trading.html#bbstrader.trading.execution.Mt5ExecutionEngine.stop">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Stops the execution engine.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_running</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Stopping Execution Engine for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">STRATEGY</span><span class="si">}</span><span class="s2"> STRATEGY on </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ACCOUNT</span><span class="si">}</span><span class="s2"> Account&quot;</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_running</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">shutdown_event</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Execution Engine stopped successfully.&quot;</span><span class="p">)</span></div>
 </div>
 
 
@@ -1044,6 +1143,7 @@
 
     <span class="k">for</span> <span class="n">account_id</span><span class="p">,</span> <span class="n">params</span> <span class="ow">in</span> <span class="n">accounts</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Starting process for </span><span class="si">{</span><span class="n">account_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">params</span><span class="p">[</span><span class="s2">&quot;multithread&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="n">process</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">RunMt5Engine</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">account_id</span><span class="p">,),</span> <span class="n">kwargs</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
         <span class="n">process</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
         <span class="n">processes</span><span class="p">[</span><span class="n">process</span><span class="p">]</span> <span class="o">=</span> <span class="n">account_id</span>

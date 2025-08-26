@@ -1,3 +1,8 @@
+.. bbs documentation master file, created by
+   sphinx-quickstart on Tue Aug 26 17:24:30 2025.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
 Simplified Investment & Trading Toolkit
 =======================================
 
@@ -119,10 +124,6 @@ Prerequisites
         *   `Admirals Group AS`_
         *   `Just Global Markets Ltd.`_
         *   `FTMO`_ (Proprietary Firm)
-*   **Interactive Brokers (IBKR)** (Optional, for IBKR integration):
-    *   Interactive Brokers Trader Workstation (TWS) or IB Gateway must be installed and running.
-    *   An active account with Interactive Brokers.
-    *   The Python client library for the IBKR API: ``ibapi``.
 
 Installation
 ^^^^^^^^^^^^
@@ -479,3 +480,5 @@ License
    :caption: Contents:
 
    modules
+
+

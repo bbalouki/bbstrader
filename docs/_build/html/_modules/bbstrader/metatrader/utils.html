@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>bbstrader.metatrader.utils &mdash; bbstrader 0.3.0 documentation</title>
+  <title>bbstrader.metatrader.utils &mdash; bbstrader 0.3.3 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=e259d695"></script>
+      <script src="../../../_static/documentation_options.js?v=d5a15cff"></script>
       <script src="../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -85,6 +85,7 @@
     <span class="s2">&quot;TerminalInfo&quot;</span><span class="p">,</span>
     <span class="s2">&quot;AccountInfo&quot;</span><span class="p">,</span>
     <span class="s2">&quot;SymbolInfo&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SymbolType&quot;</span><span class="p">,</span>
     <span class="s2">&quot;TickInfo&quot;</span><span class="p">,</span>
     <span class="s2">&quot;TradeRequest&quot;</span><span class="p">,</span>
     <span class="s2">&quot;OrderCheckResult&quot;</span><span class="p">,</span>
@@ -350,6 +351,8 @@
 
 
 
+<div class="viewcode-block" id="SymbolType">
+<a class="viewcode-back" href="../../../bbstrader.metatrader.html#bbstrader.metatrader.utils.SymbolType">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SymbolType</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Represents the type of a symbol.</span>
@@ -364,7 +367,8 @@
     <span class="n">INDICES</span> <span class="o">=</span> <span class="s2">&quot;INDICES&quot;</span>  <span class="c1"># Market indices</span>
     <span class="n">COMMODITIES</span> <span class="o">=</span> <span class="s2">&quot;COMMODITIES&quot;</span>  <span class="c1"># Commodities</span>
     <span class="n">OPTIONS</span> <span class="o">=</span> <span class="s2">&quot;OPTIONS&quot;</span>  <span class="c1"># Options contracts</span>
-    <span class="n">unknown</span> <span class="o">=</span> <span class="s2">&quot;UNKNOWN&quot;</span>  <span class="c1"># Unknown or unsupported type</span>
+    <span class="n">unknown</span> <span class="o">=</span> <span class="s2">&quot;UNKNOWN&quot;</span>  <span class="c1"># Unknown or unsupported type</span></div>
+
 
 
 <div class="viewcode-block" id="TickInfo">
@@ -592,11 +596,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">code</span> <span class="o">=</span> <span class="n">code</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="c1"># if self.message is None:</span>
-        <span class="c1">#     return f&quot;{self.__class__.__name__}&quot;</span>
-        <span class="c1"># else:</span>
-        <span class="c1">#     return f&quot;{self.__class__.__name__}, {self.message}&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="n">msg_str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">message</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">code</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">msg_str</span><span class="si">}</span><span class="s2">&quot;</span>
 
@@ -782,6 +782,8 @@
 <span class="sd">    Raises:</span>
 <span class="sd">        MT5TerminalError: A specific exception based on the error code.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">message</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">):</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
     <span class="n">error</span> <span class="o">=</span> <span class="n">_ERROR_CODE_TO_EXCEPTION_</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">MT5</span><span class="o">.</span><span class="n">last_error</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
     <span class="k">if</span> <span class="n">error</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">error</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">message</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="n">MT5</span><span class="o">.</span><span class="n">last_error</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>

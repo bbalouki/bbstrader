@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>bbstrader.models.ml &mdash; bbstrader 0.3.0 documentation</title>
+  <title>bbstrader.models.ml &mdash; bbstrader 0.3.3 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=e259d695"></script>
+      <script src="../../../_static/documentation_options.js?v=d5a15cff"></script>
       <script src="../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -71,7 +71,6 @@
   <h1>Source code for bbstrader.models.ml</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">product</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">time</span><span class="w"> </span><span class="kn">import</span> <span class="n">time</span>
 
@@ -90,6 +89,7 @@
     <span class="n">rate_of_return</span><span class="p">,</span>
     <span class="n">std_conversion</span><span class="p">,</span>
 <span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span> <span class="k">as</span> <span class="n">log</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="kn">import</span> <span class="n">spearmanr</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">LabelEncoder</span><span class="p">,</span> <span class="n">StandardScaler</span>
 
@@ -259,6 +259,7 @@
         <span class="n">datastore</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">HDFStore</span> <span class="o">=</span> <span class="s2">&quot;lgbdata.h5&quot;</span><span class="p">,</span>
         <span class="n">trainstore</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">HDFStore</span> <span class="o">=</span> <span class="s2">&quot;lgbtrain.h5&quot;</span><span class="p">,</span>
         <span class="n">outstore</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">HDFStore</span> <span class="o">=</span> <span class="s2">&quot;lgbout.h5&quot;</span><span class="p">,</span>
+        <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Args:</span>
@@ -267,10 +268,12 @@
 <span class="sd">            datastore (str): The path to the HDF5 file for storing the model data.</span>
 <span class="sd">            trainstore (str): The path to the HDF5 file for storing the training data.</span>
 <span class="sd">            outstore (str): The path to the HDF5 file for storing the output data.</span>
+<span class="sd">            logger (Logger): Optional logger instance for logging messages. If not provided, a default logger will be used.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">datastore</span> <span class="o">=</span> <span class="n">datastore</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">trainstore</span> <span class="o">=</span> <span class="n">trainstore</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">outstore</span> <span class="o">=</span> <span class="n">outstore</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logger</span> <span class="ow">or</span> <span class="n">log</span>
         <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">data</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span><span class="o">.</span><span class="n">to_hdf</span><span class="p">(</span><span class="n">path_or_buf</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">datastore</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;model_data&quot;</span><span class="p">)</span>
 
@@ -339,11 +342,15 @@
                     <span class="n">multi_level_index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                     <span class="n">auto_adjust</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                 <span class="p">)</span>
+                <span class="k">if</span> <span class="n">prices</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+                    <span class="k">continue</span>
                 <span class="n">prices</span><span class="p">[</span><span class="s2">&quot;symbol&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ticker</span>
                 <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prices</span><span class="p">)</span>
             <span class="k">except</span><span class="p">:</span>  <span class="c1"># noqa: E722</span>
                 <span class="k">continue</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;Adj Close&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Adj Close&quot;</span><span class="p">])</span>
         <span class="n">data</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">data</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="n">s</span><span class="p">:</span> <span class="n">s</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">})</span>
             <span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;symbol&quot;</span><span class="p">,</span> <span class="n">append</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -351,8 +358,6 @@
             <span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
             <span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
         <span class="p">)</span>
-        <span class="k">if</span> <span class="s2">&quot;adj_close&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;adj_close&quot;</span><span class="p">])</span>
         <span class="k">return</span> <span class="n">data</span></div>
 
 
@@ -966,13 +971,23 @@
             <span class="n">data</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;stock_data&quot;</span><span class="p">)</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s2">&quot;symbol&quot;</span><span class="p">,</span> <span class="s2">&quot;date&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="o">~</span><span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">duplicated</span><span class="p">()]</span>
-        <span class="k">return</span> <span class="p">(</span>
-            <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">[</span><span class="n">tickers</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">],</span> <span class="s2">&quot;open&quot;</span><span class="p">]</span>
-            <span class="o">.</span><span class="n">unstack</span><span class="p">(</span><span class="s2">&quot;symbol&quot;</span><span class="p">)</span>
-            <span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
-            <span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-            <span class="o">.</span><span class="n">tz_convert</span><span class="p">(</span><span class="s2">&quot;UTC&quot;</span><span class="p">)</span>
-        <span class="p">)</span></div>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">[</span><span class="n">tickers</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">],</span> <span class="s2">&quot;open&quot;</span><span class="p">]</span>
+                <span class="o">.</span><span class="n">unstack</span><span class="p">(</span><span class="s2">&quot;symbol&quot;</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+                <span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">tz_convert</span><span class="p">(</span><span class="s2">&quot;UTC&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">[</span><span class="n">tickers</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">],</span> <span class="s2">&quot;open&quot;</span><span class="p">]</span>
+                <span class="o">.</span><span class="n">unstack</span><span class="p">(</span><span class="s2">&quot;symbol&quot;</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+                <span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">tz_localize</span><span class="p">(</span><span class="s2">&quot;UTC&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span></div>
 
 
 <div class="viewcode-block" id="LightGBModel.plot_ic">
@@ -1218,13 +1233,22 @@
         <span class="c1"># in order to compute the mean period-wise</span>
         <span class="c1"># return earned on an equal-weighted portfolio invested in the daily factor quintiles</span>
         <span class="c1"># for various holding periods:</span>
-        <span class="n">factor</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">best_predictions</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">5</span><span class="p">]</span>
-            <span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-            <span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
-            <span class="o">.</span><span class="n">tz_convert</span><span class="p">(</span><span class="s2">&quot;UTC&quot;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s2">&quot;date&quot;</span><span class="p">)</span>
-            <span class="o">.</span><span class="n">swaplevel</span><span class="p">()</span>
-        <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">factor</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">best_predictions</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">5</span><span class="p">]</span>
+                <span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+                <span class="o">.</span><span class="n">tz_convert</span><span class="p">(</span><span class="s2">&quot;UTC&quot;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s2">&quot;date&quot;</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">swaplevel</span><span class="p">()</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="n">factor</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">best_predictions</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">5</span><span class="p">]</span>
+                <span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+                <span class="o">.</span><span class="n">tz_localize</span><span class="p">(</span><span class="s2">&quot;UTC&quot;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s2">&quot;date&quot;</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">swaplevel</span><span class="p">()</span>
+            <span class="p">)</span>
         <span class="c1"># Create AlphaLens Inputs</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
             <span class="n">factor_data</span> <span class="o">=</span> <span class="n">get_clean_factor_and_forward_returns</span><span class="p">(</span>
@@ -1269,6 +1293,8 @@
         <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;live&quot;</span><span class="p">:</span>
             <span class="n">data</span><span class="p">[</span><span class="n">labels</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">labels</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Mode must be either &#39;test&#39; or &#39;live&#39;.&quot;</span><span class="p">)</span>
 
         <span class="n">lgb_data</span> <span class="o">=</span> <span class="n">lgb</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span>
             <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="n">features</span><span class="p">],</span>
@@ -1386,7 +1412,9 @@
 <span class="sd">        Usefull in Live Trading to ensure that the last date in the predictions</span>
 <span class="sd">        is the previous day, so it predicts today&#39;s returns.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">last_date</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span>
         <span class="n">last_date</span> <span class="o">=</span> <span class="n">predictions</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s2">&quot;date&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="n">now</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">tz</span><span class="o">=</span><span class="s2">&quot;UTC&quot;</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">last_date</span><span class="o">.</span><span class="n">tzinfo</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">last_date</span> <span class="o">=</span> <span class="n">last_date</span><span class="o">.</span><span class="n">tz_localize</span><span class="p">(</span><span class="s2">&quot;UTC&quot;</span><span class="p">)</span>
@@ -1394,18 +1422,19 @@
                 <span class="n">last_date</span> <span class="o">=</span> <span class="n">last_date</span><span class="o">.</span><span class="n">tz_convert</span><span class="p">(</span><span class="s2">&quot;UTC&quot;</span><span class="p">)</span>
             <span class="n">last_date</span> <span class="o">=</span> <span class="n">last_date</span><span class="o">.</span><span class="n">normalize</span><span class="p">()</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error getting last date: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error getting last date: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">days</span> <span class="o">=</span> <span class="mi">3</span> <span class="k">if</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%A&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;Monday&quot;</span> <span class="k">else</span> <span class="mi">1</span>
-            <span class="n">td</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">last_date</span>
-                <span class="o">-</span> <span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">tz</span><span class="o">=</span><span class="s2">&quot;UTC&quot;</span><span class="p">)</span> <span class="o">-</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="n">days</span><span class="p">))</span><span class="o">.</span><span class="n">normalize</span><span class="p">()</span>
-            <span class="p">)</span>
-            <span class="k">assert</span> <span class="p">(</span>
-                <span class="n">td</span><span class="o">.</span><span class="n">days</span> <span class="o">==</span> <span class="n">days</span> <span class="ow">or</span> <span class="n">last_date</span> <span class="o">==</span> <span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">tz</span><span class="o">=</span><span class="s2">&quot;UTC&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">normalize</span><span class="p">()</span>
-            <span class="p">)</span>
+            <span class="n">days</span> <span class="o">=</span> <span class="mi">3</span> <span class="k">if</span> <span class="n">now</span><span class="o">.</span><span class="n">weekday</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">1</span>
+            <span class="n">time_delta</span> <span class="o">=</span> <span class="n">last_date</span> <span class="o">-</span> <span class="p">(</span><span class="n">now</span> <span class="o">-</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="n">days</span><span class="p">))</span><span class="o">.</span><span class="n">normalize</span><span class="p">()</span>
+            <span class="k">assert</span> <span class="n">time_delta</span><span class="o">.</span><span class="n">days</span> <span class="o">==</span> <span class="n">days</span> <span class="ow">or</span> <span class="n">last_date</span> <span class="o">==</span> <span class="n">now</span><span class="o">.</span><span class="n">normalize</span><span class="p">()</span>
             <span class="k">return</span> <span class="kc">True</span>
         <span class="k">except</span> <span class="ne">AssertionError</span><span class="p">:</span>
+            <span class="n">yesterday</span> <span class="o">=</span> <span class="p">(</span><span class="n">now</span> <span class="o">-</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">normalize</span><span class="p">()</span>
+            <span class="n">last_friday</span> <span class="o">=</span> <span class="p">(</span><span class="n">now</span> <span class="o">-</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="n">now</span><span class="o">.</span><span class="n">weekday</span><span class="p">()</span> <span class="o">+</span> <span class="mi">3</span><span class="p">))</span><span class="o">.</span><span class="n">normalize</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Last date in predictions (</span><span class="si">{</span><span class="n">last_date</span><span class="si">}</span><span class="s2">) is not equal to </span><span class="se">\</span>
+<span class="s2">                yesterday (</span><span class="si">{</span><span class="n">yesterday</span><span class="si">}</span><span class="s2">) or last Friday (</span><span class="si">{</span><span class="n">last_friday</span><span class="si">}</span><span class="s2">)&quot;</span>
+            <span class="p">)</span>
             <span class="k">return</span> <span class="kc">False</span></div>
 
 

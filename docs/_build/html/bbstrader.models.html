@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>bbstrader.models package &mdash; bbstrader 0.3.0 documentation</title>
+  <title>bbstrader.models package &mdash; bbstrader 0.3.3 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=e259d695"></script>
+      <script src="_static/documentation_options.js?v=d5a15cff"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -79,7 +79,6 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#module-bbstrader.models.risk">bbstrader.models.risk module</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#bbstrader.models.risk.HMMRiskManager"><code class="docutils literal notranslate"><span class="pre">HMMRiskManager</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#bbstrader.models.risk.RiskModel"><code class="docutils literal notranslate"><span class="pre">RiskModel</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#bbstrader.models.risk.build_hmm_models"><code class="docutils literal notranslate"><span class="pre">build_hmm_models()</span></code></a></li>
 </ul>
 </li>
@@ -242,7 +241,7 @@ required parameters should be passed via <cite>kwargs</cite>.</p></li>
 <span id="bbstrader-models-ml-module"></span><h2>bbstrader.models.ml module<a class="headerlink" href="#module-bbstrader.models.ml" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="bbstrader.models.ml.LightGBModel">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bbstrader.models.ml.</span></span><span class="sig-name descname"><span class="pre">LightGBModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datastore</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HDFStore</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'lgbdata.h5'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trainstore</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HDFStore</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'lgbtrain.h5'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outstore</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HDFStore</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'lgbout.h5'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/models/ml.html#LightGBModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.models.ml.LightGBModel" title="Link to this definition"></a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bbstrader.models.ml.</span></span><span class="sig-name descname"><span class="pre">LightGBModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datastore</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HDFStore</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'lgbdata.h5'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trainstore</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HDFStore</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'lgbtrain.h5'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outstore</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HDFStore</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'lgbout.h5'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/models/ml.html#LightGBModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.models.ml.LightGBModel" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p><code class="docutils literal notranslate"><span class="pre">LightGBModel</span></code> encapsulates a complete workflow for training and evaluating
 a <code class="docutils literal notranslate"><span class="pre">LightGBM</span> <span class="pre">(Light</span> <span class="pre">Gradient</span> <span class="pre">Boosting</span> <span class="pre">Machine)</span></code> model for predicting stock returns.
@@ -417,30 +416,6 @@ from news articles, social media posts, and financial reports.</p>
 <p>This class utilizes NLP techniques to preprocess text and apply sentiment
 analysis using VADER (SentimentIntensityAnalyzer) and optional TextBlob
 for enhanced polarity scoring.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="bbstrader.models.nlp.SentimentAnalyzer.nlp">
-<span class="sig-name descname"><span class="pre">nlp</span></span><a class="headerlink" href="#bbstrader.models.nlp.SentimentAnalyzer.nlp" title="Link to this definition"></a></dt>
-<dd><p>A SpaCy NLP pipeline for tokenization and lemmatization,
-with Named Entity Recognition (NER) disabled.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>spacy.Language</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="bbstrader.models.nlp.SentimentAnalyzer.analyzer">
-<span class="sig-name descname"><span class="pre">analyzer</span></span><a class="headerlink" href="#bbstrader.models.nlp.SentimentAnalyzer.analyzer" title="Link to this definition"></a></dt>
-<dd><p>An instance of VADER’s sentiment analyzer
-for financial sentiment scoring.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>SentimentIntensityAnalyzer</p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="bbstrader.models.nlp.SentimentAnalyzer.analyze_sentiment">
 <span class="sig-name descname"><span class="pre">analyze_sentiment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">texts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lexicon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">textblob</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/bbstrader/models/nlp.html#SentimentAnalyzer.analyze_sentiment"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.models.nlp.SentimentAnalyzer.analyze_sentiment" title="Link to this definition"></a></dt>
@@ -484,7 +459,9 @@ bar and scatter plots. It fetches new sentiment data at specified intervals.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>tickers</strong> (<em>list</em><em>[</em><em>str</em><em>]</em>) – A list of asset tickers (e.g., [“AAPL”, “GOOGL”, “TSLA”]).</p></li>
+<li><p><strong>tickers</strong> (<em>List</em><em>[</em><em>str</em><em>] </em><em>| </em><em>List</em><em>[</em><em>Tuple</em><em>[</em><em>str</em><em>, </em><em>str</em><em>]</em><em>]</em>) – A list of financial asset tickers to analyze.
+- If using tuples, the first element is the ticker and the second is the asset type.
+- If using a single string, the asset type must be specified or defaults to “stock”.</p></li>
 <li><p><strong>asset_type</strong> (<em>str</em><em>, </em><em>optional</em>) – The type of financial asset (“stock”, “forex”, “crypto”). Defaults to “stock”.</p></li>
 <li><p><strong>lexicon</strong> (<em>dict</em><em>, </em><em>optional</em>) – A custom sentiment lexicon. Defaults to None.</p></li>
 <li><p><strong>interval</strong> (<em>int</em><em>, </em><em>optional</em>) – The refresh interval (in milliseconds) for sentiment data updates. Defaults to 100000.</p></li>
@@ -531,7 +508,7 @@ fmp_api=”your_fmp_api_key”,</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="bbstrader.models.nlp.SentimentAnalyzer.get_sentiment_for_tickers">
-<span class="sig-name descname"><span class="pre">get_sentiment_for_tickers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tickers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lexicon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">asset_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'stock'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">top_news</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/bbstrader/models/nlp.html#SentimentAnalyzer.get_sentiment_for_tickers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.models.nlp.SentimentAnalyzer.get_sentiment_for_tickers" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_sentiment_for_tickers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tickers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lexicon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">asset_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'stock'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">top_news</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/bbstrader/models/nlp.html#SentimentAnalyzer.get_sentiment_for_tickers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.models.nlp.SentimentAnalyzer.get_sentiment_for_tickers" title="Link to this definition"></a></dt>
 <dd><p>Computes sentiment scores for a list of financial tickers based on news and social media data.</p>
 <p>Process:
 1. Collects news articles and posts related to each ticker from various sources:</p>
@@ -552,9 +529,18 @@ fmp_api=”your_fmp_api_key”,</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>tickers</strong> (<em>list</em><em> of </em><em>str</em>) – A list of stock, forex, crypto, or other asset tickers.</p></li>
+<li><p><strong>tickers</strong> (<em>List</em><em>[</em><em>str</em><em>] </em><em>| </em><em>List</em><em>[</em><em>Tuple</em><em>[</em><em>str</em><em>, </em><em>str</em><em>]</em><em>]</em>) – A list of asset tickers to analyze
+- if using tuples, the first element is the ticker and the second is the asset type.
+- if using a single string, the asset type must be specified or the default is “stock”.</p></li>
 <li><p><strong>lexicon</strong> (<em>dict</em><em>, </em><em>optional</em>) – A custom sentiment lexicon to update VADER’s default lexicon.</p></li>
-<li><p><strong>asset_type</strong> (<em>str</em><em>, </em><em>optional</em>) – The type of asset (e.g., “stock”, “forex”, “crypto”). Defaults to “stock”.</p></li>
+<li><p><strong>asset_type</strong> (<em>str</em><em>, </em><em>optional</em>) – The type of asset, Defaults to “stock”,
+supported types include:
+- “stock”: Stock symbols (e.g., AAPL, MSFT)
+- “etf”: Exchange-traded funds (e.g., SPY, QQQ)
+- “future”: Futures contracts (e.g., CL=F for crude oil)
+- “forex”: Forex pairs (e.g., EURUSD=X, USDJPY=X)
+- “crypto”: Cryptocurrency pairs (e.g., BTC-USD, ETH-USD)
+- “index”: Stock market indices (e.g., ^GSPC for S&amp;P 500)</p></li>
 <li><p><strong>top_news</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of news articles/posts to fetch per source. Defaults to 10.</p></li>
 <li><p><strong>**kwargs</strong> – Additional parameters for API authentication and data retrieval, including:
 - fmp_api (str): API key for Financial Modeling Prep.
@@ -576,6 +562,8 @@ fmp_api=”your_fmp_api_key”,</p>
 <dd class="field-odd"><p>Dict[str, float]</p>
 </dd>
 </dl>
+<p class="rubric">Notes</p>
+<p>The tickers names must follow yahoo finance conventions.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -765,7 +753,7 @@ is printed for each solver that fails.</p>
 <li><p><strong>prices</strong> (<em>pd.DataFrame</em><em>, </em><em>optional</em>) – Price data for assets, required for certain methods.</p></li>
 <li><p><strong>returns</strong> (<em>pd.DataFrame</em><em>, </em><em>optional</em>) – Returns data for assets, an alternative input for certain methods.</p></li>
 <li><p><strong>freq</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of days for calculating portfolio weights, such as 252 for a year’s worth of daily returns (default is 252).</p></li>
-<li><p><strong>method</strong> (<em>str</em><em>, </em><em>optional</em>) – Optimization method to use (‘markowitz’, ‘hrp’, or ‘equal’) (default is ‘markowitz’).</p></li>
+<li><p><strong>method</strong> (<em>str</em><em>, </em><em>optional</em>) – Optimization method to use (‘markowitz’, ‘hrp’, or ‘equal’) (default is ‘equal’).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -895,244 +883,13 @@ by weighting asset returns according to eigenportfolio weights.</p>
 <span id="bbstrader-models-risk-module"></span><h2>bbstrader.models.risk module<a class="headerlink" href="#module-bbstrader.models.risk" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="bbstrader.models.risk.HMMRiskManager">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bbstrader.models.risk.</span></span><span class="sig-name descname"><span class="pre">HMMRiskManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">states</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iterations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_date</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datetime</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">csv_filepath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/models/risk.html#HMMRiskManager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.models.risk.HMMRiskManager" title="Link to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#bbstrader.models.risk.RiskModel" title="bbstrader.models.risk.RiskModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">RiskModel</span></code></a></p>
-<p>This class represents a risk management model using Hidden Markov Models (HMM)
-to identify and manage market risks. It inherits from a generic RiskModel class
-and utilizes Gaussian HMM to model the financial market’s hidden states. These states
-are used to make decisions on permissible trading actions based on the identified market
-trends, thus facilitating a risk-aware trading strategy.</p>
-<p>To learn more about about the Hidden Markov model,
-See <a class="reference external" href="https://en.wikipedia.org/wiki/Hidden_Markov_model">https://en.wikipedia.org/wiki/Hidden_Markov_model</a></p>
-<dl>
-<dt>Exemple:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Assuming `data` is a DataFrame containing your market data</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">risk_manager</span> <span class="o">=</span> <span class="n">HMMRiskManager</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">states</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">current_regime</span> <span class="o">=</span> <span class="n">risk_manager</span><span class="o">.</span><span class="n">get_current_regime</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;Returns&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Current Market Regime: </span><span class="si">{</span><span class="n">current_regime</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="bbstrader.models.risk.HMMRiskManager.get_current_regime">
-<span class="sig-name descname"><span class="pre">get_current_regime</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">returns_val</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/models/risk.html#HMMRiskManager.get_current_regime"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.models.risk.HMMRiskManager.get_current_regime" title="Link to this definition"></a></dt>
-<dd><p>Determines the current market regime based on the latest returns.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>returns_val</strong> – Array of recent return values</p></li>
-<li><p><strong>state.</strong> (<em>to predict the current</em>)</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The predicted current market state.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="bbstrader.models.risk.HMMRiskManager.get_states">
-<span class="sig-name descname"><span class="pre">get_states</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/models/risk.html#HMMRiskManager.get_states"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.models.risk.HMMRiskManager.get_states" title="Link to this definition"></a></dt>
-<dd><p>Predicts the hidden states for the market data
-and calculates the mean returns and volatility for each state.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>DataFrame containing mean returns
-and volatility for each hidden state.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="bbstrader.models.risk.HMMRiskManager.identify_market_trends">
-<span class="sig-name descname"><span class="pre">identify_market_trends</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/models/risk.html#HMMRiskManager.identify_market_trends"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.models.risk.HMMRiskManager.identify_market_trends" title="Link to this definition"></a></dt>
-<dd><dl class="simple">
-<dt>Identifies bullish and bearish market trends</dt><dd><p>based on the mean returns and volatility of each state.</p>
-</dd>
-</dl>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A dictionary with keys ‘bullish’ and ‘bearish’
-indicating the identified states.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="bbstrader.models.risk.HMMRiskManager.obtain_prices_df">
-<span class="sig-name descname"><span class="pre">obtain_prices_df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/models/risk.html#HMMRiskManager.obtain_prices_df"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.models.risk.HMMRiskManager.obtain_prices_df" title="Link to this definition"></a></dt>
-<dd><p>Processes the market data to calculate returns
-and optionally filters data up to a specified end date.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>data_frame</strong> – DataFrame containing the market data.</p></li>
-<li><p><strong>end</strong> – Optional datetime object specifying the end date for the data.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><dl class="simple">
-<dt>DataFrame with returns calculated</dt><dd><p>and data filtered up to the end date if specified.</p>
-</dd>
-</dl>
-</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="bbstrader.models.risk.HMMRiskManager.plot_hidden_states">
-<span class="sig-name descname"><span class="pre">plot_hidden_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hmm_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/models/risk.html#HMMRiskManager.plot_hidden_states"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.models.risk.HMMRiskManager.plot_hidden_states" title="Link to this definition"></a></dt>
-<dd><p>Plots the adjusted closing prices masked
-by the in-sample hidden states as a mechanism
-to understand the market regimes.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>hmm_model</strong> – The trained GaussianHMM model used for predicting states.</p></li>
-<li><p><strong>df</strong> – DataFrame containing the market data with calculated returns.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="bbstrader.models.risk.HMMRiskManager.read_csv_file">
-<span class="sig-name descname"><span class="pre">read_csv_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">csv_filepath</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/models/risk.html#HMMRiskManager.read_csv_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.models.risk.HMMRiskManager.read_csv_file" title="Link to this definition"></a></dt>
-<dd><p>Reads market data from a CSV file.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>csv_filepath</strong> – Path to the CSV file containing the market data.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>DataFrame containing the parsed market data.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="bbstrader.models.risk.HMMRiskManager.save_hmm_model">
-<span class="sig-name descname"><span class="pre">save_hmm_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hmm_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/models/risk.html#HMMRiskManager.save_hmm_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.models.risk.HMMRiskManager.save_hmm_model" title="Link to this definition"></a></dt>
-<dd><p>Saves the trained HMM model to a pickle file.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>hmm_model</strong> – The trained GaussianHMM model to be saved.</p></li>
-<li><p><strong>filename</strong> – The filename under which to save the model.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="bbstrader.models.risk.HMMRiskManager.show_hidden_states">
-<span class="sig-name descname"><span class="pre">show_hidden_states</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/models/risk.html#HMMRiskManager.show_hidden_states"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.models.risk.HMMRiskManager.show_hidden_states" title="Link to this definition"></a></dt>
-<dd><dl class="simple">
-<dt>Visualizes the market data</dt><dd><p>and the predicted hidden states from the HMM model.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="bbstrader.models.risk.HMMRiskManager.which_quantity_allowed">
-<span class="sig-name descname"><span class="pre">which_quantity_allowed</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/models/risk.html#HMMRiskManager.which_quantity_allowed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.models.risk.HMMRiskManager.which_quantity_allowed" title="Link to this definition"></a></dt>
-<dd><p>Defines the strategy for asset allocation within
-the portfolio to optimize risk-reward ratio.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="bbstrader.models.risk.HMMRiskManager.which_trade_allowed">
-<span class="sig-name descname"><span class="pre">which_trade_allowed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">returns_val</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/models/risk.html#HMMRiskManager.which_trade_allowed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.models.risk.HMMRiskManager.which_trade_allowed" title="Link to this definition"></a></dt>
-<dd><p>Decides whether a long or short trade
-is allowed based on the current market regime.
-This method override the which_trade_allowed() from
-RiskModel class .</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>returns_val</strong> – Array of recent return values</p></li>
-<li><p><strong>trade.</strong> (<em>to assess the permissible</em>)</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><dl class="simple">
-<dt>A string indicating “LONG” or “SHORT”</dt><dd><p>if a trade is allowed, or None if no trade is permitted.</p>
-</dd>
-</dl>
-</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="bbstrader.models.risk.RiskModel">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bbstrader.models.risk.</span></span><span class="sig-name descname"><span class="pre">RiskModel</span></span><a class="reference internal" href="_modules/bbstrader/models/risk.html#RiskModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.models.risk.RiskModel" title="Link to this definition"></a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bbstrader.models.risk.</span></span><span class="sig-name descname"><span class="pre">HMMRiskManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iterations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_date</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">csv_filepath</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/models/risk.html#HMMRiskManager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.models.risk.HMMRiskManager" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>The RiskModel class serves as an abstract base for implementing
-risk management strategies in financial markets. It is designed
-to assist in the decision-making process regarding which trades
-are permissible under current market conditions and how to allocate
-assets effectively to optimize the risk-reward ratio.</p>
-<p>Risk management is a critical component in trading and investment
-strategies, aiming to minimize potential losses without significantly
-reducing the potential for gains. This class encapsulates the core
-principles of risk management by providing a structured approach to
-evaluate market conditions and manage asset allocation.</p>
-<p>Implementing classes are required to define two key methods:</p>
-<ul class="simple">
-<li><p><cite>which_trade_allowed</cite>:
-Determines the types of trades that are permissible based on the
-analysis of current market conditions and the risk profile of the portfolio.
-This method should analyze the provided <cite>returns_val</cite> parameter,
-which could represent historical returns, volatility measures,
-or other financial metrics, to decide on the suitability of executing
-certain trades.</p></li>
-<li><p><cite>which_quantity_allowed</cite>:
-Defines how assets should be allocated across the portfolio to maintain
-an optimal balance between risk and return. This involves determining
-the quantity of each asset that can be held, considering factors such as
-diversification, liquidity, and the asset’s volatility. This method ensures
-that the portfolio adheres to predefined risk tolerance levels and
-investment objectives.</p></li>
-</ul>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Implementing these methods requires a deep understanding of risk
-management theories, market analysis, and portfolio management principles.
-The implementation should be tailored to the specific needs of the
-investment strategy and the risk tolerance of the investor or the fund
-being managed.</p>
-</div>
-<dl class="py method">
-<dt class="sig sig-object py" id="bbstrader.models.risk.RiskModel.which_quantity_allowed">
-<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">which_quantity_allowed</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/models/risk.html#RiskModel.which_quantity_allowed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.models.risk.RiskModel.which_quantity_allowed" title="Link to this definition"></a></dt>
-<dd><p>Defines the strategy for asset allocation within
-the portfolio to optimize risk-reward ratio.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="bbstrader.models.risk.RiskModel.which_trade_allowed">
-<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">which_trade_allowed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">returns_val</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/models/risk.html#RiskModel.which_trade_allowed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.models.risk.RiskModel.which_trade_allowed" title="Link to this definition"></a></dt>
-<dd><p>Determines the types of trades permissible under current market conditions.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>returns_val</strong> – A parameter representing financial metrics</p></li>
-<li><p><strong>volatility</strong> (<em>such as historical returns or</em>)</p></li>
-<li><p><strong>to</strong> (<em>used</em>)</p></li>
-<li><p><strong>conditions.</strong> (<em>assess market</em>)</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="bbstrader.models.risk.build_hmm_models">
-<span class="sig-prename descclassname"><span class="pre">bbstrader.models.risk.</span></span><span class="sig-name descname"><span class="pre">build_hmm_models</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#bbstrader.models.risk.HMMRiskManager" title="bbstrader.models.risk.HMMRiskManager"><span class="pre">HMMRiskManager</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/bbstrader/models/risk.html#build_hmm_models"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.models.risk.build_hmm_models" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">bbstrader.models.risk.</span></span><span class="sig-name descname"><span class="pre">build_hmm_models</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/models/risk.html#build_hmm_models"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.models.risk.build_hmm_models" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </section>
