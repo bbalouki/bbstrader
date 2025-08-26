@@ -124,11 +124,11 @@ class Rates(object):
         self.sd = session_duration
         self.start_pos = self._get_start_pos(start_pos, timeframe)
         self.count = count
-        self._mt5_initialized(**kwargs)
+        self.__initializ_mt5(**kwargs)
         self.__account = Account(**kwargs)
         self.__data = self.get_rates_from_pos()
 
-    def _mt5_initialized(self, **kwargs):
+    def __initializ_mt5(self, **kwargs):
         check_mt5_connection(**kwargs)
 
     def _get_start_pos(self, index, time_frame):

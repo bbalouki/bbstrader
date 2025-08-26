@@ -797,17 +797,19 @@ class MT5Strategy(Strategy):
             return False
         tick_info = self.account.get_tick_info(asset)
         bid, ask = tick_info.bid, tick_info.ask
+        price = None
         if len(prices) == 1:
             price = prices[0]
         elif len(prices) in range(2, self.max_trades[asset] + 1):
             price = np.mean(prices)
-        if (
-            position == 0
-            and self.calculate_pct_change(ask, price) >= th
-            or position == 1
-            and abs(self.calculate_pct_change(bid, price)) >= th
-        ):
-            return True
+        if price is not None:
+            if (
+                position == 0
+                and self.calculate_pct_change(ask, price) >= th
+                or position == 1
+                and abs(self.calculate_pct_change(bid, price)) >= th
+            ):
+                return True
         return False
 
     @staticmethod

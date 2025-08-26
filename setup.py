@@ -90,8 +90,6 @@ setup(
     install_requires=REQUIREMENTS,
     extras_require={
         "MT5": ["MetaTrader5"],
-        # 'zipline': ['zipline'],
-        # 'cerebro': ['backtrader'],
     },
     keywords=KEYWORDS,
     classifiers=CLASSIFIERS,

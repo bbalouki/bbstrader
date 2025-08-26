@@ -22,9 +22,9 @@ def resource_path(relative_path):
     return base_path / relative_path
 
 
-TITLE = "BBS Trade Copier"
+TITLE = "Trade Copier"
 ICON_PATH = resource_path("assets/bbstrader.ico")
-LOGO_PATH = resource_path("assets/bbstrader_logo.png")
+LOGO_PATH = resource_path("assets/bbstrader.png")
 
 
 class TradeCopierApp(object):

@@ -5,8 +5,6 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, Literal, Optional, Tuple, Union
 
 import pandas as pd
-from currency_converter import SINGLE_DAY_ECB_URL, CurrencyConverter
-
 from bbstrader.metatrader.utils import (
     AccountInfo,
     BookInfo,
@@ -23,6 +21,7 @@ from bbstrader.metatrader.utils import (
     TradeRequest,
     raise_mt5_error,
 )
+from currency_converter import SINGLE_DAY_ECB_URL, CurrencyConverter
 
 try:
     import MetaTrader5 as mt5
@@ -33,6 +32,7 @@ except ImportError:
 __all__ = [
     "Account",
     "Broker",
+    "MetaQuotes",
     "AdmiralMarktsGroup",
     "JustGlobalMarkets",
     "PepperstoneGroupLimited",
@@ -41,6 +41,7 @@ __all__ = [
 ]
 
 __BROKERS__ = {
+    "MQL": "MetaQuotes Ltd.",
     "AMG": "Admirals Group AS",
     "JGM": "Just Global Markets Ltd.",
     "FTMO": "FTMO S.R.O.",
@@ -67,14 +68,13 @@ _ADMIRAL_MARKETS_PRODUCTS_ = [
 ]
 _JUST_MARKETS_PRODUCTS_ = ["Stocks", "Crypto", "indices", "Commodities", "Forex"]
 
-SUPPORTED_BROKERS = [__BROKERS__[b] for b in {"AMG", "JGM", "FTMO"}]
+SUPPORTED_BROKERS = [__BROKERS__[b] for b in {"MQL", "AMG", "JGM", "FTMO"}]
 INIT_MSG = (
-    f"\n* Ensure you have a good and stable internet connexion\n"
-    f"* Ensure you have an activete MT5 terminal install on your machine\n"
-    f"* Ensure you have an active MT5 Account with {' or '.join(SUPPORTED_BROKERS)}\n"
-    f"* If you want to trade {', '.join(_ADMIRAL_MARKETS_PRODUCTS_)}, See [{_ADMIRAL_MARKETS_URL_}]\n"
-    f"* If you want to trade {', '.join(_JUST_MARKETS_PRODUCTS_)}, See [{_JUST_MARKETS_URL_}]\n"
-    f"* If you are looking for a prop firm, See [{_FTMO_URL_}]\n"
+    f"\n* Check your internet connection\n"
+    f"* Make sure MT5 is installed and active\n"
+    f"* Looking for a boker? See [{_ADMIRAL_MARKETS_URL_}] "
+    f"or [{_JUST_MARKETS_URL_}]\n"
+    f"* Looking for a prop firm? See [{_FTMO_URL_}]\n"
 )
 
 amg_url = _ADMIRAL_MARKETS_URL_
@@ -136,7 +136,16 @@ AMG_EXCHANGES = {
 }
 
 
-def check_mt5_connection(**kwargs) -> bool:
+def check_mt5_connection(
+    *,
+    path=None,
+    login=None,
+    password=None,
+    server=None,
+    timeout=60_000,
+    portable=False,
+    **kwargs,
+) -> bool:
     """
     Initialize the connection to the MetaTrader 5 terminal.
 
@@ -156,13 +165,12 @@ def check_mt5_connection(**kwargs) -> bool:
         - Follow these instructions to lunch each terminal in portable mode first:
             https://www.metatrader5.com/en/terminal/help/start_advanced/start#configuration_file
     """
-    path = kwargs.get("path", None)
-    login = kwargs.get("login", None)
-    password = kwargs.get("password", None)
-    server = kwargs.get("server", None)
-    timeout = kwargs.get("timeout", 60_000)
-    portable = kwargs.get("portable", False)
-
+    if login is not None and server is not None:
+        account_info = mt5.account_info()
+        if account_info is not None:
+            if account_info.login == login and account_info.server == server:
+                return True
+        
     init = False
     if path is None and (login or password or server):
         raise ValueError(
@@ -221,6 +229,11 @@ class Broker(object):
         return f"{self.__class__.__name__}({self.name})"
 
 
+class MetaQuotes(Broker):
+    def __init__(self, **kwargs):
+        super().__init__(__BROKERS__["MQL"], **kwargs)
+
+
 class AdmiralMarktsGroup(Broker):
     def __init__(self, **kwargs):
         super().__init__(__BROKERS__["AMG"], **kwargs)
@@ -262,6 +275,7 @@ class AMP(Broker): ...
 
 BROKERS: Dict[str, Broker] = {
     "FTMO": FTMO(),
+    "MQL": MetaQuotes(),
     "AMG": AdmiralMarktsGroup(),
     "JGM": JustGlobalMarkets(),
     "PGL": PepperstoneGroupLimited(),
@@ -1372,7 +1386,7 @@ class Account(object):
         group: Optional[str] = None,
         ticket: Optional[int] = None,
         to_df: bool = False,
-    ) -> Union[pd.DataFrame, Tuple[TradeOrder], None]:
+    ) -> Union[pd.DataFrame, Tuple[TradeOrder]]:
         """
         Get active orders with the ability to filter by symbol or ticket.
         There are four call options:

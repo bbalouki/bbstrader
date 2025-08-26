@@ -301,7 +301,7 @@ You may need to create the `~/.bbstrader/` directory and its subdirectories (lik
 
 For comprehensive information, including detailed API references, tutorials, and advanced guides for each module, please refer to our full documentation hosted on ReadTheDocs:
 
-[**View the Full Documentation on ReadTheDocs**](https://bbstrader.readthedocs.io/en/latest/)
+[**View the Full Documentation**](https://bbstrader.readthedocs.io/en/latest/)
 
 Additionally, the codebase is commented and includes docstrings, which can be a valuable resource for understanding the implementation details of specific functions and classes.
 

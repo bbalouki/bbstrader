@@ -486,11 +486,7 @@ class MT5TerminalError(Exception):
         self.code = code
         self.message = message
 
-    def __str__(self) -> str:
-        # if self.message is None:
-        #     return f"{self.__class__.__name__}"
-        # else:
-        #     return f"{self.__class__.__name__}, {self.message}"
+    def __repr__(self) -> str:
         msg_str = str(self.message) if self.message is not None else ""
         return f"{self.code} - {self.__class__.__name__}: {msg_str}"
 
