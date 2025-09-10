@@ -65,10 +65,18 @@ def main():
                 sys.exit(1)
     except KeyboardInterrupt:
         sys.exit(0)
-    except Exception:
+    except Exception as e:
+        print(Fore.RED + f"Error: {e}")
         sys.exit(1)
 
 
 if __name__ == "__main__":
     multiprocessing.freeze_support()
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print(Fore.RED + "\nExecution interrupted by user")
+        sys.exit(0)
+    except Exception as e:
+        print(Fore.RED + f"Error: {e}")
+        sys.exit(1)
