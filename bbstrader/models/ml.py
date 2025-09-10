@@ -1283,16 +1283,19 @@ class LightGBModel(object):
         except Exception as e:
             self.logger.error(f"Error getting last date: {e}")
         try:
-            days = 3 if now.weekday() == 0 else 1
-            time_delta = last_date - (now - pd.Timedelta(days=days)).normalize()
-            assert time_delta.days == days or last_date == now.normalize()
+            if now.weekday() == 0:  # Monday
+                expected_date = (now - pd.Timedelta(days=3)).normalize()  # last Friday
+            else:
+                expected_date = (now - pd.Timedelta(days=1)).normalize()  # yesterday
+
+            assert last_date == expected_date or last_date == now.normalize()
             return True
         except AssertionError:
             yesterday = (now - pd.Timedelta(days=1)).normalize()
             last_friday = (now - pd.Timedelta(days=now.weekday() + 3)).normalize()
             self.logger.debug(
-                f"Last date in predictions ({last_date}) is not equal to \
-                yesterday ({yesterday}) or last Friday ({last_friday})"
+                f"Last date in predictions ({last_date}) is not equal to "
+                f"yesterday ({yesterday}) or last Friday ({last_friday})"
             )
             return False
 
