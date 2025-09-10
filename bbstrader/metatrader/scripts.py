@@ -2,7 +2,7 @@ import argparse
 import multiprocessing
 import sys
 
-from bbstrader.apps._copier import main as RunCopyAPP
+from bbstrader.apps._copier import main as RunCopyApp
 from bbstrader.metatrader.copier import RunCopier, config_copier, copier_worker_process
 
 
@@ -17,6 +17,15 @@ def copier_args(parser: argparse.ArgumentParser):
     )
     parser.add_argument(
         "-s", "--source", type=str, nargs="?", default=None, help="Source section name"
+    )
+    parser.add_argument(
+        "-I", "--id", type=int, default=0, help="Source Account unique ID"
+    )
+    parser.add_argument(
+        "-U",
+        "--unique",
+        action="store_true",
+        help="Specify if the source account is only master",
     )
     parser.add_argument(
         "-d",
@@ -70,6 +79,8 @@ def copy_trades(unknown):
     Options:
         -m, --mode: CLI for terminal app and GUI for Desktop app
         -s, --source: Source Account section name
+        -I, --id: Source Account unique ID
+        -U, --unique: Specify if the source account is only master 
         -d, --destinations: Destination Account section names (multiple allowed)
         -i, --interval: Update interval in seconds
         -M, --multiprocess: When set to True, each destination account runs in a separate process.
@@ -86,7 +97,7 @@ def copy_trades(unknown):
     copy_args = copy_parser.parse_args(unknown)
 
     if copy_args.mode == "GUI":
-        RunCopyAPP()
+        RunCopyApp()
 
     elif copy_args.mode == "CLI":
         source, destinations = config_copier(
@@ -94,6 +105,8 @@ def copy_trades(unknown):
             dest_sections=copy_args.destinations,
             inifile=copy_args.config,
         )
+        source["id"] = copy_args.id
+        source["unique"] = copy_args.unique
         if copy_args.multiprocess:
             copier_processes = []
             for dest_config in destinations:
