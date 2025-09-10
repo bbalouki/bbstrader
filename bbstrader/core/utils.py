@@ -66,9 +66,11 @@ def dict_from_ini(file_path, sections: str | List[str] = None) -> Dict[str, Any]
     Returns:
         A dictionary containing the INI file contents with proper data types.
     """
-    config = configparser.ConfigParser(interpolation=None)
-    config.read(file_path)
-
+    try:
+        config = configparser.ConfigParser(interpolation=None)
+        config.read(file_path)
+    except Exception:
+        raise
     ini_dict = {}
     for section in config.sections():
         ini_dict[section] = {
