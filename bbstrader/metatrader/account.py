@@ -1223,7 +1223,7 @@ class Account(object):
         try:
             book = mt5.market_book_get(symbol)
             return (
-                tuple()
+                None
                 if book is None
                 else tuple([BookInfo(**entry._asdict()) for entry in book])
             )
@@ -1410,7 +1410,7 @@ class Account(object):
             positions = mt5.positions_get()
 
         if positions is None or len(positions) == 0:
-            return pd.DataFrame() if to_df else tuple()
+            return None
         if to_df:
             df = pd.DataFrame(list(positions), columns=positions[0]._asdict())
             df["time"] = pd.to_datetime(df["time"], unit="s")
@@ -1513,7 +1513,7 @@ class Account(object):
             position_deals = mt5.history_deals_get(date_from, date_to)
 
         if position_deals is None or len(position_deals) == 0:
-            return pd.DataFrame() if to_df else tuple()
+            return None
 
         df = pd.DataFrame(list(position_deals), columns=position_deals[0]._asdict())
         df["time"] = pd.to_datetime(df["time"], unit="s")
@@ -1589,7 +1589,7 @@ class Account(object):
             orders = mt5.orders_get()
 
         if orders is None or len(orders) == 0:
-            return pd.DataFrame() if to_df else tuple()
+            return None
 
         if to_df:
             df = pd.DataFrame(list(orders), columns=orders[0]._asdict())
@@ -1703,7 +1703,7 @@ class Account(object):
             history_orders = mt5.history_orders_get(date_from, date_to)
 
         if history_orders is None or len(history_orders) == 0:
-            return pd.DataFrame() if to_df else tuple()
+            return None
 
         df = pd.DataFrame(list(history_orders), columns=history_orders[0]._asdict())
         df.drop(
