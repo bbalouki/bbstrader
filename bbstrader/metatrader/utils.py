@@ -2,6 +2,8 @@ from datetime import datetime
 from enum import Enum
 from typing import NamedTuple, Optional
 
+import numpy as np
+
 try:
     import MetaTrader5 as MT5
 except ImportError:
@@ -28,6 +30,10 @@ __all__ = [
     "HistoryNotFound",
     "InvalidVersion",
     "AuthFailed",
+    "RateInfo",
+    "RateDtype",
+    "TickDtype",
+    "TickFlag",
     "UnsupportedMethod",
     "AutoTradingDisabled",
     "InternalFailSend",
@@ -285,6 +291,26 @@ class SymbolType(Enum):
     unknown = "UNKNOWN"  # Unknown or unsupported type
 
 
+TickDtype = np.dtype(
+    [
+        ("time", "<i8"),
+        ("bid", "<f8"),
+        ("ask", "<f8"),
+        ("last", "<f8"),
+        ("volume", "<u8"),
+        ("time_msc", "<i8"),
+        ("flags", "<u4"),
+        ("volume_real", "<f8"),
+    ]
+)
+
+TickFlag = {
+    "all": MT5.COPY_TICKS_ALL,
+    "info": MT5.COPY_TICKS_INFO,
+    "trade": MT5.COPY_TICKS_TRADE,
+}
+
+
 class TickInfo(NamedTuple):
     """
     Represents the last tick for the specified financial instrument.
@@ -306,6 +332,44 @@ class TickInfo(NamedTuple):
     time_msc: int
     flags: int
     volume_real: float
+
+
+RateDtype = np.dtype(
+    [
+        ("time", "<i8"),
+        ("open", "<f8"),
+        ("high", "<f8"),
+        ("low", "<f8"),
+        ("close", "<f8"),
+        ("tick_volume", "<u8"),
+        ("spread", "<i4"),
+        ("real_volume", "<u8"),
+    ]
+)
+
+
+class RateInfo(NamedTuple):
+    """
+    Reprents a candle (bar) for a specified period.
+    * time: Time in seconds since 1970.01.01 00:00
+    * open: Open price
+    * high: High price
+    * low: Low price
+    * close: Close price
+    * tick_volume: Tick volume
+    * spread: Spread value
+    * real_volume: Real volume
+
+    """
+
+    time: int
+    open: float
+    high: float
+    low: float
+    close: float
+    tick_volume: float
+    spread: int
+    real_volume: float
 
 
 class BookInfo(NamedTuple):

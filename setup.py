@@ -15,7 +15,7 @@ with io.open(path.join(here, "README.md"), encoding="utf-8") as f:
 with io.open(path.join(here, "requirements.txt"), encoding="utf-8") as f:
     REQUIREMENTS = [line.rstrip() for line in f]
 
-VERSION = "0.3.3"
+VERSION = "0.3.4"
 DESCRIPTION = "Simplified Investment & Trading Toolkit"
 
 KEYWORDS = [
@@ -64,6 +64,7 @@ INLCUDE = [
     "bbstrader.core",
     "bbstrader.ibkr",
     "bbstrader.metatrader",
+    "bbstrader.apps",
     "bbstrader.models",
     "bbstrader.trading",
 ]

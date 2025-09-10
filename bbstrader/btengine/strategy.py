@@ -11,10 +11,12 @@ from loguru import logger
 
 from bbstrader.btengine.data import DataHandler
 from bbstrader.btengine.event import Events, FillEvent, SignalEvent
+from bbstrader.metatrader.trade import generate_signal, TradeAction 
 from bbstrader.config import BBSTRADER_DIR
 from bbstrader.metatrader import (
     Account,
     AdmiralMarktsGroup,
+    MetaQuotes,
     PepperstoneGroupLimited,
     TradeOrder,
     Rates,
@@ -78,7 +80,16 @@ class MT5Strategy(Strategy):
     in order to avoid naming collusion.
     """
     tf: str
+    id: int
+    ID: int
+    
     max_trades: Dict[str, int]
+    risk_budget: Dict[str, float] | str | None
+
+    _orders: Dict[str, Dict[str, List[SignalEvent]]]
+    _positions: Dict[str, Dict[str, int | float]]
+    _trades: Dict[str, Dict[str, int]]
+
     def __init__(
         self,
         events: Queue = None,
@@ -104,13 +115,19 @@ class MT5Strategy(Strategy):
         self.data = bars
         self.symbols = symbol_list
         self.mode = mode
-        self._porfolio_value = None
+        if self.mode not in [TradingMode.BACKTEST, TradingMode.LIVE]:
+            raise ValueError(f"Mode must be an instance of {type(TradingMode)} not {type(self.mode)}")
+        
         self.risk_budget = self._check_risk_budget(**kwargs)
+
         self.max_trades = kwargs.get("max_trades", {s: 1 for s in self.symbols})
         self.tf = kwargs.get("time_frame", "D1")
         self.logger = kwargs.get("logger") or logger
+
         if self.mode == TradingMode.BACKTEST:
+            self._porfolio_value = None
             self._initialize_portfolio()
+
         self.kwargs = kwargs
         self.periodes = 0
 
@@ -170,19 +187,17 @@ class MT5Strategy(Strategy):
             return weights
 
     def _initialize_portfolio(self):
-        positions = ["LONG", "SHORT"]
-        orders = ["BLMT", "BSTP", "BSTPLMT", "SLMT", "SSTP", "SSTPLMT"]
-        self._orders: Dict[str, Dict[str, List[SignalEvent]]] = {}
-        self._positions: Dict[str, Dict[str, int | float]] = {}
-        self._trades: Dict[str, Dict[str, int]] = {}
+        self._orders = {}
+        self._positions = {}
+        self._trades =  {}
         for symbol in self.symbols:
             self._positions[symbol] = {}
             self._orders[symbol] = {}
             self._trades[symbol] = {}
-            for position in positions:
+            for position in ["LONG", "SHORT"]:
                 self._trades[symbol][position] = 0
                 self._positions[symbol][position] = 0.0
-            for order in orders:
+            for order in ["BLMT", "BSTP", "BSTPLMT", "SLMT", "SSTP", "SSTPLMT"]:
                 self._orders[symbol][order] = []
         self._holdings = {s: 0.0 for s in self.symbols}
 
@@ -235,6 +250,54 @@ class MT5Strategy(Strategy):
         - ``comment``: An optional comment or description related to the trade signal.
         """
         pass
+
+    def signal(self, signal: int, symbol: str) -> TradeSignal:
+        """
+        Generate a ``TradeSignal`` object based on the signal value.
+        Args:
+            signal : An integer value representing the signal type:
+                     0: BUY
+                     1: SELL
+                     2: EXIT_LONG
+                     3: EXIT_SHORT
+                     4: EXIT_ALL_POSITIONS
+                     5: EXIT_ALL_ORDERS
+                     6: EXIT_STOP
+                     7: EXIT_LIMIT
+
+            symbol : The symbol for the trade.
+
+        Returns:
+            TradeSignal : A ``TradeSignal`` object representing the trade signal.
+
+        Note:
+            This generate only common signals. For more complex signals, use `generate_signal` directly.
+
+        Raises:
+            ValueError : If the signal value is not between 0 and 7.
+        """
+        signal_id = getattr(self, "id", None) or getattr(self, "ID")
+        
+        match signal:
+            case 0:
+                return generate_signal(signal_id, symbol, TradeAction.BUY)
+            case 1:
+                return generate_signal(signal_id, symbol, TradeAction.SELL)
+            case 2:
+                return generate_signal(signal_id, symbol, TradeAction.EXIT_LONG)
+            case 3:
+                return generate_signal(signal_id, symbol, TradeAction.EXIT_SHORT)
+            case 4:
+                return generate_signal(signal_id, symbol, TradeAction.EXIT_ALL_POSITIONS)
+            case 5:
+                return generate_signal(signal_id, symbol, TradeAction.EXIT_ALL_ORDERS)
+            case 6:
+                return generate_signal(signal_id, symbol, TradeAction.EXIT_STOP)
+            case 7:
+                return generate_signal(signal_id, symbol, TradeAction.EXIT_LIMIT)
+            case _:
+                raise ValueError(f"Invalid signal value: {signal}. Must be an integer between 0 and 7.")
+
 
     def perform_period_end_checks(self, *args, **kwargs):
         """
@@ -551,75 +614,75 @@ class MT5Strategy(Strategy):
                         ]
                     logmsg(order, log_label, symbol, dtime)
 
-            for symbol in self.symbols:
-                dtime = self.data.get_latest_bar_datetime(symbol)
-                latest_close = self.data.get_latest_bar_value(symbol, "close")
+        for symbol in self.symbols:
+            dtime = self.data.get_latest_bar_datetime(symbol)
+            latest_close = self.data.get_latest_bar_value(symbol, "close")
 
-                process_orders(
-                    "BLMT",
-                    lambda o: latest_close <= o.price,
-                    lambda o: self.buy_mkt(
-                        o.strategy_id, symbol, o.price, o.quantity, dtime
-                    ),
-                    "BUY LIMIT",
-                    symbol,
-                    dtime,
-                )
+            process_orders(
+                "BLMT",
+                lambda o: latest_close <= o.price,
+                lambda o: self.buy_mkt(
+                    o.strategy_id, symbol, o.price, o.quantity, dtime
+                ),
+                "BUY LIMIT",
+                symbol,
+                dtime,
+            )
 
-                process_orders(
-                    "SLMT",
-                    lambda o: latest_close >= o.price,
-                    lambda o: self.sell_mkt(
-                        o.strategy_id, symbol, o.price, o.quantity, dtime
-                    ),
-                    "SELL LIMIT",
-                    symbol,
-                    dtime,
-                )
+            process_orders(
+                "SLMT",
+                lambda o: latest_close >= o.price,
+                lambda o: self.sell_mkt(
+                    o.strategy_id, symbol, o.price, o.quantity, dtime
+                ),
+                "SELL LIMIT",
+                symbol,
+                dtime,
+            )
 
-                process_orders(
-                    "BSTP",
-                    lambda o: latest_close >= o.price,
-                    lambda o: self.buy_mkt(
-                        o.strategy_id, symbol, o.price, o.quantity, dtime
-                    ),
-                    "BUY STOP",
-                    symbol,
-                    dtime,
-                )
+            process_orders(
+                "BSTP",
+                lambda o: latest_close >= o.price,
+                lambda o: self.buy_mkt(
+                    o.strategy_id, symbol, o.price, o.quantity, dtime
+                ),
+                "BUY STOP",
+                symbol,
+                dtime,
+            )
 
-                process_orders(
-                    "SSTP",
-                    lambda o: latest_close <= o.price,
-                    lambda o: self.sell_mkt(
-                        o.strategy_id, symbol, o.price, o.quantity, dtime
-                    ),
-                    "SELL STOP",
-                    symbol,
-                    dtime,
-                )
+            process_orders(
+                "SSTP",
+                lambda o: latest_close <= o.price,
+                lambda o: self.sell_mkt(
+                    o.strategy_id, symbol, o.price, o.quantity, dtime
+                ),
+                "SELL STOP",
+                symbol,
+                dtime,
+            )
 
-                process_orders(
-                    "BSTPLMT",
-                    lambda o: latest_close >= o.price,
-                    lambda o: self.buy_limit(
-                        o.strategy_id, symbol, o.stoplimit, o.quantity, dtime
-                    ),
-                    "BUY STOP LIMIT",
-                    symbol,
-                    dtime,
-                )
+            process_orders(
+                "BSTPLMT",
+                lambda o: latest_close >= o.price,
+                lambda o: self.buy_limit(
+                    o.strategy_id, symbol, o.stoplimit, o.quantity, dtime
+                ),
+                "BUY STOP LIMIT",
+                symbol,
+                dtime,
+            )
 
-                process_orders(
-                    "SSTPLMT",
-                    lambda o: latest_close <= o.price,
-                    lambda o: self.sell_limit(
-                        o.strategy_id, symbol, o.stoplimit, o.quantity, dtime
-                    ),
-                    "SELL STOP LIMIT",
-                    symbol,
-                    dtime,
-                )
+            process_orders(
+                "SSTPLMT",
+                lambda o: latest_close <= o.price,
+                lambda o: self.sell_limit(
+                    o.strategy_id, symbol, o.stoplimit, o.quantity, dtime
+                ),
+                "SELL STOP LIMIT",
+                symbol,
+                dtime,
+            )
 
     @staticmethod
     def calculate_pct_change(current_price, lh_price) -> float:
@@ -803,13 +866,10 @@ class MT5Strategy(Strategy):
         elif len(prices) in range(2, self.max_trades[asset] + 1):
             price = np.mean(prices)
         if price is not None:
-            if (
-                position == 0
-                and self.calculate_pct_change(ask, price) >= th
-                or position == 1
-                and abs(self.calculate_pct_change(bid, price)) >= th
-            ):
-                return True
+            if position == 0: 
+                return self.calculate_pct_change(ask, price) >= th
+            elif position == 1:
+                return self.calculate_pct_change(bid, price) <= -th
         return False
 
     @staticmethod
@@ -834,9 +894,7 @@ class MT5Strategy(Strategy):
             dt_to : The converted datetime.
         """
         from_tz = pytz.timezone(from_tz)
-        if isinstance(dt, datetime):
-            dt = pd.to_datetime(dt, unit="s")
-        elif isinstance(dt, int):
+        if isinstance(dt, (datetime, int)):
             dt = pd.to_datetime(dt, unit="s")
         if dt.tzinfo is None:
             dt = dt.tz_localize(from_tz)
@@ -862,20 +920,35 @@ class MT5Strategy(Strategy):
         Returns:
             mt5_equivalent : The MetaTrader 5 equivalent symbols for the symbols in the list.
         """
+        
         account = Account(**kwargs)
         mt5_symbols = account.get_symbols(symbol_type=symbol_type)
         mt5_equivalent = []
-        if account.broker == AdmiralMarktsGroup():
+
+        def _get_admiral_symbols():
             for s in mt5_symbols:
                 _s = s[1:] if s[0] in string.punctuation else s
                 for symbol in symbols:
                     if _s.split(".")[0] == symbol or _s.split("_")[0] == symbol:
                         mt5_equivalent.append(s)
-        elif account.broker == PepperstoneGroupLimited():
-            for s in mt5_symbols:
+
+        def _get_pepperstone_symbols():
+             for s in mt5_symbols:
                 for symbol in symbols:
                     if s.split(".")[0] == symbol:
                         mt5_equivalent.append(s)
+
+        if account.broker == MetaQuotes():
+            if "Admiral" in account.server:
+                _get_admiral_symbols()
+            elif "Pepperstone" in account.server:
+                _get_pepperstone_symbols()
+
+        elif account.broker == AdmiralMarktsGroup():
+            _get_admiral_symbols()
+        elif account.broker == PepperstoneGroupLimited():
+            _get_pepperstone_symbols()
+
         return mt5_equivalent
 
 

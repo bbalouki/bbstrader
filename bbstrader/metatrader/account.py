@@ -1,19 +1,28 @@
 import os
 import re
 import urllib.request
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Any, Dict, List, Literal, Optional, Tuple, Union
 
+import numpy as np
 import pandas as pd
+from currency_converter import SINGLE_DAY_ECB_URL, CurrencyConverter
+from numpy.typing import NDArray
+
 from bbstrader.metatrader.utils import (
+    TIMEFRAMES,
     AccountInfo,
     BookInfo,
     InvalidBroker,
     OrderCheckResult,
     OrderSentResult,
+    RateDtype,
+    RateInfo,
     SymbolInfo,
     SymbolType,
     TerminalInfo,
+    TickDtype,
+    TickFlag,
     TickInfo,
     TradeDeal,
     TradeOrder,
@@ -21,7 +30,6 @@ from bbstrader.metatrader.utils import (
     TradeRequest,
     raise_mt5_error,
 )
-from currency_converter import SINGLE_DAY_ECB_URL, CurrencyConverter
 
 try:
     import MetaTrader5 as mt5
@@ -170,7 +178,7 @@ def check_mt5_connection(
         if account_info is not None:
             if account_info.login == login and account_info.server == server:
                 return True
-        
+
     init = False
     if path is None and (login or password or server):
         raise ValueError(
@@ -517,7 +525,7 @@ class Account(object):
         """Helper function to  print account info"""
         self._show_info(self.get_account_info, "account")
 
-    def get_terminal_info(self, show=False) -> Union[TerminalInfo, None]:
+    def get_terminal_info(self, show=False) -> TerminalInfo | None:
         """
         Get the connected MetaTrader 5 client terminal status and settings.
 
@@ -965,7 +973,7 @@ class Account(object):
                         futures_types["bonds"].append(info.name)
             return futures_types[category]
 
-    def get_symbol_info(self, symbol: str) -> Union[SymbolInfo, None]:
+    def get_symbol_info(self, symbol: str) -> SymbolInfo | None:
         """Get symbol properties
 
         Args:
@@ -998,6 +1006,14 @@ class Account(object):
             msg = self._symbol_info_msg(symbol)
             raise_mt5_error(message=f"{str(e)} {msg}")
 
+    def _symbol_info_msg(self, symbol):
+        return (
+            f"No history found for {symbol} in Market Watch.\n"
+            f"* Ensure {symbol} is selected and displayed in the Market Watch window.\n"
+            f"* See https://www.metatrader5.com/en/terminal/help/trading/market_watch\n"
+            f"* Ensure the symbol name is correct.\n"
+        )
+
     def show_symbol_info(self, symbol: str):
         """
         Print symbol properties
@@ -1007,15 +1023,7 @@ class Account(object):
         """
         self._show_info(self.get_symbol_info, "symbol", symbol=symbol)
 
-    def _symbol_info_msg(self, symbol):
-        return (
-            f"No history found for {symbol} in Market Watch.\n"
-            f"* Ensure {symbol} is selected and displayed in the Market Watch window.\n"
-            f"* See https://www.metatrader5.com/en/terminal/help/trading/market_watch\n"
-            f"* Ensure the symbol name is correct.\n"
-        )
-
-    def get_tick_info(self, symbol: str) -> Union[TickInfo, None]:
+    def get_tick_info(self, symbol: str) -> TickInfo | None:
         """Get symbol tick properties
 
         Args:
@@ -1057,7 +1065,148 @@ class Account(object):
         """
         self._show_info(self.get_tick_info, "tick", symbol=symbol)
 
-    def get_market_book(self, symbol: str) -> Union[Tuple[BookInfo], None]:
+    def get_rate_info(self, symbol: str, timeframe: str = "1m") -> RateInfo | None:
+        """Get the most recent bar for a specified symbol and timeframe.
+
+        Args:
+            symbol (str): The symbol for which to get the rate information.
+            timeframe (str): The timeframe for the rate information. Default is '1m'.
+                            See ``bbstrader.metatrader.utils.TIMEFRAMES`` for supported timeframes.
+        Returns:
+            RateInfo: The most recent bar as a RateInfo named tuple.
+            None: If no rates are found or an error occurs.
+        Raises:
+            MT5TerminalError: A specific exception based on the error code.
+        """
+        rates = mt5.copy_rates_from_pos(symbol, TIMEFRAMES[timeframe], 0, 1)
+        if rates is None or len(rates) == 0:
+            return None
+        rate = rates[0]
+        return RateInfo(*rate)
+
+    def get_rates_from_pos(
+        self, symbol: str, timeframe: str, start_pos: int = 0, bars: int = 1
+    ) -> NDArray[np.void]:
+        """
+        Get bars from the MetaTrader 5 terminal starting from the specified index.
+
+        Args:
+            symbol: Financial instrument name, for example, "EURUSD"
+            timeframe: Timeframe the bars are requested for.
+            start_pos: Initial index of the bar the data are requested from.
+            bars: Number of bars to receive.
+
+        Returns:
+            bars as the numpy array with the named time, open, high, low, close, tick_volume, spread and real_volume columns.
+            Returns an empty array in case of an error.
+        """
+        rates = mt5.copy_rates_from_pos(symbol, TIMEFRAMES[timeframe], start_pos, bars)
+        if rates is None or len(rates) == 0:
+            return np.array([], dtype=RateDtype)
+        return rates
+
+    def get_rates_from_date(
+        self,
+        symbol: str,
+        timeframe: str,
+        date_from: datetime | pd.Timestamp,
+        bars: int = 1,
+    ) -> NDArray[np.void]:
+        """
+        Get bars from the MetaTrader 5 terminal starting from the specified date.
+
+        Args:
+            symbol: Financial instrument name, for example, "EURUSD"
+            timeframe: Timeframe the bars are requested for.
+            date_from: Date of opening of the first bar from the requested sample.
+            bars: Number of bars to receive.
+
+        Returns:
+            bars as the numpy array with the named time, open, high, low, close, tick_volume, spread and real_volume columns.
+            Returns an empty array in case of an error.
+
+        """
+        rates = mt5.copy_rates_from(symbol, TIMEFRAMES[timeframe], date_from, bars)
+        if rates is None or len(rates) == 0:
+            return np.array([], dtype=RateDtype)
+        return rates
+
+    def get_rates_range(
+        self,
+        symbol: str,
+        timeframe: str,
+        date_from: datetime | pd.Timestamp,
+        date_to: datetime | pd.Timestamp = datetime.now(),
+    ) -> NDArray[np.void]:
+        """
+        Get bars in the specified date range from the MetaTrader 5 terminal.
+
+        Args:
+            symbol: Financial instrument name, for example, "EURUSD"
+            timeframe: Timeframe the bars are requested for.
+            date_from: Date the bars are requested from.
+            date_to: Date, up to which the bars are requested.
+
+        Returns:
+            bars as the numpy array with the named time, open, high, low, close, tick_volume, spread and real_volume columns.
+            Returns an empty array in case of an error.
+        """
+        rates = mt5.copy_rates_range(symbol, TIMEFRAMES[timeframe], date_from, date_to)
+        if rates is None or len(rates) == 0:
+            return np.array([], dtype=RateDtype)
+        return rates
+
+    def get_tick_from_date(
+        self,
+        symbol: str,
+        date_from: datetime | pd.Timestamp,
+        ticks: int = 1,
+        flag: Literal["all", "info", "trade"] = "all",
+    ) -> NDArray[np.void]:
+        """
+        Get ticks from the MetaTrader 5 terminal starting from the specified date.
+
+        Args:
+            symbol: Financial instrument name, for example, "EURUSD"
+            date_from: Date the ticks are requested from.
+            ticks: Number of bars to receive.
+            flag: A flag to define the type of the requested ticks ("all", "info", "trade").
+
+        Returns:
+            Returns ticks as the numpy array with the named time, bid, ask, last and flags columns.
+            Return an empty array in case of an error.
+        """
+        ticks_data = mt5.copy_ticks_from(symbol, date_from, ticks, TickFlag[flag])
+        if ticks_data is None or len(ticks_data) == 0:
+            return np.array([], dtype=TickDtype)
+        return ticks_data
+
+    def get_tick_range(
+        self,
+        symbol: str,
+        date_from: datetime | pd.Timestamp,
+        date_to: datetime | pd.Timestamp = datetime.now(),
+        flag: Literal["all", "info", "trade"] = "all",
+    ) -> NDArray[np.void]:
+        """
+        Get ticks for the specified date range from the MetaTrader 5 terminal.
+
+        Args:
+            symbol: Financial instrument name, for example, "EURUSD"
+            date_from: Date the ticks are requested from.
+            date_to: Date, up to which the ticks are requested.
+            flag: A flag to define the type of the requested ticks ("all", "info", "trade").
+
+        Returns:
+            Returns ticks as the numpy array with the named time, bid, ask, last and flags columns.
+            Return an empty array in case of an error.
+        """
+        ticks_data = mt5.copy_ticks_range(symbol, date_from, date_to, TickFlag[flag])
+        if ticks_data is None or len(ticks_data) == 0:
+            return np.array([], dtype=TickDtype)
+        return ticks_data
+
+    def get_market_book(self, symbol: str) -> Tuple[BookInfo]:
         """
         Get the Market Depth content for a specific symbol.
         Args:
@@ -1074,7 +1223,7 @@ class Account(object):
         try:
             book = mt5.market_book_get(symbol)
             return (
-                None
+                tuple()
                 if book is None
                 else tuple([BookInfo(**entry._asdict()) for entry in book])
             )
@@ -1199,7 +1348,7 @@ class Account(object):
         group: Optional[str] = None,
         ticket: Optional[int] = None,
         to_df: bool = False,
-    ) -> Union[pd.DataFrame, Tuple[TradePosition], None]:
+    ) -> Union[pd.DataFrame, Tuple[TradePosition]]:
         """
         Get open positions with the ability to filter by symbol or ticket.
         There are four call options:
@@ -1229,7 +1378,6 @@ class Account(object):
         Returns:
             Union[pd.DataFrame, Tuple[TradePosition], None]:
             - `TradePosition` in the form of a named tuple structure (namedtuple) or pd.DataFrame.
-            - `None` in case of an error.
 
         Notes:
             The method allows receiving all open positions within a specified period.
@@ -1262,7 +1410,7 @@ class Account(object):
             positions = mt5.positions_get()
 
         if positions is None or len(positions) == 0:
-            return None
+            return pd.DataFrame() if to_df else tuple()
         if to_df:
             df = pd.DataFrame(list(positions), columns=positions[0]._asdict())
             df["time"] = pd.to_datetime(df["time"], unit="s")
@@ -1285,7 +1433,7 @@ class Account(object):
         position: Optional[int] = None,  # TradePosition.ticket
         to_df: bool = True,
         save: bool = False,
-    ) -> Union[pd.DataFrame, Tuple[TradeDeal], None]:
+    ) -> Union[pd.DataFrame, Tuple[TradeDeal]]:
         """
         Get deals from trading history within the specified interval
         with the ability to filter by `ticket` or `position`.
@@ -1323,7 +1471,6 @@ class Account(object):
         Returns:
             Union[pd.DataFrame, Tuple[TradeDeal], None]:
             - `TradeDeal` in the form of a named tuple structure (namedtuple) or pd.DataFrame().
-            - `None` in case of an error.
 
         Notes:
             The method allows receiving all history orders within a specified period.
@@ -1366,7 +1513,7 @@ class Account(object):
             position_deals = mt5.history_deals_get(date_from, date_to)
 
         if position_deals is None or len(position_deals) == 0:
-            return None
+            return pd.DataFrame() if to_df else tuple()
 
         df = pd.DataFrame(list(position_deals), columns=position_deals[0]._asdict())
         df["time"] = pd.to_datetime(df["time"], unit="s")
@@ -1413,7 +1560,6 @@ class Account(object):
         Returns:
             Union[pd.DataFrame, Tuple[TradeOrder], None]:
             - `TradeOrder` in the form of a named tuple structure (namedtuple) or pd.DataFrame().
-            - `None` in case of an error.
 
         Notes:
             The method allows receiving all history orders within a specified period.
@@ -1443,7 +1589,7 @@ class Account(object):
             orders = mt5.orders_get()
 
         if orders is None or len(orders) == 0:
-            return None
+            return pd.DataFrame() if to_df else tuple()
 
         if to_df:
             df = pd.DataFrame(list(orders), columns=orders[0]._asdict())
@@ -1478,7 +1624,7 @@ class Account(object):
         position: Optional[int] = None,  # position ticket
         to_df: bool = True,
         save: bool = False,
-    ) -> Union[pd.DataFrame, Tuple[TradeOrder], None]:
+    ) -> Union[pd.DataFrame, Tuple[TradeOrder]]:
         """
         Get orders from trading history within the specified interval
         with the ability to filter by `ticket` or `position`.
@@ -1516,7 +1662,6 @@ class Account(object):
         Returns:
             Union[pd.DataFrame, Tuple[TradeOrder], None]
             - `TradeOrder` in the form of a named tuple structure (namedtuple) or pd.DataFrame().
-            - `None` in case of an error.
 
         Notes:
             The method allows receiving all history orders within a specified period.
@@ -1558,7 +1703,7 @@ class Account(object):
             history_orders = mt5.history_orders_get(date_from, date_to)
 
         if history_orders is None or len(history_orders) == 0:
-            return None
+            return pd.DataFrame() if to_df else tuple()
 
         df = pd.DataFrame(list(history_orders), columns=history_orders[0]._asdict())
         df.drop(
@@ -1597,16 +1742,11 @@ class Account(object):
         Returns:
             List[TradeDeal]: List of today deals
         """
-        date_from = datetime.now() - timedelta(days=2)
-        history = (
-            self.get_trades_history(date_from=date_from, group=group, to_df=False) or []
-        )
+        history = self.get_trades_history(group=group, to_df=False) or []
         positions_ids = set([deal.position_id for deal in history if deal.magic == id])
         today_deals = []
         for position in positions_ids:
-            deal = self.get_trades_history(
-                date_from=date_from, position=position, to_df=False
-            )
+            deal = self.get_trades_history(position=position, to_df=False) or []
             if deal is not None and len(deal) == 2:
                 deal_time = datetime.fromtimestamp(deal[1].time)
                 if deal_time.date() == datetime.now().date():

@@ -4,17 +4,15 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-from bbstrader.metatrader.account import check_mt5_connection
+from bbstrader.metatrader.account import check_mt5_connection, shutdown_mt5
 from bbstrader.metatrader.utils import TIMEFRAMES
 
 sns.set_theme()
 
 
-def _get_data(path, symbol, timeframe, bars):
-    check_mt5_connection(path=path)
+def _get_data(symbol, timeframe, bars):
     rates = mt5.copy_rates_from_pos(symbol, timeframe, 0, bars)
     df = pd.DataFrame(rates)
-    df["time"] = pd.to_datetime(df["time"], unit="s")
     return df
 
 
@@ -76,10 +74,14 @@ def display_volume_profile(
     Returns:
         None: Displays a matplotlib chart of the volume profile.
     """
-    df = _get_data(path, symbol, TIMEFRAMES[timeframe], bars)
+    check_mt5_connection(path=path)
+    df = _get_data(symbol, TIMEFRAMES[timeframe], bars)
+    if df.empty:
+        raise ValueError(f"No data found for {symbol} in {path}")
     hist, bin_edges, bin_centers = volume_profile(df, bins)
     poc, vah, val = value_area(hist, bin_centers, va_percentage)
     current_price = mt5.symbol_info_tick(symbol).bid
+    shutdown_mt5()
 
     plt.figure(figsize=(6, 10))
     plt.barh(bin_centers, hist, height=bin_centers[1] - bin_centers[0], color="skyblue")

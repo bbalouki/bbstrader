@@ -85,7 +85,7 @@ To begin using `bbstrader`, please ensure your system meets the following prereq
 *   **MetaTrader 5 (MT5)**:
     *   The MetaTrader 5 platform must be installed on your system (primarily for Windows users needing live trading or direct MT5 interaction).
     *   An active trading account with a MetaTrader 5 broker. `bbstrader` currently supports:
-        *   [Admirals Group AS](https://cabinet.a-partnership.com/visit/?bta=35537&brand=admiralmarkets) (for Stocks, ETFs, Indices, Commodities, Futures, Forex)
+        *   [Admirals Group AS](https://one.justmarkets.link/a/tufvj0xugm/registration/trader) (for Stocks, ETFs, Indices, Commodities, Futures, Forex)
         *   [Just Global Markets Ltd.](https://one.justmarkets.link/a/tufvj0xugm/registration/trader) (for Stocks, Crypto, Indices, Commodities, Forex)
         *   [FTMO](https://trader.ftmo.com/?affiliates=JGmeuQqepAZLMcdOEQRp) (Proprietary Firm)
 

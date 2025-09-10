@@ -192,8 +192,8 @@ class Mt5ExecutionEngine:
         show_positions_orders: bool = False,
         iter_time: int | float = 5,
         use_trade_time: bool = True,
-        period: Literal["24/7", "day", "week", "month"] = "week",
-        period_end_action: Literal["break", "sleep"] = "break",
+        period: Literal["24/7", "day", "week", "month"] = "month",
+        period_end_action: Literal["break", "sleep"] = "sleep",
         closing_pnl: Optional[float] = None,
         trading_days: Optional[List[str]] = None,
         comment: Optional[str] = None,
@@ -631,12 +631,12 @@ class Mt5ExecutionEngine:
     def _update_risk(self, weights):
         try:
             check_mt5_connection(**self.kwargs)
-            if weights is not None:
+            if weights is not None and not all(v == 0 for v in weights.values()):
+                assert self.daily_risk is not None
                 for symbol in self.symbols:
                     if symbol not in weights:
                         continue
                     trade = self.trades_instances[symbol]
-                    assert self.daily_risk is not None
                     dailydd = round(weights[symbol] * self.daily_risk, 5)
                     trade.dailydd = dailydd
         except Exception as e:
@@ -930,7 +930,6 @@ class Mt5ExecutionEngine:
             return
 
         if not signals:
-            logger.info("No signals to process.")
             return
 
         # We want to create a temporary function that
@@ -994,14 +993,12 @@ class Mt5ExecutionEngine:
                 self._sleep()
                 self._handle_period_end_actions(today)
             except KeyboardInterrupt:
-                logger.info(
-                    f"Stopping Execution Engine for {self.STRATEGY} STRATEGY on {self.ACCOUNT} Account"
-                )
                 self.stop()
                 sys.exit(0)
             except Exception as e:
                 msg = f"Running Execution Engine, STRATEGY={self.STRATEGY} , ACCOUNT={self.ACCOUNT}"
                 self._print_exc(msg, e)
+                self._sleep()
 
     def stop(self):
         """Stops the execution engine."""
@@ -1038,6 +1035,10 @@ def RunMt5Engine(account_id: str, **kwargs):
             symbol_list, trades_instances, strategy_cls, **kwargs
         )
         engine.run()
+    except KeyboardInterrupt:
+        log.info(f"Execution engine for {account_id} interrupted by user")
+        engine.stop()
+        sys.exit(0)
     except Exception as e:
         log.exception(f"Error running execution engine for {account_id}: {e}")
     finally:

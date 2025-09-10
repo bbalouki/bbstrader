@@ -468,7 +468,7 @@ License
 ``bbstrader`` is open source and available under the MIT License.
 
 .. _Dcoumentation: https://bbstrader.readthedocs.io/en/latest/index.html
-.. _Admirals Group AS: https://cabinet.a-partnership.com/visit/?bta=35537&brand=admiralmarkets
+.. _Admirals Group AS: https://one.justmarkets.link/a/tufvj0xugm/registration/trader
 .. _Just Global Markets Ltd.: https://one.justmarkets.link/a/tufvj0xugm/registration/trader
 .. _FTMO: https://trader.ftmo.com/?affiliates=JGmeuQqepAZLMcdOEQRp
 .. _View the Full Documentation on ReadTheDocs: https://bbstrader.readthedocs.io/en/latest/

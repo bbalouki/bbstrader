@@ -572,6 +572,8 @@ class TradeCopier(object):
                 f"Modify {ORDER_TYPE[source_order.type][1]} Order #{ticket} on @{destination.get('login')}::{symbol}, "
                 f"SOURCE=@{self.source.get('login')}::{source_order.symbol}"
             )
+        if result.retcode == Mt5.TRADE_RETCODE_NO_CHANGES:
+            return
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
             self.log_message(
                 f"Error modifying {ORDER_TYPE[source_order.type][1]} Order #{ticket} on @{destination.get('login')}::{symbol},"
@@ -624,6 +626,8 @@ class TradeCopier(object):
                 f"Modify {ORDER_TYPE[source_pos.type][1]} Position #{ticket} on @{destination.get('login')}::{symbol}, "
                 f"SOURCE=@{self.source.get('login')}::{source_pos.symbol}"
             )
+        if result.retcode == Mt5.TRADE_RETCODE_NO_CHANGES:
+            return
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
             self.log_message(
                 f"Error modifying {ORDER_TYPE[source_pos.type][1]} Position #{ticket} on @{destination.get('login')}::{symbol}, "

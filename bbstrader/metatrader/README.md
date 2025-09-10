@@ -28,8 +28,8 @@ Understanding the high entry barriers in traditional asset trading, this module 
 ## Installation
 
 Before you can use the MT5 Trading Module, you need to have MetaTrader 5 (MT5) installed on your computer and an active MT5 trading account. 
-This Module currenlty support two brokers, [Admirals Group AS](https://cabinet.a-partnership.com/visit/?bta=35537&brand=admiralmarkets) and [Just Global Markets Ltd.](https://one.justmarkets.link/a/tufvj0xugm/registration/trader), so you need to create a demo or live account with one of them.
-* If you want to trade `Stocks`, `ETFs`, `Indices`, `Commodities`, `Futures`, and `Forex`, [click here](https://cabinet.a-partnership.com/visit/?bta=35537&brand=admiralmarkets)
+This Module currenlty support two brokers, [Admirals Group AS](https://one.justmarkets.link/a/tufvj0xugm/registration/trader) and [Just Global Markets Ltd.](https://one.justmarkets.link/a/tufvj0xugm/registration/trader), so you need to create a demo or live account with one of them.
+* If you want to trade `Stocks`, `ETFs`, `Indices`, `Commodities`, `Futures`, and `Forex`, [click here](https://one.justmarkets.link/a/tufvj0xugm/registration/trader)
 * If you want to trade `Stocks`, `Crypto`, `indices`, `Commodities`, and `Forex`, [click here](https://one.justmarkets.link/a/tufvj0xugm/registration/trader)
 * If you are looking for a prop firm, [click here](https://trader.ftmo.com/?affiliates=JGmeuQqepAZLMcdOEQRp).
 Then, you can install `bbstrader` using pip:
