@@ -141,18 +141,19 @@ def send_news_feed(unknown):
 
     nltk.download("punkt", quiet=True)
     news = FinancialNews()
+    fmp_news = news.get_fmp_news(api=args.fmp) if args.fmp else None
     logger.info(f"Starting the News Feed on {args.interval} minutes")
     while True:
         try:
             fmp_articles = []
-            coindesk_articles = news.get_coindesk_news(query=args.query)
-            if args.fmp:
+            if fmp_news is not None:
                 start = datetime.now() - timedelta(minutes=args.interval)
                 start = start.strftime("%Y-%m-%d %H:%M:%S")
                 end = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                fmp_articles = news.get_fmp_news(api=args.fmp).get_latest_articles(
+                fmp_articles = fmp_news.get_latest_articles(
                     save=True, start=start, end=end
                 )
+            coindesk_articles = news.get_coindesk_news(query=args.query)
             if len(coindesk_articles) != 0:
                 asyncio.run(
                     send_articles(
