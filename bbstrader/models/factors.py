@@ -1,8 +1,9 @@
 from datetime import datetime
-from typing import Dict, List
+from typing import Dict, List, Literal
 
 import pandas as pd
 import yfinance as yf
+from loguru import logger
 
 from bbstrader.btengine.data import EODHDataHandler, FMPDataHandler
 from bbstrader.metatrader.rates import download_historical_data
@@ -15,6 +16,7 @@ from bbstrader.tseries import (
 __all__ = [
     "search_coint_candidate_pairs",
 ]
+
 
 def _download_and_process_data(source, tickers, start, end, tf, path, **kwargs):
     """Download and process data for a list of tickers from the specified source."""
@@ -43,9 +45,7 @@ def _download_and_process_data(source, tickers, start, end, tf, path, **kwargs):
                 )
                 data = data.drop(columns=["adj_close"], axis=1)
             elif source in ["fmp", "eodhd"]:
-                handler_class = (
-                    FMPDataHandler if source == "fmp" else EODHDataHandler
-                )
+                handler_class = FMPDataHandler if source == "fmp" else EODHDataHandler
                 handler = handler_class(events=None, symbol_list=[ticker], **kwargs)
                 data = handler.data[ticker]
             else:
@@ -62,6 +62,7 @@ def _download_and_process_data(source, tickers, start, end, tf, path, **kwargs):
 
     return pd.concat(data_list)
 
+
 def _handle_date_range(start, end, window):
     """Handle start and end date generation."""
     if start is None or end is None:
@@ -72,6 +73,7 @@ def _handle_date_range(start, end, window):
             + pd.DateOffset(days=1)
         ).strftime("%Y-%m-%d")
     return start, end
+
 
 def _period_search(start, end, securities, candidates, window, npairs):
     if window < 3 or (pd.Timestamp(end) - pd.Timestamp(start)).days / 365 < 3:
@@ -103,14 +105,11 @@ def _period_search(start, end, securities, candidates, window, npairs):
         )
     return top_pairs.head(npairs * 2)
 
+
 def _process_asset_data(securities, candidates, universe, rolling_window):
     """Process and select assets from the data."""
-    securities = select_assets(
-        securities, n=universe, rolling_window=rolling_window
-    )
-    candidates = select_assets(
-        candidates, n=universe, rolling_window=rolling_window
-    )
+    securities = select_assets(securities, n=universe, rolling_window=rolling_window)
+    candidates = select_assets(candidates, n=universe, rolling_window=rolling_window)
     return securities, candidates
 
 
@@ -121,7 +120,7 @@ def search_coint_candidate_pairs(
     end: str = None,
     period_search: bool = False,
     select: bool = True,
-    source: str = None,
+    source: Literal["yf", "mt5", "fmp", "eodhd"] = None,
     universe: int = 100,
     window: int = 2,
     rolling_window: int = None,
@@ -257,7 +256,9 @@ def search_coint_candidate_pairs(
         if period_search:
             start = securities.index.get_level_values("date").min()
             end = securities.index.get_level_values("date").max()
-            top_pairs = _period_search(start, end, securities, candidates, window, npairs)
+            top_pairs = _period_search(
+                start, end, securities, candidates, window, npairs
+            )
         else:
             top_pairs = find_cointegrated_pairs(
                 securities, candidates, n=npairs, coint=True
@@ -286,6 +287,10 @@ def search_coint_candidate_pairs(
         candidates_data = _download_and_process_data(
             source, candidates, start, end, tf, path, **kwargs
         )
+        if securities_data.empty or candidates_data.empty:
+            logger.error("No data found for candidates and securities")
+            return [] if select else pd.DataFrame()
+
         securities_data = securities_data.set_index(["ticker", "date"])
         candidates_data = candidates_data.set_index(["ticker", "date"])
         securities_data, candidates_data = _process_asset_data(
@@ -305,7 +310,6 @@ def search_coint_candidate_pairs(
             )
         else:
             return top_pairs
-
     else:
         msg = (
             "Invalid input. Either provide securities"

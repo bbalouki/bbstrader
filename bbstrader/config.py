@@ -3,22 +3,6 @@ from pathlib import Path
 from typing import List
 
 
-TERMINAL = "/terminal64.exe"
-BASE_FOLDER = "C:/Program Files/"
-
-AMG_PATH = BASE_FOLDER + "Admirals Group MT5 Terminal" + TERMINAL
-PGL_PATH = BASE_FOLDER + "Pepperstone MetaTrader 5" + TERMINAL
-FTMO_PATH = BASE_FOLDER + "FTMO MetaTrader 5" + TERMINAL
-JGM_PATH = BASE_FOLDER + "JustMarkets MetaTrader 5" + TERMINAL
-
-BROKERS_PATHS = {
-    "AMG": AMG_PATH,
-    "FTMO": FTMO_PATH,
-    "PGL": PGL_PATH,
-    "JGM": JGM_PATH,
-}
-
-
 def get_config_dir(name: str = ".bbstrader") -> Path:
     """
     Get the path to the configuration directory.
