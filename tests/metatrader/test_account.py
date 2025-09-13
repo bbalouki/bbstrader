@@ -3,6 +3,7 @@ from datetime import datetime
 from io import StringIO
 from unittest.mock import MagicMock, patch
 
+import numpy as np
 import pandas as pd
 
 from bbstrader.metatrader.account import (
@@ -24,6 +25,11 @@ from bbstrader.metatrader.utils import (
     SymbolInfo,
     SymbolType,
     TerminalInfo,
+    TIMEFRAMES,
+    TickDtype,
+    TickFlag,
+    RateDtype,
+    RateInfo,
     TickInfo,
     TradeDeal,
     TradeOrder,
@@ -1629,6 +1635,135 @@ class TestAccount(unittest.TestCase):
         )
         self.assertEqual(self.account.maxbars, 50000)
 
+    def test_get_rate_info_success(self):
+        mock_rate = (1678886400, 1.1, 1.1005, 1.0995, 1.1, 100, 1, 1000)
+        self.mock_mt5.copy_rates_from_pos.return_value = [mock_rate]
+        rate_info = self.account.get_rate_info("EURUSD", "1m")
+        self.assertIsNotNone(rate_info)
+        self.assertIsInstance(rate_info, RateInfo)
+        self.assertEqual(rate_info.time, 1678886400)
+        self.mock_mt5.copy_rates_from_pos.assert_called_once_with(
+            "EURUSD", TIMEFRAMES["1m"], 0, 1
+        )
+
+    def test_get_rate_info_failure(self):
+        self.mock_mt5.copy_rates_from_pos.return_value = None
+        rate_info = self.account.get_rate_info("EURUSD", "1m")
+        self.assertIsNone(rate_info)
+
+    def test_get_rates_from_pos_success(self):
+        mock_rates = np.array(
+            [
+                (1678886400, 1.1, 1.1005, 1.0995, 1.1, 100, 1, 1000),
+                (1678886460, 1.1, 1.1010, 1.0998, 1.1005, 120, 1, 1200),
+            ],
+            dtype=RateDtype,
+        )
+        self.mock_mt5.copy_rates_from_pos.return_value = mock_rates
+        rates = self.account.get_rates_from_pos("EURUSD", "1m", 0, 2)
+        self.assertIsNotNone(rates)
+        self.assertEqual(len(rates), 2)
+        self.assertEqual(rates[0]["time"], 1678886400)
+        self.mock_mt5.copy_rates_from_pos.assert_called_once_with(
+            "EURUSD", TIMEFRAMES["1m"], 0, 2
+        )
+
+    def test_get_rates_from_pos_failure(self):
+        self.mock_mt5.copy_rates_from_pos.return_value = None
+        rates = self.account.get_rates_from_pos("EURUSD", "1m", 0, 2)
+        self.assertEqual(len(rates), 0)
+
+    def test_get_rates_from_date_success(self):
+        date_from = datetime(2023, 3, 15)
+        mock_rates = np.array(
+            [
+                (1678886400, 1.1, 1.1005, 1.0995, 1.1, 100, 1, 1000),
+            ],
+            dtype=RateDtype,
+        )
+        self.mock_mt5.copy_rates_from.return_value = mock_rates
+        rates = self.account.get_rates_from_date("EURUSD", "1m", date_from, 1)
+        self.assertIsNotNone(rates)
+        self.assertEqual(len(rates), 1)
+        self.mock_mt5.copy_rates_from.assert_called_once_with(
+            "EURUSD", TIMEFRAMES["1m"], date_from, 1
+        )
+
+    def test_get_rates_from_date_failure(self):
+        date_from = datetime(2023, 3, 15)
+        self.mock_mt5.copy_rates_from.return_value = None
+        rates = self.account.get_rates_from_date("EURUSD", "1m", date_from, 1)
+        self.assertEqual(len(rates), 0)
+
+    def test_get_rates_range_success(self):
+        date_from = datetime(2023, 3, 15)
+        date_to = datetime(2023, 3, 16)
+        mock_rates = np.array(
+            [
+                (1678886400, 1.1, 1.1005, 1.0995, 1.1, 100, 1, 1000),
+            ],
+            dtype=RateDtype,
+        )
+        self.mock_mt5.copy_rates_range.return_value = mock_rates
+        rates = self.account.get_rates_range("EURUSD", "1m", date_from, date_to)
+        self.assertIsNotNone(rates)
+        self.assertEqual(len(rates), 1)
+        self.mock_mt5.copy_rates_range.assert_called_once_with(
+            "EURUSD", TIMEFRAMES["1m"], date_from, date_to
+        )
+
+    def test_get_rates_range_failure(self):
+        date_from = datetime(2023, 3, 15)
+        date_to = datetime(2023, 3, 16)
+        self.mock_mt5.copy_rates_range.return_value = None
+        rates = self.account.get_rates_range("EURUSD", "1m", date_from, date_to)
+        self.assertEqual(len(rates), 0)
+
+    def test_get_tick_from_date_success(self):
+        date_from = datetime(2023, 3, 15)
+        mock_ticks = np.array(
+            [
+                (1678886400, 1.1, 1.1005, 1.0995, 10, 1678886400000, 4, 10.0),
+            ],
+            dtype=TickDtype,
+        )
+        self.mock_mt5.copy_ticks_from.return_value = mock_ticks
+        ticks = self.account.get_tick_from_date("EURUSD", date_from, 1)
+        self.assertIsNotNone(ticks)
+        self.assertEqual(len(ticks), 1)
+        self.mock_mt5.copy_ticks_from.assert_called_once_with(
+            "EURUSD", date_from, 1, TickFlag["all"]
+        )
+
+    def test_get_tick_from_date_failure(self):
+        date_from = datetime(2023, 3, 15)
+        self.mock_mt5.copy_ticks_from.return_value = None
+        ticks = self.account.get_tick_from_date("EURUSD", date_from, 1)
+        self.assertEqual(len(ticks), 0)
+
+    def test_get_tick_range_success(self):
+        date_from = datetime(2023, 3, 15)
+        date_to = datetime(2023, 3, 16)
+        mock_ticks = np.array(
+            [
+                (1678886400, 1.1, 1.1005, 1.0995, 10, 1678886400000, 4, 10.0),
+            ],
+            dtype=TickDtype,
+        )
+        self.mock_mt5.copy_ticks_range.return_value = mock_ticks
+        ticks = self.account.get_tick_range("EURUSD", date_from, date_to)
+        self.assertIsNotNone(ticks)
+        self.assertEqual(len(ticks), 1)
+        self.mock_mt5.copy_ticks_range.assert_called_once_with(
+            "EURUSD", date_from, date_to, TickFlag["all"]
+        )
+
+    def test_get_tick_range_failure(self):
+        date_from = datetime(2023, 3, 15)
+        date_to = datetime(2023, 3, 16)
+        self.mock_mt5.copy_ticks_range.return_value = None
+        ticks = self.account.get_tick_range("EURUSD", date_from, date_to)
+        self.assertEqual(len(ticks), 0)
 
 if __name__ == "__main__":
     unittest.main()
