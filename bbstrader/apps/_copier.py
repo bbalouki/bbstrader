@@ -431,7 +431,7 @@ class TradeCopierApp(object):
                 or not dest["path"].get()
             ):
                 messagebox.showerror(
-                    "Error", f"Destination account {i+1} details are incomplete."
+                    "Error", f"Destination account {i + 1} details are incomplete."
                 )
                 return False
             if (
@@ -440,7 +440,7 @@ class TradeCopierApp(object):
             ):
                 messagebox.showerror(
                     "Error",
-                    f"Value is required for mode '{dest['mode'].get()}' in Destination {i+1}.",
+                    f"Value is required for mode '{dest['mode'].get()}' in Destination {i + 1}.",
                 )
                 return False
             try:
@@ -451,7 +451,7 @@ class TradeCopierApp(object):
             except ValueError:
                 messagebox.showerror(
                     "Error",
-                    f"Invalid Value or Slippage for Destination {i+1}. "
+                    f"Invalid Value or Slippage for Destination {i + 1}. "
                     "Must be a number (Slippage must be an integer).",
                 )
                 return False
