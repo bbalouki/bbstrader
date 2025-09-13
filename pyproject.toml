@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools>=64.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bbstrader"
+version = "0.3.5"
+authors = [
+    { name = "Bertin Balouki SIMYELI", email = "bertin@bbstrader.com" },
+]
+maintainers = [
+    { name = "Bertin Balouki SIMYELI", email = "bertin@bbstrader.com" },
+]
+description = "Simplified Investment & Trading Toolkit"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12"
+keywords = [
+    "Finance", "Toolkit", "Financial", "Analysis", "Fundamental", "Quantitative",
+    "Database", "Equities", "Currencies", "Economics", "ETFs", "Funds",
+    "Indices", "Moneymarkets", "Commodities", "Futures", "CFDs", "Derivatives",
+    "Trading", "Investing", "Portfolio", "Optimization", "Performance",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Financial and Insurance Industry",
+    "Topic :: Office/Business :: Financial :: Investment",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+]
+dynamic = ["dependencies"]
+
+[project.urls]
+"Homepage" = "https://github.com/bbalouki/bbstrader"
+"Download" = "https://pypi.org/project/bbstrader/"
+"Documentation" = "https://bbstrader.readthedocs.io/en/latest/"
+"Source Code" = "https://github.com/bbalouki/bbstrader"
+
+[project.scripts]
+bbstrader = "bbstrader.__main__:main"
+
+[project.optional-dependencies]
+MT5 = ["MetaTrader5"]
+
+[tool.setuptools.packages.find]
+
+[tool.setuptools.dynamic]
+dependencies = { file = ["requirements.txt"] }
