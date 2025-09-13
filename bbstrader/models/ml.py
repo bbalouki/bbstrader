@@ -1,5 +1,6 @@
 import os
 import warnings
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from itertools import product
 from time import time
 
@@ -7,7 +8,6 @@ import lightgbm as lgb
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import pandas_ta as ta
 import seaborn as sns
 import yfinance as yf
 from alphalens import performance as perf
@@ -22,15 +22,30 @@ from loguru import logger as log
 from scipy.stats import spearmanr
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 
+try:
+    # This is to fix posix import error in pandas_ta
+    # On windows systems
+    import posix  # noqa: F401
+except (ImportError, Exception):
+    import bbstrader.compat  # noqa: F401
+
+import pandas_ta as ta
+
 warnings.filterwarnings("ignore")
 
 __all__ = ["OneStepTimeSeriesSplit", "MultipleTimeSeriesCV", "LightGBModel"]
 
 
 class OneStepTimeSeriesSplit:
-    __author__ = "Stefan Jansen"
-    """Generates tuples of train_idx, test_idx pairs
-    Assumes the index contains a level labeled 'date'"""
+    """
+    Generates tuples of train_idx, test_idx pairs
+    Assumes the index contains a level labeled 'date'
+
+    References
+    ----------
+    Stefan Jansen (2020). Machine Learning for Algorithmic Trading - Second Edition.
+    Chapter 12, Boosting Your Trading Strategy.
+    """
 
     def __init__(self, n_splits=3, test_period_length=1, shuffle=False):
         self.n_splits = n_splits
@@ -62,11 +77,15 @@ class OneStepTimeSeriesSplit:
 
 
 class MultipleTimeSeriesCV:
-    __author__ = "Stefan Jansen"
     """
     Generates tuples of train_idx, test_idx pairs
     Assumes the MultiIndex contains levels 'symbol' and 'date'
     purges overlapping outcomes
+
+    References
+    ----------
+    Stefan Jansen (2020). Machine Learning for Algorithmic Trading - Second Edition.
+    Chapter 12, Boosting Your Trading Strategy.
     """
 
     def __init__(
@@ -187,7 +206,7 @@ class LightGBModel(object):
         # Compute Bollinger Bands using pandas_ta
         bb = ta.bbands(close, length=20)
         return pd.DataFrame(
-            {"bb_high": bb["BBU_20_2.0"], "bb_low": bb["BBL_20_2.0"]}, index=close.index
+            {"bb_high": bb["BBU_20_2.0_2.0"], "bb_low": bb["BBL_20_2.0_2.0"]}, index=close.index
         )
 
     def _compute_atr(self, stock_data):
@@ -235,26 +254,29 @@ class LightGBModel(object):
         return prices
 
     def download_boosting_data(self, tickers, start, end=None):
-        data = []
-        for ticker in tickers:
-            try:
-                prices = yf.download(
-                    ticker,
-                    start=start,
-                    end=end,
-                    progress=False,
-                    multi_level_index=False,
-                    auto_adjust=True,
-                )
-                if prices.empty:
-                    continue
-                prices["symbol"] = ticker
-                data.append(prices)
-            except:  # noqa: E722
-                continue
-        data = pd.concat(data)
+        try:
+            data = yf.download(
+                tickers,
+                start=start,
+                end=end,
+                progress=False,
+                auto_adjust=True,
+                threads=True,
+            )
+            if data.empty:
+                return pd.DataFrame()
+
+            data = (
+                data.stack(level=1).rename_axis(["Date", "symbol"]).reset_index(level=1)
+            )
+        except Exception as e:
+            self.logger.error(f"An error occurred during data download: {e}")
+            return pd.DataFrame()
+
+        # The rest of the data processing is the same as the original function
         if "Adj Close" in data.columns:
             data = data.drop(columns=["Adj Close"])
+
         data = (
             data.rename(columns={s: s.lower().replace(" ", "_") for s in data.columns})
             .set_index("symbol", append=True)
@@ -265,17 +287,11 @@ class LightGBModel(object):
         return data
 
     def download_metadata(self, tickers):
-        def clean_text_column(series: pd.Series) -> pd.Series:
-            return (
-                series.str.lower()
-                # use regex=False for literal string replacements
-                .str.replace("-", "", regex=False)
-                .str.replace("&", "and", regex=False)
-                .str.replace(" ", "_", regex=False)
-                .str.replace("__", "_", regex=False)
-            )
+        """
+        Downloads metadata for multiple tickers concurrently using a thread pool.
+        """
 
-        metadata = [
+        METADATA_KEYS = [
             "industry",
             "sector",
             "exchange",
@@ -296,7 +312,7 @@ class LightGBModel(object):
             "marketCap",
         ]
 
-        columns = {
+        COLUMN_MAP = {
             "industry": "industry",
             "sector": "sector",
             "exchange": "exchange",
@@ -316,22 +332,53 @@ class LightGBModel(object):
             "askSize": "asksize",
             "marketCap": "marketcap",
         }
-        data = []
-        for symbol in tickers:
+
+        def _clean_text_column(series: pd.Series) -> pd.Series:
+            """Helper function to clean text columns."""
+            return (
+                series.str.lower()
+                .str.replace("-", "", regex=False)
+                .str.replace("&", "and", regex=False)
+                .str.replace(" ", "_", regex=False)
+                .str.replace("__", "_", regex=False)
+            )
+
+        def _fetch_single_ticker_info(symbol):
+            """Worker function to fetch and process info for one ticker."""
             try:
-                symbol_info = yf.Ticker(symbol).info
-            except:  # noqa: E722
-                continue
-            infos = {}
-            for info in metadata:
-                infos[info] = symbol_info.get(info)
-            data.append(infos)
+                ticker_info = yf.Ticker(symbol).info
+                return {key: ticker_info.get(key) for key in METADATA_KEYS}
+            except Exception:
+                return None
+
+        data = []
+        with ThreadPoolExecutor(max_workers=20) as executor:
+            future_to_ticker = {
+                executor.submit(_fetch_single_ticker_info, ticker): ticker
+                for ticker in tickers
+            }
+
+            for future in as_completed(future_to_ticker):
+                result = future.result()
+                if result:
+                    data.append(result)
+
+        if not data:
+            return pd.DataFrame()
+
         metadata = pd.DataFrame(data)
-        metadata = metadata.rename(columns=columns)
-        metadata.dyield = metadata.dyield.fillna(0)
-        metadata.sector = clean_text_column(metadata.sector)
-        metadata.industry = clean_text_column(metadata.industry)
-        metadata = metadata.set_index("symbol")
+        metadata = metadata.rename(columns=COLUMN_MAP)
+
+        if "dyield" in metadata.columns:
+            metadata.dyield = metadata.dyield.fillna(0)
+        if "sector" in metadata.columns:
+            metadata.sector = _clean_text_column(metadata.sector)
+        if "industry" in metadata.columns:
+            metadata.industry = _clean_text_column(metadata.industry)
+
+        if "symbol" in metadata.columns:
+            metadata = metadata.set_index("symbol")
+
         return metadata
 
     def _select_nlargest_liquidity_stocks(
