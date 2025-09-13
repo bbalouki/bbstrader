@@ -1,5 +1,12 @@
 # Changes
 
+# 0.3.5
+- Minor bug fix, updates and upgrade to python 3.12
+
+# 0.3.4
+- Add support for Getting bars and ticks data in Numpy arrays
+- Minor updates and bug fix
+
 # 0.3.3
 
 - Add Financial Modeling Prep to the news feed
