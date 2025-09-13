@@ -51,6 +51,31 @@ ORDER_TYPE = {
     7: (Mt5.ORDER_TYPE_SELL_STOP_LIMIT, "SELL STOP LIMIT"),
 }
 
+STOP_RETCODES = [
+    Mt5.TRADE_RETCODE_TRADE_DISABLED,
+    Mt5.TRADE_RETCODE_NO_MONEY,
+    Mt5.TRADE_RETCODE_SERVER_DISABLES_AT,
+    Mt5.TRADE_RETCODE_CLIENT_DISABLES_AT,
+    Mt5.TRADE_RETCODE_ONLY_REAL,
+]
+
+RETURN_RETCODE = [
+    Mt5.TRADE_RETCODE_MARKET_CLOSED,
+    Mt5.TRADE_RETCODE_CONNECTION,
+    Mt5.TRADE_RETCODE_LIMIT_ORDERS,
+    Mt5.TRADE_RETCODE_LIMIT_VOLUME,
+    Mt5.TRADE_RETCODE_LIMIT_POSITIONS,
+    Mt5.TRADE_RETCODE_LONG_ONLY,
+    Mt5.TRADE_RETCODE_SHORT_ONLY,
+    Mt5.TRADE_RETCODE_CLOSE_ONLY,
+    Mt5.TRADE_RETCODE_FIFO_CLOSE,
+    Mt5.TRADE_RETCODE_INVALID_VOLUME,
+    Mt5.TRADE_RETCODE_INVALID_PRICE,
+    Mt5.TRADE_RETCODE_INVALID_STOPS,
+    Mt5.TRADE_RETCODE_NO_CHANGES
+]
+
+
 
 class OrderAction(Enum):
     COPY_NEW = "COPY_NEW"
@@ -65,25 +90,23 @@ CopyMode = Literal["fix", "multiply", "percentage", "dynamic", "replicate"]
 
 def fix_lot(fixed):
     if fixed == 0 or fixed is None:
-        raise ValueError("Fixed lot must be a number")
+        raise ValueError("Fixed lot must be a number > 0")
     return fixed
 
 
 def multiply_lot(lot, multiplier):
     if multiplier == 0 or multiplier is None:
-        raise ValueError("Multiplier lot must be a number")
+        raise ValueError("Multiplier lot must be a number > 0")
     return lot * multiplier
 
 
 def percentage_lot(lot, percentage):
     if percentage == 0 or percentage is None:
-        raise ValueError("Percentage lot must be a number")
+        raise ValueError("Percentage lot must be a number > 0")
     return round(lot * percentage / 100, 2)
 
 
 def dynamic_lot(source_lot, source_eqty: float, dest_eqty: float):
-    if source_eqty == 0 or dest_eqty == 0:
-        raise ValueError("Source or destination account equity is zero")
     try:
         ratio = dest_eqty / source_eqty
         return round(source_lot * ratio, 2)
@@ -117,6 +140,7 @@ def fixed_lot(lot, symbol, destination) -> float:
         return _check_lot(round(lot, steps), s_info)
     else:
         return _check_lot(round(lot), s_info)
+
 
 def calculate_copy_lot(
     source_lot,
@@ -173,7 +197,7 @@ def get_symbols_from_string(symbols_string: str):
 
 def get_copy_symbols(destination: dict, source: dict) -> List[str] | Dict[str, str]:
     symbols = destination.get("symbols", "all")
-    if symbols == "all" or symbols == "*" or  isinstance(symbols, list) :
+    if symbols == "all" or symbols == "*" or isinstance(symbols, list):
         src_account = Account(**source)
         src_symbols = src_account.get_symbols()
         dest_account = Account(**destination)
@@ -360,7 +384,10 @@ class TradeCopier(object):
         for destination in self.destinations:
             destination["copy"] = destination.get("copy", True)
 
-    def log_message(self, message, type="info"):
+    def log_message(
+        self, message, type: Literal["info", "error", "debug", "warning"] = "info"
+    ):
+        logger.trace
         if self.log_queue:
             try:
                 now = datetime.now()
@@ -370,7 +397,7 @@ class TradeCopier(object):
                 )
                 space = len("exception")  # longest log name
                 self.log_queue.put(
-                    f"{formatted} |{type.upper()} {' '*(space - len(type))} | - {message}"
+                    f"{formatted} |{type.upper()} {' ' * (space - len(type))} | - {message}"
                 )
             except Exception:
                 pass
@@ -384,8 +411,8 @@ class TradeCopier(object):
         error_msg = repr(e)
         if error_msg not in self.errors:
             self.errors.add(error_msg)
-            add_msg = f"SYMBOL={symbol}" if symbol else ""
-            message = f"Error encountered: {error_msg}, {add_msg}"
+            add_msg = f", SYMBOL={symbol}" if symbol else ""
+            message = f"Error encountered: {error_msg}{add_msg}"
             self.log_message(message, type="error")
 
     def _validate_source(self):
@@ -487,6 +514,14 @@ class TradeCopier(object):
                 if new_result.retcode == Mt5.TRADE_RETCODE_DONE:
                     break
         return new_result
+    
+    def handle_retcode(self, retcode) -> int:
+        if retcode in STOP_RETCODES:
+            msg = trade_retcode_message(retcode)
+            self.log_error(f"Critical Error on @{self.source['login']}: {msg} ")
+            self.stop()
+        if retcode in RETURN_RETCODE:
+            return 1
 
     def copy_new_trade(self, trade: TradeOrder | TradePosition, destination: dict):
         if not self.iscopy_time():
@@ -508,7 +543,6 @@ class TradeCopier(object):
         trade_action = (
             Mt5.TRADE_ACTION_DEAL if trade.type in [0, 1] else Mt5.TRADE_ACTION_PENDING
         )
-        action = ORDER_TYPE[trade.type][1]
         tick = Mt5.symbol_info_tick(symbol)
         price = tick.bid if trade.type == 0 else tick.ask
         try:
@@ -535,14 +569,18 @@ class TradeCopier(object):
             result = Mt5.order_send(request)
             if result.retcode != Mt5.TRADE_RETCODE_DONE:
                 result = self._update_filling_type(request, result)
+            action = ORDER_TYPE[trade.type][1]
+            copy_action = "Position" if trade.type in [0, 1] else "Order"
             if result.retcode == Mt5.TRADE_RETCODE_DONE:
                 self.log_message(
-                    f"Copy {action} Order #{trade.ticket} from @{self.source.get('login')}::{trade.symbol} "
+                    f"Copy {action} {copy_action} #{trade.ticket} from @{self.source.get('login')}::{trade.symbol} "
                     f"to @{destination.get('login')}::{symbol}",
                 )
             if result.retcode != Mt5.TRADE_RETCODE_DONE:
+                if self.handle_retcode(result.retcode) == 1:
+                    return
                 self.log_message(
-                    f"Error copying {action} Order #{trade.ticket} from @{self.source.get('login')}::{trade.symbol} "
+                    f"Error copying {action} {copy_action} #{trade.ticket} from @{self.source.get('login')}::{trade.symbol} "
                     f"to @{destination.get('login')}::{symbol}, {trade_retcode_message(result.retcode)}",
                     type="error",
                 )
@@ -572,9 +610,9 @@ class TradeCopier(object):
                 f"Modify {ORDER_TYPE[source_order.type][1]} Order #{ticket} on @{destination.get('login')}::{symbol}, "
                 f"SOURCE=@{self.source.get('login')}::{source_order.symbol}"
             )
-        if result.retcode == Mt5.TRADE_RETCODE_NO_CHANGES:
-            return
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
+            if self.handle_retcode(result.retcode) == 1:
+                    return
             self.log_message(
                 f"Error modifying {ORDER_TYPE[source_order.type][1]} Order #{ticket} on @{destination.get('login')}::{symbol},"
                 f"SOURCE=@{self.source.get('login')}::{source_order.symbol},  {trade_retcode_message(result.retcode)}",
@@ -597,6 +635,8 @@ class TradeCopier(object):
                 f"SOURCE=@{self.source.get('login')}::{src_symbol}"
             )
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
+            if self.handle_retcode(result.retcode) == 1:
+                    return
             self.log_message(
                 f"Error closing {ORDER_TYPE[order.type][1]} Order #{order.ticket} on @{destination.get('login')}::{order.symbol}, "
                 f"SOURCE=@{self.source.get('login')}::{src_symbol}, {trade_retcode_message(result.retcode)}",
@@ -626,9 +666,9 @@ class TradeCopier(object):
                 f"Modify {ORDER_TYPE[source_pos.type][1]} Position #{ticket} on @{destination.get('login')}::{symbol}, "
                 f"SOURCE=@{self.source.get('login')}::{source_pos.symbol}"
             )
-        if result.retcode == Mt5.TRADE_RETCODE_NO_CHANGES:
-            return
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
+            if self.handle_retcode(result.retcode) == 1:
+                    return
             self.log_message(
                 f"Error modifying {ORDER_TYPE[source_pos.type][1]} Position #{ticket} on @{destination.get('login')}::{symbol}, "
                 f"SOURCE=@{self.source.get('login')}::{source_pos.symbol}, {trade_retcode_message(result.retcode)}",
@@ -663,6 +703,8 @@ class TradeCopier(object):
                 f"SOURCE=@{self.source.get('login')}::{src_symbol}"
             )
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
+            if self.handle_retcode(result.retcode) == 1:
+                    return
             self.log_message(
                 f"Error closing {ORDER_TYPE[position.type][1]} Position #{position.ticket} "
                 f"on @{destination.get('login')}::{position.symbol}, "
@@ -1023,7 +1065,8 @@ class TradeCopier(object):
             self.destinations
         ):
             self.log_message(
-                "Two or more destination accounts have the same Terminal path, which is not allowed."
+                "Two or more destination accounts have the same Terminal path, which is not allowed.",
+                type="error",
             )
             return
 
