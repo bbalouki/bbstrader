@@ -6,19 +6,21 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>bbstrader package &mdash; bbstrader 0.3.3 documentation</title>
+  <title>bbstrader package &mdash; bbstrader 0.3.5 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=d5a15cff"></script>
+      <script src="_static/documentation_options.js?v=ba50482b"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="bbstrader.apps package" href="bbstrader.apps.html" />
+    <link rel="prev" title="bbstrader" href="modules.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -41,8 +43,52 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="modules.html">bbstrader</a></li>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">bbstrader</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">bbstrader package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#module-bbstrader">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#subpackages">Subpackages</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.apps.html">bbstrader.apps package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.btengine.html">bbstrader.btengine package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.core.html">bbstrader.core package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.ibkr.html">bbstrader.ibkr package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html">bbstrader.metatrader package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.models.html">bbstrader.models package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.trading.html">bbstrader.trading package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-bbstrader.compat">bbstrader.compat module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.compat.setup_mock_modules"><code class="docutils literal notranslate"><span class="pre">setup_mock_modules()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-bbstrader.config">bbstrader.config module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.config.CustomFormatter"><code class="docutils literal notranslate"><span class="pre">CustomFormatter</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.config.CustomLogger"><code class="docutils literal notranslate"><span class="pre">CustomLogger</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.config.LogLevelFilter"><code class="docutils literal notranslate"><span class="pre">LogLevelFilter</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.config.config_logger"><code class="docutils literal notranslate"><span class="pre">config_logger()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.config.get_config_dir"><code class="docutils literal notranslate"><span class="pre">get_config_dir()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-bbstrader.tseries">bbstrader.tseries module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.tseries.KFHedgeRatio"><code class="docutils literal notranslate"><span class="pre">KFHedgeRatio()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.tseries.KFSmoother"><code class="docutils literal notranslate"><span class="pre">KFSmoother()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.tseries.KalmanFilterModel"><code class="docutils literal notranslate"><span class="pre">KalmanFilterModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.tseries.analyze_cointegrated_pairs"><code class="docutils literal notranslate"><span class="pre">analyze_cointegrated_pairs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.tseries.check_stationarity"><code class="docutils literal notranslate"><span class="pre">check_stationarity()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.tseries.compute_pair_metrics"><code class="docutils literal notranslate"><span class="pre">compute_pair_metrics()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.tseries.find_cointegrated_pairs"><code class="docutils literal notranslate"><span class="pre">find_cointegrated_pairs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.tseries.remove_correlated_assets"><code class="docutils literal notranslate"><span class="pre">remove_correlated_assets()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.tseries.remove_stationary_assets"><code class="docutils literal notranslate"><span class="pre">remove_stationary_assets()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.tseries.run_kalman_filter"><code class="docutils literal notranslate"><span class="pre">run_kalman_filter()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.tseries.select_assets"><code class="docutils literal notranslate"><span class="pre">select_assets()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bbstrader.tseries.select_candidate_pairs"><code class="docutils literal notranslate"><span class="pre">select_candidate_pairs()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 
         </div>
@@ -59,6 +105,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">bbstrader</a></li>
       <li class="breadcrumb-item active">bbstrader package</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/bbstrader.rst.txt" rel="nofollow"> View page source</a>
@@ -71,11 +118,25 @@
              
   <section id="bbstrader-package">
 <h1>bbstrader package<a class="headerlink" href="#bbstrader-package" title="Link to this heading"></a></h1>
+<section id="module-bbstrader">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-bbstrader" title="Link to this heading"></a></h2>
+<p>Simplified Investment &amp; Trading Toolkit</p>
+</section>
 <section id="subpackages">
 <h2>Subpackages<a class="headerlink" href="#subpackages" title="Link to this heading"></a></h2>
 <div class="toctree-wrapper compound">
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="bbstrader.apps.html">bbstrader.apps package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="bbstrader.apps.html#module-bbstrader.apps">Module contents</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="bbstrader.btengine.html">bbstrader.btengine package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="bbstrader.btengine.html#module-bbstrader.btengine">Module contents</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="bbstrader.btengine.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bbstrader.btengine.html#features">Features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bbstrader.btengine.html#components">Components</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="bbstrader.btengine.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="bbstrader.btengine.html#module-bbstrader.btengine.backtest">bbstrader.btengine.backtest module</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="bbstrader.btengine.html#bbstrader.btengine.backtest.Backtest"><code class="docutils literal notranslate"><span class="pre">Backtest</span></code></a></li>
@@ -182,6 +243,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="bbstrader.btengine.html#module-bbstrader.btengine.strategy">bbstrader.btengine.strategy module</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="bbstrader.btengine.html#bbstrader.btengine.strategy.MT5Strategy"><code class="docutils literal notranslate"><span class="pre">MT5Strategy</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.btengine.html#bbstrader.btengine.strategy.MT5Strategy.ID"><code class="docutils literal notranslate"><span class="pre">MT5Strategy.ID</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.btengine.html#bbstrader.btengine.strategy.MT5Strategy.account"><code class="docutils literal notranslate"><span class="pre">MT5Strategy.account</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.btengine.html#bbstrader.btengine.strategy.MT5Strategy.apply_risk_management"><code class="docutils literal notranslate"><span class="pre">MT5Strategy.apply_risk_management()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.btengine.html#bbstrader.btengine.strategy.MT5Strategy.buy_limit"><code class="docutils literal notranslate"><span class="pre">MT5Strategy.buy_limit()</span></code></a></li>
@@ -204,16 +266,19 @@
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.btengine.html#bbstrader.btengine.strategy.MT5Strategy.get_quantity"><code class="docutils literal notranslate"><span class="pre">MT5Strategy.get_quantity()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.btengine.html#bbstrader.btengine.strategy.MT5Strategy.get_update_from_portfolio"><code class="docutils literal notranslate"><span class="pre">MT5Strategy.get_update_from_portfolio()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.btengine.html#bbstrader.btengine.strategy.MT5Strategy.holdings"><code class="docutils literal notranslate"><span class="pre">MT5Strategy.holdings</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.btengine.html#bbstrader.btengine.strategy.MT5Strategy.id"><code class="docutils literal notranslate"><span class="pre">MT5Strategy.id</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.btengine.html#bbstrader.btengine.strategy.MT5Strategy.is_signal_time"><code class="docutils literal notranslate"><span class="pre">MT5Strategy.is_signal_time()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.btengine.html#bbstrader.btengine.strategy.MT5Strategy.ispositions"><code class="docutils literal notranslate"><span class="pre">MT5Strategy.ispositions()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.btengine.html#bbstrader.btengine.strategy.MT5Strategy.max_trades"><code class="docutils literal notranslate"><span class="pre">MT5Strategy.max_trades</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.btengine.html#bbstrader.btengine.strategy.MT5Strategy.orders"><code class="docutils literal notranslate"><span class="pre">MT5Strategy.orders</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.btengine.html#bbstrader.btengine.strategy.MT5Strategy.perform_period_end_checks"><code class="docutils literal notranslate"><span class="pre">MT5Strategy.perform_period_end_checks()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.btengine.html#bbstrader.btengine.strategy.MT5Strategy.positions"><code class="docutils literal notranslate"><span class="pre">MT5Strategy.positions</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.btengine.html#bbstrader.btengine.strategy.MT5Strategy.risk_budget"><code class="docutils literal notranslate"><span class="pre">MT5Strategy.risk_budget</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.btengine.html#bbstrader.btengine.strategy.MT5Strategy.sell_limit"><code class="docutils literal notranslate"><span class="pre">MT5Strategy.sell_limit()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.btengine.html#bbstrader.btengine.strategy.MT5Strategy.sell_mkt"><code class="docutils literal notranslate"><span class="pre">MT5Strategy.sell_mkt()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.btengine.html#bbstrader.btengine.strategy.MT5Strategy.sell_stop"><code class="docutils literal notranslate"><span class="pre">MT5Strategy.sell_stop()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.btengine.html#bbstrader.btengine.strategy.MT5Strategy.sell_stop_limit"><code class="docutils literal notranslate"><span class="pre">MT5Strategy.sell_stop_limit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.btengine.html#bbstrader.btengine.strategy.MT5Strategy.signal"><code class="docutils literal notranslate"><span class="pre">MT5Strategy.signal()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.btengine.html#bbstrader.btengine.strategy.MT5Strategy.stop_time"><code class="docutils literal notranslate"><span class="pre">MT5Strategy.stop_time()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.btengine.html#bbstrader.btengine.strategy.MT5Strategy.tf"><code class="docutils literal notranslate"><span class="pre">MT5Strategy.tf</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.btengine.html#bbstrader.btengine.strategy.MT5Strategy.trades"><code class="docutils literal notranslate"><span class="pre">MT5Strategy.trades</span></code></a></li>
@@ -230,15 +295,10 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="bbstrader.btengine.html#module-bbstrader.btengine">Module contents</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="bbstrader.btengine.html#overview">Overview</a></li>
-<li class="toctree-l3"><a class="reference internal" href="bbstrader.btengine.html#features">Features</a></li>
-<li class="toctree-l3"><a class="reference internal" href="bbstrader.btengine.html#components">Components</a></li>
-</ul>
-</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="bbstrader.core.html">bbstrader.core package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="bbstrader.core.html#module-bbstrader.core">Module contents</a></li>
 <li class="toctree-l2"><a class="reference internal" href="bbstrader.core.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="bbstrader.core.html#module-bbstrader.core.data">bbstrader.core.data module</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="bbstrader.core.html#bbstrader.core.data.FinancialNews"><code class="docutils literal notranslate"><span class="pre">FinancialNews</span></code></a><ul>
@@ -277,16 +337,16 @@
 <li class="toctree-l3"><a class="reference internal" href="bbstrader.core.html#bbstrader.core.utils.load_module"><code class="docutils literal notranslate"><span class="pre">load_module()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="bbstrader.core.html#module-bbstrader.core">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="bbstrader.ibkr.html">bbstrader.ibkr package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="bbstrader.ibkr.html#module-bbstrader.ibkr">Module contents</a></li>
 <li class="toctree-l2"><a class="reference internal" href="bbstrader.ibkr.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="bbstrader.ibkr.html#module-bbstrader.ibkr.utils">bbstrader.ibkr.utils module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="bbstrader.ibkr.html#module-bbstrader.ibkr">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="bbstrader.metatrader.html">bbstrader.metatrader package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="bbstrader.metatrader.html#module-bbstrader.metatrader">Module contents</a></li>
 <li class="toctree-l2"><a class="reference internal" href="bbstrader.metatrader.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="bbstrader.metatrader.html#module-bbstrader.metatrader.account">bbstrader.metatrader.account module</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.account.Account"><code class="docutils literal notranslate"><span class="pre">Account</span></code></a><ul>
@@ -306,13 +366,19 @@
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.account.Account.get_orders"><code class="docutils literal notranslate"><span class="pre">Account.get_orders()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.account.Account.get_orders_history"><code class="docutils literal notranslate"><span class="pre">Account.get_orders_history()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.account.Account.get_positions"><code class="docutils literal notranslate"><span class="pre">Account.get_positions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.account.Account.get_rate_info"><code class="docutils literal notranslate"><span class="pre">Account.get_rate_info()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.account.Account.get_rates_from_date"><code class="docutils literal notranslate"><span class="pre">Account.get_rates_from_date()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.account.Account.get_rates_from_pos"><code class="docutils literal notranslate"><span class="pre">Account.get_rates_from_pos()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.account.Account.get_rates_range"><code class="docutils literal notranslate"><span class="pre">Account.get_rates_range()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.account.Account.get_stocks_from_country"><code class="docutils literal notranslate"><span class="pre">Account.get_stocks_from_country()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.account.Account.get_stocks_from_exchange"><code class="docutils literal notranslate"><span class="pre">Account.get_stocks_from_exchange()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.account.Account.get_symbol_info"><code class="docutils literal notranslate"><span class="pre">Account.get_symbol_info()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.account.Account.get_symbol_type"><code class="docutils literal notranslate"><span class="pre">Account.get_symbol_type()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.account.Account.get_symbols"><code class="docutils literal notranslate"><span class="pre">Account.get_symbols()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.account.Account.get_terminal_info"><code class="docutils literal notranslate"><span class="pre">Account.get_terminal_info()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.account.Account.get_tick_from_date"><code class="docutils literal notranslate"><span class="pre">Account.get_tick_from_date()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.account.Account.get_tick_info"><code class="docutils literal notranslate"><span class="pre">Account.get_tick_info()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.account.Account.get_tick_range"><code class="docutils literal notranslate"><span class="pre">Account.get_tick_range()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.account.Account.get_today_deals"><code class="docutils literal notranslate"><span class="pre">Account.get_today_deals()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.account.Account.get_trades_history"><code class="docutils literal notranslate"><span class="pre">Account.get_trades_history()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.account.Account.language"><code class="docutils literal notranslate"><span class="pre">Account.language</span></code></a></li>
@@ -378,6 +444,7 @@
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.copier.TradeCopier.get_copy_symbol"><code class="docutils literal notranslate"><span class="pre">TradeCopier.get_copy_symbol()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.copier.TradeCopier.get_orders"><code class="docutils literal notranslate"><span class="pre">TradeCopier.get_orders()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.copier.TradeCopier.get_positions"><code class="docutils literal notranslate"><span class="pre">TradeCopier.get_positions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.copier.TradeCopier.handle_retcode"><code class="docutils literal notranslate"><span class="pre">TradeCopier.handle_retcode()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.copier.TradeCopier.iscopy_time"><code class="docutils literal notranslate"><span class="pre">TradeCopier.iscopy_time()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.copier.TradeCopier.isorder_modified"><code class="docutils literal notranslate"><span class="pre">TradeCopier.isorder_modified()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.copier.TradeCopier.isposition_modified"><code class="docutils literal notranslate"><span class="pre">TradeCopier.isposition_modified()</span></code></a></li>
@@ -551,18 +618,12 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.trade.TradeSignal"><code class="docutils literal notranslate"><span class="pre">TradeSignal</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.trade.TradeSignal.id"><code class="docutils literal notranslate"><span class="pre">TradeSignal.id</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.trade.TradeSignal.symbol"><code class="docutils literal notranslate"><span class="pre">TradeSignal.symbol</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.trade.TradeSignal.action"><code class="docutils literal notranslate"><span class="pre">TradeSignal.action</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.trade.TradeSignal.comment"><code class="docutils literal notranslate"><span class="pre">TradeSignal.comment</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.trade.TradeSignal.id"><code class="docutils literal notranslate"><span class="pre">TradeSignal.id</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.trade.TradeSignal.price"><code class="docutils literal notranslate"><span class="pre">TradeSignal.price</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.trade.TradeSignal.stoplimit"><code class="docutils literal notranslate"><span class="pre">TradeSignal.stoplimit</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.trade.TradeSignal.comment"><code class="docutils literal notranslate"><span class="pre">TradeSignal.comment</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#id0"><code class="docutils literal notranslate"><span class="pre">TradeSignal.action</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#id1"><code class="docutils literal notranslate"><span class="pre">TradeSignal.comment</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#id2"><code class="docutils literal notranslate"><span class="pre">TradeSignal.id</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#id3"><code class="docutils literal notranslate"><span class="pre">TradeSignal.price</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#id4"><code class="docutils literal notranslate"><span class="pre">TradeSignal.stoplimit</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#id5"><code class="docutils literal notranslate"><span class="pre">TradeSignal.symbol</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.trade.TradeSignal.symbol"><code class="docutils literal notranslate"><span class="pre">TradeSignal.symbol</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.trade.TradingMode"><code class="docutils literal notranslate"><span class="pre">TradingMode</span></code></a><ul>
@@ -644,6 +705,17 @@
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.utils.OrderSentResult.retcode"><code class="docutils literal notranslate"><span class="pre">OrderSentResult.retcode</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.utils.OrderSentResult.retcode_external"><code class="docutils literal notranslate"><span class="pre">OrderSentResult.retcode_external</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.utils.OrderSentResult.volume"><code class="docutils literal notranslate"><span class="pre">OrderSentResult.volume</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.utils.RateInfo"><code class="docutils literal notranslate"><span class="pre">RateInfo</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.utils.RateInfo.close"><code class="docutils literal notranslate"><span class="pre">RateInfo.close</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.utils.RateInfo.high"><code class="docutils literal notranslate"><span class="pre">RateInfo.high</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.utils.RateInfo.low"><code class="docutils literal notranslate"><span class="pre">RateInfo.low</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.utils.RateInfo.open"><code class="docutils literal notranslate"><span class="pre">RateInfo.open</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.utils.RateInfo.real_volume"><code class="docutils literal notranslate"><span class="pre">RateInfo.real_volume</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.utils.RateInfo.spread"><code class="docutils literal notranslate"><span class="pre">RateInfo.spread</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.utils.RateInfo.tick_volume"><code class="docutils literal notranslate"><span class="pre">RateInfo.tick_volume</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.utils.RateInfo.time"><code class="docutils literal notranslate"><span class="pre">RateInfo.time</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.utils.SymbolInfo"><code class="docutils literal notranslate"><span class="pre">SymbolInfo</span></code></a><ul>
@@ -913,10 +985,10 @@
 <li class="toctree-l3"><a class="reference internal" href="bbstrader.metatrader.html#bbstrader.metatrader.utils.trade_retcode_message"><code class="docutils literal notranslate"><span class="pre">trade_retcode_message()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="bbstrader.metatrader.html#module-bbstrader.metatrader">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="bbstrader.models.html">bbstrader.models package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="bbstrader.models.html#module-bbstrader.models">Module contents</a></li>
 <li class="toctree-l2"><a class="reference internal" href="bbstrader.models.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="bbstrader.models.html#module-bbstrader.models.factors">bbstrader.models.factors module</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="bbstrader.models.html#bbstrader.models.factors.search_coint_candidate_pairs"><code class="docutils literal notranslate"><span class="pre">search_coint_candidate_pairs()</span></code></a></li>
@@ -995,10 +1067,10 @@
 <li class="toctree-l3"><a class="reference internal" href="bbstrader.models.html#bbstrader.models.risk.build_hmm_models"><code class="docutils literal notranslate"><span class="pre">build_hmm_models()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="bbstrader.models.html#module-bbstrader.models">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="bbstrader.trading.html">bbstrader.trading package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="bbstrader.trading.html#module-bbstrader.trading">Module contents</a></li>
 <li class="toctree-l2"><a class="reference internal" href="bbstrader.trading.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="bbstrader.trading.html#module-bbstrader.trading.execution">bbstrader.trading.execution module</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="bbstrader.trading.html#bbstrader.trading.execution.Mt5ExecutionEngine"><code class="docutils literal notranslate"><span class="pre">Mt5ExecutionEngine</span></code></a><ul>
@@ -1036,7 +1108,6 @@
 <li class="toctree-l3"><a class="reference internal" href="bbstrader.trading.html#bbstrader.trading.utils.send_telegram_message"><code class="docutils literal notranslate"><span class="pre">send_telegram_message()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="bbstrader.trading.html#module-bbstrader.trading">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -1048,9 +1119,9 @@
 <section id="module-bbstrader.compat">
 <span id="bbstrader-compat-module"></span><h2>bbstrader.compat module<a class="headerlink" href="#module-bbstrader.compat" title="Link to this heading"></a></h2>
 <dl class="py function">
-<dt class="sig sig-object py" id="bbstrader.compat.setup_mock_metatrader">
-<span class="sig-prename descclassname"><span class="pre">bbstrader.compat.</span></span><span class="sig-name descname"><span class="pre">setup_mock_metatrader</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/compat.html#setup_mock_metatrader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.compat.setup_mock_metatrader" title="Link to this definition"></a></dt>
-<dd><p>Mock MetaTrader5 on Linux and MacOS to prevent import errors.</p>
+<dt class="sig sig-object py" id="bbstrader.compat.setup_mock_modules">
+<span class="sig-prename descclassname"><span class="pre">bbstrader.compat.</span></span><span class="sig-name descname"><span class="pre">setup_mock_modules</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/compat.html#setup_mock_modules"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.compat.setup_mock_modules" title="Link to this definition"></a></dt>
+<dd><p>Mock some modules not available on some OS to prevent import errors.</p>
 </dd></dl>
 
 </section>
@@ -1118,7 +1189,7 @@ a true value, e.g.</p>
 <dd><p>Log ‘msg % args’ with severity ‘INFO’.</p>
 <p>To pass exception information, use the keyword argument exc_info with
 a true value, e.g.</p>
-<p>logger.info(“Houston, we have a %s”, “interesting problem”, exc_info=True)</p>
+<p>logger.info(“Houston, we have a %s”, “notable problem”, exc_info=True)</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1179,29 +1250,34 @@ some simple time series analysis in financial markets.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="bbstrader.tseries.KFHedgeRatio">
 <span class="sig-prename descclassname"><span class="pre">bbstrader.tseries.</span></span><span class="sig-name descname"><span class="pre">KFHedgeRatio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/bbstrader/tseries.html#KFHedgeRatio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.tseries.KFHedgeRatio" title="Link to this definition"></a></dt>
-<dd><p>Estimate Hedge Ratio using Kalman Filter.
-:param x: pd.Series or np.ndarray</p>
-<blockquote>
-<div><p>The independent variable, which can be either a pandas Series or a numpy array.</p>
-</div></blockquote>
+<dd><p>Estimate Hedge Ratio using Kalman Filter.</p>
+<p>This function uses a Kalman Filter to dynamically estimate the hedge ratio
+(beta) and intercept (alpha) for a pair of assets over time.</p>
+<p>The function returns the negative of the first state variable (the hedge ratio)
+for each time step, which is a common convention in pairs trading.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>y</strong> – pd.Series or np.ndarray
-The dependent variable, which can be either a pandas Series or a numpy array.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>pd.Series</em><em> or </em><em>np.ndarray</em>) – The independent variable (e.g., price series of asset X).</p></li>
+<li><p><strong>y</strong> (<em>pd.Series</em><em> or </em><em>np.ndarray</em>) – The dependent variable (e.g., price series of asset Y).</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><dl class="simple">
-<dt>np.ndarray</dt><dd><p>The estimated hedge ratio as a numpy array.</p>
+<dd class="field-even"><p>The time-varying estimated hedge ratio as a numpy array.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
 </dd>
 </dl>
-</p>
-</dd>
-</dl>
-<p>The function returns the negative of the first state variable of each Kalman Filter estimate,
-which represents the estimated hedge ratio.</p>
 <p class="rubric">References</p>
-<p>Stefan Jansen (2020). Machine Learning for Algorithmic Trading - Second Edition.
-chapter 9, Time-Series Models for Volatility Forecasts and Statistical Arbitrage.</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>[1] Jansen, S. (2020). Machine Learning for Algorithmic Trading -</dt><dd><p>Second Edition. Packt Publishing. Chapter 9, Time-Series Models
+for Volatility Forecasts and Statistical Arbitrage.</p>
+</dd>
+</dl>
+</li>
+</ul>
 </dd></dl>
 
 <dl class="py function">
@@ -1365,43 +1441,44 @@ chapter 9, Time-Series Models for Volatility Forecasts and Statistical Arbitrage
 <dl class="py function">
 <dt class="sig sig-object py" id="bbstrader.tseries.compute_pair_metrics">
 <span class="sig-prename descclassname"><span class="pre">bbstrader.tseries.</span></span><span class="sig-name descname"><span class="pre">compute_pair_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">security</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">candidates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/tseries.html#compute_pair_metrics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.tseries.compute_pair_metrics" title="Link to this definition"></a></dt>
-<dd><p>Calculates statistical and econometric metrics for a target security and a set of candidate securities.
-These metrics are useful in financial modeling and pairs trading strategies,
-providing information about drift, volatility, correlation, and cointegration.</p>
+<dd><p>Calculate statistical and econometric metrics for a security pair.</p>
+<p>These metrics are useful in financial modeling and pairs trading strategies,
+providing information about drift, volatility, correlation, and
+cointegration.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>security</strong> (<em>pd.Series</em>) – A time-series of the target security’s prices.
-The name of the Series should correspond to the security’s identifier (e.g., ticker symbol).</p></li>
+<li><p><strong>security</strong> (<em>pd.Series</em>) – A time-series of the target security’s prices. The name of the
+Series should correspond to the security’s identifier (e.g., ticker
+symbol).</p></li>
 <li><p><strong>candidates</strong> (<em>pd.DataFrame</em>) – A DataFrame where each column represents a time-series of prices
 for candidate securities to be evaluated against the target security.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><dl>
-<dt>A DataFrame combining:</dt><dd><p>Drift: Estimated drift of spreads between the target security and each candidate.
-Volatility: Standard deviation of spreads.
-Correlation:</p>
-<blockquote>
-<div><p><code class="docutils literal notranslate"><span class="pre">corr</span></code>: Correlation of normalized prices between the target and each candidate.
-<code class="docutils literal notranslate"><span class="pre">corr_ret</span></code>: Correlation of returns (percentage change) between the target and each candidate.</p>
-</div></blockquote>
-<dl class="simple">
-<dt>Cointegration metrics:</dt><dd><p>Engle-Granger test statistics (<code class="docutils literal notranslate"><span class="pre">t1</span></code>, <code class="docutils literal notranslate"><span class="pre">t2</span></code>) and p-values (<code class="docutils literal notranslate"><span class="pre">p1</span></code>, <code class="docutils literal notranslate"><span class="pre">p2</span></code>).
-Johansen test trace statistics (<code class="docutils literal notranslate"><span class="pre">trace0</span></code>, <code class="docutils literal notranslate"><span class="pre">trace1</span></code>) and selected lag order (<code class="docutils literal notranslate"><span class="pre">k_ar_diff</span></code>).</p>
-</dd>
-</dl>
-</dd>
-</dl>
-</p>
+<dd class="field-even"><p>A DataFrame containing the following metrics as columns:
+* <code class="docutils literal notranslate"><span class="pre">Drift</span></code>: Estimated drift of spreads.
+* <code class="docutils literal notranslate"><span class="pre">Volatility</span></code>: Standard deviation of spreads.
+* <code class="docutils literal notranslate"><span class="pre">corr</span></code>: Correlation of normalized prices.
+* <code class="docutils literal notranslate"><span class="pre">corr_ret</span></code>: Correlation of returns (percentage change).
+* <code class="docutils literal notranslate"><span class="pre">t1</span></code>, <code class="docutils literal notranslate"><span class="pre">p1</span></code>: Engle-Granger test statistic and p-value.
+* <code class="docutils literal notranslate"><span class="pre">t2</span></code>, <code class="docutils literal notranslate"><span class="pre">p2</span></code>: Engle-Granger test statistic and p-value (alternate form).
+* <code class="docutils literal notranslate"><span class="pre">trace0</span></code>, <code class="docutils literal notranslate"><span class="pre">trace1</span></code>: Johansen test trace statistics.
+* <code class="docutils literal notranslate"><span class="pre">k_ar_diff</span></code>: Selected lag order for the Johansen test.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>pd.DataFrame</p>
 </dd>
 </dl>
 <p class="rubric">References</p>
-<p>Stefan Jansen (2020). Machine Learning for Algorithmic Trading - Second Edition.
-chapter 9, Time-Series Models for Volatility Forecasts and Statistical Arbitrage.</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>[1] Jansen, S. (2020). Machine Learning for Algorithmic Trading -</dt><dd><p>Second Edition. Packt Publishing. Chapter 9, Time-Series Models
+for Volatility Forecasts and Statistical Arbitrage.</p>
+</dd>
+</dl>
+</li>
+</ul>
 </dd></dl>
 
 <dl class="py function">
@@ -1414,88 +1491,62 @@ for financial strategies like pairs trading.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>securities</strong> (<cite>pd.DataFrame</cite>) – A DataFrame where each column represents the time-series
+<li><p><strong>securities</strong> (<em>pd.DataFrame</em>) – A DataFrame where each column represents the time-series
 prices of target securities to evaluate.</p></li>
-<li><p><strong>candidates</strong> (<cite>pd.DataFrame</cite>) – A DataFrame where each column represents the time-series
+<li><p><strong>candidates</strong> (<em>pd.DataFrame</em>) – A DataFrame where each column represents the time-series
 prices of candidate securities to compare against the target securities.</p></li>
-<li><p><strong>n</strong> (<cite>int</cite>, optional) – The number of top pairs to return. If <cite>None</cite>, returns all pairs.</p></li>
-<li><p><strong>start</strong> (<cite>str</cite>, optional) – Start date for slicing the data (e.g., ‘YYYY-MM-DD’).</p></li>
-<li><p><strong>stop</strong> (<cite>str</cite>, optional) – End date for slicing the data (e.g., ‘YYYY-MM-DD’).</p></li>
-<li><p><strong>coint</strong> (<cite>bool</cite>, optional, default=False) – <ul>
-<li><p>If <cite>True</cite>, filters for pairs identified as cointegrated.</p></li>
-<li><p>If <cite>False</cite>, returns all evaluated pairs.</p></li>
-</ul>
-</p></li>
+<li><p><strong>n</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of top pairs to return. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, returns all pairs.</p></li>
+<li><p><strong>start</strong> (<em>str</em><em>, </em><em>optional</em>) – Start date for slicing the data (e.g., ‘YYYY-MM-DD’).</p></li>
+<li><p><strong>stop</strong> (<em>str</em><em>, </em><em>optional</em>) – End date for slicing the data (e.g., ‘YYYY-MM-DD’).</p></li>
+<li><p><strong>coint</strong> (<em>bool</em><em>, </em><em>optional</em><em>, </em><em>default=False</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, filters for pairs identified as cointegrated.
+If <code class="docutils literal notranslate"><span class="pre">False</span></code>, returns all evaluated pairs.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><p>A DataFrame containing:
-- Johansen and Engle-Granger cointegration metrics:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p><cite>t1</cite>, <cite>t2</cite>: Engle-Granger test statistics for two directions.</p></li>
-<li><p><cite>p1</cite>, <cite>p2</cite>: Engle-Granger p-values for two directions.</p></li>
-<li><p><cite>trace0</cite>, <cite>trace1</cite>: Johansen test trace statistics for 0 and 1 cointegration relationships.</p></li>
+<dd class="field-even"><p><p>A DataFrame containing:</p>
+<dl class="simple">
+<dt><strong>Johansen and Engle-Granger cointegration metrics</strong></dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">t1</span></code>, <code class="docutils literal notranslate"><span class="pre">t2</span></code> : Engle-Granger test statistics for two directions.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">p1</span></code>, <code class="docutils literal notranslate"><span class="pre">p2</span></code> : Engle-Granger p-values for two directions.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">trace0</span></code>, <code class="docutils literal notranslate"><span class="pre">trace1</span></code> : Johansen test trace statistics for 0 and 1 cointegration relationships.</p></li>
 </ul>
-</div></blockquote>
-<ul class="simple">
-<li><dl class="simple">
-<dt>Indicators and filters:</dt><dd><ul>
-<li><p><cite>joh_sig</cite>: Indicates Johansen cointegration significance.</p></li>
-<li><p><cite>eg_sig</cite>: Indicates Engle-Granger significance (p-value &lt; 0.05).</p></li>
-<li><p><cite>s1_dep</cite>: Indicates whether the first series depends on the second (based on p-values).</p></li>
-<li><p><cite>coint</cite>: Combined cointegration indicator (Johansen &amp; Engle-Granger).</p></li>
+</dd>
+<dt><strong>Indicators and filters</strong></dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">joh_sig</span></code> : Indicates Johansen cointegration significance.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">eg_sig</span></code> : Indicates Engle-Granger significance (p-value &lt; 0.05).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">s1_dep</span></code> : Indicates whether the first series depends on the second (based on p-values).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">coint</span></code> : Combined cointegration indicator (Johansen &amp; Engle-Granger).</p></li>
+</ul>
+</dd>
+<dt><strong>Spread and ranking</strong></dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">t</span></code> : Minimum of <code class="docutils literal notranslate"><span class="pre">t1</span></code> and <code class="docutils literal notranslate"><span class="pre">t2</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">p</span></code> : Minimum of <code class="docutils literal notranslate"><span class="pre">p1</span></code> and <code class="docutils literal notranslate"><span class="pre">p2</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
-</li>
-<li><dl class="simple">
-<dt>Spread and ranking:</dt><dd><ul>
-<li><p><cite>t</cite>: Minimum of <cite>t1</cite> and <cite>t2</cite>.</p></li>
-<li><p><cite>p</cite>: Minimum of <cite>p1</cite> and <cite>p2</cite>.</p></li>
-</ul>
-</dd>
-</dl>
-</li>
-</ul>
 </p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">pd.DataFrame</span></code></p></li>
-</ul>
-</p>
+<dd class="field-odd"><p>pd.DataFrame</p>
 </dd>
 </dl>
 <p class="rubric">References</p>
-<p>Stefan Jansen (2020). Machine Learning for Algorithmic Trading - Second Edition.
-chapter 9, Time-Series Models for Volatility Forecasts and Statistical Arbitrage.</p>
-<p>Example:
-&gt;&gt;&gt;    import pandas as pd</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span>   <span class="c1"># Sample Data</span>
-<span class="gp">&gt;&gt;&gt; </span>   <span class="n">data_securities</span> <span class="o">=</span> <span class="p">{</span>
-<span class="gp">... </span>       <span class="s1">&#39;Security1&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">102</span><span class="p">,</span> <span class="mi">101</span><span class="p">,</span> <span class="mi">103</span><span class="p">,</span> <span class="mi">105</span><span class="p">],</span>
-<span class="gp">... </span>       <span class="s1">&#39;Security2&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">50</span><span class="p">,</span> <span class="mi">52</span><span class="p">,</span> <span class="mi">53</span><span class="p">,</span> <span class="mi">51</span><span class="p">,</span> <span class="mi">54</span><span class="p">]</span>
-<span class="gp">... </span>   <span class="p">}</span>
-<span class="gp">&gt;&gt;&gt; </span>   <span class="n">data_candidates</span> <span class="o">=</span> <span class="p">{</span>
-<span class="gp">... </span>       <span class="s1">&#39;Candidate1&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">101</span><span class="p">,</span> <span class="mi">99</span><span class="p">,</span> <span class="mi">102</span><span class="p">,</span> <span class="mi">104</span><span class="p">],</span>
-<span class="gp">... </span>       <span class="s1">&#39;Candidate2&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">200</span><span class="p">,</span> <span class="mi">202</span><span class="p">,</span> <span class="mi">201</span><span class="p">,</span> <span class="mi">203</span><span class="p">,</span> <span class="mi">205</span><span class="p">]</span>
-<span class="gp">... </span>   <span class="p">}</span>
-</pre></div>
-</div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span>   <span class="n">securities</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data_securities</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="s1">&#39;2023-01-01&#39;</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="mi">5</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span>   <span class="n">candidates</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data_candidates</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="s1">&#39;2023-01-01&#39;</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="mi">5</span><span class="p">))</span>
-</pre></div>
-</div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span>   <span class="c1"># Find cointegrated pairs</span>
-<span class="gp">&gt;&gt;&gt; </span>   <span class="n">top_pairs</span> <span class="o">=</span> <span class="n">find_cointegrated_pairs</span><span class="p">(</span><span class="n">securities</span><span class="p">,</span> <span class="n">candidates</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">coint</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span>   <span class="nb">print</span><span class="p">(</span><span class="n">top_pairs</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span>   <span class="o">|</span> <span class="n">s1</span>       <span class="o">|</span> <span class="n">s2</span>        <span class="o">|</span> <span class="n">t</span>    <span class="o">|</span> <span class="n">p</span>     <span class="o">|</span> <span class="n">joh_sig</span> <span class="o">|</span> <span class="n">eg_sig</span> <span class="o">|</span> <span class="n">coint</span> <span class="o">|</span>
-<span class="gp">&gt;&gt;&gt; </span>   <span class="o">|----------|-----------|------|-------|---------|--------|-------|</span>
-<span class="gp">&gt;&gt;&gt; </span>   <span class="o">|</span> <span class="n">Security1</span><span class="o">|</span> <span class="n">Candidate1</span><span class="o">|</span> <span class="o">-</span><span class="mf">3.5</span> <span class="o">|</span> <span class="mf">0.01</span>  <span class="o">|</span> <span class="mi">1</span>       <span class="o">|</span> <span class="mi">1</span>      <span class="o">|</span> <span class="mi">1</span>     <span class="o">|</span>
-<span class="gp">&gt;&gt;&gt; </span>   <span class="o">|</span> <span class="n">Security2</span><span class="o">|</span> <span class="n">Candidate2</span><span class="o">|</span> <span class="o">-</span><span class="mf">2.9</span> <span class="o">|</span> <span class="mf">0.04</span>  <span class="o">|</span> <span class="mi">1</span>       <span class="o">|</span> <span class="mi">1</span>      <span class="o">|</span> <span class="mi">1</span>     <span class="o">|</span>
+<p>Stefan Jansen (2020). <em>Machine Learning for Algorithmic Trading - Second Edition</em>.
+Chapter 9, Time-Series Models for Volatility Forecasts and Statistical Arbitrage.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data_securities</span> <span class="o">=</span> <span class="p">{</span>
+<span class="gp">... </span>    <span class="s1">&#39;Security1&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">102</span><span class="p">,</span> <span class="mi">101</span><span class="p">,</span> <span class="mi">103</span><span class="p">,</span> <span class="mi">105</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="s1">&#39;Security2&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">50</span><span class="p">,</span> <span class="mi">52</span><span class="p">,</span> <span class="mi">53</span><span class="p">,</span> <span class="mi">51</span><span class="p">,</span> <span class="mi">54</span><span class="p">]</span>
+<span class="gp">... </span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data_candidates</span> <span class="o">=</span> <span class="p">{</span>
+<span class="gp">... </span>    <span class="s1">&#39;Candidate1&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">101</span><span class="p">,</span> <span class="mi">99</span><span class="p">,</span> <span class="mi">102</span><span class="p">,</span> <span class="mi">104</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="s1">&#39;Candidate2&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">200</span><span class="p">,</span> <span class="mi">202</span><span class="p">,</span> <span class="mi">201</span><span class="p">,</span> <span class="mi">203</span><span class="p">,</span> <span class="mi">205</span><span class="p">]</span>
+<span class="gp">... </span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">securities</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data_securities</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="s1">&#39;2023-01-01&#39;</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="mi">5</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">candidates</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data_candidates</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="s1">&#39;2023-01-01&#39;</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="mi">5</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">top_pairs</span> <span class="o">=</span> <span class="n">find_cointegrated_pairs</span><span class="p">(</span><span class="n">securities</span><span class="p">,</span> <span class="n">candidates</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">coint</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">top_pairs</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -1650,16 +1701,15 @@ chapter 9, Time-Series Models for Volatility Forecasts and Statistical Arbitrage
 </dd></dl>
 
 </section>
-<section id="module-bbstrader">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-bbstrader" title="Link to this heading"></a></h2>
-<p>Simplified Investment &amp; Trading Toolkit</p>
-</section>
 </section>
 
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="modules.html" class="btn btn-neutral float-left" title="bbstrader" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="bbstrader.apps.html" class="btn btn-neutral float-right" title="bbstrader.apps package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 

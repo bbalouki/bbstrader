@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>bbstrader.tseries &mdash; bbstrader 0.3.3 documentation</title>
+  <title>bbstrader.tseries &mdash; bbstrader 0.3.5 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=d5a15cff"></script>
+      <script src="../../_static/documentation_options.js?v=ba50482b"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -94,7 +94,6 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">statsmodels.tsa.vector_ar.var_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">VAR</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">statsmodels.tsa.vector_ar.vecm</span><span class="w"> </span><span class="kn">import</span> <span class="n">coint_johansen</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
-
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">&quot;run_kalman_filter&quot;</span><span class="p">,</span>
@@ -843,32 +842,40 @@
 <div class="viewcode-block" id="compute_pair_metrics">
 <a class="viewcode-back" href="../../bbstrader.html#bbstrader.tseries.compute_pair_metrics">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_pair_metrics</span><span class="p">(</span><span class="n">security</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">candidates</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Calculates statistical and econometric metrics for a target security and a set of candidate securities.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate statistical and econometric metrics for a security pair.</span>
+
 <span class="sd">    These metrics are useful in financial modeling and pairs trading strategies,</span>
-<span class="sd">    providing information about drift, volatility, correlation, and cointegration.</span>
+<span class="sd">    providing information about drift, volatility, correlation, and</span>
+<span class="sd">    cointegration.</span>
 
-<span class="sd">    Args:</span>
-<span class="sd">        security (pd.Series): A time-series of the target security&#39;s prices.</span>
-<span class="sd">            The name of the Series should correspond to the security&#39;s identifier (e.g., ticker symbol).</span>
-<span class="sd">        candidates (pd.DataFrame): A DataFrame where each column represents a time-series of prices</span>
-<span class="sd">            for candidate securities to be evaluated against the target security.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    security : pd.Series</span>
+<span class="sd">        A time-series of the target security&#39;s prices. The name of the</span>
+<span class="sd">        Series should correspond to the security&#39;s identifier (e.g., ticker</span>
+<span class="sd">        symbol).</span>
+<span class="sd">    candidates : pd.DataFrame</span>
+<span class="sd">        A DataFrame where each column represents a time-series of prices</span>
+<span class="sd">        for candidate securities to be evaluated against the target security.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        pd.DataFrame: A DataFrame combining:</span>
-<span class="sd">            Drift: Estimated drift of spreads between the target security and each candidate.</span>
-<span class="sd">            Volatility: Standard deviation of spreads.</span>
-<span class="sd">            Correlation:</span>
-<span class="sd">                ``corr``: Correlation of normalized prices between the target and each candidate.</span>
-<span class="sd">                ``corr_ret``: Correlation of returns (percentage change) between the target and each candidate.</span>
-<span class="sd">            Cointegration metrics:</span>
-<span class="sd">                Engle-Granger test statistics (``t1``, ``t2``) and p-values (``p1``, ``p2``).</span>
-<span class="sd">                Johansen test trace statistics (``trace0``, ``trace1``) and selected lag order (``k_ar_diff``).</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pd.DataFrame</span>
+<span class="sd">        A DataFrame containing the following metrics as columns:</span>
+<span class="sd">        * ``Drift``: Estimated drift of spreads.</span>
+<span class="sd">        * ``Volatility``: Standard deviation of spreads.</span>
+<span class="sd">        * ``corr``: Correlation of normalized prices.</span>
+<span class="sd">        * ``corr_ret``: Correlation of returns (percentage change).</span>
+<span class="sd">        * ``t1``, ``p1``: Engle-Granger test statistic and p-value.</span>
+<span class="sd">        * ``t2``, ``p2``: Engle-Granger test statistic and p-value (alternate form).</span>
+<span class="sd">        * ``trace0``, ``trace1``: Johansen test trace statistics.</span>
+<span class="sd">        * ``k_ar_diff``: Selected lag order for the Johansen test.</span>
 
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
-<span class="sd">    Stefan Jansen (2020). Machine Learning for Algorithmic Trading - Second Edition.</span>
-<span class="sd">    chapter 9, Time-Series Models for Volatility Forecasts and Statistical Arbitrage.</span>
+<span class="sd">    * [1] Jansen, S. (2020). Machine Learning for Algorithmic Trading -</span>
+<span class="sd">       Second Edition. Packt Publishing. Chapter 9, Time-Series Models</span>
+<span class="sd">       for Volatility Forecasts and Statistical Arbitrage.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">security</span> <span class="o">=</span> <span class="n">security</span><span class="o">.</span><span class="n">div</span><span class="p">(</span><span class="n">security</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="n">ticker</span> <span class="o">=</span> <span class="n">security</span><span class="o">.</span><span class="n">name</span>
@@ -934,102 +941,65 @@
 <span class="sd">    such as cointegration and Engle-Granger significance, to determine pairs suitable</span>
 <span class="sd">    for financial strategies like pairs trading.</span>
 
-<span class="sd">    Args:</span>
-<span class="sd">        securities (`pd.DataFrame`): A DataFrame where each column represents the time-series</span>
-<span class="sd">            prices of target securities to evaluate.</span>
-<span class="sd">        candidates (`pd.DataFrame`): A DataFrame where each column represents the time-series</span>
-<span class="sd">            prices of candidate securities to compare against the target securities.</span>
-<span class="sd">        n (`int`, optional): The number of top pairs to return. If `None`, returns all pairs.</span>
-<span class="sd">        start (`str`, optional): Start date for slicing the data (e.g., &#39;YYYY-MM-DD&#39;).</span>
-<span class="sd">        stop (`str`, optional): End date for slicing the data (e.g., &#39;YYYY-MM-DD&#39;).</span>
-<span class="sd">        coint (`bool`, optional, default=False):</span>
-<span class="sd">            - If `True`, filters for pairs identified as cointegrated.</span>
-<span class="sd">            - If `False`, returns all evaluated pairs.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    securities : pd.DataFrame</span>
+<span class="sd">        A DataFrame where each column represents the time-series</span>
+<span class="sd">        prices of target securities to evaluate.</span>
+<span class="sd">    candidates : pd.DataFrame</span>
+<span class="sd">        A DataFrame where each column represents the time-series</span>
+<span class="sd">        prices of candidate securities to compare against the target securities.</span>
+<span class="sd">    n : int, optional</span>
+<span class="sd">        The number of top pairs to return. If ``None``, returns all pairs.</span>
+<span class="sd">    start : str, optional</span>
+<span class="sd">        Start date for slicing the data (e.g., &#39;YYYY-MM-DD&#39;).</span>
+<span class="sd">    stop : str, optional</span>
+<span class="sd">        End date for slicing the data (e.g., &#39;YYYY-MM-DD&#39;).</span>
+<span class="sd">    coint : bool, optional, default=False</span>
+<span class="sd">        If ``True``, filters for pairs identified as cointegrated.</span>
+<span class="sd">        If ``False``, returns all evaluated pairs.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        - ``pd.DataFrame``: A DataFrame containing:</span>
-<span class="sd">        - Johansen and Engle-Granger cointegration metrics:</span>
-<span class="sd">            - `t1`, `t2`: Engle-Granger test statistics for two directions.</span>
-<span class="sd">            - `p1`, `p2`: Engle-Granger p-values for two directions.</span>
-<span class="sd">            - `trace0`, `trace1`: Johansen test trace statistics for 0 and 1 cointegration relationships.</span>
-<span class="sd">        - Indicators and filters:</span>
-<span class="sd">            - `joh_sig`: Indicates Johansen cointegration significance.</span>
-<span class="sd">            - `eg_sig`: Indicates Engle-Granger significance (p-value &lt; 0.05).</span>
-<span class="sd">            - `s1_dep`: Indicates whether the first series depends on the second (based on p-values).</span>
-<span class="sd">            - `coint`: Combined cointegration indicator (Johansen &amp; Engle-Granger).</span>
-<span class="sd">        - Spread and ranking:</span>
-<span class="sd">            - `t`: Minimum of `t1` and `t2`.</span>
-<span class="sd">            - `p`: Minimum of `p1` and `p2`.</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pd.DataFrame</span>
+<span class="sd">        A DataFrame containing:</span>
+
+<span class="sd">        **Johansen and Engle-Granger cointegration metrics**</span>
+<span class="sd">            * ``t1``, ``t2`` : Engle-Granger test statistics for two directions.</span>
+<span class="sd">            * ``p1``, ``p2`` : Engle-Granger p-values for two directions.</span>
+<span class="sd">            * ``trace0``, ``trace1`` : Johansen test trace statistics for 0 and 1 cointegration relationships.</span>
+
+<span class="sd">        **Indicators and filters**</span>
+<span class="sd">            * ``joh_sig`` : Indicates Johansen cointegration significance.</span>
+<span class="sd">            * ``eg_sig`` : Indicates Engle-Granger significance (p-value &lt; 0.05).</span>
+<span class="sd">            * ``s1_dep`` : Indicates whether the first series depends on the second (based on p-values).</span>
+<span class="sd">            * ``coint`` : Combined cointegration indicator (Johansen &amp; Engle-Granger).</span>
+
+<span class="sd">        **Spread and ranking**</span>
+<span class="sd">            * ``t`` : Minimum of ``t1`` and ``t2``.</span>
+<span class="sd">            * ``p`` : Minimum of ``p1`` and ``p2``.</span>
+
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
-<span class="sd">    Stefan Jansen (2020). Machine Learning for Algorithmic Trading - Second Edition.</span>
-<span class="sd">    chapter 9, Time-Series Models for Volatility Forecasts and Statistical Arbitrage.</span>
+<span class="sd">    Stefan Jansen (2020). *Machine Learning for Algorithmic Trading - Second Edition*.</span>
+<span class="sd">    Chapter 9, Time-Series Models for Volatility Forecasts and Statistical Arbitrage.</span>
 
-<span class="sd">    Example:</span>
-<span class="sd">    &gt;&gt;&gt;    import pandas as pd</span>
-
-<span class="sd">    &gt;&gt;&gt;    # Sample Data</span>
-<span class="sd">    &gt;&gt;&gt;    data_securities = {</span>
-<span class="sd">    ...        &#39;Security1&#39;: [100, 102, 101, 103, 105],</span>
-<span class="sd">    ...        &#39;Security2&#39;: [50, 52, 53, 51, 54]</span>
-<span class="sd">    ...    }</span>
-<span class="sd">    &gt;&gt;&gt;    data_candidates = {</span>
-<span class="sd">    ...        &#39;Candidate1&#39;: [100, 101, 99, 102, 104],</span>
-<span class="sd">    ...        &#39;Candidate2&#39;: [200, 202, 201, 203, 205]</span>
-<span class="sd">    ...    }</span>
-
-<span class="sd">    &gt;&gt;&gt;    securities = pd.DataFrame(data_securities, index=pd.date_range(&#39;2023-01-01&#39;, periods=5))</span>
-<span class="sd">    &gt;&gt;&gt;    candidates = pd.DataFrame(data_candidates, index=pd.date_range(&#39;2023-01-01&#39;, periods=5))</span>
-
-<span class="sd">    &gt;&gt;&gt;    # Find cointegrated pairs</span>
-<span class="sd">    &gt;&gt;&gt;    top_pairs = find_cointegrated_pairs(securities, candidates, n=2, coint=True)</span>
-<span class="sd">    &gt;&gt;&gt;    print(top_pairs)</span>
-
-<span class="sd">    &gt;&gt;&gt;    | s1       | s2        | t    | p     | joh_sig | eg_sig | coint |</span>
-<span class="sd">    &gt;&gt;&gt;    |----------|-----------|------|-------|---------|--------|-------|</span>
-<span class="sd">    &gt;&gt;&gt;    | Security1| Candidate1| -3.5 | 0.01  | 1       | 1      | 1     |</span>
-<span class="sd">    &gt;&gt;&gt;    | Security2| Candidate2| -2.9 | 0.04  | 1       | 1      | 1     |</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">trace0_cv</span> <span class="o">=</span> <span class="n">__CRITICAL_VALUES</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span>
-        <span class="mf">0.95</span>
-    <span class="p">]</span>  <span class="c1"># critical value for 0 cointegration relationships</span>
-    <span class="c1"># critical value for 1 cointegration relationship</span>
-    <span class="n">trace1_cv</span> <span class="o">=</span> <span class="n">__CRITICAL_VALUES</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mf">0.95</span><span class="p">]</span>
-    <span class="n">spreads</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">stop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">securities</span> <span class="o">=</span> <span class="n">securities</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">start</span><span class="p">)</span> <span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">stop</span><span class="p">),</span> <span class="p">:]</span>
-        <span class="n">candidates</span> <span class="o">=</span> <span class="n">candidates</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">start</span><span class="p">)</span> <span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">stop</span><span class="p">),</span> <span class="p">:]</span>
-    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">ticker</span><span class="p">,</span> <span class="n">prices</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">securities</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="mi">1</span><span class="p">):</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">df</span> <span class="o">=</span> <span class="n">compute_pair_metrics</span><span class="p">(</span><span class="n">prices</span><span class="p">,</span> <span class="n">candidates</span><span class="p">)</span>
-            <span class="n">spreads</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;s1&quot;</span><span class="p">,</span> <span class="n">append</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
-        <span class="k">except</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">LinAlgError</span><span class="p">:</span>
-            <span class="k">continue</span>
-    <span class="n">spreads</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">spreads</span><span class="p">)</span>
-    <span class="n">spreads</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;s2&quot;</span><span class="p">,</span> <span class="s2">&quot;s1&quot;</span><span class="p">]</span>
-    <span class="n">spreads</span> <span class="o">=</span> <span class="n">spreads</span><span class="o">.</span><span class="n">swaplevel</span><span class="p">()</span>
-    <span class="n">spreads</span><span class="p">[</span><span class="s2">&quot;t&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spreads</span><span class="p">[[</span><span class="s2">&quot;t1&quot;</span><span class="p">,</span> <span class="s2">&quot;t2&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">spreads</span><span class="p">[</span><span class="s2">&quot;p&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spreads</span><span class="p">[[</span><span class="s2">&quot;p1&quot;</span><span class="p">,</span> <span class="s2">&quot;p2&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">spreads</span><span class="p">[</span><span class="s2">&quot;joh_sig&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="p">(</span><span class="n">spreads</span><span class="o">.</span><span class="n">trace0</span> <span class="o">&gt;</span> <span class="n">trace0_cv</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">spreads</span><span class="o">.</span><span class="n">trace1</span> <span class="o">&gt;</span> <span class="n">trace1_cv</span><span class="p">)</span>
-    <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-    <span class="n">spreads</span><span class="p">[</span><span class="s2">&quot;eg_sig&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">spreads</span><span class="o">.</span><span class="n">p</span> <span class="o">&lt;</span> <span class="mf">0.05</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-    <span class="n">spreads</span><span class="p">[</span><span class="s2">&quot;s1_dep&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spreads</span><span class="o">.</span><span class="n">p1</span> <span class="o">&lt;</span> <span class="n">spreads</span><span class="o">.</span><span class="n">p2</span>
-    <span class="n">spreads</span><span class="p">[</span><span class="s2">&quot;coint&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">spreads</span><span class="o">.</span><span class="n">joh_sig</span> <span class="o">&amp;</span> <span class="n">spreads</span><span class="o">.</span><span class="n">eg_sig</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-    <span class="c1"># select top n pairs</span>
-    <span class="k">if</span> <span class="n">coint</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">n</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">top_pairs</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">spreads</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;coint == 1&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
-            <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">top_pairs</span> <span class="o">=</span> <span class="n">spreads</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;coint == 1&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">n</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">top_pairs</span> <span class="o">=</span> <span class="n">spreads</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">top_pairs</span> <span class="o">=</span> <span class="n">spreads</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">top_pairs</span></div>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">    &gt;&gt;&gt; data_securities = {</span>
+<span class="sd">    ...     &#39;Security1&#39;: [100, 102, 101, 103, 105],</span>
+<span class="sd">    ...     &#39;Security2&#39;: [50, 52, 53, 51, 54]</span>
+<span class="sd">    ... }</span>
+<span class="sd">    &gt;&gt;&gt; data_candidates = {</span>
+<span class="sd">    ...     &#39;Candidate1&#39;: [100, 101, 99, 102, 104],</span>
+<span class="sd">    ...     &#39;Candidate2&#39;: [200, 202, 201, 203, 205]</span>
+<span class="sd">    ... }</span>
+<span class="sd">    &gt;&gt;&gt; securities = pd.DataFrame(data_securities, index=pd.date_range(&#39;2023-01-01&#39;, periods=5))</span>
+<span class="sd">    &gt;&gt;&gt; candidates = pd.DataFrame(data_candidates, index=pd.date_range(&#39;2023-01-01&#39;, periods=5))</span>
+<span class="sd">    &gt;&gt;&gt; top_pairs = find_cointegrated_pairs(securities, candidates, n=2, coint=True)</span>
+<span class="sd">    &gt;&gt;&gt; print(top_pairs)</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
 
 
 
@@ -1233,25 +1203,31 @@
 <div class="viewcode-block" id="KFHedgeRatio">
 <a class="viewcode-back" href="../../bbstrader.html#bbstrader.tseries.KFHedgeRatio">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">KFHedgeRatio</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Estimate Hedge Ratio using Kalman Filter.</span>
-<span class="sd">    Args:</span>
-<span class="sd">        x : pd.Series or np.ndarray</span>
-<span class="sd">            The independent variable, which can be either a pandas Series or a numpy array.</span>
-<span class="sd">        y : pd.Series or np.ndarray</span>
-<span class="sd">            The dependent variable, which can be either a pandas Series or a numpy array.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Estimate Hedge Ratio using Kalman Filter.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        np.ndarray</span>
-<span class="sd">            The estimated hedge ratio as a numpy array.</span>
+<span class="sd">    This function uses a Kalman Filter to dynamically estimate the hedge ratio</span>
+<span class="sd">    (beta) and intercept (alpha) for a pair of assets over time.</span>
 
-<span class="sd">    The function returns the negative of the first state variable of each Kalman Filter estimate,</span>
-<span class="sd">    which represents the estimated hedge ratio.</span>
+<span class="sd">    The function returns the negative of the first state variable (the hedge ratio)</span>
+<span class="sd">    for each time step, which is a common convention in pairs trading.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : pd.Series or np.ndarray</span>
+<span class="sd">        The independent variable (e.g., price series of asset X).</span>
+<span class="sd">    y : pd.Series or np.ndarray</span>
+<span class="sd">        The dependent variable (e.g., price series of asset Y).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        The time-varying estimated hedge ratio as a numpy array.</span>
 
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
-<span class="sd">    Stefan Jansen (2020). Machine Learning for Algorithmic Trading - Second Edition.</span>
-<span class="sd">    chapter 9, Time-Series Models for Volatility Forecasts and Statistical Arbitrage.</span>
+<span class="sd">    * [1] Jansen, S. (2020). Machine Learning for Algorithmic Trading -</span>
+<span class="sd">       Second Edition. Packt Publishing. Chapter 9, Time-Series Models</span>
+<span class="sd">       for Volatility Forecasts and Statistical Arbitrage.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">))</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span>
         <span class="n">y</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span>

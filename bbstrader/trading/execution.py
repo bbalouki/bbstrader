@@ -1012,13 +1012,28 @@ class Mt5ExecutionEngine:
 
 
 def RunMt5Engine(account_id: str, **kwargs):
-    """Starts an MT5 execution engine for a given account.
-    Args:
-        account_id: Account ID to run the execution engine on.
-        **kwargs: Additional keyword arguments
-            _ symbol_list : List of symbols to trade.
-            - trades_instances : Dictionary of Trade instances.
-            - strategy_cls : Strategy class to use for trading.
+    """
+    Start an MT5 execution engine for a given account.
+
+    Parameters
+    ----------
+    account_id : str
+        Account ID to run the execution engine on.
+
+    **kwargs : dict
+        Additional keyword arguments. Possible keys include:
+
+        * symbol_list : list
+            List of symbols to trade.
+        * trades_instances : dict
+            Dictionary of Trade instances.
+        * strategy_cls : class
+            Strategy class to use for trading.
+
+    Returns
+    -------
+    None
+        Initializes and runs the MT5 execution engine.
     """
     log.info(f"Starting execution engine for {account_id}")
 

@@ -157,22 +157,38 @@ def check_mt5_connection(
     """
     Initialize the connection to the MetaTrader 5 terminal.
 
-    Args:
-        path (str, optional): The path to the MetaTrader 5 terminal executable file.
-            Defaults to None (e.g., "C:/Program Files/MetaTrader 5/terminal64.exe").
-        login (int, optional): The login ID of the trading account. Defaults to None.
-        password (str, optional): The password of the trading account. Defaults to None.
-        server (str, optional): The name of the trade server to which the client terminal is connected.
-            Defaults to None.
-        timeout (int, optional): Connection timeout in milliseconds. Defaults to 60_000.
-        portable (bool, optional): If True, the portable mode of the terminal is used.
-            Defaults to False (See https://www.metatrader5.com/en/terminal/help/start_advanced/start#portable).
+    Parameters
+    ----------
+    path : str, optional
+        Path to the MetaTrader 5 terminal executable file.
+        Defaults to ``None`` (e.g., ``"C:/Program Files/MetaTrader 5/terminal64.exe"``).
+    login : int, optional
+        The login ID of the trading account. Defaults to ``None``.
+    password : str, optional
+        The password of the trading account. Defaults to ``None``.
+    server : str, optional
+        The name of the trade server to which the client terminal is connected.
+        Defaults to ``None``.
+    timeout : int, optional
+        Connection timeout in milliseconds. Defaults to ``60_000``.
+    portable : bool, optional
+        If ``True``, the portable mode of the terminal is used.
+        Defaults to ``False``.
+        See: https://www.metatrader5.com/en/terminal/help/start_advanced/start#portable
 
-    Notes:
-        If you want to lunch multiple terminal instances:
-        - Follow these instructions to lunch each terminal in portable mode first:
-            https://www.metatrader5.com/en/terminal/help/start_advanced/start#configuration_file
+    Returns
+    -------
+    bool
+        ``True`` if the connection is successfully established, otherwise ``False``.
+
+    Notes
+    -----
+    If you want to launch multiple terminal instances:
+
+    * First, launch each terminal in **portable mode**.
+    * See instructions: https://www.metatrader5.com/en/terminal/help/start_advanced/start#configuration_file
     """
+
     if login is not None and server is not None:
         account_info = mt5.account_info()
         if account_info is not None:
@@ -1209,17 +1225,26 @@ class Account(object):
     def get_market_book(self, symbol: str) -> Tuple[BookInfo]:
         """
         Get the Market Depth content for a specific symbol.
-        Args:
-            symbol (str): Financial instrument name. Required unnamed parameter.
-                The symbol name should be specified in the same format as in the Market Watch window.
 
-        Returns:
-            The Market Depth content as a tuple from BookInfo entries featuring order type, price and volume in lots.
-            Return None in case of an error.
+        Parameters
+        ----------
+        symbol : str
+            Financial instrument name. The symbol should be specified in the
+            same format as in the Market Watch window.
 
-        Raises:
-            MT5TerminalError: A specific exception based on the error code.
+        Returns
+        -------
+        tuple of BookInfo or None
+            The Market Depth content as a tuple of ``BookInfo`` entries
+            (order type, price, and volume in lots).  
+            Returns ``None`` in case of an error.
+
+        Raises
+        ------
+        MT5TerminalError
+            A specific exception based on the error code.
         """
+
         try:
             book = mt5.market_book_get(symbol)
             return (

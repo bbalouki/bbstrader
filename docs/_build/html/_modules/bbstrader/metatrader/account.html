@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>bbstrader.metatrader.account &mdash; bbstrader 0.3.3 documentation</title>
+  <title>bbstrader.metatrader.account &mdash; bbstrader 0.3.5 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=d5a15cff"></script>
+      <script src="../../../_static/documentation_options.js?v=ba50482b"></script>
       <script src="../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -72,19 +72,28 @@
 <span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">urllib.request</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">currency_converter</span><span class="w"> </span><span class="kn">import</span> <span class="n">SINGLE_DAY_ECB_URL</span><span class="p">,</span> <span class="n">CurrencyConverter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
+
 <span class="kn">from</span><span class="w"> </span><span class="nn">bbstrader.metatrader.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">TIMEFRAMES</span><span class="p">,</span>
     <span class="n">AccountInfo</span><span class="p">,</span>
     <span class="n">BookInfo</span><span class="p">,</span>
     <span class="n">InvalidBroker</span><span class="p">,</span>
     <span class="n">OrderCheckResult</span><span class="p">,</span>
     <span class="n">OrderSentResult</span><span class="p">,</span>
+    <span class="n">RateDtype</span><span class="p">,</span>
+    <span class="n">RateInfo</span><span class="p">,</span>
     <span class="n">SymbolInfo</span><span class="p">,</span>
     <span class="n">SymbolType</span><span class="p">,</span>
     <span class="n">TerminalInfo</span><span class="p">,</span>
+    <span class="n">TickDtype</span><span class="p">,</span>
+    <span class="n">TickFlag</span><span class="p">,</span>
     <span class="n">TickInfo</span><span class="p">,</span>
     <span class="n">TradeDeal</span><span class="p">,</span>
     <span class="n">TradeOrder</span><span class="p">,</span>
@@ -92,7 +101,6 @@
     <span class="n">TradeRequest</span><span class="p">,</span>
     <span class="n">raise_mt5_error</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">currency_converter</span><span class="w"> </span><span class="kn">import</span> <span class="n">SINGLE_DAY_ECB_URL</span><span class="p">,</span> <span class="n">CurrencyConverter</span>
 
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">MetaTrader5</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mt5</span>
@@ -222,28 +230,44 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Initialize the connection to the MetaTrader 5 terminal.</span>
 
-<span class="sd">    Args:</span>
-<span class="sd">        path (str, optional): The path to the MetaTrader 5 terminal executable file.</span>
-<span class="sd">            Defaults to None (e.g., &quot;C:/Program Files/MetaTrader 5/terminal64.exe&quot;).</span>
-<span class="sd">        login (int, optional): The login ID of the trading account. Defaults to None.</span>
-<span class="sd">        password (str, optional): The password of the trading account. Defaults to None.</span>
-<span class="sd">        server (str, optional): The name of the trade server to which the client terminal is connected.</span>
-<span class="sd">            Defaults to None.</span>
-<span class="sd">        timeout (int, optional): Connection timeout in milliseconds. Defaults to 60_000.</span>
-<span class="sd">        portable (bool, optional): If True, the portable mode of the terminal is used.</span>
-<span class="sd">            Defaults to False (See https://www.metatrader5.com/en/terminal/help/start_advanced/start#portable).</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    path : str, optional</span>
+<span class="sd">        Path to the MetaTrader 5 terminal executable file.</span>
+<span class="sd">        Defaults to ``None`` (e.g., ``&quot;C:/Program Files/MetaTrader 5/terminal64.exe&quot;``).</span>
+<span class="sd">    login : int, optional</span>
+<span class="sd">        The login ID of the trading account. Defaults to ``None``.</span>
+<span class="sd">    password : str, optional</span>
+<span class="sd">        The password of the trading account. Defaults to ``None``.</span>
+<span class="sd">    server : str, optional</span>
+<span class="sd">        The name of the trade server to which the client terminal is connected.</span>
+<span class="sd">        Defaults to ``None``.</span>
+<span class="sd">    timeout : int, optional</span>
+<span class="sd">        Connection timeout in milliseconds. Defaults to ``60_000``.</span>
+<span class="sd">    portable : bool, optional</span>
+<span class="sd">        If ``True``, the portable mode of the terminal is used.</span>
+<span class="sd">        Defaults to ``False``.</span>
+<span class="sd">        See: https://www.metatrader5.com/en/terminal/help/start_advanced/start#portable</span>
 
-<span class="sd">    Notes:</span>
-<span class="sd">        If you want to lunch multiple terminal instances:</span>
-<span class="sd">        - Follow these instructions to lunch each terminal in portable mode first:</span>
-<span class="sd">            https://www.metatrader5.com/en/terminal/help/start_advanced/start#configuration_file</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bool</span>
+<span class="sd">        ``True`` if the connection is successfully established, otherwise ``False``.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    If you want to launch multiple terminal instances:</span>
+
+<span class="sd">    * First, launch each terminal in **portable mode**.</span>
+<span class="sd">    * See instructions: https://www.metatrader5.com/en/terminal/help/start_advanced/start#configuration_file</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">if</span> <span class="n">login</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">server</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">account_info</span> <span class="o">=</span> <span class="n">mt5</span><span class="o">.</span><span class="n">account_info</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">account_info</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">account_info</span><span class="o">.</span><span class="n">login</span> <span class="o">==</span> <span class="n">login</span> <span class="ow">and</span> <span class="n">account_info</span><span class="o">.</span><span class="n">server</span> <span class="o">==</span> <span class="n">server</span><span class="p">:</span>
                 <span class="k">return</span> <span class="kc">True</span>
-        
+
     <span class="n">init</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span><span class="n">login</span> <span class="ow">or</span> <span class="n">password</span> <span class="ow">or</span> <span class="n">server</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
@@ -622,7 +646,7 @@
 
 <div class="viewcode-block" id="Account.get_terminal_info">
 <a class="viewcode-back" href="../../../bbstrader.metatrader.html#bbstrader.metatrader.account.Account.get_terminal_info">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_terminal_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">TerminalInfo</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_terminal_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TerminalInfo</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the connected MetaTrader 5 client terminal status and settings.</span>
 
@@ -1097,7 +1121,7 @@
 
 <div class="viewcode-block" id="Account.get_symbol_info">
 <a class="viewcode-back" href="../../../bbstrader.metatrader.html#bbstrader.metatrader.account.Account.get_symbol_info">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_symbol_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">SymbolInfo</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_symbol_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SymbolInfo</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get symbol properties</span>
 
 <span class="sd">        Args:</span>
@@ -1131,6 +1155,14 @@
             <span class="n">raise_mt5_error</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">msg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_symbol_info_msg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;No history found for </span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2"> in Market Watch.</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;* Ensure </span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2"> is selected and displayed in the Market Watch window.</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;* See https://www.metatrader5.com/en/terminal/help/trading/market_watch</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;* Ensure the symbol name is correct.</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
 <div class="viewcode-block" id="Account.show_symbol_info">
 <a class="viewcode-back" href="../../../bbstrader.metatrader.html#bbstrader.metatrader.account.Account.show_symbol_info">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">show_symbol_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
@@ -1143,17 +1175,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_show_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_symbol_info</span><span class="p">,</span> <span class="s2">&quot;symbol&quot;</span><span class="p">,</span> <span class="n">symbol</span><span class="o">=</span><span class="n">symbol</span><span class="p">)</span></div>
 
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_symbol_info_msg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;No history found for </span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2"> in Market Watch.</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;* Ensure </span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2"> is selected and displayed in the Market Watch window.</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;* See https://www.metatrader5.com/en/terminal/help/trading/market_watch</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;* Ensure the symbol name is correct.</span><span class="se">\n</span><span class="s2">&quot;</span>
-        <span class="p">)</span>
-
 <div class="viewcode-block" id="Account.get_tick_info">
 <a class="viewcode-back" href="../../../bbstrader.metatrader.html#bbstrader.metatrader.account.Account.get_tick_info">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_tick_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">TickInfo</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_tick_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TickInfo</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get symbol tick properties</span>
 
 <span class="sd">        Args:</span>
@@ -1199,22 +1223,190 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_show_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_tick_info</span><span class="p">,</span> <span class="s2">&quot;tick&quot;</span><span class="p">,</span> <span class="n">symbol</span><span class="o">=</span><span class="n">symbol</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="Account.get_market_book">
-<a class="viewcode-back" href="../../../bbstrader.metatrader.html#bbstrader.metatrader.account.Account.get_market_book">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_market_book</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">BookInfo</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Get the Market Depth content for a specific symbol.</span>
+<div class="viewcode-block" id="Account.get_rate_info">
+<a class="viewcode-back" href="../../../bbstrader.metatrader.html#bbstrader.metatrader.account.Account.get_rate_info">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_rate_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">timeframe</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;1m&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RateInfo</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the most recent bar for a specified symbol and timeframe.</span>
+
 <span class="sd">        Args:</span>
-<span class="sd">            symbol (str): Financial instrument name. Required unnamed parameter.</span>
-<span class="sd">                The symbol name should be specified in the same format as in the Market Watch window.</span>
-
+<span class="sd">            symbol (str): The symbol for which to get the rate information.</span>
+<span class="sd">            timeframe (str): The timeframe for the rate information. Default is &#39;1m&#39;.</span>
+<span class="sd">                            See ``bbstrader.metatrader.utils.TIMEFRAMES`` for supported timeframes.</span>
 <span class="sd">        Returns:</span>
-<span class="sd">            The Market Depth content as a tuple from BookInfo entries featuring order type, price and volume in lots.</span>
-<span class="sd">            Return None in case of an error.</span>
-
+<span class="sd">            RateInfo: The most recent bar as a RateInfo named tuple.</span>
+<span class="sd">            None: If no rates are found or an error occurs.</span>
 <span class="sd">        Raises:</span>
 <span class="sd">            MT5TerminalError: A specific exception based on the error code.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rates</span> <span class="o">=</span> <span class="n">mt5</span><span class="o">.</span><span class="n">copy_rates_from_pos</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">TIMEFRAMES</span><span class="p">[</span><span class="n">timeframe</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">rates</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">rates</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">rate</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">RateInfo</span><span class="p">(</span><span class="o">*</span><span class="n">rate</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Account.get_rates_from_pos">
+<a class="viewcode-back" href="../../../bbstrader.metatrader.html#bbstrader.metatrader.account.Account.get_rates_from_pos">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_rates_from_pos</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">timeframe</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">start_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">bars</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">void</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get bars from the MetaTrader 5 terminal starting from the specified index.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            symbol: Financial instrument name, for example, &quot;EURUSD&quot;</span>
+<span class="sd">            timeframe: Timeframe the bars are requested for.</span>
+<span class="sd">            start_pos: Initial index of the bar the data are requested from.</span>
+<span class="sd">            bars: Number of bars to receive.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bars as the numpy array with the named time, open, high, low, close, tick_volume, spread and real_volume columns.</span>
+<span class="sd">            Returns an empty array in case of an error.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rates</span> <span class="o">=</span> <span class="n">mt5</span><span class="o">.</span><span class="n">copy_rates_from_pos</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">TIMEFRAMES</span><span class="p">[</span><span class="n">timeframe</span><span class="p">],</span> <span class="n">start_pos</span><span class="p">,</span> <span class="n">bars</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">rates</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">rates</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">RateDtype</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">rates</span></div>
+
+
+<div class="viewcode-block" id="Account.get_rates_from_date">
+<a class="viewcode-back" href="../../../bbstrader.metatrader.html#bbstrader.metatrader.account.Account.get_rates_from_date">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_rates_from_date</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">timeframe</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">date_from</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">,</span>
+        <span class="n">bars</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">void</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get bars from the MetaTrader 5 terminal starting from the specified date.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            symbol: Financial instrument name, for example, &quot;EURUSD&quot;</span>
+<span class="sd">            timeframe: Timeframe the bars are requested for.</span>
+<span class="sd">            date_from: Date of opening of the first bar from the requested sample.</span>
+<span class="sd">            bars: Number of bars to receive.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bars as the numpy array with the named time, open, high, low, close, tick_volume, spread and real_volume columns.</span>
+<span class="sd">            Returns an empty array in case of an error.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rates</span> <span class="o">=</span> <span class="n">mt5</span><span class="o">.</span><span class="n">copy_rates_from</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">TIMEFRAMES</span><span class="p">[</span><span class="n">timeframe</span><span class="p">],</span> <span class="n">date_from</span><span class="p">,</span> <span class="n">bars</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">rates</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">rates</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">RateDtype</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">rates</span></div>
+
+
+<div class="viewcode-block" id="Account.get_rates_range">
+<a class="viewcode-back" href="../../../bbstrader.metatrader.html#bbstrader.metatrader.account.Account.get_rates_range">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_rates_range</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">timeframe</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">date_from</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">,</span>
+        <span class="n">date_to</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">void</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get bars in the specified date range from the MetaTrader 5 terminal.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            symbol: Financial instrument name, for example, &quot;EURUSD&quot;</span>
+<span class="sd">            timeframe: Timeframe the bars are requested for.</span>
+<span class="sd">            date_from: Date the bars are requested from.</span>
+<span class="sd">            date_to: Date, up to which the bars are requested.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bars as the numpy array with the named time, open, high, low, close, tick_volume, spread and real_volume columns.</span>
+<span class="sd">            Returns an empty array in case of an error.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rates</span> <span class="o">=</span> <span class="n">mt5</span><span class="o">.</span><span class="n">copy_rates_range</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">TIMEFRAMES</span><span class="p">[</span><span class="n">timeframe</span><span class="p">],</span> <span class="n">date_from</span><span class="p">,</span> <span class="n">date_to</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">rates</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">rates</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">RateDtype</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">rates</span></div>
+
+
+<div class="viewcode-block" id="Account.get_tick_from_date">
+<a class="viewcode-back" href="../../../bbstrader.metatrader.html#bbstrader.metatrader.account.Account.get_tick_from_date">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_tick_from_date</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">date_from</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">,</span>
+        <span class="n">ticks</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">flag</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="s2">&quot;info&quot;</span><span class="p">,</span> <span class="s2">&quot;trade&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;all&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">void</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get ticks from the MetaTrader 5 terminal starting from the specified date.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            symbol: Financial instrument name, for example, &quot;EURUSD&quot;</span>
+<span class="sd">            date_from: Date the ticks are requested from.</span>
+<span class="sd">            ticks: Number of bars to receive.</span>
+<span class="sd">            flag: A flag to define the type of the requested ticks (&quot;all&quot;, &quot;info&quot;, &quot;trade&quot;).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Returns ticks as the numpy array with the named time, bid, ask, last and flags columns.</span>
+<span class="sd">            Return an empty array in case of an error.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ticks_data</span> <span class="o">=</span> <span class="n">mt5</span><span class="o">.</span><span class="n">copy_ticks_from</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">date_from</span><span class="p">,</span> <span class="n">ticks</span><span class="p">,</span> <span class="n">TickFlag</span><span class="p">[</span><span class="n">flag</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">ticks_data</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">ticks_data</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">TickDtype</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ticks_data</span></div>
+
+
+<div class="viewcode-block" id="Account.get_tick_range">
+<a class="viewcode-back" href="../../../bbstrader.metatrader.html#bbstrader.metatrader.account.Account.get_tick_range">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_tick_range</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">date_from</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">,</span>
+        <span class="n">date_to</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span>
+        <span class="n">flag</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="s2">&quot;info&quot;</span><span class="p">,</span> <span class="s2">&quot;trade&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;all&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">void</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get ticks for the specified date range from the MetaTrader 5 terminal.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            symbol: Financial instrument name, for example, &quot;EURUSD&quot;</span>
+<span class="sd">            date_from: Date the ticks are requested from.</span>
+<span class="sd">            date_to: Date, up to which the ticks are requested.</span>
+<span class="sd">            flag: A flag to define the type of the requested ticks (&quot;all&quot;, &quot;info&quot;, &quot;trade&quot;).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Returns ticks as the numpy array with the named time, bid, ask, last and flags columns.</span>
+<span class="sd">            Return an empty array in case of an error.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ticks_data</span> <span class="o">=</span> <span class="n">mt5</span><span class="o">.</span><span class="n">copy_ticks_range</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">date_from</span><span class="p">,</span> <span class="n">date_to</span><span class="p">,</span> <span class="n">TickFlag</span><span class="p">[</span><span class="n">flag</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">ticks_data</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">ticks_data</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">TickDtype</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ticks_data</span></div>
+
+
+<div class="viewcode-block" id="Account.get_market_book">
+<a class="viewcode-back" href="../../../bbstrader.metatrader.html#bbstrader.metatrader.account.Account.get_market_book">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_market_book</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">BookInfo</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the Market Depth content for a specific symbol.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        symbol : str</span>
+<span class="sd">            Financial instrument name. The symbol should be specified in the</span>
+<span class="sd">            same format as in the Market Watch window.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple of BookInfo or None</span>
+<span class="sd">            The Market Depth content as a tuple of ``BookInfo`` entries</span>
+<span class="sd">            (order type, price, and volume in lots).  </span>
+<span class="sd">            Returns ``None`` in case of an error.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        MT5TerminalError</span>
+<span class="sd">            A specific exception based on the error code.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="k">try</span><span class="p">:</span>
             <span class="n">book</span> <span class="o">=</span> <span class="n">mt5</span><span class="o">.</span><span class="n">market_book_get</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
             <span class="k">return</span> <span class="p">(</span>
@@ -1358,7 +1550,7 @@
         <span class="n">group</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">ticket</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">to_df</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">TradePosition</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">TradePosition</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get open positions with the ability to filter by symbol or ticket.</span>
 <span class="sd">        There are four call options:</span>
@@ -1388,7 +1580,6 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            Union[pd.DataFrame, Tuple[TradePosition], None]:</span>
 <span class="sd">            - `TradePosition` in the form of a named tuple structure (namedtuple) or pd.DataFrame.</span>
-<span class="sd">            - `None` in case of an error.</span>
 
 <span class="sd">        Notes:</span>
 <span class="sd">            The method allows receiving all open positions within a specified period.</span>
@@ -1447,7 +1638,7 @@
         <span class="n">position</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># TradePosition.ticket</span>
         <span class="n">to_df</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">TradeDeal</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">TradeDeal</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get deals from trading history within the specified interval</span>
 <span class="sd">        with the ability to filter by `ticket` or `position`.</span>
@@ -1485,7 +1676,6 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            Union[pd.DataFrame, Tuple[TradeDeal], None]:</span>
 <span class="sd">            - `TradeDeal` in the form of a named tuple structure (namedtuple) or pd.DataFrame().</span>
-<span class="sd">            - `None` in case of an error.</span>
 
 <span class="sd">        Notes:</span>
 <span class="sd">            The method allows receiving all history orders within a specified period.</span>
@@ -1578,7 +1768,6 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            Union[pd.DataFrame, Tuple[TradeOrder], None]:</span>
 <span class="sd">            - `TradeOrder` in the form of a named tuple structure (namedtuple) or pd.DataFrame().</span>
-<span class="sd">            - `None` in case of an error.</span>
 
 <span class="sd">        Notes:</span>
 <span class="sd">            The method allows receiving all history orders within a specified period.</span>
@@ -1646,7 +1835,7 @@
         <span class="n">position</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># position ticket</span>
         <span class="n">to_df</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">TradeOrder</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">TradeOrder</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get orders from trading history within the specified interval</span>
 <span class="sd">        with the ability to filter by `ticket` or `position`.</span>
@@ -1684,7 +1873,6 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            Union[pd.DataFrame, Tuple[TradeOrder], None]</span>
 <span class="sd">            - `TradeOrder` in the form of a named tuple structure (namedtuple) or pd.DataFrame().</span>
-<span class="sd">            - `None` in case of an error.</span>
 
 <span class="sd">        Notes:</span>
 <span class="sd">            The method allows receiving all history orders within a specified period.</span>
@@ -1768,16 +1956,11 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            List[TradeDeal]: List of today deals</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">date_from</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-        <span class="n">history</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">get_trades_history</span><span class="p">(</span><span class="n">date_from</span><span class="o">=</span><span class="n">date_from</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">,</span> <span class="n">to_df</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[]</span>
-        <span class="p">)</span>
+        <span class="n">history</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_trades_history</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">,</span> <span class="n">to_df</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[]</span>
         <span class="n">positions_ids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">deal</span><span class="o">.</span><span class="n">position_id</span> <span class="k">for</span> <span class="n">deal</span> <span class="ow">in</span> <span class="n">history</span> <span class="k">if</span> <span class="n">deal</span><span class="o">.</span><span class="n">magic</span> <span class="o">==</span> <span class="nb">id</span><span class="p">])</span>
         <span class="n">today_deals</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">position</span> <span class="ow">in</span> <span class="n">positions_ids</span><span class="p">:</span>
-            <span class="n">deal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_trades_history</span><span class="p">(</span>
-                <span class="n">date_from</span><span class="o">=</span><span class="n">date_from</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="n">position</span><span class="p">,</span> <span class="n">to_df</span><span class="o">=</span><span class="kc">False</span>
-            <span class="p">)</span>
+            <span class="n">deal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_trades_history</span><span class="p">(</span><span class="n">position</span><span class="o">=</span><span class="n">position</span><span class="p">,</span> <span class="n">to_df</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[]</span>
             <span class="k">if</span> <span class="n">deal</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">deal</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
                 <span class="n">deal_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="n">deal</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">time</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">deal_time</span><span class="o">.</span><span class="n">date</span><span class="p">()</span> <span class="o">==</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">date</span><span class="p">():</span>

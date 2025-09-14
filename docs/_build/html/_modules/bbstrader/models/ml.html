@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>bbstrader.models.ml &mdash; bbstrader 0.3.3 documentation</title>
+  <title>bbstrader.models.ml &mdash; bbstrader 0.3.5 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=d5a15cff"></script>
+      <script src="../../../_static/documentation_options.js?v=ba50482b"></script>
       <script src="../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -71,6 +71,7 @@
   <h1>Source code for bbstrader.models.ml</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">concurrent.futures</span><span class="w"> </span><span class="kn">import</span> <span class="n">ThreadPoolExecutor</span><span class="p">,</span> <span class="n">as_completed</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">product</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">time</span><span class="w"> </span><span class="kn">import</span> <span class="n">time</span>
 
@@ -78,7 +79,6 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">pandas_ta</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ta</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">yfinance</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">yf</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">alphalens</span><span class="w"> </span><span class="kn">import</span> <span class="n">performance</span> <span class="k">as</span> <span class="n">perf</span>
@@ -93,6 +93,15 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="kn">import</span> <span class="n">spearmanr</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">LabelEncoder</span><span class="p">,</span> <span class="n">StandardScaler</span>
 
+<span class="k">try</span><span class="p">:</span>
+    <span class="c1"># This is to fix posix import error in pandas_ta</span>
+    <span class="c1"># On windows systems</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">posix</span>  <span class="c1"># noqa: F401</span>
+<span class="k">except</span> <span class="p">(</span><span class="ne">ImportError</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">):</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">bbstrader.compat</span>  <span class="c1"># noqa: F401</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas_ta</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ta</span>
+
 <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;OneStepTimeSeriesSplit&quot;</span><span class="p">,</span> <span class="s2">&quot;MultipleTimeSeriesCV&quot;</span><span class="p">,</span> <span class="s2">&quot;LightGBModel&quot;</span><span class="p">]</span>
@@ -101,9 +110,15 @@
 <div class="viewcode-block" id="OneStepTimeSeriesSplit">
 <a class="viewcode-back" href="../../../bbstrader.models.html#bbstrader.models.ml.OneStepTimeSeriesSplit">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">OneStepTimeSeriesSplit</span><span class="p">:</span>
-    <span class="n">__author__</span> <span class="o">=</span> <span class="s2">&quot;Stefan Jansen&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generates tuples of train_idx, test_idx pairs</span>
-<span class="sd">    Assumes the index contains a level labeled &#39;date&#39;&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates tuples of train_idx, test_idx pairs</span>
+<span class="sd">    Assumes the index contains a level labeled &#39;date&#39;</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Stefan Jansen (2020). Machine Learning for Algorithmic Trading - Second Edition.</span>
+<span class="sd">    Chapter 12, Boosting Your Trading Strategy.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_splits</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">test_period_length</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_splits</span> <span class="o">=</span> <span class="n">n_splits</span>
@@ -147,11 +162,15 @@
 <div class="viewcode-block" id="MultipleTimeSeriesCV">
 <a class="viewcode-back" href="../../../bbstrader.models.html#bbstrader.models.ml.MultipleTimeSeriesCV">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">MultipleTimeSeriesCV</span><span class="p">:</span>
-    <span class="n">__author__</span> <span class="o">=</span> <span class="s2">&quot;Stefan Jansen&quot;</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Generates tuples of train_idx, test_idx pairs</span>
 <span class="sd">    Assumes the MultiIndex contains levels &#39;symbol&#39; and &#39;date&#39;</span>
 <span class="sd">    purges overlapping outcomes</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Stefan Jansen (2020). Machine Learning for Algorithmic Trading - Second Edition.</span>
+<span class="sd">    Chapter 12, Boosting Your Trading Strategy.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -281,7 +300,7 @@
         <span class="c1"># Compute Bollinger Bands using pandas_ta</span>
         <span class="n">bb</span> <span class="o">=</span> <span class="n">ta</span><span class="o">.</span><span class="n">bbands</span><span class="p">(</span><span class="n">close</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
-            <span class="p">{</span><span class="s2">&quot;bb_high&quot;</span><span class="p">:</span> <span class="n">bb</span><span class="p">[</span><span class="s2">&quot;BBU_20_2.0&quot;</span><span class="p">],</span> <span class="s2">&quot;bb_low&quot;</span><span class="p">:</span> <span class="n">bb</span><span class="p">[</span><span class="s2">&quot;BBL_20_2.0&quot;</span><span class="p">]},</span> <span class="n">index</span><span class="o">=</span><span class="n">close</span><span class="o">.</span><span class="n">index</span>
+            <span class="p">{</span><span class="s2">&quot;bb_high&quot;</span><span class="p">:</span> <span class="n">bb</span><span class="p">[</span><span class="s2">&quot;BBU_20_2.0_2.0&quot;</span><span class="p">],</span> <span class="s2">&quot;bb_low&quot;</span><span class="p">:</span> <span class="n">bb</span><span class="p">[</span><span class="s2">&quot;BBL_20_2.0_2.0&quot;</span><span class="p">]},</span> <span class="n">index</span><span class="o">=</span><span class="n">close</span><span class="o">.</span><span class="n">index</span>
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_compute_atr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stock_data</span><span class="p">):</span>
@@ -331,26 +350,29 @@
 <div class="viewcode-block" id="LightGBModel.download_boosting_data">
 <a class="viewcode-back" href="../../../bbstrader.models.html#bbstrader.models.ml.LightGBModel.download_boosting_data">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">download_boosting_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tickers</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">ticker</span> <span class="ow">in</span> <span class="n">tickers</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">prices</span> <span class="o">=</span> <span class="n">yf</span><span class="o">.</span><span class="n">download</span><span class="p">(</span>
-                    <span class="n">ticker</span><span class="p">,</span>
-                    <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
-                    <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
-                    <span class="n">progress</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                    <span class="n">multi_level_index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                    <span class="n">auto_adjust</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                <span class="p">)</span>
-                <span class="k">if</span> <span class="n">prices</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
-                    <span class="k">continue</span>
-                <span class="n">prices</span><span class="p">[</span><span class="s2">&quot;symbol&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ticker</span>
-                <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prices</span><span class="p">)</span>
-            <span class="k">except</span><span class="p">:</span>  <span class="c1"># noqa: E722</span>
-                <span class="k">continue</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">yf</span><span class="o">.</span><span class="n">download</span><span class="p">(</span>
+                <span class="n">tickers</span><span class="p">,</span>
+                <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
+                <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
+                <span class="n">progress</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">auto_adjust</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">threads</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+
+            <span class="n">data</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">rename_axis</span><span class="p">([</span><span class="s2">&quot;Date&quot;</span><span class="p">,</span> <span class="s2">&quot;symbol&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;An error occurred during data download: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+
+        <span class="c1"># The rest of the data processing is the same as the original function</span>
         <span class="k">if</span> <span class="s2">&quot;Adj Close&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Adj Close&quot;</span><span class="p">])</span>
+
         <span class="n">data</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">data</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="n">s</span><span class="p">:</span> <span class="n">s</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">})</span>
             <span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;symbol&quot;</span><span class="p">,</span> <span class="n">append</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -364,17 +386,11 @@
 <div class="viewcode-block" id="LightGBModel.download_metadata">
 <a class="viewcode-back" href="../../../bbstrader.models.html#bbstrader.models.ml.LightGBModel.download_metadata">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">download_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tickers</span><span class="p">):</span>
-        <span class="k">def</span><span class="w"> </span><span class="nf">clean_text_column</span><span class="p">(</span><span class="n">series</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">(</span>
-                <span class="n">series</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-                <span class="c1"># use regex=False for literal string replacements</span>
-                <span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-                <span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&amp;&quot;</span><span class="p">,</span> <span class="s2">&quot;and&quot;</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-                <span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-                <span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;__&quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-            <span class="p">)</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Downloads metadata for multiple tickers concurrently using a thread pool.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="n">metadata</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">METADATA_KEYS</span> <span class="o">=</span> <span class="p">[</span>
             <span class="s2">&quot;industry&quot;</span><span class="p">,</span>
             <span class="s2">&quot;sector&quot;</span><span class="p">,</span>
             <span class="s2">&quot;exchange&quot;</span><span class="p">,</span>
@@ -395,7 +411,7 @@
             <span class="s2">&quot;marketCap&quot;</span><span class="p">,</span>
         <span class="p">]</span>
 
-        <span class="n">columns</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">COLUMN_MAP</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;industry&quot;</span><span class="p">:</span> <span class="s2">&quot;industry&quot;</span><span class="p">,</span>
             <span class="s2">&quot;sector&quot;</span><span class="p">:</span> <span class="s2">&quot;sector&quot;</span><span class="p">,</span>
             <span class="s2">&quot;exchange&quot;</span><span class="p">:</span> <span class="s2">&quot;exchange&quot;</span><span class="p">,</span>
@@ -415,22 +431,53 @@
             <span class="s2">&quot;askSize&quot;</span><span class="p">:</span> <span class="s2">&quot;asksize&quot;</span><span class="p">,</span>
             <span class="s2">&quot;marketCap&quot;</span><span class="p">:</span> <span class="s2">&quot;marketcap&quot;</span><span class="p">,</span>
         <span class="p">}</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="n">tickers</span><span class="p">:</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">_clean_text_column</span><span class="p">(</span><span class="n">series</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Helper function to clean text columns.&quot;&quot;&quot;</span>
+            <span class="k">return</span> <span class="p">(</span>
+                <span class="n">series</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                <span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&amp;&quot;</span><span class="p">,</span> <span class="s2">&quot;and&quot;</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;__&quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">_fetch_single_ticker_info</span><span class="p">(</span><span class="n">symbol</span><span class="p">):</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Worker function to fetch and process info for one ticker.&quot;&quot;&quot;</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">symbol_info</span> <span class="o">=</span> <span class="n">yf</span><span class="o">.</span><span class="n">Ticker</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span><span class="o">.</span><span class="n">info</span>
-            <span class="k">except</span><span class="p">:</span>  <span class="c1"># noqa: E722</span>
-                <span class="k">continue</span>
-            <span class="n">infos</span> <span class="o">=</span> <span class="p">{}</span>
-            <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">metadata</span><span class="p">:</span>
-                <span class="n">infos</span><span class="p">[</span><span class="n">info</span><span class="p">]</span> <span class="o">=</span> <span class="n">symbol_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">info</span><span class="p">)</span>
-            <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">infos</span><span class="p">)</span>
+                <span class="n">ticker_info</span> <span class="o">=</span> <span class="n">yf</span><span class="o">.</span><span class="n">Ticker</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span><span class="o">.</span><span class="n">info</span>
+                <span class="k">return</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">ticker_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">METADATA_KEYS</span><span class="p">}</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">with</span> <span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+            <span class="n">future_to_ticker</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">_fetch_single_ticker_info</span><span class="p">,</span> <span class="n">ticker</span><span class="p">):</span> <span class="n">ticker</span>
+                <span class="k">for</span> <span class="n">ticker</span> <span class="ow">in</span> <span class="n">tickers</span>
+            <span class="p">}</span>
+
+            <span class="k">for</span> <span class="n">future</span> <span class="ow">in</span> <span class="n">as_completed</span><span class="p">(</span><span class="n">future_to_ticker</span><span class="p">):</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">future</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">result</span><span class="p">:</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+
         <span class="n">metadata</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-        <span class="n">metadata</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">)</span>
-        <span class="n">metadata</span><span class="o">.</span><span class="n">dyield</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">dyield</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-        <span class="n">metadata</span><span class="o">.</span><span class="n">sector</span> <span class="o">=</span> <span class="n">clean_text_column</span><span class="p">(</span><span class="n">metadata</span><span class="o">.</span><span class="n">sector</span><span class="p">)</span>
-        <span class="n">metadata</span><span class="o">.</span><span class="n">industry</span> <span class="o">=</span> <span class="n">clean_text_column</span><span class="p">(</span><span class="n">metadata</span><span class="o">.</span><span class="n">industry</span><span class="p">)</span>
-        <span class="n">metadata</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;symbol&quot;</span><span class="p">)</span>
+        <span class="n">metadata</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">COLUMN_MAP</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;dyield&quot;</span> <span class="ow">in</span> <span class="n">metadata</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="n">metadata</span><span class="o">.</span><span class="n">dyield</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">dyield</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;sector&quot;</span> <span class="ow">in</span> <span class="n">metadata</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="n">metadata</span><span class="o">.</span><span class="n">sector</span> <span class="o">=</span> <span class="n">_clean_text_column</span><span class="p">(</span><span class="n">metadata</span><span class="o">.</span><span class="n">sector</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;industry&quot;</span> <span class="ow">in</span> <span class="n">metadata</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="n">metadata</span><span class="o">.</span><span class="n">industry</span> <span class="o">=</span> <span class="n">_clean_text_column</span><span class="p">(</span><span class="n">metadata</span><span class="o">.</span><span class="n">industry</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;symbol&quot;</span> <span class="ow">in</span> <span class="n">metadata</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="n">metadata</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;symbol&quot;</span><span class="p">)</span>
+
         <span class="k">return</span> <span class="n">metadata</span></div>
 
 
@@ -1424,16 +1471,19 @@
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error getting last date: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">days</span> <span class="o">=</span> <span class="mi">3</span> <span class="k">if</span> <span class="n">now</span><span class="o">.</span><span class="n">weekday</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">1</span>
-            <span class="n">time_delta</span> <span class="o">=</span> <span class="n">last_date</span> <span class="o">-</span> <span class="p">(</span><span class="n">now</span> <span class="o">-</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="n">days</span><span class="p">))</span><span class="o">.</span><span class="n">normalize</span><span class="p">()</span>
-            <span class="k">assert</span> <span class="n">time_delta</span><span class="o">.</span><span class="n">days</span> <span class="o">==</span> <span class="n">days</span> <span class="ow">or</span> <span class="n">last_date</span> <span class="o">==</span> <span class="n">now</span><span class="o">.</span><span class="n">normalize</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">now</span><span class="o">.</span><span class="n">weekday</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># Monday</span>
+                <span class="n">expected_date</span> <span class="o">=</span> <span class="p">(</span><span class="n">now</span> <span class="o">-</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">3</span><span class="p">))</span><span class="o">.</span><span class="n">normalize</span><span class="p">()</span>  <span class="c1"># last Friday</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">expected_date</span> <span class="o">=</span> <span class="p">(</span><span class="n">now</span> <span class="o">-</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">normalize</span><span class="p">()</span>  <span class="c1"># yesterday</span>
+
+            <span class="k">assert</span> <span class="n">last_date</span> <span class="o">==</span> <span class="n">expected_date</span> <span class="ow">or</span> <span class="n">last_date</span> <span class="o">==</span> <span class="n">now</span><span class="o">.</span><span class="n">normalize</span><span class="p">()</span>
             <span class="k">return</span> <span class="kc">True</span>
         <span class="k">except</span> <span class="ne">AssertionError</span><span class="p">:</span>
             <span class="n">yesterday</span> <span class="o">=</span> <span class="p">(</span><span class="n">now</span> <span class="o">-</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">normalize</span><span class="p">()</span>
             <span class="n">last_friday</span> <span class="o">=</span> <span class="p">(</span><span class="n">now</span> <span class="o">-</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="n">now</span><span class="o">.</span><span class="n">weekday</span><span class="p">()</span> <span class="o">+</span> <span class="mi">3</span><span class="p">))</span><span class="o">.</span><span class="n">normalize</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Last date in predictions (</span><span class="si">{</span><span class="n">last_date</span><span class="si">}</span><span class="s2">) is not equal to </span><span class="se">\</span>
-<span class="s2">                yesterday (</span><span class="si">{</span><span class="n">yesterday</span><span class="si">}</span><span class="s2">) or last Friday (</span><span class="si">{</span><span class="n">last_friday</span><span class="si">}</span><span class="s2">)&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Last date in predictions (</span><span class="si">{</span><span class="n">last_date</span><span class="si">}</span><span class="s2">) is not equal to &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;yesterday (</span><span class="si">{</span><span class="n">yesterday</span><span class="si">}</span><span class="s2">) or last Friday (</span><span class="si">{</span><span class="n">last_friday</span><span class="si">}</span><span class="s2">)&quot;</span>
             <span class="p">)</span>
             <span class="k">return</span> <span class="kc">False</span></div>
 

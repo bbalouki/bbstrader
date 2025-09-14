@@ -1177,29 +1177,45 @@ def RunCopier(
     shutdown_event=None,
     log_queue=None,
 ):
-    """Initializes and runs a TradeCopier instance in a single process.
+    """
+    Initialize and run a TradeCopier instance in a single process.
 
     This function serves as a straightforward wrapper to start a copying session
     that handles one source account and one or more destination accounts
-    *sequentially* within the same thread. It does not create any new processes itself.
+    sequentially within the same thread. It does not create any new processes itself.
 
-    This is useful for:
-    - Simpler, command-line based use cases.
-    - Scenarios where parallelism is not required.
-    - As the target for `RunMultipleCopier`, where each process handles a
+    Use Cases
+    ---------
+    * Simpler, command-line based use cases.
+    * Scenarios where parallelism is not required.
+    * As the target for ``RunMultipleCopier``, where each process handles a
       full source-to-destinations session.
 
-    Args:
-        source (dict): Configuration dictionary for the source account.
-        destinations (list): A list of configuration dictionaries, one for each
-            destination account to be processed sequentially.
-        sleeptime (float): The time in seconds to wait after completing a full
-            cycle through all destinations.
-        start_time (str): The time of day to start copying (e.g., "08:00").
-        end_time (str): The time of day to stop copying (e.g., "22:00").
-        custom_logger: An optional custom logger instance.
-        shutdown_event (multiprocessing.Event): An event to signal shutdown.
-        log_queue (multiprocessing.Queue): A queue for log messages.
+    Parameters
+    ----------
+    source : dict
+        Configuration dictionary for the source account.
+    destinations : list
+        A list of configuration dictionaries, one for each
+        destination account to be processed sequentially.
+    sleeptime : float
+        The time in seconds to wait after completing a full
+        cycle through all destinations.
+    start_time : str
+        The time of day to start copying (e.g., ``"08:00"``).
+    end_time : str
+        The time of day to stop copying (e.g., ``"22:00"``).
+    custom_logger : logging.Logger, optional
+        An optional custom logger instance.
+    shutdown_event : multiprocessing.Event, optional
+        An event to signal shutdown.
+    log_queue : multiprocessing.Queue, optional
+        A queue for log messages.
+
+    Returns
+    -------
+    None
+        Runs until stopped via ``shutdown_event`` or external interruption.
     """
     copier = TradeCopier(
         source,
@@ -1224,7 +1240,8 @@ def RunMultipleCopier(
     custom_logger=None,
     log_queue=None,
 ):
-    """Manages multiple, independent trade copying sessions in parallel.
+    """
+    Manage multiple, independent trade copying sessions in parallel.
 
     This function acts as a high-level manager that takes a list of account
     setups and creates a separate, dedicated process for each one. Each process
@@ -1232,28 +1249,46 @@ def RunMultipleCopier(
     destination accounts.
 
     The parallelism occurs at the **source account level**. Within each spawned
-    process, the destinations for that source are handled sequentially by `RunCopier`.
+    process, the destinations for that source are handled sequentially by
+    ``RunCopier``.
 
-    Example `accounts` structure:
-    [
-        { "source": {...}, "destinations": [{...}, {...}] },  # -> Process 1
-        { "source": {...}, "destinations": [{...}] }          # -> Process 2
-    ]
+    Example
+    -------
+    An example ``accounts`` structure:
 
-    Args:
-        accounts (List[dict]): A list of account configurations. Each item in the
-            list must be a dictionary with a 'source' key and a 'destinations' key.
-        sleeptime (float): The sleep time passed down to each `RunCopier` process.
-        start_delay (float): A delay in seconds between starting each new process.
-            This helps prevent resource contention by staggering the initialization
-            of multiple MetaTrader 5 terminals.
-        start_time (str): The start time passed down to each `RunCopier` process.
-        end_time (str): The end time passed down to each `RunCopier` process.
-        shutdown_event (multiprocessing.Event): An event to signal shutdown to all
-            child processes.
-        custom_logger: An optional custom logger instance.
-        log_queue (multiprocessing.Queue): A queue for aggregating log messages
-            from all child processes.
+    .. code-block:: python
+
+        accounts = [
+            {"source": {...}, "destinations": [{...}, {...}]},  # -> Process 1
+            {"source": {...}, "destinations": [{...}]}          # -> Process 2
+        ]
+
+    Parameters
+    ----------
+    accounts : list of dict
+        A list of account configurations. Each item must be a dictionary with
+        a ``source`` key and a ``destinations`` key.
+    sleeptime : float, optional
+        The sleep time passed down to each ``RunCopier`` process.
+    start_delay : float, optional
+        A delay in seconds between starting each new process.
+        Helps prevent resource contention by staggering the initialization of
+        multiple MetaTrader 5 terminals.
+    start_time : str, optional
+        The start time passed down to each ``RunCopier`` process.
+    end_time : str, optional
+        The end time passed down to each ``RunCopier`` process.
+    shutdown_event : multiprocessing.Event, optional
+        An event to signal shutdown to all child processes.
+    custom_logger : logging.Logger, optional
+        An optional custom logger instance.
+    log_queue : multiprocessing.Queue, optional
+        A queue for aggregating log messages from all child processes.
+
+    Returns
+    -------
+    None
+        Runs until stopped via ``shutdown_event`` or external interruption.
     """
     processes = []
 

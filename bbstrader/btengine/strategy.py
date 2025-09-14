@@ -254,28 +254,38 @@ class MT5Strategy(Strategy):
     def signal(self, signal: int, symbol: str) -> TradeSignal:
         """
         Generate a ``TradeSignal`` object based on the signal value.
-        Args:
-            signal : An integer value representing the signal type:
-                     0: BUY
-                     1: SELL
-                     2: EXIT_LONG
-                     3: EXIT_SHORT
-                     4: EXIT_ALL_POSITIONS
-                     5: EXIT_ALL_ORDERS
-                     6: EXIT_STOP
-                     7: EXIT_LIMIT
 
-            symbol : The symbol for the trade.
+        Parameters
+        ----------
+        signal : int
+            An integer value representing the signal type:
+            * 0: BUY
+            * 1: SELL
+            * 2: EXIT_LONG
+            * 3: EXIT_SHORT
+            * 4: EXIT_ALL_POSITIONS
+            * 5: EXIT_ALL_ORDERS
+            * 6: EXIT_STOP
+            * 7: EXIT_LIMIT
+        symbol : str
+            The symbol for the trade.
 
-        Returns:
-            TradeSignal : A ``TradeSignal`` object representing the trade signal.
+        Returns
+        -------
+        TradeSignal
+            A ``TradeSignal`` object representing the trade signal.
 
-        Note:
-            This generate only common signals. For more complex signals, use `generate_signal` directly.
+        Raises
+        ------
+        ValueError
+            If the signal value is not between 0 and 7.
 
-        Raises:
-            ValueError : If the signal value is not between 0 and 7.
+        Notes
+        -----
+        This generates only common signals. For more complex signals, use
+        ``generate_signal`` directly.
         """
+
         signal_id = getattr(self, "id", None) or getattr(self, "ID")
         
         match signal:

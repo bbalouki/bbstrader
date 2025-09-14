@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>bbstrader.metatrader.scripts &mdash; bbstrader 0.3.3 documentation</title>
+  <title>bbstrader.metatrader.scripts &mdash; bbstrader 0.3.5 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=d5a15cff"></script>
+      <script src="../../../_static/documentation_options.js?v=ba50482b"></script>
       <script src="../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -73,7 +73,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">multiprocessing</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">bbstrader.apps._copier</span><span class="w"> </span><span class="kn">import</span> <span class="n">main</span> <span class="k">as</span> <span class="n">RunCopyAPP</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bbstrader.apps._copier</span><span class="w"> </span><span class="kn">import</span> <span class="n">main</span> <span class="k">as</span> <span class="n">RunCopyApp</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">bbstrader.metatrader.copier</span><span class="w"> </span><span class="kn">import</span> <span class="n">RunCopier</span><span class="p">,</span> <span class="n">config_copier</span><span class="p">,</span> <span class="n">copier_worker_process</span>
 
 
@@ -90,6 +90,15 @@
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">&quot;-s&quot;</span><span class="p">,</span> <span class="s2">&quot;--source&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;?&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Source section name&quot;</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-I&quot;</span><span class="p">,</span> <span class="s2">&quot;--id&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Source Account unique ID&quot;</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-U&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--unique&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Specify if the source account is only master&quot;</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">&quot;-d&quot;</span><span class="p">,</span>
@@ -146,6 +155,8 @@
 <span class="s2">    Options:</span>
 <span class="s2">        -m, --mode: CLI for terminal app and GUI for Desktop app</span>
 <span class="s2">        -s, --source: Source Account section name</span>
+<span class="s2">        -I, --id: Source Account unique ID</span>
+<span class="s2">        -U, --unique: Specify if the source account is only master </span>
 <span class="s2">        -d, --destinations: Destination Account section names (multiple allowed)</span>
 <span class="s2">        -i, --interval: Update interval in seconds</span>
 <span class="s2">        -M, --multiprocess: When set to True, each destination account runs in a separate process.</span>
@@ -162,7 +173,7 @@
     <span class="n">copy_args</span> <span class="o">=</span> <span class="n">copy_parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">unknown</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">copy_args</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;GUI&quot;</span><span class="p">:</span>
-        <span class="n">RunCopyAPP</span><span class="p">()</span>
+        <span class="n">RunCopyApp</span><span class="p">()</span>
 
     <span class="k">elif</span> <span class="n">copy_args</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;CLI&quot;</span><span class="p">:</span>
         <span class="n">source</span><span class="p">,</span> <span class="n">destinations</span> <span class="o">=</span> <span class="n">config_copier</span><span class="p">(</span>
@@ -170,6 +181,8 @@
             <span class="n">dest_sections</span><span class="o">=</span><span class="n">copy_args</span><span class="o">.</span><span class="n">destinations</span><span class="p">,</span>
             <span class="n">inifile</span><span class="o">=</span><span class="n">copy_args</span><span class="o">.</span><span class="n">config</span><span class="p">,</span>
         <span class="p">)</span>
+        <span class="n">source</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy_args</span><span class="o">.</span><span class="n">id</span>
+        <span class="n">source</span><span class="p">[</span><span class="s2">&quot;unique&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy_args</span><span class="o">.</span><span class="n">unique</span>
         <span class="k">if</span> <span class="n">copy_args</span><span class="o">.</span><span class="n">multiprocess</span><span class="p">:</span>
             <span class="n">copier_processes</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">dest_config</span> <span class="ow">in</span> <span class="n">destinations</span><span class="p">:</span>

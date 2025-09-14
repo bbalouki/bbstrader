@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>bbstrader.metatrader.utils &mdash; bbstrader 0.3.3 documentation</title>
+  <title>bbstrader.metatrader.utils &mdash; bbstrader 0.3.5 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=d5a15cff"></script>
+      <script src="../../../_static/documentation_options.js?v=ba50482b"></script>
       <script src="../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -73,6 +73,8 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NamedTuple</span><span class="p">,</span> <span class="n">Optional</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">MetaTrader5</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">MT5</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
@@ -99,6 +101,10 @@
     <span class="s2">&quot;HistoryNotFound&quot;</span><span class="p">,</span>
     <span class="s2">&quot;InvalidVersion&quot;</span><span class="p">,</span>
     <span class="s2">&quot;AuthFailed&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RateInfo&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RateDtype&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TickDtype&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TickFlag&quot;</span><span class="p">,</span>
     <span class="s2">&quot;UnsupportedMethod&quot;</span><span class="p">,</span>
     <span class="s2">&quot;AutoTradingDisabled&quot;</span><span class="p">,</span>
     <span class="s2">&quot;InternalFailSend&quot;</span><span class="p">,</span>
@@ -371,6 +377,26 @@
 
 
 
+<span class="n">TickDtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;i8&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;bid&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;f8&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;ask&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;f8&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;last&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;f8&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;volume&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;u8&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;time_msc&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;i8&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;flags&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;u4&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;volume_real&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;f8&quot;</span><span class="p">),</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+
+<span class="n">TickFlag</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;all&quot;</span><span class="p">:</span> <span class="n">MT5</span><span class="o">.</span><span class="n">COPY_TICKS_ALL</span><span class="p">,</span>
+    <span class="s2">&quot;info&quot;</span><span class="p">:</span> <span class="n">MT5</span><span class="o">.</span><span class="n">COPY_TICKS_INFO</span><span class="p">,</span>
+    <span class="s2">&quot;trade&quot;</span><span class="p">:</span> <span class="n">MT5</span><span class="o">.</span><span class="n">COPY_TICKS_TRADE</span><span class="p">,</span>
+<span class="p">}</span>
+
+
 <div class="viewcode-block" id="TickInfo">
 <a class="viewcode-back" href="../../../bbstrader.metatrader.html#bbstrader.metatrader.utils.TickInfo">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">TickInfo</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
@@ -394,6 +420,47 @@
     <span class="n">time_msc</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">volume_real</span><span class="p">:</span> <span class="nb">float</span></div>
+
+
+
+<span class="n">RateDtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;i8&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;open&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;f8&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;high&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;f8&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;low&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;f8&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;close&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;f8&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;tick_volume&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;u8&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;spread&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;i4&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;real_volume&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;u8&quot;</span><span class="p">),</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="RateInfo">
+<a class="viewcode-back" href="../../../bbstrader.metatrader.html#bbstrader.metatrader.utils.RateInfo">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RateInfo</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reprents a candle (bar) for a specified period.</span>
+<span class="sd">    * time: Time in seconds since 1970.01.01 00:00</span>
+<span class="sd">    * open: Open price</span>
+<span class="sd">    * high: High price</span>
+<span class="sd">    * low: Low price</span>
+<span class="sd">    * close: Close price</span>
+<span class="sd">    * tick_volume: Tick volume</span>
+<span class="sd">    * spread: Spread value</span>
+<span class="sd">    * real_volume: Real volume</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">time</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="nb">open</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">high</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">low</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">close</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">tick_volume</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">spread</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">real_volume</span><span class="p">:</span> <span class="nb">float</span></div>
 
 
 

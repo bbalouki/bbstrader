@@ -1,6 +1,15 @@
 bbstrader.btengine package
 ==========================
 
+Module contents
+---------------
+
+.. automodule:: bbstrader.btengine
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+
 Submodules
 ----------
 
@@ -68,10 +77,4 @@ bbstrader.btengine.strategy module
    :show-inheritance:
    :undoc-members:
 
-Module contents
----------------
 
-.. automodule:: bbstrader.btengine
-   :members:
-   :show-inheritance:
-   :undoc-members:

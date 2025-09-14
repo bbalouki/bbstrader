@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>bbstrader.core package &mdash; bbstrader 0.3.3 documentation</title>
+  <title>bbstrader.core package &mdash; bbstrader 0.3.5 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=d5a15cff"></script>
+      <script src="_static/documentation_options.js?v=ba50482b"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -45,35 +45,24 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">bbstrader</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="bbstrader.btengine.html">bbstrader.btengine package</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">bbstrader.core package</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-bbstrader.core.data">bbstrader.core.data module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#bbstrader.core.data.FinancialNews"><code class="docutils literal notranslate"><span class="pre">FinancialNews</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#bbstrader.core.data.FmpData"><code class="docutils literal notranslate"><span class="pre">FmpData</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#bbstrader.core.data.FmpNews"><code class="docutils literal notranslate"><span class="pre">FmpNews</span></code></a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="bbstrader.html">bbstrader package</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="bbstrader.html#module-bbstrader">Module contents</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="bbstrader.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.apps.html">bbstrader.apps package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.btengine.html">bbstrader.btengine package</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">bbstrader.core package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.ibkr.html">bbstrader.ibkr package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html">bbstrader.metatrader package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.models.html">bbstrader.models package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.trading.html">bbstrader.trading package</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#module-bbstrader.core.scripts">bbstrader.core.scripts module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#bbstrader.core.scripts.format_coindesk_article"><code class="docutils literal notranslate"><span class="pre">format_coindesk_article()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#bbstrader.core.scripts.format_fmp_article"><code class="docutils literal notranslate"><span class="pre">format_fmp_article()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#bbstrader.core.scripts.send_articles"><code class="docutils literal notranslate"><span class="pre">send_articles()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#bbstrader.core.scripts.send_news_feed"><code class="docutils literal notranslate"><span class="pre">send_news_feed()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#bbstrader.core.scripts.summarize_text"><code class="docutils literal notranslate"><span class="pre">summarize_text()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bbstrader.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bbstrader.html#module-bbstrader.compat">bbstrader.compat module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bbstrader.html#module-bbstrader.config">bbstrader.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bbstrader.html#module-bbstrader.tseries">bbstrader.tseries module</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#module-bbstrader.core.utils">bbstrader.core.utils module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#bbstrader.core.utils.load_class"><code class="docutils literal notranslate"><span class="pre">load_class()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#bbstrader.core.utils.load_module"><code class="docutils literal notranslate"><span class="pre">load_module()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-bbstrader.core">Module contents</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="bbstrader.ibkr.html">bbstrader.ibkr package</a></li>
-<li class="toctree-l2"><a class="reference internal" href="bbstrader.metatrader.html">bbstrader.metatrader package</a></li>
-<li class="toctree-l2"><a class="reference internal" href="bbstrader.models.html">bbstrader.models package</a></li>
-<li class="toctree-l2"><a class="reference internal" href="bbstrader.trading.html">bbstrader.trading package</a></li>
 </ul>
 </li>
 </ul>
@@ -93,6 +82,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="modules.html">bbstrader</a></li>
+          <li class="breadcrumb-item"><a href="bbstrader.html">bbstrader package</a></li>
       <li class="breadcrumb-item active">bbstrader.core package</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/bbstrader.core.rst.txt" rel="nofollow"> View page source</a>
@@ -105,6 +95,9 @@
              
   <section id="bbstrader-core-package">
 <h1>bbstrader.core package<a class="headerlink" href="#bbstrader-core-package" title="Link to this heading"></a></h1>
+<section id="module-bbstrader.core">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-bbstrader.core" title="Link to this heading"></a></h2>
+</section>
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
 </section>
@@ -489,9 +482,6 @@ Available options: “articles”, “releases”, “stock”, “crypto”, �
 </dl>
 </dd></dl>
 
-</section>
-<section id="module-bbstrader.core">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-bbstrader.core" title="Link to this heading"></a></h2>
 </section>
 </section>
 

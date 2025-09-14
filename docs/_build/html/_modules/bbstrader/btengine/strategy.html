@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>bbstrader.btengine.strategy &mdash; bbstrader 0.3.3 documentation</title>
+  <title>bbstrader.btengine.strategy &mdash; bbstrader 0.3.5 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=d5a15cff"></script>
+      <script src="../../../_static/documentation_options.js?v=ba50482b"></script>
       <script src="../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -82,10 +82,12 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">bbstrader.btengine.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataHandler</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">bbstrader.btengine.event</span><span class="w"> </span><span class="kn">import</span> <span class="n">Events</span><span class="p">,</span> <span class="n">FillEvent</span><span class="p">,</span> <span class="n">SignalEvent</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bbstrader.metatrader.trade</span><span class="w"> </span><span class="kn">import</span> <span class="n">generate_signal</span><span class="p">,</span> <span class="n">TradeAction</span> 
 <span class="kn">from</span><span class="w"> </span><span class="nn">bbstrader.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">BBSTRADER_DIR</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">bbstrader.metatrader</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">Account</span><span class="p">,</span>
     <span class="n">AdmiralMarktsGroup</span><span class="p">,</span>
+    <span class="n">MetaQuotes</span><span class="p">,</span>
     <span class="n">PepperstoneGroupLimited</span><span class="p">,</span>
     <span class="n">TradeOrder</span><span class="p">,</span>
     <span class="n">Rates</span><span class="p">,</span>
@@ -169,7 +171,16 @@
 <span class="sd">    in order to avoid naming collusion.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">tf</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="nb">id</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">ID</span><span class="p">:</span> <span class="nb">int</span>
+    
     <span class="n">max_trades</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
+    <span class="n">risk_budget</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+
+    <span class="n">_orders</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">SignalEvent</span><span class="p">]]]</span>
+    <span class="n">_positions</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span><span class="p">]]</span>
+    <span class="n">_trades</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">events</span><span class="p">:</span> <span class="n">Queue</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -195,13 +206,19 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">bars</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">symbols</span> <span class="o">=</span> <span class="n">symbol_list</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">mode</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_porfolio_value</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="n">TradingMode</span><span class="o">.</span><span class="n">BACKTEST</span><span class="p">,</span> <span class="n">TradingMode</span><span class="o">.</span><span class="n">LIVE</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Mode must be an instance of </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">TradingMode</span><span class="p">)</span><span class="si">}</span><span class="s2"> not </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
         <span class="bp">self</span><span class="o">.</span><span class="n">risk_budget</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_risk_budget</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">max_trades</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;max_trades&quot;</span><span class="p">,</span> <span class="p">{</span><span class="n">s</span><span class="p">:</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbols</span><span class="p">})</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tf</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;time_frame&quot;</span><span class="p">,</span> <span class="s2">&quot;D1&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;logger&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">logger</span>
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="n">TradingMode</span><span class="o">.</span><span class="n">BACKTEST</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_porfolio_value</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_portfolio</span><span class="p">()</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">periodes</span> <span class="o">=</span> <span class="mi">0</span>
 
@@ -261,19 +278,17 @@
             <span class="k">return</span> <span class="n">weights</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_initialize_portfolio</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">positions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;LONG&quot;</span><span class="p">,</span> <span class="s2">&quot;SHORT&quot;</span><span class="p">]</span>
-        <span class="n">orders</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;BLMT&quot;</span><span class="p">,</span> <span class="s2">&quot;BSTP&quot;</span><span class="p">,</span> <span class="s2">&quot;BSTPLMT&quot;</span><span class="p">,</span> <span class="s2">&quot;SLMT&quot;</span><span class="p">,</span> <span class="s2">&quot;SSTP&quot;</span><span class="p">,</span> <span class="s2">&quot;SSTPLMT&quot;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_orders</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">SignalEvent</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_positions</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_trades</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_orders</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_positions</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_trades</span> <span class="o">=</span>  <span class="p">{}</span>
         <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbols</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_positions</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_orders</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_trades</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-            <span class="k">for</span> <span class="n">position</span> <span class="ow">in</span> <span class="n">positions</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">position</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;LONG&quot;</span><span class="p">,</span> <span class="s2">&quot;SHORT&quot;</span><span class="p">]:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_trades</span><span class="p">[</span><span class="n">symbol</span><span class="p">][</span><span class="n">position</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_positions</span><span class="p">[</span><span class="n">symbol</span><span class="p">][</span><span class="n">position</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
-            <span class="k">for</span> <span class="n">order</span> <span class="ow">in</span> <span class="n">orders</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">order</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;BLMT&quot;</span><span class="p">,</span> <span class="s2">&quot;BSTP&quot;</span><span class="p">,</span> <span class="s2">&quot;BSTPLMT&quot;</span><span class="p">,</span> <span class="s2">&quot;SLMT&quot;</span><span class="p">,</span> <span class="s2">&quot;SSTP&quot;</span><span class="p">,</span> <span class="s2">&quot;SSTPLMT&quot;</span><span class="p">]:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_orders</span><span class="p">[</span><span class="n">symbol</span><span class="p">][</span><span class="n">order</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_holdings</span> <span class="o">=</span> <span class="p">{</span><span class="n">s</span><span class="p">:</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbols</span><span class="p">}</span>
 
@@ -334,6 +349,67 @@
 <span class="sd">        - ``comment``: An optional comment or description related to the trade signal.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="MT5Strategy.signal">
+<a class="viewcode-back" href="../../../bbstrader.btengine.html#bbstrader.btengine.strategy.MT5Strategy.signal">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">signal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signal</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TradeSignal</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate a ``TradeSignal`` object based on the signal value.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        signal : int</span>
+<span class="sd">            An integer value representing the signal type:</span>
+<span class="sd">            * 0: BUY</span>
+<span class="sd">            * 1: SELL</span>
+<span class="sd">            * 2: EXIT_LONG</span>
+<span class="sd">            * 3: EXIT_SHORT</span>
+<span class="sd">            * 4: EXIT_ALL_POSITIONS</span>
+<span class="sd">            * 5: EXIT_ALL_ORDERS</span>
+<span class="sd">            * 6: EXIT_STOP</span>
+<span class="sd">            * 7: EXIT_LIMIT</span>
+<span class="sd">        symbol : str</span>
+<span class="sd">            The symbol for the trade.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        TradeSignal</span>
+<span class="sd">            A ``TradeSignal`` object representing the trade signal.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If the signal value is not between 0 and 7.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        This generates only common signals. For more complex signals, use</span>
+<span class="sd">        ``generate_signal`` directly.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">signal_id</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;ID&quot;</span><span class="p">)</span>
+        
+        <span class="k">match</span> <span class="n">signal</span><span class="p">:</span>
+            <span class="k">case</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">generate_signal</span><span class="p">(</span><span class="n">signal_id</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">TradeAction</span><span class="o">.</span><span class="n">BUY</span><span class="p">)</span>
+            <span class="k">case</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">generate_signal</span><span class="p">(</span><span class="n">signal_id</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">TradeAction</span><span class="o">.</span><span class="n">SELL</span><span class="p">)</span>
+            <span class="k">case</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">generate_signal</span><span class="p">(</span><span class="n">signal_id</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">TradeAction</span><span class="o">.</span><span class="n">EXIT_LONG</span><span class="p">)</span>
+            <span class="k">case</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">generate_signal</span><span class="p">(</span><span class="n">signal_id</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">TradeAction</span><span class="o">.</span><span class="n">EXIT_SHORT</span><span class="p">)</span>
+            <span class="k">case</span> <span class="mi">4</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">generate_signal</span><span class="p">(</span><span class="n">signal_id</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">TradeAction</span><span class="o">.</span><span class="n">EXIT_ALL_POSITIONS</span><span class="p">)</span>
+            <span class="k">case</span> <span class="mi">5</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">generate_signal</span><span class="p">(</span><span class="n">signal_id</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">TradeAction</span><span class="o">.</span><span class="n">EXIT_ALL_ORDERS</span><span class="p">)</span>
+            <span class="k">case</span> <span class="mi">6</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">generate_signal</span><span class="p">(</span><span class="n">signal_id</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">TradeAction</span><span class="o">.</span><span class="n">EXIT_STOP</span><span class="p">)</span>
+            <span class="k">case</span> <span class="mi">7</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">generate_signal</span><span class="p">(</span><span class="n">signal_id</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">TradeAction</span><span class="o">.</span><span class="n">EXIT_LIMIT</span><span class="p">)</span>
+            <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid signal value: </span><span class="si">{</span><span class="n">signal</span><span class="si">}</span><span class="s2">. Must be an integer between 0 and 7.&quot;</span><span class="p">)</span></div>
+
 
 
 <div class="viewcode-block" id="MT5Strategy.perform_period_end_checks">
@@ -692,75 +768,75 @@
                         <span class="p">]</span>
                     <span class="n">logmsg</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">log_label</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">dtime</span><span class="p">)</span>
 
-            <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbols</span><span class="p">:</span>
-                <span class="n">dtime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get_latest_bar_datetime</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
-                <span class="n">latest_close</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get_latest_bar_value</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="s2">&quot;close&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbols</span><span class="p">:</span>
+            <span class="n">dtime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get_latest_bar_datetime</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
+            <span class="n">latest_close</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get_latest_bar_value</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="s2">&quot;close&quot;</span><span class="p">)</span>
 
-                <span class="n">process_orders</span><span class="p">(</span>
-                    <span class="s2">&quot;BLMT&quot;</span><span class="p">,</span>
-                    <span class="k">lambda</span> <span class="n">o</span><span class="p">:</span> <span class="n">latest_close</span> <span class="o">&lt;=</span> <span class="n">o</span><span class="o">.</span><span class="n">price</span><span class="p">,</span>
-                    <span class="k">lambda</span> <span class="n">o</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">buy_mkt</span><span class="p">(</span>
-                        <span class="n">o</span><span class="o">.</span><span class="n">strategy_id</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">o</span><span class="o">.</span><span class="n">price</span><span class="p">,</span> <span class="n">o</span><span class="o">.</span><span class="n">quantity</span><span class="p">,</span> <span class="n">dtime</span>
-                    <span class="p">),</span>
-                    <span class="s2">&quot;BUY LIMIT&quot;</span><span class="p">,</span>
-                    <span class="n">symbol</span><span class="p">,</span>
-                    <span class="n">dtime</span><span class="p">,</span>
-                <span class="p">)</span>
+            <span class="n">process_orders</span><span class="p">(</span>
+                <span class="s2">&quot;BLMT&quot;</span><span class="p">,</span>
+                <span class="k">lambda</span> <span class="n">o</span><span class="p">:</span> <span class="n">latest_close</span> <span class="o">&lt;=</span> <span class="n">o</span><span class="o">.</span><span class="n">price</span><span class="p">,</span>
+                <span class="k">lambda</span> <span class="n">o</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">buy_mkt</span><span class="p">(</span>
+                    <span class="n">o</span><span class="o">.</span><span class="n">strategy_id</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">o</span><span class="o">.</span><span class="n">price</span><span class="p">,</span> <span class="n">o</span><span class="o">.</span><span class="n">quantity</span><span class="p">,</span> <span class="n">dtime</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;BUY LIMIT&quot;</span><span class="p">,</span>
+                <span class="n">symbol</span><span class="p">,</span>
+                <span class="n">dtime</span><span class="p">,</span>
+            <span class="p">)</span>
 
-                <span class="n">process_orders</span><span class="p">(</span>
-                    <span class="s2">&quot;SLMT&quot;</span><span class="p">,</span>
-                    <span class="k">lambda</span> <span class="n">o</span><span class="p">:</span> <span class="n">latest_close</span> <span class="o">&gt;=</span> <span class="n">o</span><span class="o">.</span><span class="n">price</span><span class="p">,</span>
-                    <span class="k">lambda</span> <span class="n">o</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sell_mkt</span><span class="p">(</span>
-                        <span class="n">o</span><span class="o">.</span><span class="n">strategy_id</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">o</span><span class="o">.</span><span class="n">price</span><span class="p">,</span> <span class="n">o</span><span class="o">.</span><span class="n">quantity</span><span class="p">,</span> <span class="n">dtime</span>
-                    <span class="p">),</span>
-                    <span class="s2">&quot;SELL LIMIT&quot;</span><span class="p">,</span>
-                    <span class="n">symbol</span><span class="p">,</span>
-                    <span class="n">dtime</span><span class="p">,</span>
-                <span class="p">)</span>
+            <span class="n">process_orders</span><span class="p">(</span>
+                <span class="s2">&quot;SLMT&quot;</span><span class="p">,</span>
+                <span class="k">lambda</span> <span class="n">o</span><span class="p">:</span> <span class="n">latest_close</span> <span class="o">&gt;=</span> <span class="n">o</span><span class="o">.</span><span class="n">price</span><span class="p">,</span>
+                <span class="k">lambda</span> <span class="n">o</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sell_mkt</span><span class="p">(</span>
+                    <span class="n">o</span><span class="o">.</span><span class="n">strategy_id</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">o</span><span class="o">.</span><span class="n">price</span><span class="p">,</span> <span class="n">o</span><span class="o">.</span><span class="n">quantity</span><span class="p">,</span> <span class="n">dtime</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;SELL LIMIT&quot;</span><span class="p">,</span>
+                <span class="n">symbol</span><span class="p">,</span>
+                <span class="n">dtime</span><span class="p">,</span>
+            <span class="p">)</span>
 
-                <span class="n">process_orders</span><span class="p">(</span>
-                    <span class="s2">&quot;BSTP&quot;</span><span class="p">,</span>
-                    <span class="k">lambda</span> <span class="n">o</span><span class="p">:</span> <span class="n">latest_close</span> <span class="o">&gt;=</span> <span class="n">o</span><span class="o">.</span><span class="n">price</span><span class="p">,</span>
-                    <span class="k">lambda</span> <span class="n">o</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">buy_mkt</span><span class="p">(</span>
-                        <span class="n">o</span><span class="o">.</span><span class="n">strategy_id</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">o</span><span class="o">.</span><span class="n">price</span><span class="p">,</span> <span class="n">o</span><span class="o">.</span><span class="n">quantity</span><span class="p">,</span> <span class="n">dtime</span>
-                    <span class="p">),</span>
-                    <span class="s2">&quot;BUY STOP&quot;</span><span class="p">,</span>
-                    <span class="n">symbol</span><span class="p">,</span>
-                    <span class="n">dtime</span><span class="p">,</span>
-                <span class="p">)</span>
+            <span class="n">process_orders</span><span class="p">(</span>
+                <span class="s2">&quot;BSTP&quot;</span><span class="p">,</span>
+                <span class="k">lambda</span> <span class="n">o</span><span class="p">:</span> <span class="n">latest_close</span> <span class="o">&gt;=</span> <span class="n">o</span><span class="o">.</span><span class="n">price</span><span class="p">,</span>
+                <span class="k">lambda</span> <span class="n">o</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">buy_mkt</span><span class="p">(</span>
+                    <span class="n">o</span><span class="o">.</span><span class="n">strategy_id</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">o</span><span class="o">.</span><span class="n">price</span><span class="p">,</span> <span class="n">o</span><span class="o">.</span><span class="n">quantity</span><span class="p">,</span> <span class="n">dtime</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;BUY STOP&quot;</span><span class="p">,</span>
+                <span class="n">symbol</span><span class="p">,</span>
+                <span class="n">dtime</span><span class="p">,</span>
+            <span class="p">)</span>
 
-                <span class="n">process_orders</span><span class="p">(</span>
-                    <span class="s2">&quot;SSTP&quot;</span><span class="p">,</span>
-                    <span class="k">lambda</span> <span class="n">o</span><span class="p">:</span> <span class="n">latest_close</span> <span class="o">&lt;=</span> <span class="n">o</span><span class="o">.</span><span class="n">price</span><span class="p">,</span>
-                    <span class="k">lambda</span> <span class="n">o</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sell_mkt</span><span class="p">(</span>
-                        <span class="n">o</span><span class="o">.</span><span class="n">strategy_id</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">o</span><span class="o">.</span><span class="n">price</span><span class="p">,</span> <span class="n">o</span><span class="o">.</span><span class="n">quantity</span><span class="p">,</span> <span class="n">dtime</span>
-                    <span class="p">),</span>
-                    <span class="s2">&quot;SELL STOP&quot;</span><span class="p">,</span>
-                    <span class="n">symbol</span><span class="p">,</span>
-                    <span class="n">dtime</span><span class="p">,</span>
-                <span class="p">)</span>
+            <span class="n">process_orders</span><span class="p">(</span>
+                <span class="s2">&quot;SSTP&quot;</span><span class="p">,</span>
+                <span class="k">lambda</span> <span class="n">o</span><span class="p">:</span> <span class="n">latest_close</span> <span class="o">&lt;=</span> <span class="n">o</span><span class="o">.</span><span class="n">price</span><span class="p">,</span>
+                <span class="k">lambda</span> <span class="n">o</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sell_mkt</span><span class="p">(</span>
+                    <span class="n">o</span><span class="o">.</span><span class="n">strategy_id</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">o</span><span class="o">.</span><span class="n">price</span><span class="p">,</span> <span class="n">o</span><span class="o">.</span><span class="n">quantity</span><span class="p">,</span> <span class="n">dtime</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;SELL STOP&quot;</span><span class="p">,</span>
+                <span class="n">symbol</span><span class="p">,</span>
+                <span class="n">dtime</span><span class="p">,</span>
+            <span class="p">)</span>
 
-                <span class="n">process_orders</span><span class="p">(</span>
-                    <span class="s2">&quot;BSTPLMT&quot;</span><span class="p">,</span>
-                    <span class="k">lambda</span> <span class="n">o</span><span class="p">:</span> <span class="n">latest_close</span> <span class="o">&gt;=</span> <span class="n">o</span><span class="o">.</span><span class="n">price</span><span class="p">,</span>
-                    <span class="k">lambda</span> <span class="n">o</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">buy_limit</span><span class="p">(</span>
-                        <span class="n">o</span><span class="o">.</span><span class="n">strategy_id</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">o</span><span class="o">.</span><span class="n">stoplimit</span><span class="p">,</span> <span class="n">o</span><span class="o">.</span><span class="n">quantity</span><span class="p">,</span> <span class="n">dtime</span>
-                    <span class="p">),</span>
-                    <span class="s2">&quot;BUY STOP LIMIT&quot;</span><span class="p">,</span>
-                    <span class="n">symbol</span><span class="p">,</span>
-                    <span class="n">dtime</span><span class="p">,</span>
-                <span class="p">)</span>
+            <span class="n">process_orders</span><span class="p">(</span>
+                <span class="s2">&quot;BSTPLMT&quot;</span><span class="p">,</span>
+                <span class="k">lambda</span> <span class="n">o</span><span class="p">:</span> <span class="n">latest_close</span> <span class="o">&gt;=</span> <span class="n">o</span><span class="o">.</span><span class="n">price</span><span class="p">,</span>
+                <span class="k">lambda</span> <span class="n">o</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">buy_limit</span><span class="p">(</span>
+                    <span class="n">o</span><span class="o">.</span><span class="n">strategy_id</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">o</span><span class="o">.</span><span class="n">stoplimit</span><span class="p">,</span> <span class="n">o</span><span class="o">.</span><span class="n">quantity</span><span class="p">,</span> <span class="n">dtime</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;BUY STOP LIMIT&quot;</span><span class="p">,</span>
+                <span class="n">symbol</span><span class="p">,</span>
+                <span class="n">dtime</span><span class="p">,</span>
+            <span class="p">)</span>
 
-                <span class="n">process_orders</span><span class="p">(</span>
-                    <span class="s2">&quot;SSTPLMT&quot;</span><span class="p">,</span>
-                    <span class="k">lambda</span> <span class="n">o</span><span class="p">:</span> <span class="n">latest_close</span> <span class="o">&lt;=</span> <span class="n">o</span><span class="o">.</span><span class="n">price</span><span class="p">,</span>
-                    <span class="k">lambda</span> <span class="n">o</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sell_limit</span><span class="p">(</span>
-                        <span class="n">o</span><span class="o">.</span><span class="n">strategy_id</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">o</span><span class="o">.</span><span class="n">stoplimit</span><span class="p">,</span> <span class="n">o</span><span class="o">.</span><span class="n">quantity</span><span class="p">,</span> <span class="n">dtime</span>
-                    <span class="p">),</span>
-                    <span class="s2">&quot;SELL STOP LIMIT&quot;</span><span class="p">,</span>
-                    <span class="n">symbol</span><span class="p">,</span>
-                    <span class="n">dtime</span><span class="p">,</span>
-                <span class="p">)</span></div>
+            <span class="n">process_orders</span><span class="p">(</span>
+                <span class="s2">&quot;SSTPLMT&quot;</span><span class="p">,</span>
+                <span class="k">lambda</span> <span class="n">o</span><span class="p">:</span> <span class="n">latest_close</span> <span class="o">&lt;=</span> <span class="n">o</span><span class="o">.</span><span class="n">price</span><span class="p">,</span>
+                <span class="k">lambda</span> <span class="n">o</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sell_limit</span><span class="p">(</span>
+                    <span class="n">o</span><span class="o">.</span><span class="n">strategy_id</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">o</span><span class="o">.</span><span class="n">stoplimit</span><span class="p">,</span> <span class="n">o</span><span class="o">.</span><span class="n">quantity</span><span class="p">,</span> <span class="n">dtime</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;SELL STOP LIMIT&quot;</span><span class="p">,</span>
+                <span class="n">symbol</span><span class="p">,</span>
+                <span class="n">dtime</span><span class="p">,</span>
+            <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="MT5Strategy.calculate_pct_change">
@@ -968,13 +1044,10 @@
         <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">prices</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_trades</span><span class="p">[</span><span class="n">asset</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
             <span class="n">price</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">prices</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">price</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="p">(</span>
-                <span class="n">position</span> <span class="o">==</span> <span class="mi">0</span>
-                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_pct_change</span><span class="p">(</span><span class="n">ask</span><span class="p">,</span> <span class="n">price</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">th</span>
-                <span class="ow">or</span> <span class="n">position</span> <span class="o">==</span> <span class="mi">1</span>
-                <span class="ow">and</span> <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calculate_pct_change</span><span class="p">(</span><span class="n">bid</span><span class="p">,</span> <span class="n">price</span><span class="p">))</span> <span class="o">&gt;=</span> <span class="n">th</span>
-            <span class="p">):</span>
-                <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="n">position</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> 
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_pct_change</span><span class="p">(</span><span class="n">ask</span><span class="p">,</span> <span class="n">price</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">th</span>
+            <span class="k">elif</span> <span class="n">position</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_pct_change</span><span class="p">(</span><span class="n">bid</span><span class="p">,</span> <span class="n">price</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="o">-</span><span class="n">th</span>
         <span class="k">return</span> <span class="kc">False</span></div>
 
 
@@ -1005,9 +1078,7 @@
 <span class="sd">            dt_to : The converted datetime.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">from_tz</span> <span class="o">=</span> <span class="n">pytz</span><span class="o">.</span><span class="n">timezone</span><span class="p">(</span><span class="n">from_tz</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dt</span><span class="p">,</span> <span class="n">datetime</span><span class="p">):</span>
-            <span class="n">dt</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">dt</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;s&quot;</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dt</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dt</span><span class="p">,</span> <span class="p">(</span><span class="n">datetime</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
             <span class="n">dt</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">dt</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;s&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">dt</span><span class="o">.</span><span class="n">tzinfo</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">dt</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">tz_localize</span><span class="p">(</span><span class="n">from_tz</span><span class="p">)</span>
@@ -1036,20 +1107,35 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            mt5_equivalent : The MetaTrader 5 equivalent symbols for the symbols in the list.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        
         <span class="n">account</span> <span class="o">=</span> <span class="n">Account</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">mt5_symbols</span> <span class="o">=</span> <span class="n">account</span><span class="o">.</span><span class="n">get_symbols</span><span class="p">(</span><span class="n">symbol_type</span><span class="o">=</span><span class="n">symbol_type</span><span class="p">)</span>
         <span class="n">mt5_equivalent</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">if</span> <span class="n">account</span><span class="o">.</span><span class="n">broker</span> <span class="o">==</span> <span class="n">AdmiralMarktsGroup</span><span class="p">():</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">_get_admiral_symbols</span><span class="p">():</span>
             <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">mt5_symbols</span><span class="p">:</span>
                 <span class="n">_s</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="k">if</span> <span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="n">string</span><span class="o">.</span><span class="n">punctuation</span> <span class="k">else</span> <span class="n">s</span>
                 <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="n">symbols</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">_s</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">symbol</span> <span class="ow">or</span> <span class="n">_s</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">symbol</span><span class="p">:</span>
                         <span class="n">mt5_equivalent</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">account</span><span class="o">.</span><span class="n">broker</span> <span class="o">==</span> <span class="n">PepperstoneGroupLimited</span><span class="p">():</span>
-            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">mt5_symbols</span><span class="p">:</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">_get_pepperstone_symbols</span><span class="p">():</span>
+             <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">mt5_symbols</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="n">symbols</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">symbol</span><span class="p">:</span>
                         <span class="n">mt5_equivalent</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">account</span><span class="o">.</span><span class="n">broker</span> <span class="o">==</span> <span class="n">MetaQuotes</span><span class="p">():</span>
+            <span class="k">if</span> <span class="s2">&quot;Admiral&quot;</span> <span class="ow">in</span> <span class="n">account</span><span class="o">.</span><span class="n">server</span><span class="p">:</span>
+                <span class="n">_get_admiral_symbols</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="s2">&quot;Pepperstone&quot;</span> <span class="ow">in</span> <span class="n">account</span><span class="o">.</span><span class="n">server</span><span class="p">:</span>
+                <span class="n">_get_pepperstone_symbols</span><span class="p">()</span>
+
+        <span class="k">elif</span> <span class="n">account</span><span class="o">.</span><span class="n">broker</span> <span class="o">==</span> <span class="n">AdmiralMarktsGroup</span><span class="p">():</span>
+            <span class="n">_get_admiral_symbols</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">account</span><span class="o">.</span><span class="n">broker</span> <span class="o">==</span> <span class="n">PepperstoneGroupLimited</span><span class="p">():</span>
+            <span class="n">_get_pepperstone_symbols</span><span class="p">()</span>
+
         <span class="k">return</span> <span class="n">mt5_equivalent</span></div>
 </div>
 

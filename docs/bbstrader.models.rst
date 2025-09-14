@@ -1,6 +1,15 @@
 bbstrader.models package
 ========================
 
+Module contents
+---------------
+
+.. automodule:: bbstrader.models
+   :members:
+   :show-inheritance:
+   :undoc-members:
+   
+
 Submodules
 ----------
 
@@ -52,10 +61,4 @@ bbstrader.models.risk module
    :show-inheritance:
    :undoc-members:
 
-Module contents
----------------
 
-.. automodule:: bbstrader.models
-   :members:
-   :show-inheritance:
-   :undoc-members:

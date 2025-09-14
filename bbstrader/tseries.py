@@ -24,7 +24,6 @@ from statsmodels.tsa.vector_ar.var_model import VAR
 from statsmodels.tsa.vector_ar.vecm import coint_johansen
 from tqdm import tqdm
 
-
 __all__ = [
     "run_kalman_filter",
     "KalmanFilterModel",
@@ -746,32 +745,40 @@ def select_assets(df: pd.DataFrame, n=100, start=None, end=None, rolling_window=
 
 
 def compute_pair_metrics(security: pd.Series, candidates: pd.DataFrame):
-    """
-    Calculates statistical and econometric metrics for a target security and a set of candidate securities.
+    """Calculate statistical and econometric metrics for a security pair.
+
     These metrics are useful in financial modeling and pairs trading strategies,
-    providing information about drift, volatility, correlation, and cointegration.
+    providing information about drift, volatility, correlation, and
+    cointegration.
 
-    Args:
-        security (pd.Series): A time-series of the target security's prices.
-            The name of the Series should correspond to the security's identifier (e.g., ticker symbol).
-        candidates (pd.DataFrame): A DataFrame where each column represents a time-series of prices
-            for candidate securities to be evaluated against the target security.
+    Parameters
+    ----------
+    security : pd.Series
+        A time-series of the target security's prices. The name of the
+        Series should correspond to the security's identifier (e.g., ticker
+        symbol).
+    candidates : pd.DataFrame
+        A DataFrame where each column represents a time-series of prices
+        for candidate securities to be evaluated against the target security.
 
-    Returns:
-        pd.DataFrame: A DataFrame combining:
-            Drift: Estimated drift of spreads between the target security and each candidate.
-            Volatility: Standard deviation of spreads.
-            Correlation:
-                ``corr``: Correlation of normalized prices between the target and each candidate.
-                ``corr_ret``: Correlation of returns (percentage change) between the target and each candidate.
-            Cointegration metrics:
-                Engle-Granger test statistics (``t1``, ``t2``) and p-values (``p1``, ``p2``).
-                Johansen test trace statistics (``trace0``, ``trace1``) and selected lag order (``k_ar_diff``).
+    Returns
+    -------
+    pd.DataFrame
+        A DataFrame containing the following metrics as columns:
+        * ``Drift``: Estimated drift of spreads.
+        * ``Volatility``: Standard deviation of spreads.
+        * ``corr``: Correlation of normalized prices.
+        * ``corr_ret``: Correlation of returns (percentage change).
+        * ``t1``, ``p1``: Engle-Granger test statistic and p-value.
+        * ``t2``, ``p2``: Engle-Granger test statistic and p-value (alternate form).
+        * ``trace0``, ``trace1``: Johansen test trace statistics.
+        * ``k_ar_diff``: Selected lag order for the Johansen test.
 
     References
     ----------
-    Stefan Jansen (2020). Machine Learning for Algorithmic Trading - Second Edition.
-    chapter 9, Time-Series Models for Volatility Forecasts and Statistical Arbitrage.
+    * [1] Jansen, S. (2020). Machine Learning for Algorithmic Trading -
+       Second Edition. Packt Publishing. Chapter 9, Time-Series Models
+       for Volatility Forecasts and Statistical Arbitrage.
     """
     security = security.div(security.iloc[0])
     ticker = security.name
@@ -834,102 +841,65 @@ def find_cointegrated_pairs(
     such as cointegration and Engle-Granger significance, to determine pairs suitable
     for financial strategies like pairs trading.
 
-    Args:
-        securities (`pd.DataFrame`): A DataFrame where each column represents the time-series
-            prices of target securities to evaluate.
-        candidates (`pd.DataFrame`): A DataFrame where each column represents the time-series
-            prices of candidate securities to compare against the target securities.
-        n (`int`, optional): The number of top pairs to return. If `None`, returns all pairs.
-        start (`str`, optional): Start date for slicing the data (e.g., 'YYYY-MM-DD').
-        stop (`str`, optional): End date for slicing the data (e.g., 'YYYY-MM-DD').
-        coint (`bool`, optional, default=False):
-            - If `True`, filters for pairs identified as cointegrated.
-            - If `False`, returns all evaluated pairs.
+    Parameters
+    ----------
+    securities : pd.DataFrame
+        A DataFrame where each column represents the time-series
+        prices of target securities to evaluate.
+    candidates : pd.DataFrame
+        A DataFrame where each column represents the time-series
+        prices of candidate securities to compare against the target securities.
+    n : int, optional
+        The number of top pairs to return. If ``None``, returns all pairs.
+    start : str, optional
+        Start date for slicing the data (e.g., 'YYYY-MM-DD').
+    stop : str, optional
+        End date for slicing the data (e.g., 'YYYY-MM-DD').
+    coint : bool, optional, default=False
+        If ``True``, filters for pairs identified as cointegrated.
+        If ``False``, returns all evaluated pairs.
 
-    Returns:
-        - ``pd.DataFrame``: A DataFrame containing:
-        - Johansen and Engle-Granger cointegration metrics:
-            - `t1`, `t2`: Engle-Granger test statistics for two directions.
-            - `p1`, `p2`: Engle-Granger p-values for two directions.
-            - `trace0`, `trace1`: Johansen test trace statistics for 0 and 1 cointegration relationships.
-        - Indicators and filters:
-            - `joh_sig`: Indicates Johansen cointegration significance.
-            - `eg_sig`: Indicates Engle-Granger significance (p-value < 0.05).
-            - `s1_dep`: Indicates whether the first series depends on the second (based on p-values).
-            - `coint`: Combined cointegration indicator (Johansen & Engle-Granger).
-        - Spread and ranking:
-            - `t`: Minimum of `t1` and `t2`.
-            - `p`: Minimum of `p1` and `p2`.
+    Returns
+    -------
+    pd.DataFrame
+        A DataFrame containing:
+
+        **Johansen and Engle-Granger cointegration metrics**
+            * ``t1``, ``t2`` : Engle-Granger test statistics for two directions.
+            * ``p1``, ``p2`` : Engle-Granger p-values for two directions.
+            * ``trace0``, ``trace1`` : Johansen test trace statistics for 0 and 1 cointegration relationships.
+
+        **Indicators and filters**
+            * ``joh_sig`` : Indicates Johansen cointegration significance.
+            * ``eg_sig`` : Indicates Engle-Granger significance (p-value < 0.05).
+            * ``s1_dep`` : Indicates whether the first series depends on the second (based on p-values).
+            * ``coint`` : Combined cointegration indicator (Johansen & Engle-Granger).
+
+        **Spread and ranking**
+            * ``t`` : Minimum of ``t1`` and ``t2``.
+            * ``p`` : Minimum of ``p1`` and ``p2``.
+
     References
     ----------
-    Stefan Jansen (2020). Machine Learning for Algorithmic Trading - Second Edition.
-    chapter 9, Time-Series Models for Volatility Forecasts and Statistical Arbitrage.
+    Stefan Jansen (2020). *Machine Learning for Algorithmic Trading - Second Edition*.
+    Chapter 9, Time-Series Models for Volatility Forecasts and Statistical Arbitrage.
 
-    Example:
-    >>>    import pandas as pd
-
-    >>>    # Sample Data
-    >>>    data_securities = {
-    ...        'Security1': [100, 102, 101, 103, 105],
-    ...        'Security2': [50, 52, 53, 51, 54]
-    ...    }
-    >>>    data_candidates = {
-    ...        'Candidate1': [100, 101, 99, 102, 104],
-    ...        'Candidate2': [200, 202, 201, 203, 205]
-    ...    }
-
-    >>>    securities = pd.DataFrame(data_securities, index=pd.date_range('2023-01-01', periods=5))
-    >>>    candidates = pd.DataFrame(data_candidates, index=pd.date_range('2023-01-01', periods=5))
-
-    >>>    # Find cointegrated pairs
-    >>>    top_pairs = find_cointegrated_pairs(securities, candidates, n=2, coint=True)
-    >>>    print(top_pairs)
-
-    >>>    | s1       | s2        | t    | p     | joh_sig | eg_sig | coint |
-    >>>    |----------|-----------|------|-------|---------|--------|-------|
-    >>>    | Security1| Candidate1| -3.5 | 0.01  | 1       | 1      | 1     |
-    >>>    | Security2| Candidate2| -2.9 | 0.04  | 1       | 1      | 1     |
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> data_securities = {
+    ...     'Security1': [100, 102, 101, 103, 105],
+    ...     'Security2': [50, 52, 53, 51, 54]
+    ... }
+    >>> data_candidates = {
+    ...     'Candidate1': [100, 101, 99, 102, 104],
+    ...     'Candidate2': [200, 202, 201, 203, 205]
+    ... }
+    >>> securities = pd.DataFrame(data_securities, index=pd.date_range('2023-01-01', periods=5))
+    >>> candidates = pd.DataFrame(data_candidates, index=pd.date_range('2023-01-01', periods=5))
+    >>> top_pairs = find_cointegrated_pairs(securities, candidates, n=2, coint=True)
+    >>> print(top_pairs)
     """
-    trace0_cv = __CRITICAL_VALUES[0][
-        0.95
-    ]  # critical value for 0 cointegration relationships
-    # critical value for 1 cointegration relationship
-    trace1_cv = __CRITICAL_VALUES[1][0.95]
-    spreads = []
-    if start is not None and stop is not None:
-        securities = securities.loc[str(start) : str(stop), :]
-        candidates = candidates.loc[str(start) : str(stop), :]
-    for i, (ticker, prices) in enumerate(securities.items(), 1):
-        try:
-            df = compute_pair_metrics(prices, candidates)
-            spreads.append(df.set_index("s1", append=True))
-        except np.linalg.LinAlgError:
-            continue
-    spreads = pd.concat(spreads)
-    spreads.index.names = ["s2", "s1"]
-    spreads = spreads.swaplevel()
-    spreads["t"] = spreads[["t1", "t2"]].min(axis=1)
-    spreads["p"] = spreads[["p1", "p2"]].min(axis=1)
-    spreads["joh_sig"] = (
-        (spreads.trace0 > trace0_cv) & (spreads.trace1 > trace1_cv)
-    ).astype(int)
-    spreads["eg_sig"] = (spreads.p < 0.05).astype(int)
-    spreads["s1_dep"] = spreads.p1 < spreads.p2
-    spreads["coint"] = (spreads.joh_sig & spreads.eg_sig).astype(int)
-    # select top n pairs
-    if coint:
-        if n is not None:
-            top_pairs = (
-                spreads.query("coint == 1").sort_values("t", ascending=False).head(n)
-            )
-        else:
-            top_pairs = spreads.query("coint == 1").sort_values("t", ascending=False)
-    else:
-        if n is not None:
-            top_pairs = spreads.sort_values("t", ascending=False).head(n)
-        else:
-            top_pairs = spreads.sort_values("t", ascending=False)
-    return top_pairs
 
 
 def analyze_cointegrated_pairs(
@@ -1121,25 +1091,31 @@ def KFSmoother(prices: pd.Series | np.ndarray) -> pd.Series | np.ndarray:
 
 
 def KFHedgeRatio(x: pd.Series | np.ndarray, y: pd.Series | np.ndarray) -> np.ndarray:
-    """
-    Estimate Hedge Ratio using Kalman Filter.
-    Args:
-        x : pd.Series or np.ndarray
-            The independent variable, which can be either a pandas Series or a numpy array.
-        y : pd.Series or np.ndarray
-            The dependent variable, which can be either a pandas Series or a numpy array.
+    """Estimate Hedge Ratio using Kalman Filter.
 
-    Returns:
-        np.ndarray
-            The estimated hedge ratio as a numpy array.
+    This function uses a Kalman Filter to dynamically estimate the hedge ratio
+    (beta) and intercept (alpha) for a pair of assets over time.
 
-    The function returns the negative of the first state variable of each Kalman Filter estimate,
-    which represents the estimated hedge ratio.
+    The function returns the negative of the first state variable (the hedge ratio)
+    for each time step, which is a common convention in pairs trading.
+
+    Parameters
+    ----------
+    x : pd.Series or np.ndarray
+        The independent variable (e.g., price series of asset X).
+    y : pd.Series or np.ndarray
+        The dependent variable (e.g., price series of asset Y).
+
+    Returns
+    -------
+    np.ndarray
+        The time-varying estimated hedge ratio as a numpy array.
 
     References
     ----------
-    Stefan Jansen (2020). Machine Learning for Algorithmic Trading - Second Edition.
-    chapter 9, Time-Series Models for Volatility Forecasts and Statistical Arbitrage.
+    * [1] Jansen, S. (2020). Machine Learning for Algorithmic Trading -
+       Second Edition. Packt Publishing. Chapter 9, Time-Series Models
+       for Volatility Forecasts and Statistical Arbitrage.
     """
     if not isinstance(x, (np.ndarray, pd.Series)) or not isinstance(
         y, (np.ndarray, pd.Series)
