@@ -10,7 +10,7 @@ import sys
 from unittest.mock import MagicMock
 from importlib.metadata import version, PackageNotFoundError
 
-os.system('pip install ..')
+os.system('pip install -e ..')
 sys.path.insert(0, os.path.abspath('../bbstrader'))
 
 class Mock(MagicMock):
