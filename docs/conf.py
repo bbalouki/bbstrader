@@ -10,7 +10,7 @@ import sys
 from unittest.mock import MagicMock
 from importlib.metadata import version, PackageNotFoundError
 
-
+os.system('pip install ..')
 sys.path.insert(0, os.path.abspath('../bbstrader'))
 
 class Mock(MagicMock):
@@ -19,7 +19,7 @@ class Mock(MagicMock):
         return MagicMock()
 
 # List the mock modules to avoid import errors
-MOCK_MODULES = ['MetaTrader5', 'talib']
+MOCK_MODULES = ['MetaTrader5', 'talib', 'posix']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 project = 'bbstrader'
