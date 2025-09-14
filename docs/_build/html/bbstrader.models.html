@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>bbstrader.models package &mdash; bbstrader 0.3.3 documentation</title>
+  <title>bbstrader.models package &mdash; bbstrader 0.3.5 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=d5a15cff"></script>
+      <script src="_static/documentation_options.js?v=ba50482b"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -45,47 +45,24 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">bbstrader</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="bbstrader.btengine.html">bbstrader.btengine package</a></li>
-<li class="toctree-l2"><a class="reference internal" href="bbstrader.core.html">bbstrader.core package</a></li>
-<li class="toctree-l2"><a class="reference internal" href="bbstrader.ibkr.html">bbstrader.ibkr package</a></li>
-<li class="toctree-l2"><a class="reference internal" href="bbstrader.metatrader.html">bbstrader.metatrader package</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">bbstrader.models package</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-bbstrader.models.factors">bbstrader.models.factors module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#bbstrader.models.factors.search_coint_candidate_pairs"><code class="docutils literal notranslate"><span class="pre">search_coint_candidate_pairs()</span></code></a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="bbstrader.html">bbstrader package</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="bbstrader.html#module-bbstrader">Module contents</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="bbstrader.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.apps.html">bbstrader.apps package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.btengine.html">bbstrader.btengine package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.core.html">bbstrader.core package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.ibkr.html">bbstrader.ibkr package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.metatrader.html">bbstrader.metatrader package</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">bbstrader.models package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bbstrader.trading.html">bbstrader.trading package</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#module-bbstrader.models.ml">bbstrader.models.ml module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#bbstrader.models.ml.LightGBModel"><code class="docutils literal notranslate"><span class="pre">LightGBModel</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#bbstrader.models.ml.MultipleTimeSeriesCV"><code class="docutils literal notranslate"><span class="pre">MultipleTimeSeriesCV</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#bbstrader.models.ml.OneStepTimeSeriesSplit"><code class="docutils literal notranslate"><span class="pre">OneStepTimeSeriesSplit</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bbstrader.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bbstrader.html#module-bbstrader.compat">bbstrader.compat module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bbstrader.html#module-bbstrader.config">bbstrader.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bbstrader.html#module-bbstrader.tseries">bbstrader.tseries module</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#module-bbstrader.models.nlp">bbstrader.models.nlp module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#bbstrader.models.nlp.SentimentAnalyzer"><code class="docutils literal notranslate"><span class="pre">SentimentAnalyzer</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#bbstrader.models.nlp.TopicModeler"><code class="docutils literal notranslate"><span class="pre">TopicModeler</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-bbstrader.models.optimization">bbstrader.models.optimization module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#bbstrader.models.optimization.equal_weighted"><code class="docutils literal notranslate"><span class="pre">equal_weighted()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#bbstrader.models.optimization.hierarchical_risk_parity"><code class="docutils literal notranslate"><span class="pre">hierarchical_risk_parity()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#bbstrader.models.optimization.markowitz_weights"><code class="docutils literal notranslate"><span class="pre">markowitz_weights()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#bbstrader.models.optimization.optimized_weights"><code class="docutils literal notranslate"><span class="pre">optimized_weights()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-bbstrader.models.portfolio">bbstrader.models.portfolio module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#bbstrader.models.portfolio.EigenPortfolios"><code class="docutils literal notranslate"><span class="pre">EigenPortfolios</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-bbstrader.models.risk">bbstrader.models.risk module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#bbstrader.models.risk.HMMRiskManager"><code class="docutils literal notranslate"><span class="pre">HMMRiskManager</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#bbstrader.models.risk.build_hmm_models"><code class="docutils literal notranslate"><span class="pre">build_hmm_models()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-bbstrader.models">Module contents</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="bbstrader.trading.html">bbstrader.trading package</a></li>
 </ul>
 </li>
 </ul>
@@ -105,6 +82,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="modules.html">bbstrader</a></li>
+          <li class="breadcrumb-item"><a href="bbstrader.html">bbstrader package</a></li>
       <li class="breadcrumb-item active">bbstrader.models package</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/bbstrader.models.rst.txt" rel="nofollow"> View page source</a>
@@ -117,6 +95,11 @@
              
   <section id="bbstrader-models-package">
 <h1>bbstrader.models package<a class="headerlink" href="#bbstrader-models-package" title="Link to this heading"></a></h1>
+<section id="module-bbstrader.models">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-bbstrader.models" title="Link to this heading"></a></h2>
+<p>The <cite>models</cite> module provides a foundational framework for implementing various quantitative finance models.</p>
+<p>It is designed to be a versatile base module for different types of models used in financial analysis and trading.</p>
+</section>
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
 </section>
@@ -124,7 +107,7 @@
 <span id="bbstrader-models-factors-module"></span><h2>bbstrader.models.factors module<a class="headerlink" href="#module-bbstrader.models.factors" title="Link to this heading"></a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="bbstrader.models.factors.search_coint_candidate_pairs">
-<span class="sig-prename descclassname"><span class="pre">bbstrader.models.factors.</span></span><span class="sig-name descname"><span class="pre">search_coint_candidate_pairs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">securities</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">candidates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">period_search</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">select</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">universe</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rolling_window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npairs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'D1'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">DataFrame</span></span></span><a class="reference internal" href="_modules/bbstrader/models/factors.html#search_coint_candidate_pairs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.models.factors.search_coint_candidate_pairs" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">bbstrader.models.factors.</span></span><span class="sig-name descname"><span class="pre">search_coint_candidate_pairs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">securities</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">candidates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">period_search</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">select</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'yf'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'mt5'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'fmp'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'eodhd'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">universe</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rolling_window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npairs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'D1'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">DataFrame</span></span></span><a class="reference internal" href="_modules/bbstrader/models/factors.html#search_coint_candidate_pairs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.models.factors.search_coint_candidate_pairs" title="Link to this definition"></a></dt>
 <dd><p>Searches for candidate pairs of securities based on cointegration analysis.</p>
 <p>This function either processes preloaded securities and candidates data
 (as pandas DataFrames) or downloads historical data from a specified
@@ -300,7 +283,8 @@ is the previous day, so it predicts today’s returns.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="bbstrader.models.ml.LightGBModel.download_metadata">
 <span class="sig-name descname"><span class="pre">download_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tickers</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/models/ml.html#LightGBModel.download_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.models.ml.LightGBModel.download_metadata" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Downloads metadata for multiple tickers concurrently using a thread pool.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="bbstrader.models.ml.LightGBModel.evaluate">
@@ -371,6 +355,12 @@ based on a numeric time() value</p>
 <dt class="sig sig-object py" id="bbstrader.models.ml.MultipleTimeSeriesCV">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bbstrader.models.ml.</span></span><span class="sig-name descname"><span class="pre">MultipleTimeSeriesCV</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_splits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_period_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">126</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_period_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">21</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lookahead</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'date'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shuffle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/models/ml.html#MultipleTimeSeriesCV"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.models.ml.MultipleTimeSeriesCV" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Generates tuples of train_idx, test_idx pairs
+Assumes the MultiIndex contains levels ‘symbol’ and ‘date’
+purges overlapping outcomes</p>
+<p class="rubric">References</p>
+<p>Stefan Jansen (2020). Machine Learning for Algorithmic Trading - Second Edition.
+Chapter 12, Boosting Your Trading Strategy.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="bbstrader.models.ml.MultipleTimeSeriesCV.get_n_splits">
 <span class="sig-name descname"><span class="pre">get_n_splits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">groups</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/models/ml.html#MultipleTimeSeriesCV.get_n_splits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.models.ml.MultipleTimeSeriesCV.get_n_splits" title="Link to this definition"></a></dt>
@@ -387,6 +377,11 @@ based on a numeric time() value</p>
 <dt class="sig sig-object py" id="bbstrader.models.ml.OneStepTimeSeriesSplit">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bbstrader.models.ml.</span></span><span class="sig-name descname"><span class="pre">OneStepTimeSeriesSplit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_splits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_period_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shuffle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/models/ml.html#OneStepTimeSeriesSplit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.models.ml.OneStepTimeSeriesSplit" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Generates tuples of train_idx, test_idx pairs
+Assumes the index contains a level labeled ‘date’</p>
+<p class="rubric">References</p>
+<p>Stefan Jansen (2020). Machine Learning for Algorithmic Trading - Second Edition.
+Chapter 12, Boosting Your Trading Strategy.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="bbstrader.models.ml.OneStepTimeSeriesSplit.chunks">
 <em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">chunks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">l</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/models/ml.html#OneStepTimeSeriesSplit.chunks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.models.ml.OneStepTimeSeriesSplit.chunks" title="Link to this definition"></a></dt>
@@ -459,45 +454,43 @@ bar and scatter plots. It fetches new sentiment data at specified intervals.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>tickers</strong> (<em>List</em><em>[</em><em>str</em><em>] </em><em>| </em><em>List</em><em>[</em><em>Tuple</em><em>[</em><em>str</em><em>, </em><em>str</em><em>]</em><em>]</em>) – A list of financial asset tickers to analyze.
-- If using tuples, the first element is the ticker and the second is the asset type.
-- If using a single string, the asset type must be specified or defaults to “stock”.</p></li>
-<li><p><strong>asset_type</strong> (<em>str</em><em>, </em><em>optional</em>) – The type of financial asset (“stock”, “forex”, “crypto”). Defaults to “stock”.</p></li>
-<li><p><strong>lexicon</strong> (<em>dict</em><em>, </em><em>optional</em>) – A custom sentiment lexicon. Defaults to None.</p></li>
-<li><p><strong>interval</strong> (<em>int</em><em>, </em><em>optional</em>) – The refresh interval (in milliseconds) for sentiment data updates. Defaults to 100000.</p></li>
-<li><p><strong>top_n</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of top and bottom assets to display in the sentiment bar chart. Defaults to 20.</p></li>
+<li><p><strong>tickers</strong> (<em>list</em><em> of </em><em>str</em><em> or </em><em>list</em><em> of </em><em>tuple</em>) – A list of financial asset tickers to analyze.
+* If using tuples, the first element is the ticker and the second is the asset type.
+* If using a single string, the asset type must be specified or defaults to “stock”.</p></li>
+<li><p><strong>asset_type</strong> (<em>str</em><em>, </em><em>optional</em>) – The type of financial asset (“stock”, “forex”, “crypto”). Default is “stock”.</p></li>
+<li><p><strong>lexicon</strong> (<em>dict</em><em>, </em><em>optional</em>) – A custom sentiment lexicon. Default is None.</p></li>
+<li><p><strong>interval</strong> (<em>int</em><em>, </em><em>optional</em>) – The refresh interval (in milliseconds) for sentiment data updates. Default is 100000.</p></li>
+<li><p><strong>top_n</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of top and bottom assets to display in the sentiment bar chart. Default is 20.</p></li>
 <li><p><strong>**kwargs</strong> (<em>dict</em>) – Additional arguments required for fetching sentiment data. Must include:
-- client_id (str): Reddit API client ID.
-- client_secret (str): Reddit API client secret.
-- user_agent (str): User agent for Reddit API.
-- fmp_api (str): Financial Modeling Prep (FMP) API key.</p></li>
+* client_id (str): Reddit API client ID.
+* client_secret (str): Reddit API client secret.
+* user_agent (str): User agent for Reddit API.
+* fmp_api (str): Financial Modeling Prep (FMP) API key.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The function does not return anything but starts a real-time interactive dashboard.</p>
+<dd class="field-even"><p>Starts a real-time interactive dashboard. Does not return any value.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>None</p>
 </dd>
 </dl>
-<dl>
-<dt>Example Usage:</dt><dd><p>sa = SentimentAnalyzer()
-sa.display_sentiment_dashboard(</p>
-<blockquote>
-<div><p>tickers=[“AAPL”, “TSLA”, “GOOGL”],
-asset_type=”stock”,
-lexicon=my_lexicon,
-display=True,
-interval=5000,
-top_n=10,
-client_id=”your_reddit_id”,
-client_secret=”your_reddit_secret”,
-user_agent=”your_user_agent”,
-fmp_api=”your_fmp_api_key”,</p>
-</div></blockquote>
-<p>)</p>
-</dd>
-</dl>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sa</span> <span class="o">=</span> <span class="n">SentimentAnalyzer</span><span class="p">()</span>
+<span class="n">sa</span><span class="o">.</span><span class="n">display_sentiment_dashboard</span><span class="p">(</span>
+    <span class="n">tickers</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;AAPL&quot;</span><span class="p">,</span> <span class="s2">&quot;TSLA&quot;</span><span class="p">,</span> <span class="s2">&quot;GOOGL&quot;</span><span class="p">],</span>
+    <span class="n">asset_type</span><span class="o">=</span><span class="s2">&quot;stock&quot;</span><span class="p">,</span>
+    <span class="n">lexicon</span><span class="o">=</span><span class="n">my_lexicon</span><span class="p">,</span>
+    <span class="n">display</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">interval</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span>
+    <span class="n">top_n</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">client_id</span><span class="o">=</span><span class="s2">&quot;your_reddit_id&quot;</span><span class="p">,</span>
+    <span class="n">client_secret</span><span class="o">=</span><span class="s2">&quot;your_reddit_secret&quot;</span><span class="p">,</span>
+    <span class="n">user_agent</span><span class="o">=</span><span class="s2">&quot;your_user_agent&quot;</span><span class="p">,</span>
+    <span class="n">fmp_api</span><span class="o">=</span><span class="s2">&quot;your_fmp_api_key&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
 <p class="rubric">Notes</p>
 <ul class="simple">
 <li><p>Sentiment analysis is performed using financial news and social media discussions.</p></li>
@@ -509,61 +502,73 @@ fmp_api=”your_fmp_api_key”,</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="bbstrader.models.nlp.SentimentAnalyzer.get_sentiment_for_tickers">
 <span class="sig-name descname"><span class="pre">get_sentiment_for_tickers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tickers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lexicon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">asset_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'stock'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">top_news</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/bbstrader/models/nlp.html#SentimentAnalyzer.get_sentiment_for_tickers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.models.nlp.SentimentAnalyzer.get_sentiment_for_tickers" title="Link to this definition"></a></dt>
-<dd><p>Computes sentiment scores for a list of financial tickers based on news and social media data.</p>
-<p>Process:
-1. Collects news articles and posts related to each ticker from various sources:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>Yahoo Finance News</p></li>
-<li><p>Google Finance News</p></li>
-<li><p>Reddit posts</p></li>
-<li><p>Financial Modeling Prep (FMP) news</p></li>
-</ul>
-</div></blockquote>
-<ol class="arabic simple" start="2">
-<li><p>Analyzes sentiment from each source:
-- Uses VADER for Yahoo and Google Finance news.
-- Uses TextBlob for Reddit and FMP news.</p></li>
-<li><p>Computes an overall sentiment score using a weighted average approach.</p></li>
-</ol>
+<dd><p>Compute sentiment scores for a list of financial tickers based on news and social media data.</p>
+<section id="process">
+<h3>Process<a class="headerlink" href="#process" title="Link to this heading"></a></h3>
+<p>1. Collect news articles and posts related to each ticker from various sources:
+* Yahoo Finance News
+* Google Finance News
+* Reddit posts
+* Financial Modeling Prep (FMP) news
+2. Analyze sentiment from each source:
+* Uses VADER for Yahoo and Google Finance news.
+* Uses TextBlob for Reddit and FMP news.
+3. Compute an overall sentiment score using a weighted average approach.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>tickers</strong> (<em>List</em><em>[</em><em>str</em><em>] </em><em>| </em><em>List</em><em>[</em><em>Tuple</em><em>[</em><em>str</em><em>, </em><em>str</em><em>]</em><em>]</em>) – A list of asset tickers to analyze
-- if using tuples, the first element is the ticker and the second is the asset type.
-- if using a single string, the asset type must be specified or the default is “stock”.</p></li>
-<li><p><strong>lexicon</strong> (<em>dict</em><em>, </em><em>optional</em>) – A custom sentiment lexicon to update VADER’s default lexicon.</p></li>
-<li><p><strong>asset_type</strong> (<em>str</em><em>, </em><em>optional</em>) – The type of asset, Defaults to “stock”,
-supported types include:
-- “stock”: Stock symbols (e.g., AAPL, MSFT)
-- “etf”: Exchange-traded funds (e.g., SPY, QQQ)
-- “future”: Futures contracts (e.g., CL=F for crude oil)
-- “forex”: Forex pairs (e.g., EURUSD=X, USDJPY=X)
-- “crypto”: Cryptocurrency pairs (e.g., BTC-USD, ETH-USD)
-- “index”: Stock market indices (e.g., ^GSPC for S&amp;P 500)</p></li>
-<li><p><strong>top_news</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of news articles/posts to fetch per source. Defaults to 10.</p></li>
-<li><p><strong>**kwargs</strong> – Additional parameters for API authentication and data retrieval, including:
-- fmp_api (str): API key for Financial Modeling Prep.
-- client_id, client_secret, user_agent (str): Credentials for accessing Reddit API.</p></li>
-</ul>
+<dt class="field-odd">param tickers<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A list of asset tickers to analyze.
+* If using tuples, the first element is the ticker and the second is the asset type.
+* If using a single string, the asset type must be specified or defaults to “stock”.</p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><dl class="simple">
-<dt>A dictionary mapping each ticker to its overall sentiment score.</dt><dd><ul class="simple">
-<li><p>Positive values indicate positive sentiment.</p></li>
-<li><p>Negative values indicate negative sentiment.</p></li>
-<li><p>Zero indicates neutral sentiment.</p></li>
-</ul>
+<dt class="field-even">type tickers<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of str or list of tuple</p>
 </dd>
-</dl>
-</p>
+<dt class="field-odd">param lexicon<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A custom sentiment lexicon to update VADER’s default lexicon. Default is None.</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Dict[str, float]</p>
+<dt class="field-even">type lexicon<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict, optional</p>
+</dd>
+<dt class="field-odd">param asset_type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The type of asset. Default is “stock”.
+Supported types include:
+* “stock”: Stock symbols (e.g., AAPL, MSFT)
+* “etf”: Exchange-traded funds (e.g., SPY, QQQ)
+* “future”: Futures contracts (e.g., CL=F for crude oil)
+* “forex”: Forex pairs (e.g., EURUSD=X, USDJPY=X)
+* “crypto”: Cryptocurrency pairs (e.g., BTC-USD, ETH-USD)
+* “index”: Stock market indices (e.g., ^GSPC for S&amp;P 500)</p>
+</dd>
+<dt class="field-even">type asset_type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str, optional</p>
+</dd>
+<dt class="field-odd">param top_news<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Number of news articles/posts to fetch per source. Default is 10.</p>
+</dd>
+<dt class="field-even">type top_news<span class="colon">:</span></dt>
+<dd class="field-even"><p>int, optional</p>
+</dd>
+<dt class="field-odd">param **kwargs<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Additional parameters for API authentication and data retrieval. Must include:
+* fmp_api (str): API key for Financial Modeling Prep.
+* client_id, client_secret, user_agent (str): Credentials for Reddit API.</p>
+</dd>
+<dt class="field-even">type **kwargs<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+<dt class="field-odd">returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A dictionary mapping each ticker to its overall sentiment score.
+* Positive values indicate positive sentiment.
+* Negative values indicate negative sentiment.
+* Zero indicates neutral sentiment.</p>
+</dd>
+<dt class="field-even">rtype<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict of str to float</p>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
-<p>The tickers names must follow yahoo finance conventions.</p>
+<p>Ticker names must follow Yahoo Finance conventions.</p>
+</section>
 </dd></dl>
 
 <dl class="py method">
@@ -892,11 +897,6 @@ by weighting asset returns according to eigenportfolio weights.</p>
 <span class="sig-prename descclassname"><span class="pre">bbstrader.models.risk.</span></span><span class="sig-name descname"><span class="pre">build_hmm_models</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bbstrader/models/risk.html#build_hmm_models"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bbstrader.models.risk.build_hmm_models" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
-</section>
-<section id="module-bbstrader.models">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-bbstrader.models" title="Link to this heading"></a></h2>
-<p>The <cite>models</cite> module provides a foundational framework for implementing various quantitative finance models.</p>
-<p>It is designed to be a versatile base module for different types of models used in financial analysis and trading.</p>
 </section>
 </section>
 

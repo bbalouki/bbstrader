@@ -57,23 +57,37 @@ def display_volume_profile(
 
     This function retrieves historical price and volume data for a given symbol and
     plots a vertical volume profile chart showing the volume distribution across 
-    price levels. It highlights key levels such as:
-        - Point of Control (POC): Price level with the highest traded volume.
-        - Value Area High (VAH): Upper bound of the value area.
-        - Value Area Low (VAL): Lower bound of the value area.
-        - Current Price: Latest bid price from MetaTrader 5.
+    price levels.
 
-    Args:
-        symbol (str): Market symbol (e.g., "AAPL", "EURUSD").
-        path (str): Path to the historical data see ``bbstrader.metatrader.account.check_mt5_connection()``.
-        timeframe (str, optional): Timeframe for each candle (default is "1m").
-        bars (int, optional): Number of historical bars to fetch (default is 1440).
-        bins (int, optional): Number of price bins for volume profile calculation (default is 100).
-        va_percentage (float, optional): Percentage of total volume to define the value area (default is 0.7).
+    Highlights
+    ----------
+    * **Point of Control (POC)**: Price level with the highest traded volume.
+    * **Value Area High (VAH)**: Upper bound of the value area.
+    * **Value Area Low (VAL)**: Lower bound of the value area.
+    * **Current Price**: Latest bid price from MetaTrader 5.
 
-    Returns:
-        None: Displays a matplotlib chart of the volume profile.
+    Parameters
+    ----------
+    symbol : str
+        Market symbol (e.g., ``"AAPL"``, ``"EURUSD"``).
+    path : str
+        Path to the historical data. See 
+        ``bbstrader.metatrader.account.check_mt5_connection()``.
+    timeframe : str, optional
+        Timeframe for each candle. Default is ``"1m"``.
+    bars : int, optional
+        Number of historical bars to fetch. Default is ``1440``.
+    bins : int, optional
+        Number of price bins for volume profile calculation. Default is ``100``.
+    va_percentage : float, optional
+        Percentage of total volume to define the value area. Default is ``0.7``.
+
+    Returns
+    -------
+    None
+        Displays a matplotlib chart of the volume profile.
     """
+
     check_mt5_connection(path=path)
     df = _get_data(symbol, TIMEFRAMES[timeframe], bars)
     if df.empty:

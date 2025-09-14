@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>bbstrader.core.scripts &mdash; bbstrader 0.3.3 documentation</title>
+  <title>bbstrader.core.scripts &mdash; bbstrader 0.3.5 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=d5a15cff"></script>
+      <script src="../../../_static/documentation_options.js?v=ba50482b"></script>
       <script src="../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -226,18 +226,19 @@
 
     <span class="n">nltk</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="s2">&quot;punkt&quot;</span><span class="p">,</span> <span class="n">quiet</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">news</span> <span class="o">=</span> <span class="n">FinancialNews</span><span class="p">()</span>
+    <span class="n">fmp_news</span> <span class="o">=</span> <span class="n">news</span><span class="o">.</span><span class="n">get_fmp_news</span><span class="p">(</span><span class="n">api</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">fmp</span><span class="p">)</span> <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">fmp</span> <span class="k">else</span> <span class="kc">None</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Starting the News Feed on </span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">interval</span><span class="si">}</span><span class="s2"> minutes&quot;</span><span class="p">)</span>
     <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">fmp_articles</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="n">coindesk_articles</span> <span class="o">=</span> <span class="n">news</span><span class="o">.</span><span class="n">get_coindesk_news</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">query</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">fmp</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">fmp_news</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">start</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">interval</span><span class="p">)</span>
                 <span class="n">start</span> <span class="o">=</span> <span class="n">start</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">)</span>
                 <span class="n">end</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">)</span>
-                <span class="n">fmp_articles</span> <span class="o">=</span> <span class="n">news</span><span class="o">.</span><span class="n">get_fmp_news</span><span class="p">(</span><span class="n">api</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">fmp</span><span class="p">)</span><span class="o">.</span><span class="n">get_latest_articles</span><span class="p">(</span>
+                <span class="n">fmp_articles</span> <span class="o">=</span> <span class="n">fmp_news</span><span class="o">.</span><span class="n">get_latest_articles</span><span class="p">(</span>
                     <span class="n">save</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">end</span>
                 <span class="p">)</span>
+            <span class="n">coindesk_articles</span> <span class="o">=</span> <span class="n">news</span><span class="o">.</span><span class="n">get_coindesk_news</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">query</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">coindesk_articles</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
                     <span class="n">send_articles</span><span class="p">(</span>

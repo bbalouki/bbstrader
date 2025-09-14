@@ -1,5 +1,5 @@
-.. bbs documentation master file, created by
-   sphinx-quickstart on Tue Aug 26 17:24:30 2025.
+.. bd documentation master file, created by
+   sphinx-quickstart on Sun Sep 14 10:44:33 2025.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
@@ -117,13 +117,14 @@ To begin using ``bbstrader``, please ensure your system meets the following prer
 Prerequisites
 ^^^^^^^^^^^^^
 
-*   **Python**: Python 3.10+ is required.
-*   **MetaTrader 5 (MT5)**:
-    *   The MetaTrader 5 platform must be installed on your system (primarily for Windows users needing live trading or direct MT5 interaction).
-    *   An active trading account with a MetaTrader 5 broker. ``bbstrader`` currently supports:
-        *   `Admirals Group AS`_
-        *   `Just Global Markets Ltd.`_
-        *   `FTMO`_ (Proprietary Firm)
+* **Python**: Python 3.10+ is required.
+* **MetaTrader 5 (MT5)**:
+   * The MetaTrader 5 platform must be installed on your system (primarily for Windows users needing live trading or direct MT5 interaction).
+   * An active trading account with a MetaTrader 5 broker. ``bbstrader`` currently supports:
+      * `Admirals Group AS`_
+      * `Just Global Markets Ltd.`_
+      * `FTMO`_ (Proprietary Firm)
+
 
 Installation
 ^^^^^^^^^^^^
@@ -330,18 +331,18 @@ You may need to create the ``~/.bbstrader/`` directory and its subdirectories (l
 Strategy Execution (``execution.json``)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-*   **Purpose**: Defines parameters for live strategy execution when using the ``python -m bbstrader --run execution`` command.
-*   **Default Location**: ``~/.bbstrader/execution/execution.json``. You'll likely need to create this file and its parent directory.
-*   **Structure**:
-    *   The file is a JSON object where top-level keys are strategy class names (e.g., ``"SMAStrategy"``).
-    *   Each strategy key contains another JSON object where keys are your account identifiers (e.g., ``"MY_MT5_ACCOUNT_1"``). These account identifiers should match those you've configured for MT5 connections (often set via environment variables or a central configuration not detailed here but handled by the ``metatrader`` module).
-    *   Under each account, you specify:
-        *   ``"symbol_list"``: A list of symbols the strategy will trade (e.g., ``["EURUSD", "GBPUSD"]``).
-        *   ``"trades_kwargs"``: A dictionary for MetaTrader 5 specific order parameters, commonly including:
-            *   ``"magic"``: The magic number for orders placed by this strategy instance.
-            *   ``"comment"``: A comment for orders.
-        *   Custom strategy parameters: Any other parameters required by your strategy's ``__init__`` method (e.g., ``"short_window"``, ``"long_window"``, ``"time_frame"``, ``"quantities"``).
-*   **Example**: Refer to the example in the "Usage Examples" -> "CLI - Running a Live Strategy" section.
+* **Purpose**: Defines parameters for live strategy execution when using the ``python -m bbstrader --run execution`` command.
+* **Default Location**: ``~/.bbstrader/execution/execution.json``. You'll likely need to create this file and its parent directory.
+* **Structure**:
+   * The file is a JSON object where top-level keys are strategy class names (e.g., ``"SMAStrategy"``).
+   * Each strategy key contains another JSON object where keys are your account identifiers (e.g., ``"MY_MT5_ACCOUNT_1"``). These account identifiers should match those you've configured for MT5 connections (often set via environment variables or a central configuration not detailed here but handled by the ``metatrader`` module).
+   * Under each account, you specify:
+      * ``"symbol_list"``: A list of symbols the strategy will trade (e.g., ``["EURUSD", "GBPUSD"]``).
+      * ``"trades_kwargs"``: A dictionary for MetaTrader 5 specific order parameters, commonly including:
+         * ``"magic"``: The magic number for orders placed by this strategy instance.
+         * ``"comment"``: A comment for orders.
+      * Custom strategy parameters: Any other parameters required by your strategy's ``__init__`` method (e.g., ``"short_window"``, ``"long_window"``, ``"time_frame"``, ``"quantities"``).
+* **Example**: Refer to the example in the "Usage Examples" -> "CLI - Running a Live Strategy" section.
 
 MetaTrader 5 Broker Paths (``bbstrader/config.py``)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -387,7 +388,7 @@ Customization and Contribution
 ``bbstrader``'s modular design allows for easy customization and extension. Traders and developers are encouraged to modify existing strategies, add new ones, or enhance the system's capabilities. Contributions to the ``bbstrader`` project are welcome.
 
 Contributing to ``bbstrader``
--------------------------
+-----------------------------
 
 We warmly welcome contributions from the trading and development community! Whether you're interested in fixing bugs, adding new features, or improving documentation, your help is invaluable to making ``bbstrader`` more robust and versatile. Here's how you can contribute:
 
@@ -468,7 +469,7 @@ License
 ``bbstrader`` is open source and available under the MIT License.
 
 .. _Dcoumentation: https://bbstrader.readthedocs.io/en/latest/index.html
-.. _Admirals Group AS: https://cabinet.a-partnership.com/visit/?bta=35537&brand=admiralmarkets
+.. _Admirals Group AS: https://one.justmarkets.link/a/tufvj0xugm/registration/trader
 .. _Just Global Markets Ltd.: https://one.justmarkets.link/a/tufvj0xugm/registration/trader
 .. _FTMO: https://trader.ftmo.com/?affiliates=JGmeuQqepAZLMcdOEQRp
 .. _View the Full Documentation on ReadTheDocs: https://bbstrader.readthedocs.io/en/latest/

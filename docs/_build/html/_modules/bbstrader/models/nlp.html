@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>bbstrader.models.nlp &mdash; bbstrader 0.3.3 documentation</title>
+  <title>bbstrader.models.nlp &mdash; bbstrader 0.3.5 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=d5a15cff"></script>
+      <script src="../../../_static/documentation_options.js?v=ba50482b"></script>
       <script src="../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -664,44 +664,55 @@
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Computes sentiment scores for a list of financial tickers based on news and social media data.</span>
+<span class="sd">        Compute sentiment scores for a list of financial tickers based on news and social media data.</span>
 
-<span class="sd">        Process:</span>
-<span class="sd">        1. Collects news articles and posts related to each ticker from various sources:</span>
-<span class="sd">           - Yahoo Finance News</span>
-<span class="sd">           - Google Finance News</span>
-<span class="sd">           - Reddit posts</span>
-<span class="sd">           - Financial Modeling Prep (FMP) news</span>
-<span class="sd">        2. Analyzes sentiment from each source:</span>
-<span class="sd">           - Uses VADER for Yahoo and Google Finance news.</span>
-<span class="sd">           - Uses TextBlob for Reddit and FMP news.</span>
-<span class="sd">        3. Computes an overall sentiment score using a weighted average approach.</span>
+<span class="sd">        Process</span>
+<span class="sd">        -------</span>
+<span class="sd">        1. Collect news articles and posts related to each ticker from various sources:</span>
+<span class="sd">        * Yahoo Finance News</span>
+<span class="sd">        * Google Finance News</span>
+<span class="sd">        * Reddit posts</span>
+<span class="sd">        * Financial Modeling Prep (FMP) news</span>
+<span class="sd">        2. Analyze sentiment from each source:</span>
+<span class="sd">        * Uses VADER for Yahoo and Google Finance news.</span>
+<span class="sd">        * Uses TextBlob for Reddit and FMP news.</span>
+<span class="sd">        3. Compute an overall sentiment score using a weighted average approach.</span>
 
-<span class="sd">        Args:</span>
-<span class="sd">            tickers (List[str] | List[Tuple[str, str]]): A list of asset tickers to analyze</span>
-<span class="sd">                - if using tuples, the first element is the ticker and the second is the asset type.</span>
-<span class="sd">                - if using a single string, the asset type must be specified or the default is &quot;stock&quot;.</span>
-<span class="sd">            lexicon (dict, optional): A custom sentiment lexicon to update VADER&#39;s default lexicon.</span>
-<span class="sd">            asset_type (str, optional): The type of asset, Defaults to &quot;stock&quot;,</span>
-<span class="sd">                supported types include:</span>
-<span class="sd">                - &quot;stock&quot;: Stock symbols (e.g., AAPL, MSFT)</span>
-<span class="sd">                - &quot;etf&quot;: Exchange-traded funds (e.g., SPY, QQQ)</span>
-<span class="sd">                - &quot;future&quot;: Futures contracts (e.g., CL=F for crude oil)</span>
-<span class="sd">                - &quot;forex&quot;: Forex pairs (e.g., EURUSD=X, USDJPY=X)</span>
-<span class="sd">                - &quot;crypto&quot;: Cryptocurrency pairs (e.g., BTC-USD, ETH-USD)</span>
-<span class="sd">                - &quot;index&quot;: Stock market indices (e.g., ^GSPC for S&amp;P 500)</span>
-<span class="sd">            top_news (int, optional): Number of news articles/posts to fetch per source. Defaults to 10.</span>
-<span class="sd">            **kwargs: Additional parameters for API authentication and data retrieval, including:</span>
-<span class="sd">                - fmp_api (str): API key for Financial Modeling Prep.</span>
-<span class="sd">                - client_id, client_secret, user_agent (str): Credentials for accessing Reddit API.</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        tickers : list of str or list of tuple</span>
+<span class="sd">            A list of asset tickers to analyze.</span>
+<span class="sd">            * If using tuples, the first element is the ticker and the second is the asset type.</span>
+<span class="sd">            * If using a single string, the asset type must be specified or defaults to &quot;stock&quot;.</span>
+<span class="sd">        lexicon : dict, optional</span>
+<span class="sd">            A custom sentiment lexicon to update VADER&#39;s default lexicon. Default is None.</span>
+<span class="sd">        asset_type : str, optional</span>
+<span class="sd">            The type of asset. Default is &quot;stock&quot;.</span>
+<span class="sd">            Supported types include:</span>
+<span class="sd">            * &quot;stock&quot;: Stock symbols (e.g., AAPL, MSFT)</span>
+<span class="sd">            * &quot;etf&quot;: Exchange-traded funds (e.g., SPY, QQQ)</span>
+<span class="sd">            * &quot;future&quot;: Futures contracts (e.g., CL=F for crude oil)</span>
+<span class="sd">            * &quot;forex&quot;: Forex pairs (e.g., EURUSD=X, USDJPY=X)</span>
+<span class="sd">            * &quot;crypto&quot;: Cryptocurrency pairs (e.g., BTC-USD, ETH-USD)</span>
+<span class="sd">            * &quot;index&quot;: Stock market indices (e.g., ^GSPC for S&amp;P 500)</span>
+<span class="sd">        top_news : int, optional</span>
+<span class="sd">            Number of news articles/posts to fetch per source. Default is 10.</span>
+<span class="sd">        **kwargs : dict</span>
+<span class="sd">            Additional parameters for API authentication and data retrieval. Must include:</span>
+<span class="sd">            * fmp_api (str): API key for Financial Modeling Prep.</span>
+<span class="sd">            * client_id, client_secret, user_agent (str): Credentials for Reddit API.</span>
 
-<span class="sd">        Returns:</span>
-<span class="sd">            Dict[str, float]: A dictionary mapping each ticker to its overall sentiment score.</span>
-<span class="sd">                             - Positive values indicate positive sentiment.</span>
-<span class="sd">                             - Negative values indicate negative sentiment.</span>
-<span class="sd">                             - Zero indicates neutral sentiment.</span>
-<span class="sd">        Notes:</span>
-<span class="sd">            The tickers names must follow yahoo finance conventions.</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict of str to float</span>
+<span class="sd">            A dictionary mapping each ticker to its overall sentiment score.</span>
+<span class="sd">            * Positive values indicate positive sentiment.</span>
+<span class="sd">            * Negative values indicate negative sentiment.</span>
+<span class="sd">            * Zero indicates neutral sentiment.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        Ticker names must follow Yahoo Finance conventions.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">sentiment_results</span> <span class="o">=</span> <span class="p">{}</span>
@@ -857,30 +868,36 @@
 <span class="sd">        The dashboard visualizes sentiment scores for given tickers using interactive</span>
 <span class="sd">        bar and scatter plots. It fetches new sentiment data at specified intervals.</span>
 
-<span class="sd">        Args:</span>
-<span class="sd">            tickers (List[str] | List[Tuple[str, str]]):</span>
-<span class="sd">                A list of financial asset tickers to analyze.</span>
-<span class="sd">                - If using tuples, the first element is the ticker and the second is the asset type.</span>
-<span class="sd">                - If using a single string, the asset type must be specified or defaults to &quot;stock&quot;.</span>
-<span class="sd">            asset_type (str, optional):</span>
-<span class="sd">                The type of financial asset (&quot;stock&quot;, &quot;forex&quot;, &quot;crypto&quot;). Defaults to &quot;stock&quot;.</span>
-<span class="sd">            lexicon (dict, optional):</span>
-<span class="sd">                A custom sentiment lexicon. Defaults to None.</span>
-<span class="sd">            interval (int, optional):</span>
-<span class="sd">                The refresh interval (in milliseconds) for sentiment data updates. Defaults to 100000.</span>
-<span class="sd">            top_n (int, optional):</span>
-<span class="sd">                The number of top and bottom assets to display in the sentiment bar chart. Defaults to 20.</span>
-<span class="sd">            **kwargs (dict):</span>
-<span class="sd">                Additional arguments required for fetching sentiment data. Must include:</span>
-<span class="sd">                - client_id (str): Reddit API client ID.</span>
-<span class="sd">                - client_secret (str): Reddit API client secret.</span>
-<span class="sd">                - user_agent (str): User agent for Reddit API.</span>
-<span class="sd">                - fmp_api (str): Financial Modeling Prep (FMP) API key.</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        tickers : list of str or list of tuple</span>
+<span class="sd">            A list of financial asset tickers to analyze.</span>
+<span class="sd">            * If using tuples, the first element is the ticker and the second is the asset type.</span>
+<span class="sd">            * If using a single string, the asset type must be specified or defaults to &quot;stock&quot;.</span>
+<span class="sd">        asset_type : str, optional</span>
+<span class="sd">            The type of financial asset (&quot;stock&quot;, &quot;forex&quot;, &quot;crypto&quot;). Default is &quot;stock&quot;.</span>
+<span class="sd">        lexicon : dict, optional</span>
+<span class="sd">            A custom sentiment lexicon. Default is None.</span>
+<span class="sd">        interval : int, optional</span>
+<span class="sd">            The refresh interval (in milliseconds) for sentiment data updates. Default is 100000.</span>
+<span class="sd">        top_n : int, optional</span>
+<span class="sd">            The number of top and bottom assets to display in the sentiment bar chart. Default is 20.</span>
+<span class="sd">        **kwargs : dict</span>
+<span class="sd">            Additional arguments required for fetching sentiment data. Must include:</span>
+<span class="sd">            * client_id (str): Reddit API client ID.</span>
+<span class="sd">            * client_secret (str): Reddit API client secret.</span>
+<span class="sd">            * user_agent (str): User agent for Reddit API.</span>
+<span class="sd">            * fmp_api (str): Financial Modeling Prep (FMP) API key.</span>
 
-<span class="sd">        Returns:</span>
-<span class="sd">            None: The function does not return anything but starts a real-time interactive dashboard.</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">            Starts a real-time interactive dashboard. Does not return any value.</span>
 
-<span class="sd">        Example Usage:</span>
+<span class="sd">        Example</span>
+<span class="sd">        -------</span>
+<span class="sd">        .. code-block:: python</span>
+
 <span class="sd">            sa = SentimentAnalyzer()</span>
 <span class="sd">            sa.display_sentiment_dashboard(</span>
 <span class="sd">                tickers=[&quot;AAPL&quot;, &quot;TSLA&quot;, &quot;GOOGL&quot;],</span>
@@ -895,12 +912,12 @@
 <span class="sd">                fmp_api=&quot;your_fmp_api_key&quot;,</span>
 <span class="sd">            )</span>
 
-<span class="sd">        Notes:</span>
-<span class="sd">            - Sentiment analysis is performed using financial news and social media discussions.</span>
-<span class="sd">            - The dashboard updates in real-time at the specified interval.</span>
-<span class="sd">            - The dashboard will keep running unless manually stopped (Ctrl+C).</span>
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        * Sentiment analysis is performed using financial news and social media discussions.</span>
+<span class="sd">        * The dashboard updates in real-time at the specified interval.</span>
+<span class="sd">        * The dashboard will keep running unless manually stopped (Ctrl+C).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="n">app</span> <span class="o">=</span> <span class="n">dash</span><span class="o">.</span><span class="n">Dash</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
         <span class="n">sentiment_history</span> <span class="o">=</span> <span class="p">{</span><span class="n">ticker</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">ticker</span> <span class="ow">in</span> <span class="n">tickers</span><span class="p">}</span>

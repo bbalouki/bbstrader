@@ -10,6 +10,7 @@ from bbstrader.btengine.scripts import backtest
 from bbstrader.core.scripts import send_news_feed
 from bbstrader.metatrader.scripts import copy_trades
 from bbstrader.trading.scripts import execute_strategy
+from . import __author__, __version__
 
 
 class _Module(Enum):
@@ -49,6 +50,10 @@ def main():
     args, unknown = parser.parse_known_args()
     if ("-h" in sys.argv or "--help" in sys.argv) and args.run is None:
         print(Fore.WHITE + USAGE_TEXT)
+        sys.exit(0)
+    if ("-v" in sys.argv or "--version" in sys.argv):
+        print(Fore.GREEN + f"bbstrader version {__version__}")
+        print(Fore.WHITE + f"bbstrader maintained and supported by {__author__}")
         sys.exit(0)
     try:
         match args.run:

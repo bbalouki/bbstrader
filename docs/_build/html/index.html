@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Simplified Investment &amp; Trading Toolkit &mdash; bbstrader 0.3.3 documentation</title>
+  <title>Simplified Investment &amp; Trading Toolkit &mdash; bbstrader 0.3.5 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=d5a15cff"></script>
+      <script src="_static/documentation_options.js?v=ba50482b"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -213,18 +213,23 @@
 <p>To begin using <code class="docutils literal notranslate"><span class="pre">bbstrader</span></code>, please ensure your system meets the following prerequisites and follow the installation steps.</p>
 <section id="prerequisites">
 <h3><a class="toc-backref" href="#id15" role="doc-backlink">Prerequisites</a><a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h3>
-<ul>
+<ul class="simple">
 <li><p><strong>Python</strong>: Python 3.10+ is required.</p></li>
-<li><p><strong>MetaTrader 5 (MT5)</strong>:
-*   The MetaTrader 5 platform must be installed on your system (primarily for Windows users needing live trading or direct MT5 interaction).
-*   An active trading account with a MetaTrader 5 broker. <code class="docutils literal notranslate"><span class="pre">bbstrader</span></code> currently supports:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p><a class="reference external" href="https://cabinet.a-partnership.com/visit/?bta=35537&amp;brand=admiralmarkets">Admirals Group AS</a></p></li>
+<li><dl class="simple">
+<dt><strong>MetaTrader 5 (MT5)</strong>:</dt><dd><ul>
+<li><p>The MetaTrader 5 platform must be installed on your system (primarily for Windows users needing live trading or direct MT5 interaction).</p></li>
+<li><dl class="simple">
+<dt>An active trading account with a MetaTrader 5 broker. <code class="docutils literal notranslate"><span class="pre">bbstrader</span></code> currently supports:</dt><dd><ul>
+<li><p><a class="reference external" href="https://one.justmarkets.link/a/tufvj0xugm/registration/trader">Admirals Group AS</a></p></li>
 <li><p><a class="reference external" href="https://one.justmarkets.link/a/tufvj0xugm/registration/trader">Just Global Markets Ltd.</a></p></li>
 <li><p><a class="reference external" href="https://trader.ftmo.com/?affiliates=JGmeuQqepAZLMcdOEQRp">FTMO</a> (Proprietary Firm)</p></li>
 </ul>
-</div></blockquote>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
 </li>
 </ul>
 </section>
@@ -397,22 +402,32 @@ Open your terminal and run:</p>
 </section>
 <section id="strategy-execution-execution-json">
 <h3><a class="toc-backref" href="#id24" role="doc-backlink">Strategy Execution (<code class="docutils literal notranslate"><span class="pre">execution.json</span></code>)</a><a class="headerlink" href="#strategy-execution-execution-json" title="Link to this heading"></a></h3>
-<ul>
+<ul class="simple">
 <li><p><strong>Purpose</strong>: Defines parameters for live strategy execution when using the <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">bbstrader</span> <span class="pre">--run</span> <span class="pre">execution</span></code> command.</p></li>
 <li><p><strong>Default Location</strong>: <code class="docutils literal notranslate"><span class="pre">~/.bbstrader/execution/execution.json</span></code>. You’ll likely need to create this file and its parent directory.</p></li>
-<li><p><strong>Structure</strong>:
-*   The file is a JSON object where top-level keys are strategy class names (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;SMAStrategy&quot;</span></code>).
-*   Each strategy key contains another JSON object where keys are your account identifiers (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;MY_MT5_ACCOUNT_1&quot;</span></code>). These account identifiers should match those you’ve configured for MT5 connections (often set via environment variables or a central configuration not detailed here but handled by the <code class="docutils literal notranslate"><span class="pre">metatrader</span></code> module).
-*   Under each account, you specify:</p>
-<blockquote>
-<div><ul class="simple">
+<li><dl class="simple">
+<dt><strong>Structure</strong>:</dt><dd><ul>
+<li><p>The file is a JSON object where top-level keys are strategy class names (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;SMAStrategy&quot;</span></code>).</p></li>
+<li><p>Each strategy key contains another JSON object where keys are your account identifiers (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;MY_MT5_ACCOUNT_1&quot;</span></code>). These account identifiers should match those you’ve configured for MT5 connections (often set via environment variables or a central configuration not detailed here but handled by the <code class="docutils literal notranslate"><span class="pre">metatrader</span></code> module).</p></li>
+<li><dl class="simple">
+<dt>Under each account, you specify:</dt><dd><ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">&quot;symbol_list&quot;</span></code>: A list of symbols the strategy will trade (e.g., <code class="docutils literal notranslate"><span class="pre">[&quot;EURUSD&quot;,</span> <span class="pre">&quot;GBPUSD&quot;]</span></code>).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">&quot;trades_kwargs&quot;</span></code>: A dictionary for MetaTrader 5 specific order parameters, commonly including:
-*   <code class="docutils literal notranslate"><span class="pre">&quot;magic&quot;</span></code>: The magic number for orders placed by this strategy instance.
-*   <code class="docutils literal notranslate"><span class="pre">&quot;comment&quot;</span></code>: A comment for orders.</p></li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;trades_kwargs&quot;</span></code>: A dictionary for MetaTrader 5 specific order parameters, commonly including:</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;magic&quot;</span></code>: The magic number for orders placed by this strategy instance.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;comment&quot;</span></code>: A comment for orders.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
 <li><p>Custom strategy parameters: Any other parameters required by your strategy’s <code class="docutils literal notranslate"><span class="pre">__init__</span></code> method (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;short_window&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;long_window&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;time_frame&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;quantities&quot;</span></code>).</p></li>
 </ul>
-</div></blockquote>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
 </li>
 <li><p><strong>Example</strong>: Refer to the example in the “Usage Examples” -&gt; “CLI - Running a Live Strategy” section.</p></li>
 </ul>
@@ -537,12 +552,7 @@ Open your terminal and run:</p>
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="modules.html">bbstrader</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="bbstrader.btengine.html">bbstrader.btengine package</a></li>
-<li class="toctree-l2"><a class="reference internal" href="bbstrader.core.html">bbstrader.core package</a></li>
-<li class="toctree-l2"><a class="reference internal" href="bbstrader.ibkr.html">bbstrader.ibkr package</a></li>
-<li class="toctree-l2"><a class="reference internal" href="bbstrader.metatrader.html">bbstrader.metatrader package</a></li>
-<li class="toctree-l2"><a class="reference internal" href="bbstrader.models.html">bbstrader.models package</a></li>
-<li class="toctree-l2"><a class="reference internal" href="bbstrader.trading.html">bbstrader.trading package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bbstrader.html">bbstrader package</a></li>
 </ul>
 </li>
 </ul>

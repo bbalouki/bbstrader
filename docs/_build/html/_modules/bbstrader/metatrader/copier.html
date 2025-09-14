@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>bbstrader.metatrader.copier &mdash; bbstrader 0.3.3 documentation</title>
+  <title>bbstrader.metatrader.copier &mdash; bbstrader 0.3.5 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=d5a15cff"></script>
+      <script src="../../../_static/documentation_options.js?v=ba50482b"></script>
       <script src="../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -122,6 +122,31 @@
     <span class="mi">7</span><span class="p">:</span> <span class="p">(</span><span class="n">Mt5</span><span class="o">.</span><span class="n">ORDER_TYPE_SELL_STOP_LIMIT</span><span class="p">,</span> <span class="s2">&quot;SELL STOP LIMIT&quot;</span><span class="p">),</span>
 <span class="p">}</span>
 
+<span class="n">STOP_RETCODES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_TRADE_DISABLED</span><span class="p">,</span>
+    <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_NO_MONEY</span><span class="p">,</span>
+    <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_SERVER_DISABLES_AT</span><span class="p">,</span>
+    <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_CLIENT_DISABLES_AT</span><span class="p">,</span>
+    <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_ONLY_REAL</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="n">RETURN_RETCODE</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_MARKET_CLOSED</span><span class="p">,</span>
+    <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_CONNECTION</span><span class="p">,</span>
+    <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_LIMIT_ORDERS</span><span class="p">,</span>
+    <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_LIMIT_VOLUME</span><span class="p">,</span>
+    <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_LIMIT_POSITIONS</span><span class="p">,</span>
+    <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_LONG_ONLY</span><span class="p">,</span>
+    <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_SHORT_ONLY</span><span class="p">,</span>
+    <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_CLOSE_ONLY</span><span class="p">,</span>
+    <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_FIFO_CLOSE</span><span class="p">,</span>
+    <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_INVALID_VOLUME</span><span class="p">,</span>
+    <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_INVALID_PRICE</span><span class="p">,</span>
+    <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_INVALID_STOPS</span><span class="p">,</span>
+    <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_NO_CHANGES</span>
+<span class="p">]</span>
+
+
 
 <span class="k">class</span><span class="w"> </span><span class="nc">OrderAction</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
     <span class="n">COPY_NEW</span> <span class="o">=</span> <span class="s2">&quot;COPY_NEW&quot;</span>
@@ -136,25 +161,23 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">fix_lot</span><span class="p">(</span><span class="n">fixed</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">fixed</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">fixed</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Fixed lot must be a number&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Fixed lot must be a number &gt; 0&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">fixed</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">multiply_lot</span><span class="p">(</span><span class="n">lot</span><span class="p">,</span> <span class="n">multiplier</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">multiplier</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">multiplier</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Multiplier lot must be a number&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Multiplier lot must be a number &gt; 0&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">lot</span> <span class="o">*</span> <span class="n">multiplier</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">percentage_lot</span><span class="p">(</span><span class="n">lot</span><span class="p">,</span> <span class="n">percentage</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">percentage</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">percentage</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Percentage lot must be a number&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Percentage lot must be a number &gt; 0&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="nb">round</span><span class="p">(</span><span class="n">lot</span> <span class="o">*</span> <span class="n">percentage</span> <span class="o">/</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">dynamic_lot</span><span class="p">(</span><span class="n">source_lot</span><span class="p">,</span> <span class="n">source_eqty</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dest_eqty</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">source_eqty</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">dest_eqty</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Source or destination account equity is zero&quot;</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">ratio</span> <span class="o">=</span> <span class="n">dest_eqty</span> <span class="o">/</span> <span class="n">source_eqty</span>
         <span class="k">return</span> <span class="nb">round</span><span class="p">(</span><span class="n">source_lot</span> <span class="o">*</span> <span class="n">ratio</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
@@ -188,6 +211,7 @@
         <span class="k">return</span> <span class="n">_check_lot</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">lot</span><span class="p">,</span> <span class="n">steps</span><span class="p">),</span> <span class="n">s_info</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">_check_lot</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">lot</span><span class="p">),</span> <span class="n">s_info</span><span class="p">)</span>
+
 
 <span class="k">def</span><span class="w"> </span><span class="nf">calculate_copy_lot</span><span class="p">(</span>
     <span class="n">source_lot</span><span class="p">,</span>
@@ -247,7 +271,7 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">get_copy_symbols</span><span class="p">(</span><span class="n">destination</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
     <span class="n">symbols</span> <span class="o">=</span> <span class="n">destination</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;symbols&quot;</span><span class="p">,</span> <span class="s2">&quot;all&quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">symbols</span> <span class="o">==</span> <span class="s2">&quot;all&quot;</span> <span class="ow">or</span> <span class="n">symbols</span> <span class="o">==</span> <span class="s2">&quot;*&quot;</span> <span class="ow">or</span>  <span class="nb">isinstance</span><span class="p">(</span><span class="n">symbols</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="p">:</span>
+    <span class="k">if</span> <span class="n">symbols</span> <span class="o">==</span> <span class="s2">&quot;all&quot;</span> <span class="ow">or</span> <span class="n">symbols</span> <span class="o">==</span> <span class="s2">&quot;*&quot;</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">symbols</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
         <span class="n">src_account</span> <span class="o">=</span> <span class="n">Account</span><span class="p">(</span><span class="o">**</span><span class="n">source</span><span class="p">)</span>
         <span class="n">src_symbols</span> <span class="o">=</span> <span class="n">src_account</span><span class="o">.</span><span class="n">get_symbols</span><span class="p">()</span>
         <span class="n">dest_account</span> <span class="o">=</span> <span class="n">Account</span><span class="p">(</span><span class="o">**</span><span class="n">destination</span><span class="p">)</span>
@@ -438,7 +462,10 @@
 
 <div class="viewcode-block" id="TradeCopier.log_message">
 <a class="viewcode-back" href="../../../bbstrader.metatrader.html#bbstrader.metatrader.copier.TradeCopier.log_message">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">log_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;info&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">log_message</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;info&quot;</span><span class="p">,</span> <span class="s2">&quot;error&quot;</span><span class="p">,</span> <span class="s2">&quot;debug&quot;</span><span class="p">,</span> <span class="s2">&quot;warning&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;info&quot;</span>
+    <span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">trace</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_queue</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
@@ -448,7 +475,7 @@
                 <span class="p">)</span>
                 <span class="n">space</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="s2">&quot;exception&quot;</span><span class="p">)</span>  <span class="c1"># longest log name</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">log_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">formatted</span><span class="si">}</span><span class="s2"> |</span><span class="si">{</span><span class="nb">type</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39; &#39;</span><span class="o">*</span><span class="p">(</span><span class="n">space</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="nb">type</span><span class="p">))</span><span class="si">}</span><span class="s2"> | - </span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">formatted</span><span class="si">}</span><span class="s2"> |</span><span class="si">{</span><span class="nb">type</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39; &#39;</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">space</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="nb">type</span><span class="p">))</span><span class="si">}</span><span class="s2"> | - </span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
                 <span class="k">pass</span>
@@ -465,8 +492,8 @@
         <span class="n">error_msg</span> <span class="o">=</span> <span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">error_msg</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">errors</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span>
-            <span class="n">add_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;SYMBOL=</span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">symbol</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-            <span class="n">message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Error encountered: </span><span class="si">{</span><span class="n">error_msg</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">add_msg</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">add_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;, SYMBOL=</span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">symbol</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Error encountered: </span><span class="si">{</span><span class="n">error_msg</span><span class="si">}{</span><span class="n">add_msg</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log_message</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;error&quot;</span><span class="p">)</span></div>
 
 
@@ -596,6 +623,17 @@
                 <span class="k">if</span> <span class="n">new_result</span><span class="o">.</span><span class="n">retcode</span> <span class="o">==</span> <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_DONE</span><span class="p">:</span>
                     <span class="k">break</span>
         <span class="k">return</span> <span class="n">new_result</span>
+    
+<div class="viewcode-block" id="TradeCopier.handle_retcode">
+<a class="viewcode-back" href="../../../bbstrader.metatrader.html#bbstrader.metatrader.copier.TradeCopier.handle_retcode">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">handle_retcode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">retcode</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">retcode</span> <span class="ow">in</span> <span class="n">STOP_RETCODES</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">trade_retcode_message</span><span class="p">(</span><span class="n">retcode</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Critical Error on @</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">[</span><span class="s1">&#39;login&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">msg</span><span class="si">}</span><span class="s2"> &quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">retcode</span> <span class="ow">in</span> <span class="n">RETURN_RETCODE</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">1</span></div>
+
 
 <div class="viewcode-block" id="TradeCopier.copy_new_trade">
 <a class="viewcode-back" href="../../../bbstrader.metatrader.html#bbstrader.metatrader.copier.TradeCopier.copy_new_trade">[docs]</a>
@@ -619,7 +657,6 @@
         <span class="n">trade_action</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_ACTION_DEAL</span> <span class="k">if</span> <span class="n">trade</span><span class="o">.</span><span class="n">type</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="k">else</span> <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_ACTION_PENDING</span>
         <span class="p">)</span>
-        <span class="n">action</span> <span class="o">=</span> <span class="n">ORDER_TYPE</span><span class="p">[</span><span class="n">trade</span><span class="o">.</span><span class="n">type</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">tick</span> <span class="o">=</span> <span class="n">Mt5</span><span class="o">.</span><span class="n">symbol_info_tick</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
         <span class="n">price</span> <span class="o">=</span> <span class="n">tick</span><span class="o">.</span><span class="n">bid</span> <span class="k">if</span> <span class="n">trade</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">tick</span><span class="o">.</span><span class="n">ask</span>
         <span class="k">try</span><span class="p">:</span>
@@ -646,14 +683,18 @@
             <span class="n">result</span> <span class="o">=</span> <span class="n">Mt5</span><span class="o">.</span><span class="n">order_send</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">retcode</span> <span class="o">!=</span> <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_DONE</span><span class="p">:</span>
                 <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_filling_type</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
+            <span class="n">action</span> <span class="o">=</span> <span class="n">ORDER_TYPE</span><span class="p">[</span><span class="n">trade</span><span class="o">.</span><span class="n">type</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">copy_action</span> <span class="o">=</span> <span class="s2">&quot;Position&quot;</span> <span class="k">if</span> <span class="n">trade</span><span class="o">.</span><span class="n">type</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="k">else</span> <span class="s2">&quot;Order&quot;</span>
             <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">retcode</span> <span class="o">==</span> <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_DONE</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">log_message</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;Copy </span><span class="si">{</span><span class="n">action</span><span class="si">}</span><span class="s2"> Order #</span><span class="si">{</span><span class="n">trade</span><span class="o">.</span><span class="n">ticket</span><span class="si">}</span><span class="s2"> from @</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;login&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">::</span><span class="si">{</span><span class="n">trade</span><span class="o">.</span><span class="n">symbol</span><span class="si">}</span><span class="s2"> &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;Copy </span><span class="si">{</span><span class="n">action</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">copy_action</span><span class="si">}</span><span class="s2"> #</span><span class="si">{</span><span class="n">trade</span><span class="o">.</span><span class="n">ticket</span><span class="si">}</span><span class="s2"> from @</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;login&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">::</span><span class="si">{</span><span class="n">trade</span><span class="o">.</span><span class="n">symbol</span><span class="si">}</span><span class="s2"> &quot;</span>
                     <span class="sa">f</span><span class="s2">&quot;to @</span><span class="si">{</span><span class="n">destination</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;login&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">::</span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">retcode</span> <span class="o">!=</span> <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_DONE</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">handle_retcode</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">retcode</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">return</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">log_message</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;Error copying </span><span class="si">{</span><span class="n">action</span><span class="si">}</span><span class="s2"> Order #</span><span class="si">{</span><span class="n">trade</span><span class="o">.</span><span class="n">ticket</span><span class="si">}</span><span class="s2"> from @</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;login&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">::</span><span class="si">{</span><span class="n">trade</span><span class="o">.</span><span class="n">symbol</span><span class="si">}</span><span class="s2"> &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;Error copying </span><span class="si">{</span><span class="n">action</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">copy_action</span><span class="si">}</span><span class="s2"> #</span><span class="si">{</span><span class="n">trade</span><span class="o">.</span><span class="n">ticket</span><span class="si">}</span><span class="s2"> from @</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;login&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">::</span><span class="si">{</span><span class="n">trade</span><span class="o">.</span><span class="n">symbol</span><span class="si">}</span><span class="s2"> &quot;</span>
                     <span class="sa">f</span><span class="s2">&quot;to @</span><span class="si">{</span><span class="n">destination</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;login&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">::</span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">trade_retcode_message</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">retcode</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
                     <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;error&quot;</span><span class="p">,</span>
                 <span class="p">)</span>
@@ -690,6 +731,8 @@
                 <span class="sa">f</span><span class="s2">&quot;SOURCE=@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;login&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">::</span><span class="si">{</span><span class="n">source_order</span><span class="o">.</span><span class="n">symbol</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">retcode</span> <span class="o">!=</span> <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_DONE</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">handle_retcode</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">retcode</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">return</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log_message</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;Error modifying </span><span class="si">{</span><span class="n">ORDER_TYPE</span><span class="p">[</span><span class="n">source_order</span><span class="o">.</span><span class="n">type</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> Order #</span><span class="si">{</span><span class="n">ticket</span><span class="si">}</span><span class="s2"> on @</span><span class="si">{</span><span class="n">destination</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;login&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">::</span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2">,&quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;SOURCE=@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;login&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">::</span><span class="si">{</span><span class="n">source_order</span><span class="o">.</span><span class="n">symbol</span><span class="si">}</span><span class="s2">,  </span><span class="si">{</span><span class="n">trade_retcode_message</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">retcode</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
@@ -715,6 +758,8 @@
                 <span class="sa">f</span><span class="s2">&quot;SOURCE=@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;login&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">::</span><span class="si">{</span><span class="n">src_symbol</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">retcode</span> <span class="o">!=</span> <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_DONE</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">handle_retcode</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">retcode</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">return</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log_message</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;Error closing </span><span class="si">{</span><span class="n">ORDER_TYPE</span><span class="p">[</span><span class="n">order</span><span class="o">.</span><span class="n">type</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> Order #</span><span class="si">{</span><span class="n">order</span><span class="o">.</span><span class="n">ticket</span><span class="si">}</span><span class="s2"> on @</span><span class="si">{</span><span class="n">destination</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;login&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">::</span><span class="si">{</span><span class="n">order</span><span class="o">.</span><span class="n">symbol</span><span class="si">}</span><span class="s2">, &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;SOURCE=@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;login&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">::</span><span class="si">{</span><span class="n">src_symbol</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">trade_retcode_message</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">retcode</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
@@ -751,6 +796,8 @@
                 <span class="sa">f</span><span class="s2">&quot;SOURCE=@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;login&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">::</span><span class="si">{</span><span class="n">source_pos</span><span class="o">.</span><span class="n">symbol</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">retcode</span> <span class="o">!=</span> <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_DONE</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">handle_retcode</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">retcode</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">return</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log_message</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;Error modifying </span><span class="si">{</span><span class="n">ORDER_TYPE</span><span class="p">[</span><span class="n">source_pos</span><span class="o">.</span><span class="n">type</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> Position #</span><span class="si">{</span><span class="n">ticket</span><span class="si">}</span><span class="s2"> on @</span><span class="si">{</span><span class="n">destination</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;login&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">::</span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2">, &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;SOURCE=@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;login&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">::</span><span class="si">{</span><span class="n">source_pos</span><span class="o">.</span><span class="n">symbol</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">trade_retcode_message</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">retcode</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
@@ -788,6 +835,8 @@
                 <span class="sa">f</span><span class="s2">&quot;SOURCE=@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;login&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">::</span><span class="si">{</span><span class="n">src_symbol</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">retcode</span> <span class="o">!=</span> <span class="n">Mt5</span><span class="o">.</span><span class="n">TRADE_RETCODE_DONE</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">handle_retcode</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">retcode</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">return</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log_message</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;Error closing </span><span class="si">{</span><span class="n">ORDER_TYPE</span><span class="p">[</span><span class="n">position</span><span class="o">.</span><span class="n">type</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> Position #</span><span class="si">{</span><span class="n">position</span><span class="o">.</span><span class="n">ticket</span><span class="si">}</span><span class="s2"> &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;on @</span><span class="si">{</span><span class="n">destination</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;login&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">::</span><span class="si">{</span><span class="n">position</span><span class="o">.</span><span class="n">symbol</span><span class="si">}</span><span class="s2">, &quot;</span>
@@ -1175,7 +1224,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">destinations</span>
         <span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log_message</span><span class="p">(</span>
-                <span class="s2">&quot;Two or more destination accounts have the same Terminal path, which is not allowed.&quot;</span>
+                <span class="s2">&quot;Two or more destination accounts have the same Terminal path, which is not allowed.&quot;</span><span class="p">,</span>
+                <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;error&quot;</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="k">return</span>
 
@@ -1296,29 +1346,45 @@
     <span class="n">shutdown_event</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">log_queue</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initializes and runs a TradeCopier instance in a single process.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Initialize and run a TradeCopier instance in a single process.</span>
 
 <span class="sd">    This function serves as a straightforward wrapper to start a copying session</span>
 <span class="sd">    that handles one source account and one or more destination accounts</span>
-<span class="sd">    *sequentially* within the same thread. It does not create any new processes itself.</span>
+<span class="sd">    sequentially within the same thread. It does not create any new processes itself.</span>
 
-<span class="sd">    This is useful for:</span>
-<span class="sd">    - Simpler, command-line based use cases.</span>
-<span class="sd">    - Scenarios where parallelism is not required.</span>
-<span class="sd">    - As the target for `RunMultipleCopier`, where each process handles a</span>
+<span class="sd">    Use Cases</span>
+<span class="sd">    ---------</span>
+<span class="sd">    * Simpler, command-line based use cases.</span>
+<span class="sd">    * Scenarios where parallelism is not required.</span>
+<span class="sd">    * As the target for ``RunMultipleCopier``, where each process handles a</span>
 <span class="sd">      full source-to-destinations session.</span>
 
-<span class="sd">    Args:</span>
-<span class="sd">        source (dict): Configuration dictionary for the source account.</span>
-<span class="sd">        destinations (list): A list of configuration dictionaries, one for each</span>
-<span class="sd">            destination account to be processed sequentially.</span>
-<span class="sd">        sleeptime (float): The time in seconds to wait after completing a full</span>
-<span class="sd">            cycle through all destinations.</span>
-<span class="sd">        start_time (str): The time of day to start copying (e.g., &quot;08:00&quot;).</span>
-<span class="sd">        end_time (str): The time of day to stop copying (e.g., &quot;22:00&quot;).</span>
-<span class="sd">        custom_logger: An optional custom logger instance.</span>
-<span class="sd">        shutdown_event (multiprocessing.Event): An event to signal shutdown.</span>
-<span class="sd">        log_queue (multiprocessing.Queue): A queue for log messages.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    source : dict</span>
+<span class="sd">        Configuration dictionary for the source account.</span>
+<span class="sd">    destinations : list</span>
+<span class="sd">        A list of configuration dictionaries, one for each</span>
+<span class="sd">        destination account to be processed sequentially.</span>
+<span class="sd">    sleeptime : float</span>
+<span class="sd">        The time in seconds to wait after completing a full</span>
+<span class="sd">        cycle through all destinations.</span>
+<span class="sd">    start_time : str</span>
+<span class="sd">        The time of day to start copying (e.g., ``&quot;08:00&quot;``).</span>
+<span class="sd">    end_time : str</span>
+<span class="sd">        The time of day to stop copying (e.g., ``&quot;22:00&quot;``).</span>
+<span class="sd">    custom_logger : logging.Logger, optional</span>
+<span class="sd">        An optional custom logger instance.</span>
+<span class="sd">    shutdown_event : multiprocessing.Event, optional</span>
+<span class="sd">        An event to signal shutdown.</span>
+<span class="sd">    log_queue : multiprocessing.Queue, optional</span>
+<span class="sd">        A queue for log messages.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+<span class="sd">        Runs until stopped via ``shutdown_event`` or external interruption.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">copier</span> <span class="o">=</span> <span class="n">TradeCopier</span><span class="p">(</span>
         <span class="n">source</span><span class="p">,</span>
@@ -1346,7 +1412,8 @@
     <span class="n">custom_logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">log_queue</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Manages multiple, independent trade copying sessions in parallel.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Manage multiple, independent trade copying sessions in parallel.</span>
 
 <span class="sd">    This function acts as a high-level manager that takes a list of account</span>
 <span class="sd">    setups and creates a separate, dedicated process for each one. Each process</span>
@@ -1354,28 +1421,46 @@
 <span class="sd">    destination accounts.</span>
 
 <span class="sd">    The parallelism occurs at the **source account level**. Within each spawned</span>
-<span class="sd">    process, the destinations for that source are handled sequentially by `RunCopier`.</span>
+<span class="sd">    process, the destinations for that source are handled sequentially by</span>
+<span class="sd">    ``RunCopier``.</span>
 
-<span class="sd">    Example `accounts` structure:</span>
-<span class="sd">    [</span>
-<span class="sd">        { &quot;source&quot;: {...}, &quot;destinations&quot;: [{...}, {...}] },  # -&gt; Process 1</span>
-<span class="sd">        { &quot;source&quot;: {...}, &quot;destinations&quot;: [{...}] }          # -&gt; Process 2</span>
-<span class="sd">    ]</span>
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    An example ``accounts`` structure:</span>
 
-<span class="sd">    Args:</span>
-<span class="sd">        accounts (List[dict]): A list of account configurations. Each item in the</span>
-<span class="sd">            list must be a dictionary with a &#39;source&#39; key and a &#39;destinations&#39; key.</span>
-<span class="sd">        sleeptime (float): The sleep time passed down to each `RunCopier` process.</span>
-<span class="sd">        start_delay (float): A delay in seconds between starting each new process.</span>
-<span class="sd">            This helps prevent resource contention by staggering the initialization</span>
-<span class="sd">            of multiple MetaTrader 5 terminals.</span>
-<span class="sd">        start_time (str): The start time passed down to each `RunCopier` process.</span>
-<span class="sd">        end_time (str): The end time passed down to each `RunCopier` process.</span>
-<span class="sd">        shutdown_event (multiprocessing.Event): An event to signal shutdown to all</span>
-<span class="sd">            child processes.</span>
-<span class="sd">        custom_logger: An optional custom logger instance.</span>
-<span class="sd">        log_queue (multiprocessing.Queue): A queue for aggregating log messages</span>
-<span class="sd">            from all child processes.</span>
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        accounts = [</span>
+<span class="sd">            {&quot;source&quot;: {...}, &quot;destinations&quot;: [{...}, {...}]},  # -&gt; Process 1</span>
+<span class="sd">            {&quot;source&quot;: {...}, &quot;destinations&quot;: [{...}]}          # -&gt; Process 2</span>
+<span class="sd">        ]</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    accounts : list of dict</span>
+<span class="sd">        A list of account configurations. Each item must be a dictionary with</span>
+<span class="sd">        a ``source`` key and a ``destinations`` key.</span>
+<span class="sd">    sleeptime : float, optional</span>
+<span class="sd">        The sleep time passed down to each ``RunCopier`` process.</span>
+<span class="sd">    start_delay : float, optional</span>
+<span class="sd">        A delay in seconds between starting each new process.</span>
+<span class="sd">        Helps prevent resource contention by staggering the initialization of</span>
+<span class="sd">        multiple MetaTrader 5 terminals.</span>
+<span class="sd">    start_time : str, optional</span>
+<span class="sd">        The start time passed down to each ``RunCopier`` process.</span>
+<span class="sd">    end_time : str, optional</span>
+<span class="sd">        The end time passed down to each ``RunCopier`` process.</span>
+<span class="sd">    shutdown_event : multiprocessing.Event, optional</span>
+<span class="sd">        An event to signal shutdown to all child processes.</span>
+<span class="sd">    custom_logger : logging.Logger, optional</span>
+<span class="sd">        An optional custom logger instance.</span>
+<span class="sd">    log_queue : multiprocessing.Queue, optional</span>
+<span class="sd">        A queue for aggregating log messages from all child processes.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+<span class="sd">        Runs until stopped via ``shutdown_event`` or external interruption.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">processes</span> <span class="o">=</span> <span class="p">[]</span>
 

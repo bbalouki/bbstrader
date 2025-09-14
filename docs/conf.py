@@ -8,9 +8,9 @@
 import os
 import sys
 from unittest.mock import MagicMock
+from importlib.metadata import version, PackageNotFoundError
 
 
-os.system('pip install ..')
 sys.path.insert(0, os.path.abspath('../bbstrader'))
 
 class Mock(MagicMock):
@@ -25,7 +25,12 @@ sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 project = 'bbstrader'
 copyright = '2023 - 2025, Bertin Balouki SIMYELI'
 author = 'Bertin Balouki SIMYELI'
-release = '0.3.3'
+
+try:
+    release = version("bbstrader")
+except PackageNotFoundError:
+    release = "unknown"
+version = ".".join(release.split('.')[:2])
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

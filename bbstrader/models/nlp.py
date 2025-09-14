@@ -577,44 +577,55 @@ class SentimentAnalyzer(object):
         **kwargs,
     ) -> Dict[str, float]:
         """
-        Computes sentiment scores for a list of financial tickers based on news and social media data.
+        Compute sentiment scores for a list of financial tickers based on news and social media data.
 
-        Process:
-        1. Collects news articles and posts related to each ticker from various sources:
-           - Yahoo Finance News
-           - Google Finance News
-           - Reddit posts
-           - Financial Modeling Prep (FMP) news
-        2. Analyzes sentiment from each source:
-           - Uses VADER for Yahoo and Google Finance news.
-           - Uses TextBlob for Reddit and FMP news.
-        3. Computes an overall sentiment score using a weighted average approach.
+        Process
+        -------
+        1. Collect news articles and posts related to each ticker from various sources:
+        * Yahoo Finance News
+        * Google Finance News
+        * Reddit posts
+        * Financial Modeling Prep (FMP) news
+        2. Analyze sentiment from each source:
+        * Uses VADER for Yahoo and Google Finance news.
+        * Uses TextBlob for Reddit and FMP news.
+        3. Compute an overall sentiment score using a weighted average approach.
 
-        Args:
-            tickers (List[str] | List[Tuple[str, str]]): A list of asset tickers to analyze
-                - if using tuples, the first element is the ticker and the second is the asset type.
-                - if using a single string, the asset type must be specified or the default is "stock".
-            lexicon (dict, optional): A custom sentiment lexicon to update VADER's default lexicon.
-            asset_type (str, optional): The type of asset, Defaults to "stock",
-                supported types include:
-                - "stock": Stock symbols (e.g., AAPL, MSFT)
-                - "etf": Exchange-traded funds (e.g., SPY, QQQ)
-                - "future": Futures contracts (e.g., CL=F for crude oil)
-                - "forex": Forex pairs (e.g., EURUSD=X, USDJPY=X)
-                - "crypto": Cryptocurrency pairs (e.g., BTC-USD, ETH-USD)
-                - "index": Stock market indices (e.g., ^GSPC for S&P 500)
-            top_news (int, optional): Number of news articles/posts to fetch per source. Defaults to 10.
-            **kwargs: Additional parameters for API authentication and data retrieval, including:
-                - fmp_api (str): API key for Financial Modeling Prep.
-                - client_id, client_secret, user_agent (str): Credentials for accessing Reddit API.
+        Parameters
+        ----------
+        tickers : list of str or list of tuple
+            A list of asset tickers to analyze.
+            * If using tuples, the first element is the ticker and the second is the asset type.
+            * If using a single string, the asset type must be specified or defaults to "stock".
+        lexicon : dict, optional
+            A custom sentiment lexicon to update VADER's default lexicon. Default is None.
+        asset_type : str, optional
+            The type of asset. Default is "stock".
+            Supported types include:
+            * "stock": Stock symbols (e.g., AAPL, MSFT)
+            * "etf": Exchange-traded funds (e.g., SPY, QQQ)
+            * "future": Futures contracts (e.g., CL=F for crude oil)
+            * "forex": Forex pairs (e.g., EURUSD=X, USDJPY=X)
+            * "crypto": Cryptocurrency pairs (e.g., BTC-USD, ETH-USD)
+            * "index": Stock market indices (e.g., ^GSPC for S&P 500)
+        top_news : int, optional
+            Number of news articles/posts to fetch per source. Default is 10.
+        **kwargs : dict
+            Additional parameters for API authentication and data retrieval. Must include:
+            * fmp_api (str): API key for Financial Modeling Prep.
+            * client_id, client_secret, user_agent (str): Credentials for Reddit API.
 
-        Returns:
-            Dict[str, float]: A dictionary mapping each ticker to its overall sentiment score.
-                             - Positive values indicate positive sentiment.
-                             - Negative values indicate negative sentiment.
-                             - Zero indicates neutral sentiment.
-        Notes:
-            The tickers names must follow yahoo finance conventions.
+        Returns
+        -------
+        dict of str to float
+            A dictionary mapping each ticker to its overall sentiment score.
+            * Positive values indicate positive sentiment.
+            * Negative values indicate negative sentiment.
+            * Zero indicates neutral sentiment.
+
+        Notes
+        -----
+        Ticker names must follow Yahoo Finance conventions.
         """
 
         sentiment_results = {}
@@ -761,30 +772,36 @@ class SentimentAnalyzer(object):
         The dashboard visualizes sentiment scores for given tickers using interactive
         bar and scatter plots. It fetches new sentiment data at specified intervals.
 
-        Args:
-            tickers (List[str] | List[Tuple[str, str]]):
-                A list of financial asset tickers to analyze.
-                - If using tuples, the first element is the ticker and the second is the asset type.
-                - If using a single string, the asset type must be specified or defaults to "stock".
-            asset_type (str, optional):
-                The type of financial asset ("stock", "forex", "crypto"). Defaults to "stock".
-            lexicon (dict, optional):
-                A custom sentiment lexicon. Defaults to None.
-            interval (int, optional):
-                The refresh interval (in milliseconds) for sentiment data updates. Defaults to 100000.
-            top_n (int, optional):
-                The number of top and bottom assets to display in the sentiment bar chart. Defaults to 20.
-            **kwargs (dict):
-                Additional arguments required for fetching sentiment data. Must include:
-                - client_id (str): Reddit API client ID.
-                - client_secret (str): Reddit API client secret.
-                - user_agent (str): User agent for Reddit API.
-                - fmp_api (str): Financial Modeling Prep (FMP) API key.
+        Parameters
+        ----------
+        tickers : list of str or list of tuple
+            A list of financial asset tickers to analyze.
+            * If using tuples, the first element is the ticker and the second is the asset type.
+            * If using a single string, the asset type must be specified or defaults to "stock".
+        asset_type : str, optional
+            The type of financial asset ("stock", "forex", "crypto"). Default is "stock".
+        lexicon : dict, optional
+            A custom sentiment lexicon. Default is None.
+        interval : int, optional
+            The refresh interval (in milliseconds) for sentiment data updates. Default is 100000.
+        top_n : int, optional
+            The number of top and bottom assets to display in the sentiment bar chart. Default is 20.
+        **kwargs : dict
+            Additional arguments required for fetching sentiment data. Must include:
+            * client_id (str): Reddit API client ID.
+            * client_secret (str): Reddit API client secret.
+            * user_agent (str): User agent for Reddit API.
+            * fmp_api (str): Financial Modeling Prep (FMP) API key.
 
-        Returns:
-            None: The function does not return anything but starts a real-time interactive dashboard.
+        Returns
+        -------
+        None
+            Starts a real-time interactive dashboard. Does not return any value.
 
-        Example Usage:
+        Example
+        -------
+        .. code-block:: python
+
             sa = SentimentAnalyzer()
             sa.display_sentiment_dashboard(
                 tickers=["AAPL", "TSLA", "GOOGL"],
@@ -799,12 +816,12 @@ class SentimentAnalyzer(object):
                 fmp_api="your_fmp_api_key",
             )
 
-        Notes:
-            - Sentiment analysis is performed using financial news and social media discussions.
-            - The dashboard updates in real-time at the specified interval.
-            - The dashboard will keep running unless manually stopped (Ctrl+C).
+        Notes
+        -----
+        * Sentiment analysis is performed using financial news and social media discussions.
+        * The dashboard updates in real-time at the specified interval.
+        * The dashboard will keep running unless manually stopped (Ctrl+C).
         """
-
         app = dash.Dash(__name__)
 
         sentiment_history = {ticker: [] for ticker in tickers}
