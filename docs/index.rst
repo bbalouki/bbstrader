@@ -31,7 +31,7 @@ Simplified Investment & Trading Toolkit
    :alt: CodeFactor
 
 .. image:: https://img.shields.io/badge/LinkedIn-grey?logo=Linkedin&logoColor=white
-   :target: https://www.linkedin.com/in/bertin-balouki-simyeli-15b17a1a6/
+   :target: https://www.linkedin.com/in/bertin-balouki-s-15b17a1a6/
    :alt: LinkedIn
 
 .. image:: https://img.shields.io/badge/PayPal%20Me-blue?logo=paypal
