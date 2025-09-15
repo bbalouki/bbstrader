@@ -217,9 +217,9 @@ def check_mt5_connection(
         else:
             init = mt5.initialize()
         if not init:
-            raise_mt5_error(INIT_MSG)
+            raise_mt5_error(str(mt5.last_error()) + INIT_MSG)
     except Exception:
-        raise_mt5_error(INIT_MSG)
+        raise_mt5_error(str(mt5.last_error()) + INIT_MSG)
     return init
 
 
