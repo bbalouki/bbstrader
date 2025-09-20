@@ -770,14 +770,14 @@ class Trade(RiskManagement):
             self.check_order(request)
             result = self.send_order(request)
         except Exception as e:
-            msg = trade_retcode_message(result.retcode)  if result else "N/A"
+            msg = trade_retcode_message(result.retcode) if result else "N/A"
             LOGGER.error(f"Trade Order Request, {msg}{addtionnal}, {e}")
         if result and result.retcode != Mt5.TRADE_RETCODE_DONE:
             if result.retcode == Mt5.TRADE_RETCODE_INVALID_FILL:  # 10030
                 for fill in FILLING_TYPE:
                     request["type_filling"] = fill
                     result = self.send_order(request)
-                    if result and  result.retcode == Mt5.TRADE_RETCODE_DONE:
+                    if result and result.retcode == Mt5.TRADE_RETCODE_DONE:
                         break
             elif result.retcode == Mt5.TRADE_RETCODE_INVALID_VOLUME:  # 10014
                 new_volume = int(request["volume"])
@@ -801,14 +801,14 @@ class Trade(RiskManagement):
                         self.check_order(request)
                         result = self.send_order(request)
                     except Exception as e:
-                        msg = trade_retcode_message(result.retcode)  if result else "N/A"
+                        msg = trade_retcode_message(result.retcode) if result else "N/A"
                         LOGGER.error(f"Trade Order Request, {msg}{addtionnal}, {e}")
-                    if result and  result.retcode == Mt5.TRADE_RETCODE_DONE:
+                    if result and result.retcode == Mt5.TRADE_RETCODE_DONE:
                         break
                     tries += 1
         # Print the result
-        if result and  result.retcode == Mt5.TRADE_RETCODE_DONE:
-            msg = trade_retcode_message(result.retcode) 
+        if result and result.retcode == Mt5.TRADE_RETCODE_DONE:
+            msg = trade_retcode_message(result.retcode)
             LOGGER.info(f"Trade Order {msg}{addtionnal}")
             if type != "BMKT" or type != "SMKT":
                 self.opened_orders.append(result.order)
@@ -844,7 +844,7 @@ class Trade(RiskManagement):
                             LOGGER.info(pos_info)
             return True
         else:
-            msg = trade_retcode_message(result.retcode)  if result else "N/A"
+            msg = trade_retcode_message(result.retcode) if result else "N/A"
             LOGGER.error(
                 f"Unable to Open Position, RETCODE={result.retcode}: {msg}{addtionnal}"
             )
@@ -1321,10 +1321,10 @@ class Trade(RiskManagement):
             self.check_order(request)
             result = self.send_order(request)
         except Exception as e:
-            msg = trade_retcode_message(result.retcode)   if result else "N/A"
+            msg = trade_retcode_message(result.retcode) if result else "N/A"
             LOGGER.error(f"Break-Even Order Request, {msg}{addtionnal}, Error: {e}")
-        if result and   result.retcode != Mt5.TRADE_RETCODE_DONE:
-            msg = trade_retcode_message(result.retcode)  
+        if result and result.retcode != Mt5.TRADE_RETCODE_DONE:
+            msg = trade_retcode_message(result.retcode)
             if result.retcode != Mt5.TRADE_RETCODE_NO_CHANGES:
                 LOGGER.error(
                     f"Break-Even Order Request, Position: #{tiket}, RETCODE={result.retcode}: {msg}{addtionnal}"
@@ -1339,15 +1339,15 @@ class Trade(RiskManagement):
                         self.check_order(request)
                         result = self.send_order(request)
                     except Exception as e:
-                        msg = trade_retcode_message(result.retcode)   if result else "N/A"
+                        msg = trade_retcode_message(result.retcode) if result else "N/A"
                         LOGGER.error(
                             f"Break-Even Order Request, {msg}{addtionnal}, Error: {e}"
                         )
-                    if result and   result.retcode == Mt5.TRADE_RETCODE_DONE:
+                    if result and result.retcode == Mt5.TRADE_RETCODE_DONE:
                         break
                 tries += 1
-        if result and   result.retcode == Mt5.TRADE_RETCODE_DONE:
-            msg = trade_retcode_message(result.retcode) 
+        if result and result.retcode == Mt5.TRADE_RETCODE_DONE:
+            msg = trade_retcode_message(result.retcode)
             LOGGER.info(f"Break-Even Order {msg}{addtionnal}")
             info = f"Stop loss set to Break-even, Position: #{tiket}, Symbol: {self.symbol}, Price: @{round(price, 5)}"
             LOGGER.info(info)
@@ -1423,7 +1423,7 @@ class Trade(RiskManagement):
         """
         ticket = request[type]
         addtionnal = f", SYMBOL={self.symbol}"
-        result = None 
+        result = None
         try:
             self.check_order(request)
             result = self.send_order(request)
@@ -1828,15 +1828,16 @@ class Trade(RiskManagement):
 
     def sleep_time(self, weekend=False):
         if weekend:
-            # claculate number of minute from the friday and to monday start
-            friday_time = datetime.strptime(self.current_time(), "%H:%M")
+            # calculate number of minute from now and monday start
+            multiplyer = {"friday": 3, "saturday": 2, "sunday": 1}
+            current_time = datetime.strptime(self.current_time(), "%H:%M")
             monday_time = datetime.strptime(self.start, "%H:%M")
-            intra_day_diff = (monday_time - friday_time).total_seconds() // 60
-            inter_day_diff = 3 * 24 * 60
+            intra_day_diff = (monday_time - current_time).total_seconds() // 60
+            inter_day_diff = multiplyer[datetime.now().strftime("%A").lower()] * 24 * 60
             total_minutes = inter_day_diff + intra_day_diff
             return total_minutes
         else:
-            # claculate number of minute from the end to the start
+            # calculate number of minute from the end to the start
             start = datetime.strptime(self.start, "%H:%M")
             end = datetime.strptime(self.current_time(), "%H:%M")
             minutes = (end - start).total_seconds() // 60
