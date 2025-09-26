@@ -956,7 +956,7 @@ class Mt5ExecutionEngine:
             check_mt5_connection(**self.kwargs)
             day_end = (
                 all(trade.days_end() for trade in self.trades_instances.values())
-                or today in WEEK_ENDS
+                or (today in WEEK_ENDS and today != FRIDAY)
                 and self.period != "24/7"
             )
             closing = self._is_closing()
