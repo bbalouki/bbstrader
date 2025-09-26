@@ -514,7 +514,7 @@ class Mt5ExecutionEngine:
         logger.info(sessionmsg)
 
     def _check_is_day_ends(self, trade: Trade, symbol, period_type, today, closing):
-        if trade.days_end() or today in WEEK_ENDS:
+        if trade.days_end() or (today in WEEK_ENDS and today != FRIDAY):
             self._logmsgif("Day", symbol) if today not in WEEK_ENDS else self._logmsgif(
                 "Week", symbol
             )
