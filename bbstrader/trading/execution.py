@@ -45,6 +45,7 @@ MT5_ENGINE_TIMEFRAMES = list(_TF_MAPPING.keys())
 TradingDays = ["monday", "tuesday", "wednesday", "thursday", "friday"]
 WEEK_DAYS = TradingDays + ["saturday", "sunday"]
 FRIDAY = "friday"
+WEEK_ENDS = ["friday", "saturday", "sunday"]
 
 BUYS = ["BMKT", "BLMT", "BSTP", "BSTPLMT"]
 SELLS = ["SMKT", "SLMT", "SSTP", "SSTPLMT"]
@@ -513,17 +514,12 @@ class Mt5ExecutionEngine:
         logger.info(sessionmsg)
 
     def _check_is_day_ends(self, trade: Trade, symbol, period_type, today, closing):
-        if trade.days_end():
-            self._logmsgif("Day", symbol) if today != FRIDAY else self._logmsgif(
+        if trade.days_end() or (today in WEEK_ENDS and today != FRIDAY):
+            self._logmsgif("Day", symbol) if today not in WEEK_ENDS else self._logmsgif(
                 "Week", symbol
             )
             if (
-                (
-                    period_type == "month"
-                    and today == FRIDAY
-                    and self._is_month_ends()
-                    and closing
-                )
+                (period_type == "month" and self._is_month_ends() and closing)
                 or (period_type == "week" and today == FRIDAY and closing)
                 or (period_type == "day" and closing)
                 or (period_type == "24/7" and closing)
@@ -546,15 +542,17 @@ class Mt5ExecutionEngine:
         self.strategy.perform_period_end_checks()
         if self.period_end_action == "break" and closing:
             sys.exit(0)
-        elif self.period_end_action == "sleep" and today != FRIDAY or not closing:
+        elif (
+            self.period_end_action == "sleep" and today not in WEEK_ENDS or not closing
+        ):
             self._sleep_over_night(sessionmsg)
-        elif self.period_end_action == "sleep" and today == FRIDAY:
+        elif self.period_end_action == "sleep" and today in WEEK_ENDS:
             self._sleep_over_weekend(sessionmsg)
 
     def _weekly_end_checks(self, today, closing, sessionmsg):
-        if today != FRIDAY:
+        if today not in WEEK_ENDS:
             self._sleep_over_night(sessionmsg)
-        elif today == FRIDAY:
+        else:
             self.strategy.perform_period_end_checks()
             if self.period_end_action == "break" and closing:
                 sys.exit(0)
@@ -562,9 +560,9 @@ class Mt5ExecutionEngine:
                 self._sleep_over_weekend(sessionmsg)
 
     def _monthly_end_cheks(self, today, closing, sessionmsg):
-        if today != FRIDAY:
+        if today not in WEEK_ENDS and not self._is_month_ends():
             self._sleep_over_night(sessionmsg)
-        elif today == FRIDAY and self._is_month_ends() and closing:
+        elif self._is_month_ends() and closing:
             self.strategy.perform_period_end_checks()
             sys.exit(0)
         else:
@@ -956,7 +954,11 @@ class Mt5ExecutionEngine:
     def _handle_period_end_actions(self, today):
         try:
             check_mt5_connection(**self.kwargs)
-            day_end = all(trade.days_end() for trade in self.trades_instances.values())
+            day_end = (
+                all(trade.days_end() for trade in self.trades_instances.values())
+                or (today in WEEK_ENDS and today != FRIDAY)
+                and self.period != "24/7"
+            )
             closing = self._is_closing()
             sessionmsg = f"{self.ACCOUNT} STARTING NEW TRADING SESSION ...\n"
             self._perform_period_end_actions(

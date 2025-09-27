@@ -2,7 +2,7 @@ import string
 from abc import ABCMeta, abstractmethod
 from datetime import datetime
 from queue import Queue
-from typing import Dict, List, Literal, Union
+from typing import Callable, Dict, List, Literal, Union
 
 import numpy as np
 import pandas as pd
@@ -11,19 +11,19 @@ from loguru import logger
 
 from bbstrader.btengine.data import DataHandler
 from bbstrader.btengine.event import Events, FillEvent, SignalEvent
-from bbstrader.metatrader.trade import generate_signal, TradeAction 
 from bbstrader.config import BBSTRADER_DIR
 from bbstrader.metatrader import (
     Account,
     AdmiralMarktsGroup,
     MetaQuotes,
     PepperstoneGroupLimited,
-    TradeOrder,
     Rates,
-    TradeSignal, 
+    SymbolType,
+    TradeOrder,
+    TradeSignal,
     TradingMode,
-    SymbolType
 )
+from bbstrader.metatrader.trade import TradeAction, generate_signal
 from bbstrader.models.optimization import optimized_weights
 
 __all__ = ["Strategy", "MT5Strategy"]
@@ -79,10 +79,11 @@ class MT5Strategy(Strategy):
     It is recommanded that every strategy specfic method to be a private method
     in order to avoid naming collusion.
     """
+
     tf: str
     id: int
     ID: int
-    
+
     max_trades: Dict[str, int]
     risk_budget: Dict[str, float] | str | None
 
@@ -116,8 +117,10 @@ class MT5Strategy(Strategy):
         self.symbols = symbol_list
         self.mode = mode
         if self.mode not in [TradingMode.BACKTEST, TradingMode.LIVE]:
-            raise ValueError(f"Mode must be an instance of {type(TradingMode)} not {type(self.mode)}")
-        
+            raise ValueError(
+                f"Mode must be an instance of {type(TradingMode)} not {type(self.mode)}"
+            )
+
         self.risk_budget = self._check_risk_budget(**kwargs)
 
         self.max_trades = kwargs.get("max_trades", {s: 1 for s in self.symbols})
@@ -189,7 +192,7 @@ class MT5Strategy(Strategy):
     def _initialize_portfolio(self):
         self._orders = {}
         self._positions = {}
-        self._trades =  {}
+        self._trades = {}
         for symbol in self.symbols:
             self._positions[symbol] = {}
             self._orders[symbol] = {}
@@ -287,7 +290,7 @@ class MT5Strategy(Strategy):
         """
 
         signal_id = getattr(self, "id", None) or getattr(self, "ID")
-        
+
         match signal:
             case 0:
                 return generate_signal(signal_id, symbol, TradeAction.BUY)
@@ -298,7 +301,9 @@ class MT5Strategy(Strategy):
             case 3:
                 return generate_signal(signal_id, symbol, TradeAction.EXIT_SHORT)
             case 4:
-                return generate_signal(signal_id, symbol, TradeAction.EXIT_ALL_POSITIONS)
+                return generate_signal(
+                    signal_id, symbol, TradeAction.EXIT_ALL_POSITIONS
+                )
             case 5:
                 return generate_signal(signal_id, symbol, TradeAction.EXIT_ALL_ORDERS)
             case 6:
@@ -306,8 +311,64 @@ class MT5Strategy(Strategy):
             case 7:
                 return generate_signal(signal_id, symbol, TradeAction.EXIT_LIMIT)
             case _:
-                raise ValueError(f"Invalid signal value: {signal}. Must be an integer between 0 and 7.")
+                raise ValueError(
+                    f"Invalid signal value: {signal}. Must be an integer between 0 and 7."
+                )
 
+    def send_trade_repport(self, perf_analyzer: Callable, **kwargs):
+        """
+        Generates and sends a trade report message containing performance metrics for the current strategy.
+        This method retrieves the trade history for the current account, filters it by the strategy's ID,
+        computes performance metrics using the provided `perf_analyzer` callable, and formats the results
+        into a message. The message includes account information, strategy details, a timestamp, and
+        performance metrics. The message is then sent via Telegram using the specified bot token and chat ID.
+
+        Args:
+            perf_analyzer (Callable): A function or callable object that takes the filtered trade history
+                (as a DataFrame) and additional keyword arguments, and returns a DataFrame of performance metrics.
+            **kwargs: Additional keyword arguments, which may include
+                - Any other param requires by ``perf_analyzer``
+        """
+        
+        from bbstrader.trading.utils import send_message
+
+        history = self.account.get_trades_history()
+        if history is None:
+            return
+
+        ID = getattr(self, "id", None) or getattr(self, "ID")
+        history = history[history["magic"] == ID]
+        performance = perf_analyzer(history, **kwargs)
+
+        account = self.kwargs.get("account", "MT5 Account")
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        header = (
+            f"==== TRADE REPORT =====\n\n"
+            f"ACCOUNT: {account}\n"
+            f"STRATEGY: {self.NAME}\n"
+            f"ID: {ID}\n"
+            f"DESCRIPTION: {self.DESCRIPTION}\n"
+            f"TIMESTAMP: {timestamp}\n\n"
+            f"📊 PERFORMANCE:\n"
+        )
+        metrics = performance.iloc[0].to_dict()
+
+        lines = []
+        for key, value in metrics.items():
+            if isinstance(value, float):
+                value = round(value, 4)
+            lines.append(f"{key:<15}: {value}")
+
+        performance_str = "\n".join(lines)
+        message = f"{header}{performance_str}"
+
+        send_message(
+            message=message,
+            telegram=True,
+            token=self.kwargs.get("bot_token"),
+            chat_id=self.kwargs.get("chat_id"),
+        )
 
     def perform_period_end_checks(self, *args, **kwargs):
         """
@@ -841,8 +902,10 @@ class MT5Strategy(Strategy):
             )
             return prices
         return np.array([])
-    
-    def get_active_orders(self, symbol: str, strategy_id: int, order_type: int = None) -> List[TradeOrder]:
+
+    def get_active_orders(
+        self, symbol: str, strategy_id: int, order_type: int = None
+    ) -> List[TradeOrder]:
         """
         Get the active orders for a given symbol and strategy.
 
@@ -860,7 +923,9 @@ class MT5Strategy(Strategy):
         Returns:
             List[TradeOrder] : A list of active orders for the given symbol and strategy.
         """
-        orders = [o for o in self.orders if o.symbol == symbol and o.magic == strategy_id]
+        orders = [
+            o for o in self.orders if o.symbol == symbol and o.magic == strategy_id
+        ]
         if order_type is not None and len(orders) > 0:
             orders = [o for o in orders if o.type == order_type]
         return orders
@@ -876,7 +941,7 @@ class MT5Strategy(Strategy):
         elif len(prices) in range(2, self.max_trades[asset] + 1):
             price = np.mean(prices)
         if price is not None:
-            if position == 0: 
+            if position == 0:
                 return self.calculate_pct_change(ask, price) >= th
             elif position == 1:
                 return self.calculate_pct_change(bid, price) <= -th
@@ -930,7 +995,7 @@ class MT5Strategy(Strategy):
         Returns:
             mt5_equivalent : The MetaTrader 5 equivalent symbols for the symbols in the list.
         """
-        
+
         account = Account(**kwargs)
         mt5_symbols = account.get_symbols(symbol_type=symbol_type)
         mt5_equivalent = []
@@ -943,7 +1008,7 @@ class MT5Strategy(Strategy):
                         mt5_equivalent.append(s)
 
         def _get_pepperstone_symbols():
-             for s in mt5_symbols:
+            for s in mt5_symbols:
                 for symbol in symbols:
                     if s.split(".")[0] == symbol:
                         mt5_equivalent.append(s)

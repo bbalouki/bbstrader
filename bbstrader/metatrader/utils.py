@@ -607,7 +607,8 @@ class AutoTradingDisabled(MT5TerminalError):
 class InternalFailError(MT5TerminalError):
     """Base exception class for internal IPC errors."""
 
-    pass
+    def __init__(self, code, message):
+        super().__init__(code, message)
 
 
 class InternalFailSend(InternalFailError):
@@ -700,9 +701,9 @@ def raise_mt5_error(message: Optional[str] = None):
     """
     if message and isinstance(message, Exception):
         message = str(message)
-    error = _ERROR_CODE_TO_EXCEPTION_.get(MT5.last_error()[0])
-    if error is not None:
-        raise Exception(f"{error(None)} {message or MT5.last_error()[1]}")
+    exception = _ERROR_CODE_TO_EXCEPTION_.get(MT5.last_error()[0])
+    if exception is not None:
+        raise exception(f"{message or MT5.last_error()[1]}")
     else:
         raise Exception(f"{message or MT5.last_error()[1]}")
 
