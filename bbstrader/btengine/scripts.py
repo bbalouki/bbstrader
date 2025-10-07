@@ -3,6 +3,8 @@ import json
 import os
 import sys
 from datetime import datetime
+from types import ModuleType
+from typing import Any, Dict, List, Type
 
 from bbstrader.btengine.backtest import run_backtest
 from bbstrader.btengine.data import (
@@ -18,12 +20,13 @@ from bbstrader.btengine.execution import (
     MT5ExecutionHandler,
     SimExecutionHandler,
 )
+from bbstrader.btengine.strategy import MT5Strategy, Strategy
 from bbstrader.core.utils import load_class, load_module
 
 BACKTEST_PATH = os.path.expanduser("~/.bbstrader/backtest/backtest.py")
 CONFIG_PATH = os.path.expanduser("~/.bbstrader/backtest/backtest.json")
 
-DATA_HANDLER_MAP = {
+DATA_HANDLER_MAP: Dict[str, Type[DataHandler]] = {
     "csv": CSVDataHandler,
     "mt5": MT5DataHandler,
     "yf": YFDataHandler,
@@ -31,27 +34,25 @@ DATA_HANDLER_MAP = {
     "fmp": FMPDataHandler,
 }
 
-EXECUTION_HANDLER_MAP = {
+EXECUTION_HANDLER_MAP: Dict[str, Type[ExecutionHandler]] = {
     "sim": SimExecutionHandler,
     "mt5": MT5ExecutionHandler,
 }
 
 
-def load_exc_handler(module, handler_name):
-    return load_class(module, handler_name, ExecutionHandler)
+def load_exc_handler(module: ModuleType, handler_name: str) -> Type[ExecutionHandler]:
+    return load_class(module, handler_name, ExecutionHandler)  # type: ignore
 
 
-def load_data_handler(module, handler_name):
-    return load_class(module, handler_name, DataHandler)
+def load_data_handler(module: ModuleType, handler_name: str) -> Type[DataHandler]:
+    return load_class(module, handler_name, DataHandler)  # type: ignore
 
 
-def load_strategy(module, strategy_name):
-    from bbstrader.btengine.strategy import MT5Strategy, Strategy
-
-    return load_class(module, strategy_name, (Strategy, MT5Strategy))
+def load_strategy(module: ModuleType, strategy_name: str) -> Type[Strategy]:
+    return load_class(module, strategy_name, (Strategy, MT5Strategy))  # type: ignore
 
 
-def load_config(config_path, strategy_name):
+def load_config(config_path: str, strategy_name: str) -> Dict[str, Any]:
     if not os.path.exists(config_path):
         raise FileNotFoundError(
             f"Configuration file {config_path} not found. Please create it."
@@ -101,7 +102,7 @@ def load_config(config_path, strategy_name):
     return config
 
 
-def backtest(unknown):
+def backtest(unknown: List[str]) -> None:
     HELP_MSG = """
     Usage:
         python -m bbstrader --run backtest [options]

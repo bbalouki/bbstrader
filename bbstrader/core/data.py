@@ -2,7 +2,7 @@ import json
 import re
 import ssl
 from datetime import datetime
-from typing import List, Literal
+from typing import Any, Dict, List, Literal, Optional, Union
 from urllib.request import urlopen
 
 import certifi
@@ -27,7 +27,7 @@ def _get_search_query(query: str) -> str:
         return query
 
 
-def _find_news(query: str | List[str], text):
+def _find_news(query: Union[str, List[str]], text: str) -> bool:
     if isinstance(query, str):
         query = query.split(" ")
     pattern = r"\b(?:" + "|".join(map(re.escape, query)) + r")\b"
@@ -36,7 +36,7 @@ def _find_news(query: str | List[str], text):
     return False
 
 
-def _filter_news(news: List[str], query: str | List[str]) -> List[str]:
+def _filter_news(news: List[str], query: Union[str, List[str]]) -> List[str]:
     return [text for text in news if _find_news(query, text)]
 
 
@@ -48,7 +48,7 @@ class FmpNews(object):
     as well as financial articles and press releases.
     """
 
-    def __init__(self, api: str):
+    def __init__(self, api: str) -> None:
         """
         Args:
             api (str): The API key for accessing FMP's news data.
@@ -60,13 +60,15 @@ class FmpNews(object):
             raise ValueError("API key is required For FmpNews")
         self.__api = api
 
-    def _jsonparsed_data(self, url):
+    def _jsonparsed_data(self, url: str) -> Any:
         context = ssl.create_default_context(cafile=certifi.where())
         with urlopen(url, context=context) as response:
             data = response.read().decode("utf-8")
             return json.loads(data)
 
-    def _load_news(self, news_type, symbol=None, **kwargs) -> List[dict]:
+    def _load_news(
+        self, news_type: str, symbol: Optional[str] = None, **kwargs: Any
+    ) -> List[Dict[str, Any]]:
         params = {"start": "from", "end": "to", "page": "page", "limit": "limit"}
         base_url = f"https://financialmodelingprep.com/stable/news/{news_type}-latest?apikey={self.__api}"
         if news_type == "articles":
@@ -81,8 +83,8 @@ class FmpNews(object):
 
         return self._jsonparsed_data(base_url)
 
-    def get_articles(self, **kwargs) -> List[dict]:
-        def html_parser(content):
+    def get_articles(self, **kwargs: Any) -> List[Dict[str, Any]]:
+        def html_parser(content: str) -> str:
             soup = BeautifulSoup(content, "html.parser")
             text = soup.get_text(separator="\n")
             return text.replace("\n", "")
@@ -91,29 +93,39 @@ class FmpNews(object):
         df = pd.DataFrame(articles)
         df = df[["title", "date", "content", "tickers"]]
         df["content"] = df["content"].apply(html_parser)
-        return df.to_dict(orient="records")
+        return df.to_dict(orient="records") # type: ignore
 
-    def get_releases(self, symbol=None, **kwargs):
+    def get_releases(
+        self, symbol: Optional[str] = None, **kwargs: Any
+    ) -> List[Dict[str, Any]]:
         return self._load_news("press-releases", symbol, **kwargs)
 
-    def get_stock_news(self, symbol=None, **kwargs):
+    def get_stock_news(
+        self, symbol: Optional[str] = None, **kwargs: Any
+    ) -> List[Dict[str, Any]]:
         return self._load_news("stock", symbol, **kwargs)
 
-    def get_crypto_news(self, symbol=None, **kwargs):
+    def get_crypto_news(
+        self, symbol: Optional[str] = None, **kwargs: Any
+    ) -> List[Dict[str, Any]]:
         return self._load_news("crypto", symbol, **kwargs)
 
-    def get_forex_news(self, symbol=None, **kwargs):
+    def get_forex_news(
+        self, symbol: Optional[str] = None, **kwargs: Any
+    ) -> List[Dict[str, Any]]:
         return self._load_news("forex", symbol, **kwargs)
 
-    def _last_date(self, date):
+    def _last_date(self, date: str) -> datetime:
         return datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
 
-    def parse_news(self, news: List[dict], symbol=None, **kwargs) -> List[str]:
+    def parse_news(
+        self, news: List[Dict[str, Any]], symbol: Optional[str] = None, **kwargs: Any
+    ) -> List[str]:
         start = kwargs.get("start")
         end = kwargs.get("end")
         end_date = self._last_date(end) if end is not None else datetime.now().date()
 
-        def parse_record(record):
+        def parse_record(record: Dict[str, Any]) -> str:
             return " ".join(
                 [
                     record.pop("symbol", ""),
@@ -127,7 +139,7 @@ class FmpNews(object):
         parsed_news = []
         for record in news:
             date = record.get("publishedDate")
-            published_date = self._last_date(record.get("date", date)).date()
+            published_date = self._last_date(record.get("date", date)).date() # type: ignore
             start_date = (
                 self._last_date(start).date() if start is not None else published_date
             )
@@ -141,18 +153,23 @@ class FmpNews(object):
                     parsed_news.append(parse_record(record))
         return parsed_news
 
-    def get_latest_articles(self, articles=None, save=False, **kwargs) -> List[dict]:
+    def get_latest_articles(
+        self,
+        articles: Optional[List[Dict[str, Any]]] = None,
+        save: bool = False,
+        **kwargs: Any,
+    ) -> List[Dict[str, Any]]:
         end = kwargs.get("end")
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         end_date = self._last_date(end) if end is not None else self._last_date(now)
         if articles is None:
             try:
-                articles = pd.read_csv("latest_fmp_articles.csv")
-                articles = articles.to_dict(orient="records")
-                if self._last_date(articles[0]["date"]).hour < end_date.hour:
+                articles = pd.read_csv("latest_fmp_articles.csv") # type: ignore
+                articles = articles.to_dict(orient="records") # type: ignore
+                if self._last_date(articles[0]["date"]).hour < end_date.hour: # type: ignore
                     articles = self.get_articles(**kwargs)
                 else:
-                    return articles
+                    return articles # type: ignore
             except FileNotFoundError:
                 articles = self.get_articles(**kwargs)
 
@@ -162,8 +179,13 @@ class FmpNews(object):
         return articles
 
     def get_news(
-        self, query, source="articles", articles=None, symbol: str = None, **kwargs
-    ):
+        self,
+        query: str,
+        source: str = "articles",
+        articles: Optional[List[Dict[str, Any]]] = None,
+        symbol: Optional[str] = None,
+        **kwargs: Any,
+    ) -> List[str]:
         """
         Retrieves relevant financial news based on the specified source.
 
@@ -201,7 +223,7 @@ class FmpNews(object):
         news_source = source_methods.get(source, lambda: [])()
         if source == "articles":
             symbol = None  # Articles do not require a symbol filter
-        news = self.parse_news(news_source, symbol=symbol)
+        news = self.parse_news(news_source, symbol=symbol, **kwargs)
         return _filter_news(news, query)
 
 
@@ -213,7 +235,9 @@ class FinancialNews(object):
 
     """
 
-    def _fetch_news(self, url, query, n_news, headline_tag) -> List[str]:
+    def _fetch_news(
+        self, url: str, query: str, n_news: int, headline_tag: str
+    ) -> List[str]:
         headers = {"User-Agent": "Mozilla/5.0"}
         try:
             response = requests.get(url, headers=headers)
@@ -234,7 +258,9 @@ class FinancialNews(object):
         ]
         return headlines[:n_news]
 
-    def get_yahoo_finance_news(self, query: str, asset_type="stock", n_news=10):
+    def get_yahoo_finance_news(
+        self, query: str, asset_type: str = "stock", n_news: int = 10
+    ) -> List[str]:
         """
         Fetches recent Yahoo Finance news headlines for a given financial asset.
 
@@ -257,17 +283,17 @@ class FinancialNews(object):
             list[str]: A list of Yahoo Finance news headlines relevant to the query.
         """
         if asset_type == "forex" or asset_type == "future":
-            assert (
-                "=" in query
-            ), "Forex query must contain '=' for currency pairs (e.g., EURUSD=X, CL=F)"
+            assert "=" in query, (
+                "Forex query must contain '=' for currency pairs (e.g., EURUSD=X, CL=F)"
+            )
         if asset_type == "crypto":
-            assert (
-                "-" in query
-            ), "Crypto query must contain '-' for crypto pairs (e.g., BTC-USD, ETH-USD)"
+            assert "-" in query, (
+                "Crypto query must contain '-' for crypto pairs (e.g., BTC-USD, ETH-USD)"
+            )
         if asset_type == "index":
-            assert query.startswith(
-                "^"
-            ), "Index query must start with '^' (e.g., ^GSPC for S&P 500)"
+            assert query.startswith("^"), (
+                "Index query must start with '^' (e.g., ^GSPC for S&P 500)"
+            )
         url = (
             f"https://finance.yahoo.com/quote/{query}/news"
             if asset_type in ["stock", "etf", "index", "future", "forex"]
@@ -275,7 +301,9 @@ class FinancialNews(object):
         )
         return self._fetch_news(url, query, n_news, "h3")
 
-    def get_google_finance_news(self, query: str, asset_type="stock", n_news=10):
+    def get_google_finance_news(
+        self, query: str, asset_type: str = "stock", n_news: int = 10
+    ) -> List[str]:
         """
         Fetches recent Google Finance news headlines for a given financial asset.
 
@@ -403,14 +431,14 @@ class FinancialNews(object):
 
     def get_twitter_posts(
         self,
-        query,
-        asset_type="stock",
-        bearer=None,
-        api_key=None,
-        api_secret=None,
-        access_token=None,
-        access_secret=None,
-        n_posts=10,
+        query: str,
+        asset_type: str = "stock",
+        bearer: Optional[str] = None,
+        api_key: Optional[str] = None,
+        api_secret: Optional[str] = None,
+        access_token: Optional[str] = None,
+        access_secret: Optional[str] = None,
+        n_posts: int = 10,
     ) -> List[str]:
         """
         Fetches recent tweets related to a financial asset.
@@ -471,13 +499,13 @@ class FinancialNews(object):
                 query=search, max_results=100, tweet_fields=["text"]
             )
             query = _get_search_query(query)
-            news = [tweet.text for tweet in tweets.data] if tweets.data else []
+            news = [tweet.text for tweet in tweets.data] if tweets.data else [] # type: ignore
             return _filter_news(news, query)[:n_posts]
         except tweepy.TweepyException:
             return []
 
-    def get_fmp_news(self, api=None) -> FmpNews:
-        return FmpNews(api=api)
+    def get_fmp_news(self, api:str |None =None) -> FmpNews:
+        return FmpNews(api=api) # type: ignore
 
     def get_coindesk_news(
         self,

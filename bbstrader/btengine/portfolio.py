@@ -1,12 +1,19 @@
 from datetime import datetime
 from pathlib import Path
 from queue import Queue
+from typing import Any, Dict, List, Optional, Union
 
 import pandas as pd
 import quantstats as qs
 
 from bbstrader.btengine.data import DataHandler
-from bbstrader.btengine.event import Events, FillEvent, MarketEvent, OrderEvent, SignalEvent
+from bbstrader.btengine.event import (
+    Events,
+    FillEvent,
+    MarketEvent,
+    OrderEvent,
+    SignalEvent,
+)
 from bbstrader.btengine.performance import (
     create_drawdowns,
     create_sharpe_ratio,
@@ -22,7 +29,7 @@ __all__ = [
 ]
 
 
-class Portfolio(object):
+class Portfolio:
     """
     This  describes a `Portfolio()` object that keeps track of the positions
     within a portfolio and generates orders of a fixed quantity of stock based on signals.
@@ -72,11 +79,11 @@ class Portfolio(object):
     def __init__(
         self,
         bars: DataHandler,
-        events: Queue,
+        events: "Queue[Union[OrderEvent, FillEvent, SignalEvent]]",
         start_date: datetime,
-        initial_capital=100000.0,
-        **kwargs,
-    ):
+        initial_capital: float = 100000.0,
+        **kwargs: Any,
+    ) -> None:
         """
         Initialises the portfolio with bars and an event queue.
         Also includes a starting datetime index and initial capital
@@ -99,7 +106,7 @@ class Portfolio(object):
         """
         self.bars = bars
         self.events = events
-        self.symbol_list = self.bars.symbol_list
+        self.symbol_list = self.bars.symbols
         self.start_date = start_date
         self.initial_capital = initial_capital
         self._leverage = kwargs.get("leverage", 1)
@@ -119,15 +126,15 @@ class Portfolio(object):
         else:
             self.tf = self._tf_mapping()[self.timeframe]
 
-        self.all_positions = self.construct_all_positions()
-        self.current_positions = dict(
+        self.all_positions: List[Dict[str, Any]] = self.construct_all_positions()
+        self.current_positions: Dict[str, Any] = dict(
             (k, v) for k, v in [(s, 0) for s in self.symbol_list]
         )
-        self.all_holdings = self.construct_all_holdings()
-        self.current_holdings = self.construct_current_holdings()
-        self.equity_curve = None
+        self.all_holdings: List[Dict[str, Any]] = self.construct_all_holdings()
+        self.current_holdings: Dict[str, Any] = self.construct_current_holdings()
+        self.equity_curve: Optional[pd.DataFrame] = None
 
-    def _tf_mapping(self):
+    def _tf_mapping(self) -> Dict[str, int]:
         """
         Returns a dictionary mapping the time frames
         to the number of bars in a year.
@@ -154,12 +161,12 @@ class Portfolio(object):
             480,
             720,
         ]:
-            key = f"{minutes//60}h" if minutes >= 60 else f"{minutes}m"
+            key = f"{minutes // 60}h" if minutes >= 60 else f"{minutes}m"
             time_frame_mapping[key] = int(252 * (60 / minutes) * th)
         time_frame_mapping["D1"] = 252
         return time_frame_mapping
 
-    def construct_all_positions(self):
+    def construct_all_positions(self) -> List[Dict[str, Any]]:
         """
         Constructs the positions list using the start_date
         to determine when the time index will begin.
@@ -168,7 +175,7 @@ class Portfolio(object):
         d["Datetime"] = self.start_date
         return [d]
 
-    def construct_all_holdings(self):
+    def construct_all_holdings(self) -> List[Dict[str, Any]]:
         """
         Constructs the holdings list using the start_date
         to determine when the time index will begin.
@@ -180,7 +187,7 @@ class Portfolio(object):
         d["Total"] = self.initial_capital
         return [d]
 
-    def construct_current_holdings(self):
+    def construct_current_holdings(self) -> Dict[str, float]:
         """
         This constructs the dictionary which will hold the instantaneous
         value of the portfolio across all symbols.
@@ -202,7 +209,7 @@ class Portfolio(object):
             except (AttributeError, KeyError, ValueError):
                 return 0.0
 
-    def update_timeindex(self, event: MarketEvent):
+    def update_timeindex(self, event: MarketEvent) -> None:
         """
         Adds a new record to the positions matrix for the current
         market data bar. This reflects the PREVIOUS bar, i.e. all
@@ -236,7 +243,7 @@ class Portfolio(object):
         # Append the current holdings
         self.all_holdings.append(dh)
 
-    def update_positions_from_fill(self, fill: FillEvent):
+    def update_positions_from_fill(self, fill: FillEvent) -> None:
         """
         Takes a Fill object and updates the position matrix to
         reflect the new position.
@@ -254,7 +261,7 @@ class Portfolio(object):
         # Update positions list with new quantities
         self.current_positions[fill.symbol] += fill_dir * fill.quantity
 
-    def update_holdings_from_fill(self, fill: FillEvent):
+    def update_holdings_from_fill(self, fill: FillEvent) -> None:
         """
         Takes a Fill object and updates the holdings matrix to
         reflect the holdings value.
@@ -277,7 +284,7 @@ class Portfolio(object):
         self.current_holdings["Cash"] -= cost + fill.commission
         self.current_holdings["Total"] -= cost + fill.commission
 
-    def update_fill(self, event: FillEvent):
+    def update_fill(self, event: FillEvent) -> None:
         """
         Updates the portfolio current positions and holdings
         from a FillEvent.
@@ -286,7 +293,7 @@ class Portfolio(object):
             self.update_positions_from_fill(event)
             self.update_holdings_from_fill(event)
 
-    def generate_order(self, signal: SignalEvent):
+    def generate_order(self, signal: SignalEvent) -> Optional[OrderEvent]:
         """
         Turns a SignalEvent into an OrderEvent.
 
@@ -304,7 +311,7 @@ class Portfolio(object):
         strength = signal.strength
         price = signal.price or self._get_price(symbol)
         cur_quantity = self.current_positions[symbol]
-        mkt_quantity = round(quantity * strength, 2)
+        mkt_quantity = round(float(quantity) * float(strength), 2)
         new_quantity = mkt_quantity * self._leverage
 
         if direction in ["LONG", "SHORT", "EXIT"]:
@@ -332,7 +339,7 @@ class Portfolio(object):
 
         return order
 
-    def update_signal(self, event: SignalEvent):
+    def update_signal(self, event: SignalEvent) -> None:
         """
         Acts on a SignalEvent to generate new orders
         based on the portfolio logic.
@@ -341,7 +348,7 @@ class Portfolio(object):
             order_event = self.generate_order(event)
             self.events.put(order_event)
 
-    def create_equity_curve_dataframe(self):
+    def create_equity_curve_dataframe(self) -> None:
         """
         Creates a pandas DataFrame from the all_holdings
         list of dictionaries.
@@ -353,13 +360,16 @@ class Portfolio(object):
         curve["Equity Curve"] = (1.0 + curve["Returns"]).cumprod()
         self.equity_curve = curve
 
-    def output_summary_stats(self):
+    def output_summary_stats(self) -> List[Any]:
         """
         Creates a list of summary statistics for the portfolio.
         """
-        total_return = self.equity_curve["Equity Curve"].iloc[-1]
-        returns = self.equity_curve["Returns"]
-        pnl = self.equity_curve["Equity Curve"]
+        if self.equity_curve is None:
+            self.create_equity_curve_dataframe()
+
+        total_return = self.equity_curve["Equity Curve"].iloc[-1]  # type: ignore
+        returns = self.equity_curve["Returns"]  # type: ignore
+        pnl = self.equity_curve["Equity Curve"]  # type: ignore
 
         sharpe_ratio = create_sharpe_ratio(returns, periods=self.tf)
         sortino_ratio = create_sortino_ratio(returns, periods=self.tf)
@@ -370,7 +380,7 @@ class Portfolio(object):
         self.equity_curve["Drawdown"] = drawdown
 
         stats = [
-            ("Total Return", f"{(total_return-1.0) * 100.0:.2f}%"),
+            ("Total Return", f"{(total_return - 1.0) * 100.0:.2f}%"),
             ("Sharpe Ratio", f"{sharpe_ratio:.2f}"),
             ("Sortino Ratio", f"{sortino_ratio:.2f}"),
             ("Max Drawdown", f"{max_dd * 100.0:.2f}%"),

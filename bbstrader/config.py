@@ -1,6 +1,7 @@
 import logging
+from datetime import datetime
 from pathlib import Path
-from typing import List
+from typing import Any, List, Optional
 
 
 def get_config_dir(name: str = ".bbstrader") -> Path:
@@ -23,7 +24,7 @@ BBSTRADER_DIR = get_config_dir()
 
 
 class LogLevelFilter(logging.Filter):
-    def __init__(self, levels: List[int]):
+    def __init__(self, levels: List[int]) -> None:
         """
         Initializes the filter with specific logging levels.
 
@@ -47,52 +48,35 @@ class LogLevelFilter(logging.Filter):
 
 
 class CustomFormatter(logging.Formatter):
-    def formatTime(self, record, datefmt=None):
+    def formatTime(
+        self, record: logging.LogRecord, datefmt: Optional[str] = None
+    ) -> str:
         if hasattr(record, "custom_time"):
             # Use the custom time if provided
-            record.created = record.custom_time.timestamp()
+            record.created = record.custom_time.timestamp() # type: ignore
         return super().formatTime(record, datefmt)
 
 
 class CustomLogger(logging.Logger):
-    def __init__(self, name, level=logging.NOTSET):
+    def __init__(self, name: str, level: int = logging.NOTSET) -> None:
         super().__init__(name, level)
 
-    def _log(
+    def log(
         self,
-        level,
-        msg,
-        args,
-        exc_info=None,
-        extra=None,
-        stack_info=False,
-        stacklevel=1,
-        custom_time=None,
-    ):
-        if extra is None:
-            extra = {}
-        # Add custom_time to the extra dictionary if provided
+        level: int,
+        msg: object,
+        *args: object,
+        custom_time: Optional[datetime] = None,
+        **kwargs: Any,
+    ) -> None:
         if custom_time:
-            extra["custom_time"] = custom_time
-        super()._log(level, msg, args, exc_info, extra, stack_info, stacklevel)
-
-    def info(self, msg, *args, custom_time=None, **kwargs):
-        self._log(logging.INFO, msg, args, custom_time=custom_time, **kwargs)
-
-    def debug(self, msg, *args, custom_time=None, **kwargs):
-        self._log(logging.DEBUG, msg, args, custom_time=custom_time, **kwargs)
-
-    def warning(self, msg, *args, custom_time=None, **kwargs):
-        self._log(logging.WARNING, msg, args, custom_time=custom_time, **kwargs)
-
-    def error(self, msg, *args, custom_time=None, **kwargs):
-        self._log(logging.ERROR, msg, args, custom_time=custom_time, **kwargs)
-
-    def critical(self, msg, *args, custom_time=None, **kwargs):
-        self._log(logging.CRITICAL, msg, args, custom_time=custom_time, **kwargs)
+            if "extra" not in kwargs or kwargs["extra"] is None:
+                kwargs["extra"] = {}
+            kwargs["extra"]["custom_time"] = custom_time
+        super().log(level, msg, *args, **kwargs)
 
 
-def config_logger(log_file: str, console_log=True):
+def config_logger(log_file: str, console_log: bool = True) -> logging.Logger:
     # Use the CustomLogger
     logging.setLoggerClass(CustomLogger)
     logger = logging.getLogger(__name__)

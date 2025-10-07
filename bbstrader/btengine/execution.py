@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from queue import Queue
+from typing import Any, Union
 
 from loguru import logger
 
@@ -39,7 +40,7 @@ class ExecutionHandler(metaclass=ABCMeta):
     """
 
     @abstractmethod
-    def execute_order(self, event: OrderEvent):
+    def execute_order(self, event: OrderEvent) -> None:
         """
         Takes an Order event and executes it, producing
         a Fill event that gets placed onto the Events queue.
@@ -47,7 +48,7 @@ class ExecutionHandler(metaclass=ABCMeta):
         Args:
             event (OrderEvent): Contains an Event object with order information.
         """
-        pass
+        raise NotImplementedError("Should implement execute_order()")
 
 
 class SimExecutionHandler(ExecutionHandler):
@@ -61,7 +62,12 @@ class SimExecutionHandler(ExecutionHandler):
     handler.
     """
 
-    def __init__(self, events: Queue, data: DataHandler, **kwargs):
+    def __init__(
+        self,
+        events: "Queue[Union[FillEvent, OrderEvent]]",
+        data: DataHandler,
+        **kwargs: Any,
+    ) -> None:
         """
         Initialises the handler, setting the event queues
         up internally.
@@ -75,7 +81,7 @@ class SimExecutionHandler(ExecutionHandler):
         self.commissions = kwargs.get("commission")
         self.exchange = kwargs.get("exchange", "ARCA")
 
-    def execute_order(self, event: OrderEvent):
+    def execute_order(self, event: OrderEvent) -> None:
         """
         Simply converts Order objects into Fill objects naively,
         i.e. without any latency, slippage or fill ratio problems.
@@ -86,7 +92,7 @@ class SimExecutionHandler(ExecutionHandler):
         if event.type == Events.ORDER:
             dtime = self.bardata.get_latest_bar_datetime(event.symbol)
             fill_event = FillEvent(
-                timeindex=dtime,
+                timeindex=dtime,  # type: ignore
                 symbol=event.symbol,
                 exchange=self.exchange,
                 quantity=event.quantity,
@@ -96,9 +102,10 @@ class SimExecutionHandler(ExecutionHandler):
                 order=event.signal,
             )
             self.events.put(fill_event)
+            price = event.price or 0.0
             self.logger.info(
                 f"{event.direction} ORDER FILLED: SYMBOL={event.symbol}, "
-                f"QUANTITY={event.quantity}, PRICE @{round(event.price, 5)} EXCHANGE={fill_event.exchange}",
+                f"QUANTITY={event.quantity}, PRICE @{round(price, 5)} EXCHANGE={fill_event.exchange}",
                 custom_time=fill_event.timeindex,
             )
 
@@ -128,7 +135,12 @@ class MT5ExecutionHandler(ExecutionHandler):
         This class only works with `bbstrader.metatrader.data.MT5DataHandler` class.
     """
 
-    def __init__(self, events: Queue, data: DataHandler, **kwargs):
+    def __init__(
+        self,
+        events: "Queue[Union[FillEvent, OrderEvent]]",
+        data: DataHandler,
+        **kwargs: Any,
+    ) -> None:
         """
         Initialises the handler, setting the event queues up internally.
 
@@ -142,14 +154,16 @@ class MT5ExecutionHandler(ExecutionHandler):
         self.exchange = kwargs.get("exchange", "MT5")
         self.__account = Account(**kwargs)
 
-    def _calculate_lot(self, symbol, quantity, price):
+    def _calculate_lot(
+        self, symbol: str, quantity: Union[int, float], price: Union[int, float]
+    ) -> float:
         symbol_type = self.__account.get_symbol_type(symbol)
         symbol_info = self.__account.get_symbol_info(symbol)
         contract_size = symbol_info.trade_contract_size
 
         lot = (quantity * price) / (contract_size * price)
         if contract_size == 1:
-            lot = quantity
+            lot = float(quantity)
         if (
             symbol_type
             in (SymbolType.COMMODITIES, SymbolType.FUTURES, SymbolType.CRYPTO)
@@ -157,18 +171,24 @@ class MT5ExecutionHandler(ExecutionHandler):
         ):
             lot = quantity / contract_size
         if symbol_type == SymbolType.FOREX:
-            lot = quantity * price / contract_size
+            lot = float(quantity * price / contract_size)
         return self._check_lot(symbol, lot)
 
-    def _check_lot(self, symbol, lot):
+    def _check_lot(self, symbol: str, lot: float) -> float:
         symbol_info = self.__account.get_symbol_info(symbol)
         if lot < symbol_info.volume_min:
-            return symbol_info.volume_min
+            return float(symbol_info.volume_min)
         elif lot > symbol_info.volume_max:
-            return symbol_info.volume_max
+            return float(symbol_info.volume_max)
         return round(lot, 2)
 
-    def _estimate_total_fees(self, symbol, lot, qty, price):
+    def _estimate_total_fees(
+        self,
+        symbol: str,
+        lot: float,
+        qty: Union[int, float],
+        price: Union[int, float],
+    ) -> float:
         symbol_type = self.__account.get_symbol_type(symbol)
         if symbol_type in (SymbolType.STOCKS, SymbolType.ETFs):
             return self._estimate_stock_commission(symbol, qty, price)
@@ -185,7 +205,9 @@ class MT5ExecutionHandler(ExecutionHandler):
         else:
             return 0.0
 
-    def _estimate_stock_commission(self, symbol, qty, price):
+    def _estimate_stock_commission(
+        self, symbol: str, qty: Union[int, float], price: Union[int, float]
+    ) -> float:
         # https://admiralmarkets.com/start-trading/contract-specifications?regulator=jsc
         min_com = 1.0
         min_aud = 8.0
@@ -220,22 +242,22 @@ class MT5ExecutionHandler(ExecutionHandler):
             else:
                 return max(min_com, qty * price * eu_asia_cm)
 
-    def _estimate_forex_commission(self, lot):
+    def _estimate_forex_commission(self, lot: float) -> float:
         return 3.0 * lot
 
-    def _estimate_commodity_commission(self, lot):
+    def _estimate_commodity_commission(self, lot: float) -> float:
         return 3.0 * lot
 
-    def _estimate_index_commission(self, lot):
+    def _estimate_index_commission(self, lot: float) -> float:
         return 0.25 * lot
 
-    def _estimate_futures_commission(self):
+    def _estimate_futures_commission(self) -> float:
         return 0.0
 
-    def _estimate_crypto_commission(self):
+    def _estimate_crypto_commission(self) -> float:
         return 0.0
 
-    def execute_order(self, event: OrderEvent):
+    def execute_order(self, event: OrderEvent) -> None:
         """
         Executes an Order event by converting it into a Fill event.
 
@@ -247,12 +269,14 @@ class MT5ExecutionHandler(ExecutionHandler):
             direction = event.direction
             quantity = event.quantity
             price = event.price
+            if price is None:
+                price = self.bardata.get_latest_bar_value(symbol, "close")
             lot = self._calculate_lot(symbol, quantity, price)
             fees = self._estimate_total_fees(symbol, lot, quantity, price)
             dtime = self.bardata.get_latest_bar_datetime(symbol)
             commission = self.commissions or fees
             fill_event = FillEvent(
-                timeindex=dtime,
+                timeindex=dtime,  # type: ignore
                 symbol=symbol,
                 exchange=self.exchange,
                 quantity=quantity,
@@ -262,11 +286,14 @@ class MT5ExecutionHandler(ExecutionHandler):
                 order=event.signal,
             )
             self.events.put(fill_event)
+            log_price = event.price or 0.0
             self.logger.info(
                 f"{direction} ORDER FILLED: SYMBOL={symbol}, QUANTITY={quantity}, "
-                f"PRICE @{round(event.price, 5)} EXCHANGE={fill_event.exchange}",
+                f"PRICE @{round(log_price, 5)} EXCHANGE={fill_event.exchange}",
                 custom_time=fill_event.timeindex,
             )
 
 
-class IBExecutionHandler(ExecutionHandler): ...
+class IBExecutionHandler(ExecutionHandler):
+    def execute_order(self, event: OrderEvent) -> None:
+        raise NotImplementedError("Should implement execute_order()")

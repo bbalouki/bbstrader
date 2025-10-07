@@ -12,10 +12,13 @@ from PIL import Image, ImageTk
 from bbstrader.metatrader.copier import copier_worker_process, get_symbols_from_string
 
 
-def resource_path(relative_path):
+from typing import Any, Dict, Union
+
+
+def resource_path(relative_path: str) -> Path:
     """Get absolute path to resource"""
     try:
-        base_path = Path(sys._MEIPASS)
+        base_path = Path(sys._MEIPASS)  # type: ignore
     except AttributeError:
         base_path = Path(__file__).resolve().parent.parent.parent
 
@@ -27,10 +30,10 @@ ICON_PATH = resource_path("assets/bbstrader.ico")
 LOGO_PATH = resource_path("assets/bbstrader.png")
 
 
-class TradeCopierApp(object):
+class TradeCopierApp:
     copier_processes: List[multiprocessing.Process]
 
-    def __init__(self, root: tk.Tk):
+    def __init__(self, root: tk.Tk) -> None:
         root.title(TITLE)
         root.geometry("1600x900")
         self.root = root
@@ -48,13 +51,13 @@ class TradeCopierApp(object):
         self.add_destination_accounts_frame(self.main_frame)
         self.add_copier_settings(self.main_frame)
 
-    def set_style(self):
+    def set_style(self) -> None:
         self.style = ttk.Style()
         self.style.configure("Bold.TLabelframe.Label", font=("Segoe UI", 15, "bold"))
 
-    def add_main_frame(self):
+    def add_main_frame(self) -> ttk.Frame:
         main_frame = ttk.Frame(self.root, padding="10")
-        main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))  # type: ignore
 
         # Configure the layout
         main_frame.columnconfigure(0, weight=2)
@@ -63,7 +66,7 @@ class TradeCopierApp(object):
 
         # --- visual/logo frame ---
         self.visual_frame = ttk.Frame(main_frame)
-        self.visual_frame.grid(row=0, column=1, padx=5, pady=5, sticky=(tk.W, tk.E))
+        self.visual_frame.grid(row=0, column=1, padx=5, pady=5, sticky=(tk.W, tk.E)) # type: ignore
 
         # --- opier settings---
         self.right_panel_frame = ttk.Frame(main_frame)
@@ -76,12 +79,12 @@ class TradeCopierApp(object):
 
         return main_frame
 
-    def add_source_account_frame(self, main_frame):
+    def add_source_account_frame(self, main_frame: ttk.Frame) -> None:
         # --- Source Account ---
         source_frame = ttk.LabelFrame(
             main_frame, text="Source Account", style="Bold.TLabelframe"
         )
-        source_frame.grid(row=0, column=0, padx=5, pady=5, sticky=(tk.W, tk.E, tk.N))
+        source_frame.grid(row=0, column=0, padx=5, pady=5, sticky=(tk.W, tk.E, tk.N)) # type: ignore
         source_frame.columnconfigure(1, weight=1)
         source_frame.columnconfigure(3, weight=1)
 
@@ -131,13 +134,13 @@ class TradeCopierApp(object):
         )
         self.allow_copy_check.grid(row=1, column=3, sticky=tk.W, padx=5, pady=2)
 
-    def add_destination_accounts_frame(self, main_frame):
+    def add_destination_accounts_frame(self, main_frame: ttk.Frame) -> None:
         # --- Destination Accounts Scrollable Area ---
         self.destinations_outer_frame = ttk.LabelFrame(
             main_frame, text="Destination Accounts", style="Bold.TLabelframe"
         )
         self.destinations_outer_frame.grid(
-            row=1, column=0, padx=5, pady=5, sticky=(tk.W, tk.E, tk.N, tk.S)
+            row=1, column=0, padx=5, pady=5, sticky=(tk.W, tk.E, tk.N, tk.S) # type: ignore
         )
         self.destinations_outer_frame.rowconfigure(0, weight=1)
         self.destinations_outer_frame.columnconfigure(0, weight=1)
@@ -159,10 +162,10 @@ class TradeCopierApp(object):
 
         self.scrollable_frame_for_destinations.columnconfigure(0, weight=1)
 
-        def configure_scroll_region(event):
+        def configure_scroll_region(event: tk.Event) -> None:
             self.canvas.configure(scrollregion=self.canvas.bbox("all"))
 
-        def configure_canvas_window(event):
+        def configure_canvas_window(event: tk.Event) -> None:
             self.canvas.itemconfig(self.canvas_window, width=event.width)
 
         self.scrollable_frame_for_destinations.bind(
@@ -170,7 +173,7 @@ class TradeCopierApp(object):
         )
         self.canvas.bind("<Configure>", configure_canvas_window)
 
-        def _on_mousewheel(event):
+        def _on_mousewheel(event: tk.Event) -> None:
             scroll_val = -1 * (event.delta // 120)
             self.canvas.yview_scroll(scroll_val, "units")
 
@@ -189,12 +192,12 @@ class TradeCopierApp(object):
 
         self.add_destination_account()
 
-    def add_copier_settings(self, main_frame):
+    def add_copier_settings(self, main_frame: ttk.Frame) -> None:
         # --- Copier Settings ---
         settings_frame = ttk.LabelFrame(
             self.right_panel_frame, text="Copier Settings", style="Bold.TLabelframe"
         )
-        settings_frame.grid(row=0, column=0, sticky=(tk.W, tk.E), padx=5, pady=5)
+        settings_frame.grid(row=0, column=0, sticky=(tk.W, tk.E), padx=5, pady=5) # type: ignore
 
         ttk.Label(settings_frame, text="Sleep Time (s)").grid(
             row=0, column=0, sticky=tk.W, padx=5, pady=2
@@ -240,14 +243,14 @@ class TradeCopierApp(object):
             columnspan=2,
             padx=5,
             pady=5,
-            sticky=(tk.W, tk.E, tk.N, tk.S),
+            sticky=(tk.W, tk.E, tk.N, tk.S), # type: ignore
         )
 
         self.log_text = scrolledtext.ScrolledText(log_frame, wrap=tk.WORD, height=10)
         self.log_text.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         self.log_text.configure(state="disabled")
 
-    def add_logo_and_description(self):
+    def add_logo_and_description(self) -> None:
         image = Image.open(LOGO_PATH)
         image = image.resize((120, 120))
         self.logo_img = ImageTk.PhotoImage(image)
@@ -262,9 +265,9 @@ class TradeCopierApp(object):
             font=("Segoe UI", 10, "bold"),
         ).pack()
 
-    def add_destination_account(self):
+    def add_destination_account(self) -> None:
         dest_row = len(self.destination_widgets)
-        dest_widgets = {}
+        dest_widgets: Dict[str, Union[ttk.Entry, ttk.Combobox]] = {}
 
         if dest_row > 0:
             sep = ttk.Separator(
@@ -385,13 +388,13 @@ class TradeCopierApp(object):
         self.add_dest_button.grid_forget()
         self.add_dest_button.grid(row=1, column=0, columnspan=2, pady=10, sticky=tk.EW)
 
-    def log_message(self, message):
+    def log_message(self, message: str) -> None:
         self.log_text.configure(state="normal")
         self.log_text.insert(tk.END, message + "\n")
         self.log_text.configure(state="disabled")
         self.log_text.see(tk.END)
 
-    def check_log_queue(self):
+    def check_log_queue(self) -> None:
         try:
             while True:
                 message = self.log_queue.get_nowait()
@@ -413,7 +416,7 @@ class TradeCopierApp(object):
         else:
             return get_symbols_from_string(symbols)
 
-    def _validate_inputs(self):
+    def _validate_inputs(self) -> bool:
         if (
             not self.source_login_entry.get()
             or not self.source_password_entry.get()
@@ -463,11 +466,11 @@ class TradeCopierApp(object):
         # Add more validation for time formats if needed
         return True
 
-    def start_copier(self):
+    def start_copier(self) -> None:
         if not self._validate_inputs():
             return
 
-        source_config = {
+        source_config: Dict[str, Any] = {
             "login": int(self.source_login_entry.get().strip()),
             "password": self.source_password_entry.get().strip(),
             "server": self.source_server_entry.get().strip(),
@@ -476,10 +479,10 @@ class TradeCopierApp(object):
             "unique": not self.allow_copy_var.get(),
         }
 
-        destinations_config = []
+        destinations_config: List[Dict[str, Any]] = []
         for dest_widget_map in self.destination_widgets:
             symbols_str = dest_widget_map["symbols"].get().strip()
-            dest = {
+            dest: Dict[str, Any] = {
                 "login": int(dest_widget_map["login"].get().strip()),
                 "password": dest_widget_map["password"].get().strip(),
                 "server": dest_widget_map["server"].get().strip(),
@@ -510,7 +513,7 @@ class TradeCopierApp(object):
         try:
             # Create shared shutdown event and log queue
             self.shutdown_event = multiprocessing.Event()
-            self.log_queue = multiprocessing.Queue()
+            self.log_queue: "multiprocessing.Queue[str]" = multiprocessing.Queue()
             self.copier_processes = []
 
             # Spawn one process for each destination
@@ -546,7 +549,7 @@ class TradeCopierApp(object):
             self.start_button.config(state=tk.NORMAL)
             self.stop_button.config(state=tk.DISABLED)
 
-    def stop_copier(self):
+    def stop_copier(self) -> None:
         self.log_message("Attempting to stop all Trade Copier processes...")
 
         if not hasattr(self, "copier_processes") or not self.copier_processes:
@@ -581,12 +584,12 @@ class TradeCopierApp(object):
         # Cleanup references
         self.copier_processes = []
         self.shutdown_event = None
-        self.log_queue = None
+        self.log_queue = None # type: ignore
 
         self.start_button.config(state=tk.NORMAL)
         self.stop_button.config(state=tk.DISABLED)
 
-    def browse_path(self, path_entry_widget):
+    def browse_path(self, path_entry_widget: ttk.Entry) -> None:
         filetypes = (("Executable files", "*.exe"), ("All files", "*.*"))
         filepath = filedialog.askopenfilename(
             title="Select MetaTrader Terminal Executable", filetypes=filetypes
@@ -595,7 +598,7 @@ class TradeCopierApp(object):
             path_entry_widget.delete(0, tk.END)
             path_entry_widget.insert(0, filepath)
 
-    def browse_symbols_file(self, symbols_entry_widget):
+    def browse_symbols_file(self, symbols_entry_widget: ttk.Entry) -> None:
         """
         Opens a file dialog to select a .txt file, reads the content,
         and populates the given symbols_entry_widget with a comma-separated list.
@@ -623,7 +626,7 @@ class TradeCopierApp(object):
                 self.log_message(f"Error loading symbols: {e}")
 
 
-def main():
+def main() -> None:
     """
     Main function to initialize and run the Trade Copier GUI.
     """
@@ -632,12 +635,12 @@ def main():
         root.iconbitmap(os.path.abspath(ICON_PATH))
         app = TradeCopierApp(root)
 
-        def on_closing():
+        def on_closing() -> None:
             try:
                 if (
                     hasattr(app, "copier_process")
-                    and app.copier_process
-                    and app.copier_process.is_alive()
+                    and app.copier_process # type: ignore
+                    and app.copier_process.is_alive() # type: ignore
                 ):
                     app.log_message("Window closed, stopping Trade Copier...")
                     app.stop_copier()
