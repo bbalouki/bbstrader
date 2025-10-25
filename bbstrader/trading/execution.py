@@ -971,11 +971,17 @@ class Mt5ExecutionEngine:
             msg = f"Handling period end actions, STRATEGY={self.STRATEGY} , ACCOUNT={self.ACCOUNT}"
             self._print_exc(msg, e)
             pass
+    
+    def select_symbols(self):
+        for symbol in self.symbols:
+            if not MT5.symbol_select(symbol, True):
+                logger.error(f"Failed to select symbol {symbol} error = {MT5.last_error()}")
 
     def run(self):
         while self._running and not self.shutdown_event.is_set():
             try:
                 check_mt5_connection(**self.kwargs)
+                self.select_symbols()
                 positions_orders = self._check_positions_orders()
                 if self.show_positions_orders:
                     self._display_positions_orders(positions_orders)
