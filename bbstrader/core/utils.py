@@ -2,17 +2,16 @@ import configparser
 import importlib
 import importlib.util
 import os
-from typing import Any, Dict, List
+from types import ModuleType
+from typing import Any, Dict, List, Optional, Type, Union
 
 __all__ = ["load_module", "load_class"]
 
 
-def load_module(file_path):
+def load_module(file_path: str) -> ModuleType:
     """Load a module from a file path.
-
     Args:
         file_path: Path to the file to load.
-
     Returns:
         The loaded module.
     """
@@ -21,14 +20,15 @@ def load_module(file_path):
             f"Strategy file {file_path} not found. Please create it."
         )
     spec = importlib.util.spec_from_file_location("bbstrader.cli", file_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Could not load spec for module at {file_path}")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
 
 
-def load_class(module, class_name, base_class):
+def load_class(module: ModuleType, class_name: str, base_class: Type) -> Type:
     """Load a class from a module.
-
     Args:
         module: The module to load the class from.
         class_name: The name of the class to load.
@@ -42,7 +42,7 @@ def load_class(module, class_name, base_class):
     return class_
 
 
-def auto_convert(value):
+def auto_convert(value: str) -> Union[bool, None, int, float, str]:
     """Convert string values to appropriate data types"""
     if value.lower() in {"true", "false"}:  # Boolean
         return value.lower() == "true"
@@ -56,13 +56,13 @@ def auto_convert(value):
         return value
 
 
-def dict_from_ini(file_path, sections: str | List[str] = None) -> Dict[str, Any]:
+def dict_from_ini(
+    file_path: str, sections: Optional[Union[str, List[str]]] = None
+) -> Dict[str, Any]:
     """Reads an INI file and converts it to a dictionary with proper data types.
-
     Args:
         file_path: Path to the INI file to read.
         sections: Optional list of sections to read from the INI file.
-
     Returns:
         A dictionary containing the INI file contents with proper data types.
     """
@@ -71,7 +71,7 @@ def dict_from_ini(file_path, sections: str | List[str] = None) -> Dict[str, Any]
         config.read(file_path)
     except Exception:
         raise
-    ini_dict = {}
+    ini_dict: Dict[str, Any] = {}
     for section in config.sections():
         ini_dict[section] = {
             key: auto_convert(value) for key, value in config.items(section)
@@ -83,10 +83,11 @@ def dict_from_ini(file_path, sections: str | List[str] = None) -> Dict[str, Any]
         except KeyError:
             raise KeyError(f"{sections} not found in the {file_path} file")
     if isinstance(sections, list):
-        sect_dict = {}
+        sect_dict: Dict[str, Any] = {}
         for section in sections:
             try:
                 sect_dict[section] = ini_dict[section]
             except KeyError:
                 raise KeyError(f"{section} not found in the {file_path} file")
+        return sect_dict
     return ini_dict

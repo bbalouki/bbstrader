@@ -1,15 +1,16 @@
 import os.path
 from abc import ABCMeta, abstractmethod
 from datetime import datetime
+from pathlib import Path
 from queue import Queue
-from typing import Dict, List
+from typing import Any, Dict, Generator, List, Optional, Tuple, Union
 
 import numpy as np
-from numpy.typing import NDArray
 import pandas as pd
 import yfinance as yf
 from eodhd import APIClient
 from financetoolkit import Toolkit
+from numpy.typing import NDArray
 from pytz import timezone
 
 from bbstrader.btengine.event import MarketEvent
@@ -59,54 +60,56 @@ class DataHandler(metaclass=ABCMeta):
         pass
 
     @property
-    def index(self) -> str | List[str]:
+    def index(self) -> Union[str, List[str]]:
         pass
 
     @abstractmethod
-    def get_latest_bar(self, symbol) -> pd.Series:
+    def get_latest_bar(self, symbol: str) -> pd.Series:
         """
         Returns the last bar updated.
         """
-        pass
+        raise NotImplementedError("Should implement get_latest_bar()")
 
     @abstractmethod
-    def get_latest_bars(self, symbol, N=1, df=True) -> pd.DataFrame | List[pd.Series]:
+    def get_latest_bars(
+        self, symbol: str, N: int = 1, df: bool = True
+    ) -> Union[pd.DataFrame, List[pd.Series]]:
         """
         Returns the last N bars updated.
         """
-        pass
+        raise NotImplementedError("Should implement get_latest_bars()")
 
     @abstractmethod
-    def get_latest_bar_datetime(self, symbol) -> datetime | pd.Timestamp:
+    def get_latest_bar_datetime(self, symbol: str) -> Union[datetime, pd.Timestamp]:
         """
         Returns a Python datetime object for the last bar.
         """
-        pass
+        raise NotImplementedError("Should implement get_latest_bar_datetime()")
 
     @abstractmethod
-    def get_latest_bar_value(self, symbol, val_type) -> float:
+    def get_latest_bar_value(self, symbol: str, val_type: str) -> float:
         """
         Returns one of the Open, High, Low, Close, Adj Close, Volume or Returns
         from the last bar.
         """
-        pass
+        raise NotImplementedError("Should implement get_latest_bar_value()")
 
     @abstractmethod
-    def get_latest_bars_values(self, symbol, val_type, N=1) -> NDArray:
+    def get_latest_bars_values(self, symbol: str, val_type: str, N: int = 1) -> NDArray:
         """
         Returns the last N bar values from the
         latest_symbol list, or N-k if less available.
         """
-        pass
+        raise NotImplementedError("Should implement get_latest_bars_values()")
 
     @abstractmethod
-    def update_bars(self):
+    def update_bars(self) -> None:
         """
         Pushes the latest bars to the bars_queue for each symbol
         in a tuple OHLCVI format: (datetime, Open, High, Low,
         Close, Adj Close, Volume, Retruns).
         """
-        pass
+        raise NotImplementedError("Should implement update_bars()")
 
 
 class BaseCSVDataHandler(DataHandler):
@@ -117,12 +120,12 @@ class BaseCSVDataHandler(DataHandler):
 
     def __init__(
         self,
-        events: Queue,
+        events: "Queue[MarketEvent]",
         symbol_list: List[str],
         csv_dir: str,
-        columns: List[str] = None,
-        index_col: str | int | List[str] | List[int] = 0,
-    ):
+        columns: Optional[List[str]] = None,
+        index_col: Union[str, int, List[str], List[int]] = 0,
+    ) -> None:
         """
         Initialises the data handler by requesting the location of the CSV files
         and a list of symbols.
@@ -139,10 +142,10 @@ class BaseCSVDataHandler(DataHandler):
         self.csv_dir = csv_dir
         self.columns = columns
         self.index_col = index_col
-        self.symbol_data = {}
-        self.latest_symbol_data = {}
+        self.symbol_data: Dict[str, Union[pd.DataFrame, Generator]] = {}
+        self.latest_symbol_data: Dict[str, List[Any]] = {}
         self.continue_backtest = True
-        self._index = None
+        self._index: Optional[Union[str, List[str]]] = None
         self._load_and_process_data()
 
     @property
@@ -151,7 +154,7 @@ class BaseCSVDataHandler(DataHandler):
 
     @property
     def data(self) -> Dict[str, pd.DataFrame]:
-        return self.symbol_data
+        return self.symbol_data  # type: ignore
 
     @property
     def datadir(self) -> str:
@@ -159,13 +162,13 @@ class BaseCSVDataHandler(DataHandler):
 
     @property
     def labels(self) -> List[str]:
-        return self.columns
+        return self.columns  # type: ignore
 
     @property
-    def index(self) -> str | List[str]:
-        return self._index
+    def index(self) -> Union[str, List[str]]:
+        return self._index  # type: ignore
 
-    def _load_and_process_data(self):
+    def _load_and_process_data(self) -> None:
         """
         Opens the CSV files from the data directory, converting
         them into pandas DataFrames within a symbol dictionary.
@@ -201,29 +204,29 @@ class BaseCSVDataHandler(DataHandler):
 
         # Reindex the dataframes
         for s in self.symbol_list:
-            self.symbol_data[s] = self.symbol_data[s].reindex(
+            self.symbol_data[s] = self.symbol_data[s].reindex(  # type: ignore
                 index=comb_index, method="pad"
             )
             if "adj_close" not in new_names:
                 self.columns.append("adj_close")
-                self.symbol_data[s]["adj_close"] = self.symbol_data[s]["close"]
-            self.symbol_data[s]["returns"] = (
-                self.symbol_data[s][
+                self.symbol_data[s]["adj_close"] = self.symbol_data[s]["close"]  # type: ignore
+            self.symbol_data[s]["returns"] = (  # type: ignore
+                self.symbol_data[s][  # type: ignore
                     "adj_close" if "adj_close" in new_names else "close"
                 ]
                 .pct_change()
                 .dropna()
             )
-            self._index = self.symbol_data[s].index.name
-            self.symbol_data[s].to_csv(os.path.join(self.csv_dir, f"{s}.csv"))
+            self._index = self.symbol_data[s].index.name  # type: ignore
+            self.symbol_data[s].to_csv(os.path.join(self.csv_dir, f"{s}.csv"))  # type: ignore
             if self.events is not None:
-                self.symbol_data[s] = self.symbol_data[s].iterrows()
+                self.symbol_data[s] = self.symbol_data[s].iterrows()  # type: ignore
 
-    def _get_new_bar(self, symbol: str):
+    def _get_new_bar(self, symbol: str) -> Generator[Tuple[Any, Any], Any, None]:
         """
         Returns the latest bar from the data feed.
         """
-        for b in self.symbol_data[symbol]:
+        for b in self.symbol_data[symbol]:  # type: ignore
             yield b
 
     def get_latest_bar(self, symbol: str) -> pd.Series:
@@ -239,8 +242,8 @@ class BaseCSVDataHandler(DataHandler):
             return bars_list[-1]
 
     def get_latest_bars(
-        self, symbol: str, N=1, df=True
-    ) -> pd.DataFrame | List[pd.Series]:
+        self, symbol: str, N: int = 1, df: bool = True
+    ) -> Union[pd.DataFrame, List[pd.Series]]:
         """
         Returns the last N bars from the latest_symbol list,
         or N-k if less available.
@@ -252,12 +255,12 @@ class BaseCSVDataHandler(DataHandler):
             raise
         else:
             if df:
-                df = pd.DataFrame([bar[1] for bar in bars_list[-N:]])
-                df.index.name = self._index
-                return df
+                df_ = pd.DataFrame([bar[1] for bar in bars_list[-N:]])
+                df_.index.name = self._index  # type: ignore
+                return df_
             return bars_list[-N:]
 
-    def get_latest_bar_datetime(self, symbol: str) -> datetime | pd.Timestamp:
+    def get_latest_bar_datetime(self, symbol: str) -> Union[datetime, pd.Timestamp]:
         """
         Returns a Python datetime object for the last bar.
         """
@@ -270,18 +273,18 @@ class BaseCSVDataHandler(DataHandler):
             return bars_list[-1][0]
 
     def get_latest_bars_datetime(
-        self, symbol: str, N=1
-    ) -> List[datetime | pd.Timestamp]:
+        self, symbol: str, N: int = 1
+    ) -> List[Union[datetime, pd.Timestamp]]:
         """
         Returns a list of Python datetime objects for the last N bars.
         """
         try:
-            bars_list = self.get_latest_bars(symbol, N)
+            bars_list = self.get_latest_bars(symbol, N)  # type: ignore
         except KeyError:
             print(f"{symbol} not available in the historical data set for .")
             raise
         else:
-            return [b[0] for b in bars_list]
+            return [b[0] for b in bars_list]  # type: ignore
 
     def get_latest_bar_value(self, symbol: str, val_type: str) -> float:
         """
@@ -302,7 +305,7 @@ class BaseCSVDataHandler(DataHandler):
                 )
                 raise
 
-    def get_latest_bars_values(self, symbol: str, val_type: str, N=1) -> NDArray:
+    def get_latest_bars_values(self, symbol: str, val_type: str, N: int = 1) -> NDArray:
         """
         Returns the last N bar values from the
         latest_symbol list, or N-k if less available.
@@ -321,7 +324,7 @@ class BaseCSVDataHandler(DataHandler):
                 )
                 raise
 
-    def update_bars(self):
+    def update_bars(self) -> None:
         """
         Pushes the latest bar to the latest_symbol_data structure
         for all symbols in the symbol list.
@@ -348,7 +351,9 @@ class CSVDataHandler(BaseCSVDataHandler):
     to cutomize specific data in some form based on your `Strategy()` .
     """
 
-    def __init__(self, events: Queue, symbol_list: List[str], **kwargs):
+    def __init__(
+        self, events: "Queue[MarketEvent]", symbol_list: List[str], **kwargs: Any
+    ) -> None:
         """
         Initialises the historic data handler by requesting
         the location of the CSV files and a list of symbols.
@@ -369,7 +374,7 @@ class CSVDataHandler(BaseCSVDataHandler):
         super().__init__(
             events,
             symbol_list,
-            csv_dir,
+            str(csv_dir),
             columns=kwargs.get("columns"),
             index_col=kwargs.get("index_col", 0),
         )
@@ -388,7 +393,9 @@ class MT5DataHandler(BaseCSVDataHandler):
     for different time frames.
     """
 
-    def __init__(self, events: Queue, symbol_list: List[str], **kwargs):
+    def __init__(
+        self, events: "Queue[MarketEvent]", symbol_list: List[str], **kwargs: Any
+    ) -> None:
         """
         Args:
             events (Queue): The Event Queue for passing market events.
@@ -414,19 +421,23 @@ class MT5DataHandler(BaseCSVDataHandler):
         self.data_dir = kwargs.get("data_dir")
         self.symbol_list = symbol_list
         self.kwargs = kwargs
-        self.kwargs["backtest"] = True # Ensure backtest mode is set to avoid InvalidBroker errors
+        self.kwargs["backtest"] = (
+            True  # Ensure backtest mode is set to avoid InvalidBroker errors
+        )
 
         csv_dir = self._download_and_cache_data(self.data_dir)
         super().__init__(
             events,
             symbol_list,
-            csv_dir,
+            str(csv_dir),
             columns=kwargs.get("columns"),
             index_col=kwargs.get("index_col", 0),
         )
 
-    def _download_and_cache_data(self, cache_dir: str):
-        data_dir = cache_dir or BBSTRADER_DIR / "data" / "mt5" / self.tf
+    def _download_and_cache_data(self, cache_dir: Optional[str]) -> Path:
+        data_dir = (
+            Path(cache_dir) if cache_dir else BBSTRADER_DIR / "data" / "mt5" / self.tf
+        )
         data_dir.mkdir(parents=True, exist_ok=True)
         for symbol in self.symbol_list:
             try:
@@ -461,7 +472,9 @@ class YFDataHandler(BaseCSVDataHandler):
     This class is useful when working with historical daily prices.
     """
 
-    def __init__(self, events: Queue, symbol_list: List[str], **kwargs):
+    def __init__(
+        self, events: "Queue[MarketEvent]", symbol_list: List[str], **kwargs: Any
+    ) -> None:
         """
         Args:
             events (Queue): The Event Queue for passing market events.
@@ -483,17 +496,17 @@ class YFDataHandler(BaseCSVDataHandler):
         super().__init__(
             events,
             symbol_list,
-            csv_dir,
+            str(csv_dir),
             columns=kwargs.get("columns"),
             index_col=kwargs.get("index_col", 0),
         )
 
-    def _download_and_cache_data(self, cache_dir: str):
+    def _download_and_cache_data(self, cache_dir: Optional[str]) -> str:
         """Downloads and caches historical data as CSV files."""
-        cache_dir = cache_dir or BBSTRADER_DIR / "data" / "yfinance" / "daily"
-        os.makedirs(cache_dir, exist_ok=True)
+        _cache_dir = cache_dir or BBSTRADER_DIR / "data" / "yfinance" / "daily"
+        os.makedirs(_cache_dir, exist_ok=True)
         for symbol in self.symbol_list:
-            filepath = os.path.join(cache_dir, f"{symbol}.csv")
+            filepath = os.path.join(_cache_dir, f"{symbol}.csv")
             try:
                 data = yf.download(
                     symbol,
@@ -510,7 +523,7 @@ class YFDataHandler(BaseCSVDataHandler):
                 data.to_csv(filepath)
             except Exception as e:
                 raise ValueError(f"Error downloading {symbol}: {e}")
-        return cache_dir
+        return str(_cache_dir)
 
 
 class EODHDataHandler(BaseCSVDataHandler):
@@ -522,7 +535,9 @@ class EODHDataHandler(BaseCSVDataHandler):
     https://eodhistoricaldata.com/ and provide the key as an argument.
     """
 
-    def __init__(self, events: Queue, symbol_list: List[str], **kwargs):
+    def __init__(
+        self, events: "Queue[MarketEvent]", symbol_list: List[str], **kwargs: Any
+    ) -> None:
         """
         Args:
             events (Queue): The Event Queue for passing market events.
@@ -548,12 +563,14 @@ class EODHDataHandler(BaseCSVDataHandler):
         super().__init__(
             events,
             symbol_list,
-            csv_dir,
+            str(csv_dir),
             columns=kwargs.get("columns"),
             index_col=kwargs.get("index_col", 0),
         )
 
-    def _get_data(self, symbol: str, period) -> pd.DataFrame | List[Dict]:
+    def _get_data(
+        self, symbol: str, period: str
+    ) -> Union[pd.DataFrame, List[Dict[str, Any]]]:
         if not self.__api_key:
             raise ValueError("API key is required for EODHD data.")
         client = APIClient(api_key=self.__api_key)
@@ -567,8 +584,8 @@ class EODHDataHandler(BaseCSVDataHandler):
         elif period in ["1m", "5m", "1h"]:
             hms = " 00:00:00"
             fmt = "%Y-%m-%d %H:%M:%S"
-            startdt = datetime.strptime(self.start_date + hms, fmt)
-            enddt = datetime.strptime(self.end_date + hms, fmt)
+            startdt = datetime.strptime(str(self.start_date) + hms, fmt)
+            enddt = datetime.strptime(str(self.end_date) + hms, fmt)
             startdt = startdt.replace(tzinfo=timezone("UTC"))
             enddt = enddt.replace(tzinfo=timezone("UTC"))
             unix_start = int(startdt.timestamp())
@@ -579,8 +596,11 @@ class EODHDataHandler(BaseCSVDataHandler):
                 from_unix_time=unix_start,
                 to_unix_time=unix_end,
             )
+        raise ValueError(f"Unsupported period: {period}")
 
-    def _format_data(self, data: List[Dict] | pd.DataFrame) -> pd.DataFrame:
+    def _format_data(
+        self, data: Union[List[Dict[str, Any]], pd.DataFrame]
+    ) -> pd.DataFrame:
         if isinstance(data, pd.DataFrame):
             if data.empty or len(data) == 0:
                 raise ValueError("No data found.")
@@ -599,20 +619,21 @@ class EODHDataHandler(BaseCSVDataHandler):
             df.date = pd.to_datetime(df.date)
             df = df.set_index("date")
             return df
+        raise TypeError(f"Unsupported data type: {type(data)}")
 
-    def _download_and_cache_data(self, cache_dir: str):
+    def _download_and_cache_data(self, cache_dir: Optional[str]) -> str:
         """Downloads and caches historical data as CSV files."""
-        cache_dir = cache_dir or BBSTRADER_DIR / "data" / "eodhd" / self.period
-        os.makedirs(cache_dir, exist_ok=True)
+        _cache_dir = cache_dir or BBSTRADER_DIR / "data" / "eodhd" / self.period
+        os.makedirs(_cache_dir, exist_ok=True)
         for symbol in self.symbol_list:
-            filepath = os.path.join(cache_dir, f"{symbol}.csv")
+            filepath = os.path.join(_cache_dir, f"{symbol}.csv")
             try:
                 data = self._get_data(symbol, self.period)
                 data = self._format_data(data)
                 data.to_csv(filepath)
             except Exception as e:
                 raise ValueError(f"Error downloading {symbol}: {e}")
-        return cache_dir
+        return str(_cache_dir)
 
 
 class FMPDataHandler(BaseCSVDataHandler):
@@ -626,7 +647,9 @@ class FMPDataHandler(BaseCSVDataHandler):
 
     """
 
-    def __init__(self, events: Queue, symbol_list: List[str], **kwargs):
+    def __init__(
+        self, events: "Queue[MarketEvent]", symbol_list: List[str], **kwargs: Any
+    ) -> None:
         """
         Args:
             events (Queue): The Event Queue for passing market events.
@@ -653,7 +676,7 @@ class FMPDataHandler(BaseCSVDataHandler):
         super().__init__(
             events,
             symbol_list,
-            csv_dir,
+            str(csv_dir),
             columns=kwargs.get("columns"),
             index_col=kwargs.get("index_col", 0),
         )
@@ -673,6 +696,7 @@ class FMPDataHandler(BaseCSVDataHandler):
             return toolkit.get_historical_data(period=period, progress_bar=False)
         elif period in ["1min", "5min", "15min", "30min", "1hour"]:
             return toolkit.get_intraday_data(period=period, progress_bar=False)
+        raise ValueError(f"Unsupported period: {period}")
 
     def _format_data(self, data: pd.DataFrame, period: str) -> pd.DataFrame:
         if data.empty or len(data) == 0:
@@ -696,24 +720,24 @@ class FMPDataHandler(BaseCSVDataHandler):
         data = data.reset_index()
         if "Adj Close" not in data.columns:
             data["Adj Close"] = data["Close"]
-        data["date"] = data["date"].dt.to_timestamp()
+        data["date"] = data["date"].dt.to_timestamp()  # type: ignore
         data["date"] = pd.to_datetime(data["date"])
         data.set_index("date", inplace=True)
         return data
 
-    def _download_and_cache_data(self, cache_dir: str):
+    def _download_and_cache_data(self, cache_dir: Optional[str]) -> str:
         """Downloads and caches historical data as CSV files."""
-        cache_dir = cache_dir or BBSTRADER_DIR / "data" / "fmp" / self.period
-        os.makedirs(cache_dir, exist_ok=True)
+        _cache_dir = cache_dir or BBSTRADER_DIR / "data" / "fmp" / self.period
+        os.makedirs(_cache_dir, exist_ok=True)
         for symbol in self.symbol_list:
-            filepath = os.path.join(cache_dir, f"{symbol}.csv")
+            filepath = os.path.join(_cache_dir, f"{symbol}.csv")
             try:
                 data = self._get_data(symbol, self.period)
                 data = self._format_data(data, self.period)
                 data.to_csv(filepath)
             except Exception as e:
                 raise ValueError(f"Error downloading {symbol}: {e}")
-        return cache_dir
+        return str(_cache_dir)
 
 
 # TODO Add data Handlers for Interactive Brokers

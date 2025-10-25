@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Optional, Tuple
 import warnings
 
 import matplotlib.pyplot as plt
@@ -24,8 +24,12 @@ __all__ = [
     "get_perfbased_weights",
 ]
 
+
 def get_asset_performances(
-    portfolio: pd.DataFrame, assets: List[str], plot=True, strategy=""
+    portfolio: pd.DataFrame,
+    assets: List[str],
+    plot: bool = True,
+    strategy: str = "",
 ) -> pd.Series:
     """
     Calculate the performance of the assets in the portfolio.
@@ -48,12 +52,14 @@ def get_asset_performances(
     asset_returns.fillna(0, inplace=True)
     asset_cum_returns = (1.0 + asset_returns).cumprod()
     if plot:
-        asset_cum_returns.plot(figsize=(12, 6), title=f"{strategy} Strategy Assets Performance")
+        asset_cum_returns.plot(
+            figsize=(12, 6), title=f"{strategy} Strategy Assets Performance"
+        )
         plt.show()
     return asset_cum_returns.iloc[-1] - 1
 
 
-def get_perfbased_weights(performances) -> Dict[str, float]:
+def get_perfbased_weights(performances: pd.Series) -> Dict[str, float]:
     """
     Calculate the weights of the assets based on their performances.
 
@@ -71,7 +77,7 @@ def get_perfbased_weights(performances) -> Dict[str, float]:
     return weights
 
 
-def create_sharpe_ratio(returns, periods=252) -> float:
+def create_sharpe_ratio(returns: pd.Series, periods: int = 252) -> float:
     """
     Create the Sharpe ratio for the strategy, based on a
     benchmark of zero (i.e. no risk-free rate information).
@@ -89,7 +95,7 @@ def create_sharpe_ratio(returns, periods=252) -> float:
 # Define a function to calculate the Sortino Ratio
 
 
-def create_sortino_ratio(returns, periods=252) -> float:
+def create_sortino_ratio(returns: pd.Series, periods: int = 252) -> float:
     """
     Create the Sortino ratio for the strategy, based on a
     benchmark of zero (i.e. no risk-free rate information).
@@ -104,7 +110,7 @@ def create_sortino_ratio(returns, periods=252) -> float:
     return qs.stats.sortino(returns, periods=periods)
 
 
-def create_drawdowns(pnl):
+def create_drawdowns(pnl: pd.Series) -> Tuple[pd.Series, float, float]:
     """
     Calculate the largest peak-to-trough drawdown of the PnL curve
     as well as the duration of the drawdown. Requires that the
@@ -135,7 +141,7 @@ def create_drawdowns(pnl):
     return drawdown, drawdown.max(), duration.max()
 
 
-def plot_performance(df, title):
+def plot_performance(df: pd.DataFrame, title: str) -> None:
     """
     Plot the performance of the strategy:
         - (Portfolio value,  %)
@@ -188,7 +194,7 @@ def plot_performance(df, title):
     plt.show()
 
 
-def plot_returns_and_dd(df: pd.DataFrame, benchmark: str, title):
+def plot_returns_and_dd(df: pd.DataFrame, benchmark: str, title: str) -> None:
     """
     Plot the returns and drawdowns of the strategy
     compared to a benchmark.
@@ -271,7 +277,7 @@ def plot_returns_and_dd(df: pd.DataFrame, benchmark: str, title):
     plt.show()
 
 
-def plot_monthly_yearly_returns(df: pd.DataFrame, title):
+def plot_monthly_yearly_returns(df: pd.DataFrame, title: str) -> None:
     """
     Plot the monthly and yearly returns of the strategy.
 
@@ -306,7 +312,7 @@ def plot_monthly_yearly_returns(df: pd.DataFrame, title):
     # Prepare monthly returns DataFrame
     monthly_returns_df = monthly_returns.unstack(level=-1) * 100
     monthly_returns_df.columns = monthly_returns_df.columns.map(
-        lambda x: pd.to_datetime(x, format="%m").strftime("%b")
+        lambda x: pd.to_datetime(str(x), format="%m").strftime("%b")
     )
 
     # Calculate and prepare yearly returns DataFrame
@@ -371,7 +377,12 @@ def plot_monthly_yearly_returns(df: pd.DataFrame, title):
     plt.show()
 
 
-def show_qs_stats(returns, benchmark, strategy_name, save_dir=None):
+def show_qs_stats(
+    returns: pd.Series,
+    benchmark: str,
+    strategy_name: str,
+    save_dir: Optional[str] = None,
+) -> None:
     """
     Generate the full quantstats report for the strategy.
 

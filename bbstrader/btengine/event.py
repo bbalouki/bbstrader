@@ -1,11 +1,11 @@
 from datetime import datetime
 from enum import Enum
-from typing import Literal
+from typing import Literal, Optional, Union
 
-__all__ = ["Event", "Events",  "MarketEvent", "SignalEvent", "OrderEvent", "FillEvent"]
+__all__ = ["Event", "Events", "MarketEvent", "SignalEvent", "OrderEvent", "FillEvent"]
 
 
-class Event(object):
+class Event:
     """
     Event is base class providing an interface for all subsequent
     (inherited) events, that will trigger further events in the
@@ -36,7 +36,7 @@ class MarketEvent(Event):
     that it is a market event, with no other structure.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Initialises the MarketEvent.
         """
@@ -59,11 +59,11 @@ class SignalEvent(Event):
         symbol: str,
         datetime: datetime,
         signal_type: Literal["LONG", "SHORT", "EXIT"],
-        quantity: int | float = 100,
-        strength: int | float = 1.0,
-        price: int | float = None,
-        stoplimit: int | float = None,
-    ):
+        quantity: Union[int, float] = 100,
+        strength: Union[int, float] = 1.0,
+        price: Optional[Union[int, float]] = None,
+        stoplimit: Optional[Union[int, float]] = None,
+    ) -> None:
         """
         Initialises the SignalEvent.
 
@@ -108,11 +108,11 @@ class OrderEvent(Event):
         self,
         symbol: str,
         order_type: Literal["MKT", "LMT", "STP", "STPLMT"],
-        quantity: int | float,
+        quantity: Union[int, float],
         direction: Literal["BUY", "SELL"],
-        price: int | float = None,
-        signal: str = None,
-    ):
+        price: Optional[Union[int, float]] = None,
+        signal: Optional[str] = None,
+    ) -> None:
         """
         Initialises the order type, setting whether it is
         a Market order ('MKT') or Limit order ('LMT'), or Stop order ('STP').
@@ -134,7 +134,7 @@ class OrderEvent(Event):
         self.price = price
         self.signal = signal
 
-    def print_order(self):
+    def print_order(self) -> None:
         """
         Outputs the values within the Order.
         """
@@ -148,7 +148,6 @@ class OrderEvent(Event):
                 self.price,
             )
         )
-
 
 
 class FillEvent(Event):
@@ -175,12 +174,12 @@ class FillEvent(Event):
         timeindex: datetime,
         symbol: str,
         exchange: str,
-        quantity: int | float,
+        quantity: Union[int, float],
         direction: Literal["BUY", "SELL"],
-        fill_cost: int | float | None,
-        commission: float | None = None,
-        order: str = None,
-    ):
+        fill_cost: Optional[Union[int, float]],
+        commission: Optional[float] = None,
+        order: Optional[str] = None,
+    ) -> None:
         """
         Initialises the FillEvent object. Sets the symbol, exchange,
         quantity, direction, cost of fill and an optional
@@ -209,12 +208,12 @@ class FillEvent(Event):
         self.fill_cost = fill_cost
         # Calculate commission
         if commission is None:
-            self.commission = self.calculate_ib_commission()
+            self.commission: float = self.calculate_ib_commission()
         else:
             self.commission = commission
         self.order = order
 
-    def calculate_ib_commission(self):
+    def calculate_ib_commission(self) -> float:
         """
         Calculates the fees of trading based on an Interactive
         Brokers fee structure for API, in USD.

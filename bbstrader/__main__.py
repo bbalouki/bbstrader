@@ -23,7 +23,7 @@ class _Module(Enum):
 FONT = pyfiglet.figlet_format("BBSTRADER", font="big")
 
 
-def main():
+def main() -> None:
     DESCRIPTION = "BBSTRADER"
     USAGE_TEXT = """
     Usage:
@@ -51,7 +51,7 @@ def main():
     if ("-h" in sys.argv or "--help" in sys.argv) and args.run is None:
         print(Fore.WHITE + USAGE_TEXT)
         sys.exit(0)
-    if ("-v" in sys.argv or "--version" in sys.argv):
+    if "-v" in sys.argv or "--version" in sys.argv:
         print(Fore.GREEN + f"bbstrader version {__version__}")
         print(Fore.WHITE + f"bbstrader maintained and supported by {__author__}")
         sys.exit(0)

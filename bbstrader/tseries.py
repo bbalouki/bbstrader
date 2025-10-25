@@ -5,7 +5,7 @@ some simple time series analysis in financial markets.
 
 import pprint
 import warnings
-from typing import List, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -94,7 +94,7 @@ def get_corr(tickers: Union[List[str], Tuple[str, ...]], start: str, end: str) -
     )
 
 
-def plot_price_series(df: pd.DataFrame, ts1: str, ts2: str):
+def plot_price_series(df: pd.DataFrame, ts1: str, ts2: str) -> None:
     """
     Plot both time series on the same line graph for
     the specified date range.
@@ -117,7 +117,7 @@ def plot_price_series(df: pd.DataFrame, ts1: str, ts2: str):
     plt.show()
 
 
-def plot_scatter_series(df: pd.DataFrame, ts1: str, ts2: str):
+def plot_scatter_series(df: pd.DataFrame, ts1: str, ts2: str) -> None:
     """
     Plot a scatter plot of both time series for
     via the provided DataFrame.
@@ -146,7 +146,7 @@ def plot_scatter_series(df: pd.DataFrame, ts1: str, ts2: str):
     plt.show()
 
 
-def plot_residuals(df: pd.DataFrame):
+def plot_residuals(df: pd.DataFrame) -> None:
     """
     Plot the residuals of OLS procedure for both
     time series.
@@ -299,7 +299,7 @@ def run_hurst_test(symbol: str, start: str, end: str):
     )
 
 
-def test_cointegration(ticker1, ticker2, start, end):
+def test_cointegration(ticker1: str, ticker2: str, start: str, end: str) -> None:
     warnings.warn(
         "`test_cointegration` is deprecated, see statsmodels.tsa.stattools.coint instead.",
         DeprecationWarning,
@@ -307,13 +307,15 @@ def test_cointegration(ticker1, ticker2, start, end):
 
 
 def run_coint_test(tickers: List[str], start: str, end: str) -> None:
-    test_cointegration()
+    test_cointegration(tickers[0], tickers[1], start, end)
 
 
 # *********************************
 #          KALMAN FILTER         *
 # *********************************
-def draw_date_coloured_scatterplot(etfs, prices):
+def draw_date_coloured_scatterplot(
+    etfs: Union[List[str], Tuple[str, ...]], prices: pd.DataFrame
+) -> None:
     """
     Create a scatterplot of the two ETF prices, which is
     coloured by the date of the price to indicate the
@@ -341,7 +343,9 @@ def draw_date_coloured_scatterplot(etfs, prices):
     plt.show()
 
 
-def calc_slope_intercept_kalman(etfs, prices):
+def calc_slope_intercept_kalman(
+    etfs: Union[List[str], Tuple[str, ...]], prices: pd.DataFrame
+) -> Tuple[np.ndarray, np.ndarray]:
     """
     Utilize the Kalman Filter from the filterpy library
     to calculate the slope and intercept of the regressed
@@ -371,7 +375,7 @@ def calc_slope_intercept_kalman(etfs, prices):
     return np.array(state_means), np.array(state_covs)
 
 
-def draw_slope_intercept_changes(prices, state_means):
+def draw_slope_intercept_changes(prices: pd.DataFrame, state_means: np.ndarray) -> None:
     """
     Plot the slope and intercept of the regressed ETF prices
     between the two ETFs, with the changing values of the
@@ -438,7 +442,9 @@ class KalmanFilterModel:
     You can learn more here https://en.wikipedia.org/wiki/Kalman_filter
     """
 
-    def __init__(self, tickers: List | Tuple, **kwargs):
+    def __init__(
+        self, tickers: Union[List[str], Tuple[str, ...]], **kwargs: Any
+    ) -> None:
         """
         Initializes the Kalman Filter strategy.
 
@@ -452,7 +458,8 @@ class KalmanFilterModel:
         self.tickers = tickers
         assert self.tickers is not None
 
-        self.R = None
+        self.R: Optional[np.ndarray] = None
+        self.C: Optional[np.ndarray] = None
         self.theta = np.zeros(2)
         self.P = np.zeros((2, 2))
         self.delta = kwargs.get("delta", 1e-4)
@@ -461,7 +468,7 @@ class KalmanFilterModel:
         self.latest_prices = np.array([-1.0, -1.0])
         self.kf = self._init_kalman()
 
-    def _init_kalman(self):
+    def _init_kalman(self) -> KalmanFilter:
         """
         Initializes and returns a Kalman Filter configured
         for the trading strategy. The filter is set up with initial
@@ -477,9 +484,7 @@ class KalmanFilterModel:
 
         return kf
 
-    Array = np.ndarray
-
-    def calc_slope_intercep(self, prices: Array) -> Tuple:
+    def calc_slope_intercep(self, prices: np.ndarray) -> Tuple[float, float]:
         """
         Calculates and returns the slope and intercept
         of the relationship between the provided prices using the Kalman Filter.
@@ -500,7 +505,7 @@ class KalmanFilterModel:
 
         return slope, intercept
 
-    def calculate_etqt(self, prices: Array) -> Tuple:
+    def calculate_etqt(self, prices: np.ndarray) -> Optional[Tuple[float, float]]:
         """
         Calculates the ``forecast error`` and ``standard deviation`` of the predictions
         using the Kalman Filter.
@@ -530,7 +535,7 @@ class KalmanFilterModel:
             # The prior value of the states {\theta_t} is
             # distributed as a multivariate Gaussian with
             # mean a_t and variance-covariance {R_t}
-            if self.R is not None:
+            if self.R is not None and self.C is not None:
                 self.R = self.C + self.wt
             else:
                 self.R = np.zeros((2, 2))
@@ -554,7 +559,7 @@ class KalmanFilterModel:
             At = self.R.dot(F.T) / Qt
             self.theta = self.theta + At.flatten() * et
             self.C = self.R - At * F.dot(self.R)
-            return (et[0], sqrt_Qt.flatten()[0])
+            return (et, sqrt_Qt.flatten()[0])
         else:
             return None
 
@@ -567,7 +572,7 @@ class OrnsteinUhlenbeck:
         )
 
 
-def remove_correlated_assets(df: pd.DataFrame, cutoff=0.99):
+def remove_correlated_assets(df: pd.DataFrame, cutoff: float = 0.99) -> pd.DataFrame:
     """
     Removes highly correlated assets from a DataFrame based on a specified correlation cutoff threshold.
     This is useful in financial data analysis to reduce redundancy and multicollinearity in portfolios or datasets.
@@ -612,7 +617,7 @@ def remove_correlated_assets(df: pd.DataFrame, cutoff=0.99):
     return df.drop(drop, axis=1)
 
 
-def check_stationarity(df: pd.DataFrame):
+def check_stationarity(df: pd.DataFrame) -> pd.DataFrame:
     """
     Tests the stationarity of time-series data for each asset in the DataFrame
     using the Augmented Dickey-Fuller (ADF) test. Stationarity is a key property
@@ -645,7 +650,7 @@ def check_stationarity(df: pd.DataFrame):
     return pd.DataFrame(results, columns=["ticker", "adf"]).sort_values("adf")
 
 
-def remove_stationary_assets(df: pd.DataFrame, pval=0.05):
+def remove_stationary_assets(df: pd.DataFrame, pval: float = 0.05) -> pd.DataFrame:
     """
     Filters out stationary assets from the DataFrame based on the p-value obtained
     from the Augmented Dickey-Fuller test.
@@ -677,7 +682,13 @@ def remove_stationary_assets(df: pd.DataFrame, pval=0.05):
     return df.drop(stationary, axis=1).sort_index()
 
 
-def select_assets(df: pd.DataFrame, n=100, start=None, end=None, rolling_window=None):
+def select_assets(
+    df: pd.DataFrame,
+    n: int = 100,
+    start: Optional[str] = None,
+    end: Optional[str] = None,
+    rolling_window: Optional[int] = None,
+) -> pd.DataFrame:
     """
     Selects the top N assets based on the average trading volume from the input DataFrame.
     These assets are used as universe in which we can search cointegrated pairs for pairs trading strategies.
@@ -744,7 +755,7 @@ def select_assets(df: pd.DataFrame, n=100, start=None, end=None, rolling_window=
     return df.sort_index()
 
 
-def compute_pair_metrics(security: pd.Series, candidates: pd.DataFrame):
+def compute_pair_metrics(security: pd.Series, candidates: pd.DataFrame) -> pd.DataFrame:
     """Calculate statistical and econometric metrics for a security pair.
 
     These metrics are useful in financial modeling and pairs trading strategies,
@@ -830,11 +841,11 @@ __CRITICAL_VALUES = {
 def find_cointegrated_pairs(
     securities: pd.DataFrame,
     candidates: pd.DataFrame,
-    n=None,
-    start=None,
-    stop=None,
-    coint=False,
-):
+    n: Optional[int] = None,
+    start: Optional[str] = None,
+    stop: Optional[str] = None,
+    coint: bool = False,
+) -> pd.DataFrame:
     """
     Identifies cointegrated pairs between a target set of securities and candidate securities
     based on econometric tests. The function evaluates statistical relationships,
@@ -900,16 +911,17 @@ def find_cointegrated_pairs(
     >>> top_pairs = find_cointegrated_pairs(securities, candidates, n=2, coint=True)
     >>> print(top_pairs)
     """
+    ...
 
 
 def analyze_cointegrated_pairs(
     spreads: pd.DataFrame,
-    plot_coint=True,
-    crosstab=False,
-    heuristics=False,
-    log_reg=False,
-    decis_tree=False,
-):
+    plot_coint: bool = True,
+    crosstab: bool = False,
+    heuristics: bool = False,
+    log_reg: bool = False,
+    decis_tree: bool = False,
+) -> None:
     """
     Analyzes cointegrated pairs by visualizing, summarizing, and applying predictive models.
 
@@ -919,7 +931,7 @@ def analyze_cointegrated_pairs(
             Required columns: 'coint', 't', 'trace0', 'trace1', 'drift', 'vol', 'corr', 'corr_ret', 'eg_sig', 'joh_sig'.
         plot_coint (bool, optional):
             If True, generates scatterplots and boxplots to visualize cointegration characteristics.
-        cosstab (bool, optional):
+        crosstab (bool, optional):
             If True, displays crosstabulations of Engle-Granger and Johansen test significance.
         heuristics (bool, optional):
             If True, prints descriptive statistics for drift, volatility, and correlation grouped by cointegration status.
@@ -948,7 +960,7 @@ def analyze_cointegrated_pairs(
     ...    })
 
     >>>    pairs = find_cointegrated_pairs(securities, candidates, n=2, coint=True)
-    >>>    analyze_cointegrated_pairs(pairs, plot_coint=True, cosstab=True, heuristics=True, log_reg=True, decis_tree=True
+    >>>    analyze_cointegrated_pairs(pairs, plot_coint=True, crosstab=True, heuristics=True, log_reg=True, decis_tree=True)
     """
     if plot_coint:
         trace0_cv = __CRITICAL_VALUES[0][0.95]
@@ -1006,7 +1018,9 @@ def analyze_cointegrated_pairs(
         print(pd.crosstab(spreads.eg_sig, spreads.joh_sig, normalize=True))
 
 
-def select_candidate_pairs(pairs: pd.DataFrame, period=False):
+def select_candidate_pairs(
+    pairs: pd.DataFrame, period: bool = False
+) -> List[Dict[str, Any]]:
     """
     Select candidate pairs from a DataFrame based on cointegration status.
 
@@ -1039,7 +1053,7 @@ def select_candidate_pairs(pairs: pd.DataFrame, period=False):
     return candidates[["x", "y"]].to_dict(orient="records")
 
 
-def KFSmoother(prices: pd.Series | np.ndarray) -> pd.Series | np.ndarray:
+def KFSmoother(prices: Union[pd.Series, np.ndarray]) -> Union[pd.Series, np.ndarray]:
     """
     Estimate rolling mean using Kalman Smoothing.
 
@@ -1090,7 +1104,9 @@ def KFSmoother(prices: pd.Series | np.ndarray) -> pd.Series | np.ndarray:
         return state_means.flatten()
 
 
-def KFHedgeRatio(x: pd.Series | np.ndarray, y: pd.Series | np.ndarray) -> np.ndarray:
+def KFHedgeRatio(
+    x: Union[pd.Series, np.ndarray], y: Union[pd.Series, np.ndarray]
+) -> np.ndarray:
     """Estimate Hedge Ratio using Kalman Filter.
 
     This function uses a Kalman Filter to dynamically estimate the hedge ratio

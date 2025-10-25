@@ -4,7 +4,7 @@ import sys
 import textwrap
 import time
 from datetime import datetime, timedelta
-from typing import List, Literal
+from typing import Any, Coroutine, Dict, List, Literal
 
 import nltk
 from loguru import logger
@@ -16,7 +16,7 @@ from bbstrader.core.data import FinancialNews
 from bbstrader.trading.utils import send_telegram_message
 
 
-def summarize_text(text, sentences_count=5):
+def summarize_text(text: str, sentences_count: int = 5) -> str:
     """
     Generate a summary using TextRank algorithm.
     """
@@ -26,7 +26,7 @@ def summarize_text(text, sentences_count=5):
     return " ".join(str(sentence) for sentence in summary)
 
 
-def format_coindesk_article(article: dict) -> str:
+def format_coindesk_article(article: Dict[str, Any]) -> str:
     if not all(
         k in article
         for k in (
@@ -35,7 +35,7 @@ def format_coindesk_article(article: dict) -> str:
             "published_on",
             "sentiment",
             "keywords",
-            "keywords",
+            "status",
             "url",
         )
     ):
@@ -54,7 +54,7 @@ def format_coindesk_article(article: dict) -> str:
     return text
 
 
-def format_fmp_article(article: dict) -> str:
+def format_fmp_article(article: Dict[str, Any]) -> str:
     if not all(k in article for k in ("title", "date", "content", "tickers")):
         return ""
     summary = summarize_text(article["content"])
@@ -69,28 +69,29 @@ def format_fmp_article(article: dict) -> str:
 
 
 async def send_articles(
-    articles: List[dict],
+    articles: List[Dict[str, Any]],
     token: str,
     id: str,
     source: Literal["coindesk", "fmp"],
-    interval=15,
-):
+    interval: int = 15,
+) -> None:
     for article in articles:
         message = ""
         if source == "coindesk":
-            if article["published_on"] >= datetime.now() - timedelta(minutes=interval):
-                article["published_on"] = article.get("published_on").strftime(
-                    "%Y-%m-%d %H:%M:%S"
-                )
-            message = format_coindesk_article(article)
+            published_on = article.get("published_on")
+            if isinstance(
+                published_on, datetime
+            ) and published_on >= datetime.now() - timedelta(minutes=interval):
+                article["published_on"] = published_on.strftime("%Y-%m-%d %H:%M:%S")
+                message = format_coindesk_article(article)
         else:
             message = format_fmp_article(article)
         if message == "":
-            return
+            continue
         await send_telegram_message(token, id, text=message)
 
 
-def send_news_feed(unknown):
+def send_news_feed(unknown: List[str]) -> None:
     HELP_MSG = """
     Send news feed from Coindesk to Telegram channel.
     This script fetches the latest news articles from Coindesk, summarizes them,
@@ -145,19 +146,19 @@ def send_news_feed(unknown):
     logger.info(f"Starting the News Feed on {args.interval} minutes")
     while True:
         try:
-            fmp_articles = []
+            fmp_articles: List[Dict[str, Any]] = []
             if fmp_news is not None:
                 start = datetime.now() - timedelta(minutes=args.interval)
-                start = start.strftime("%Y-%m-%d %H:%M:%S")
-                end = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                start_str = start.strftime("%Y-%m-%d %H:%M:%S")
+                end_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 fmp_articles = fmp_news.get_latest_articles(
-                    save=True, start=start, end=end
+                    save=True, start=start_str, end=end_str
                 )
             coindesk_articles = news.get_coindesk_news(query=args.query)
-            if len(coindesk_articles) != 0:
+            if coindesk_articles and isinstance(coindesk_articles, list):
                 asyncio.run(
                     send_articles(
-                        coindesk_articles,
+                        coindesk_articles,  # type: ignore
                         args.token,
                         args.id,
                         "coindesk",

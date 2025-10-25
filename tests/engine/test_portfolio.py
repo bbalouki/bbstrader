@@ -18,7 +18,7 @@ class MockDataHandler:
     """A mock DataHandler to control market data during tests."""
 
     def __init__(self, symbol_list, initial_data):
-        self.symbol_list = symbol_list
+        self.symbols = symbol_list
         self.latest_symbol_data = initial_data
 
     def get_latest_bar_datetime(self, symbol):
@@ -90,7 +90,7 @@ def test_initialization(basic_portfolio):
 def test_tf_mapping_and_initialization_error():
     """Tests the timeframe mapping and ensures invalid timeframes raise errors."""
     mock_bars = MagicMock()
-    mock_bars.symbol_list = ["DUMMY"]
+    mock_bars.symbols = ["DUMMY"]
 
     # Test a valid timeframe
     p = Portfolio(
@@ -209,6 +209,7 @@ def test_update_signal_puts_order_on_queue(basic_portfolio):
     assert order.symbol == "GOOG"
     assert order.direction == "BUY"
     assert order.quantity == 50  # 100 * 0.5
+
 
 @pytest.mark.filterwarnings("ignore")
 @patch("bbstrader.btengine.performance.plt.show")

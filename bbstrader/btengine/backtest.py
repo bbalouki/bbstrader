@@ -1,11 +1,13 @@
 import queue
 import time
 from datetime import datetime
-from typing import List, Literal, Optional
+from typing import Any, List, Literal, Optional, Type
 
+import pandas as pd
 from tabulate import tabulate
-from bbstrader.btengine.event import Events
+
 from bbstrader.btengine.data import DataHandler
+from bbstrader.btengine.event import Events
 from bbstrader.btengine.execution import ExecutionHandler, SimExecutionHandler
 from bbstrader.btengine.portfolio import Portfolio
 from bbstrader.btengine.strategy import Strategy
@@ -13,7 +15,7 @@ from bbstrader.btengine.strategy import Strategy
 __all__ = ["Backtest", "BacktestEngine", "run_backtest"]
 
 
-class Backtest(object):
+class Backtest:
     """
     The `Backtest()` object encapsulates the event-handling logic and essentially
     ties together all of the other classes.
@@ -63,12 +65,12 @@ class BacktestEngine(Backtest):
         initial_capital: float,
         heartbeat: float,
         start_date: datetime,
-        data_handler: DataHandler,
-        execution_handler: ExecutionHandler,
-        strategy: Strategy,
+        data_handler: Type[DataHandler],
+        execution_handler: Type[ExecutionHandler],
+        strategy: Type[Strategy],
         /,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> None:
         """
         Initialises the backtest.
 
@@ -95,7 +97,7 @@ class BacktestEngine(Backtest):
         self.strategy_cls = strategy
         self.kwargs = kwargs
 
-        self.events = queue.Queue()
+        self.events: "queue.Queue[Events]" = queue.Queue()
 
         self.signals = 0
         self.orders = 0
@@ -105,7 +107,7 @@ class BacktestEngine(Backtest):
         self.show_equity = kwargs.get("show_equity", False)
         self.stats_file = kwargs.get("stats_file", None)
 
-    def _generate_trading_instances(self):
+    def _generate_trading_instances(self) -> None:
         """
         Generates the trading instance objects from
         their class types.
@@ -121,7 +123,7 @@ class BacktestEngine(Backtest):
         self.strategy: Strategy = self.strategy_cls(
             bars=self.data_handler, events=self.events, **self.kwargs
         )
-        self.portfolio = Portfolio(
+        self.portfolio: Portfolio = Portfolio(
             self.data_handler,
             self.events,
             self.start_date,
@@ -132,7 +134,7 @@ class BacktestEngine(Backtest):
             self.events, self.data_handler, **self.kwargs
         )
 
-    def _run_backtest(self):
+    def _run_backtest(self) -> None:
         """
         Executes the backtest.
         """
@@ -150,9 +152,9 @@ class BacktestEngine(Backtest):
                 self.strategy.cash = value
             else:
                 print("\n[======= BACKTEST COMPLETED =======]")
-                print(
-                    f"END DATE: {self.data_handler.get_latest_bar_datetime(self.symbol_list[0])}"
-                )
+                dt = self.data_handler.get_latest_bar_datetime(self.symbol_list[0])
+                if dt:
+                    print(f"END DATE: {dt}")
                 print(f"TOTAL BARS: {i} ")
                 print(f"PORFOLIO VALUE: {round(value, 2)}")
                 break
@@ -184,7 +186,7 @@ class BacktestEngine(Backtest):
 
             time.sleep(self.heartbeat)
 
-    def _output_performance(self):
+    def _output_performance(self) -> None:
         """
         Outputs the strategy performance from the backtest.
         """
@@ -218,7 +220,7 @@ class BacktestEngine(Backtest):
                 "\n",
             )
 
-    def simulate_trading(self):
+    def simulate_trading(self) -> pd.DataFrame:
         """
         Simulates the backtest and outputs portfolio performance.
 
@@ -233,13 +235,13 @@ class BacktestEngine(Backtest):
 def run_backtest(
     symbol_list: List[str],
     start_date: datetime,
-    data_handler: DataHandler,
-    strategy: Strategy,
-    exc_handler: Optional[ExecutionHandler] = None,
+    data_handler: Type[DataHandler],
+    strategy: Type[Strategy],
+    exc_handler: Optional[Type[ExecutionHandler]] = None,
     initial_capital: float = 100000.0,
     heartbeat: float = 0.0,
-    **kwargs,
-):
+    **kwargs: Any,
+) -> pd.DataFrame:
     """
     Runs a backtest simulation based on a `DataHandler`, `Strategy`, and `ExecutionHandler`.
 
@@ -315,7 +317,7 @@ def run_backtest(
         ... )
     """
     if exc_handler is None:
-        execution_handler = SimExecutionHandler
+        execution_handler: Type[ExecutionHandler] = SimExecutionHandler
     else:
         execution_handler = exc_handler
     engine = BacktestEngine(
@@ -338,14 +340,16 @@ class CerebroEngine: ...
 class ZiplineEngine: ...
 
 
-def run_backtest_with(engine: Literal["bbstrader", "cerebro", "zipline"], **kwargs):
+def run_backtest_with(
+    engine: Literal["bbstrader", "cerebro", "zipline"], **kwargs: Any
+) -> Optional[pd.DataFrame]:
     """ """
     if engine == "bbstrader":
         return run_backtest(
-            symbol_list=kwargs.get("symbol_list"),
-            start_date=kwargs.get("start_date"),
-            data_handler=kwargs.get("data_handler"),
-            strategy=kwargs.get("strategy"),
+            symbol_list=kwargs.get("symbol_list"),  # type: ignore
+            start_date=kwargs.get("start_date"),  # type: ignore
+            data_handler=kwargs.get("data_handler"),  # type: ignore
+            strategy=kwargs.get("strategy"),  # type: ignore
             exc_handler=kwargs.get("exc_handler"),
             initial_capital=kwargs.get("initial_capital", 100000.0),
             heartbeat=kwargs.get("heartbeat", 0.0),
@@ -357,3 +361,4 @@ def run_backtest_with(engine: Literal["bbstrader", "cerebro", "zipline"], **kwar
     elif engine == "zipline":
         # TODO:
         raise NotImplementedError("zipline engine is not supported yet")
+    return None

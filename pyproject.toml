@@ -4,12 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bbstrader"
-version = "0.3.6"
+version = "0.3.7"
 authors = [
-    { name = "Bertin Balouki SIMYELI", email = "bertin@bbstrader.com" },
+    { name = "Bertin Balouki SIMYELI", email = "bertin@bbs-trading.com" },
 ]
 maintainers = [
-    { name = "Bertin Balouki SIMYELI", email = "bertin@bbstrader.com" },
+    { name = "Bertin Balouki SIMYELI", email = "bertin@bbs-trading.com" },
 ]
 description = "Simplified Investment & Trading Toolkit"
 readme = "README.md"
