@@ -2,7 +2,7 @@ import string
 from abc import ABCMeta, abstractmethod
 from datetime import datetime
 from queue import Queue
-from typing import Any, Callable, Dict, List, Literal, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Literal, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -96,7 +96,7 @@ class MT5Strategy(Strategy):
     data: DataHandler
     symbols: List[str]
     mode: TradingMode
-    logger: "logger" # type: ignore
+    logger: "logger"  # type: ignore
     kwargs: Dict[str, Any]
     periodes: int
     NAME: str
@@ -362,7 +362,7 @@ class MT5Strategy(Strategy):
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         header = (
-            f"==== TRADE REPORT =====\n\n"
+            f"TRADE REPORT\n\n"
             f"ACCOUNT: {account}\n"
             f"STRATEGY: {self.NAME}\n"
             f"ID: {ID}\n"
@@ -399,14 +399,14 @@ class MT5Strategy(Strategy):
 
     def apply_risk_management(
         self,
-        optimer: str,
+        optimizer: str,
         symbols: Optional[List[str]] = None,
         freq: int = 252,
     ) -> Optional[Dict[str, float]]:
         """
         Apply risk management rules to the strategy.
         """
-        if optimer is None:
+        if optimizer is None:
             return None
         symbols = symbols or self.symbols
         prices = self.get_asset_values(
@@ -423,7 +423,7 @@ class MT5Strategy(Strategy):
         prices = pd.DataFrame(prices)
         prices = prices.dropna(axis=0, how="any")
         try:
-            weights = optimized_weights(prices=prices, freq=freq, method=optimer)
+            weights = optimized_weights(prices=prices, freq=freq, method=optimizer)
             return {symbol: abs(weight) for symbol, weight in weights.items()}
         except Exception:
             return {symbol: 0.0 for symbol in symbols}
@@ -1189,7 +1189,11 @@ class MT5Strategy(Strategy):
             for s in mt5_symbols:
                 _s = s[1:] if s[0] in string.punctuation else s
                 for symbol in symbols:
-                    if _s.split(".")[0] == symbol or _s.split("_")[0] == symbol:
+                    if (
+                        _s.split(".")[0] == symbol
+                        or _s.split("_")[0] == symbol
+                        or _s.split("-")[0] == symbol
+                    ):
                         mt5_equivalent.append(s)
 
         def _get_pepperstone_symbols() -> None:

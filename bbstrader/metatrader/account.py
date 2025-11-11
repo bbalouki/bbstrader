@@ -50,7 +50,7 @@ __all__ = [
 
 __BROKERS__ = {
     "MQL": "MetaQuotes Ltd.",
-    "AMG": "Admirals Group AS",
+    "AMG": "Admirals SC Ltd",
     "JGM": "Just Global Markets Ltd.",
     "FTMO": "FTMO S.R.O.",
     "PGL": "Pepperstone Group Limited",

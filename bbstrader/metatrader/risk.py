@@ -13,90 +13,6 @@ try:
 except ImportError:
     import bbstrader.compat  # noqa: F401
 
-
-_COMMD_SUPPORTED_ = [
-    "GOLD",
-    "SILVER",
-    "BRENT",
-    "CRUDOIL",
-    "WTI",
-    "UKOIL",
-    "XAGEUR",
-    "XAGUSD",
-    "XAGAUD",
-    "XAGGBP",
-    "XAUAUD",
-    "XAUEUR",
-    "XAUUSD",
-    "XAUGBP",
-    "USOIL",
-    "SpotCrude",
-    "SpotBrent",
-    "Soybeans",
-    "Wheat",
-    "SoyOil",
-    "LeanHogs",
-    "LDSugar",
-    "Coffee",
-    "OJ",
-    "Cocoa",
-    "Cattle",
-    "Copper",
-    "XCUUSD",
-    "NatGas",
-    "NATGAS",
-    "Gasoline",
-]
-
-_ADMIRAL_MARKETS_FUTURES_ = [
-    "#USTNote_",
-    "#Bund_",
-    "#USDX_",
-    "_AUS200_",
-    "_Canada60_",
-    "_SouthAfrica40_",
-    "_STXE600_",
-    "_EURO50_",
-    "_GER40_",
-    "_GermanyTech30_",
-    "_MidCapGER50_",
-    "_SWISS20_",
-    "_UK100_",
-    "_USNASDAQ100_",
-    "_YM_",
-    "_ES_",
-    "_CrudeOilUS_",
-    "_DUTCH25_",
-    "_FRANCE40_",
-    "_NORWAY25_",
-    "_SPAIN35_",
-    "_CrudeOilUK_",
-    "_XAU_",
-    "_HK50_",
-    "_HSCEI50_",
-]
-
-__PEPPERSTONE_FUTURES__ = [
-    "AUS200-F",
-    "GER40-F",
-    "HK50-F",
-    "JPN225-F",
-    "UK100-F",
-    "US30-F",
-    "NAS100-F",
-    "US500-F",
-    "Crude-F",
-    "Brent-F",
-    "XAUUSD-F",
-    "XAGUSD-F",
-    "USDX-F",
-    "EUSTX50-F",
-    "FRA40-F",
-    "GERTEC30-F",
-    "SPA35-F",
-    "SWI20-F",
-]
-
 __all__ = ["RiskManagement"]
 
 
@@ -501,32 +417,12 @@ class RiskManagement(Account):
         av_price = (s_info.bid + s_info.ask) / 2
         trade_risk = self.get_trade_risk()
         symbol_type = self.get_symbol_type(self.symbol)
+
         FX = symbol_type == SymbolType.FOREX
         COMD = symbol_type == SymbolType.COMMODITIES
         FUT = symbol_type == SymbolType.FUTURES
         CRYPTO = symbol_type == SymbolType.CRYPTO
-        if COMD:
-            supported = _COMMD_SUPPORTED_
-            if "." in self.symbol:
-                symbol = self.symbol.split(".")[0]
-            else:
-                symbol = self.symbol
-            if not self.copy_mode and str(symbol) not in supported:
-                raise ValueError(
-                    f"Currency risk calculation for '{self.symbol}' is not a currently supported. \n"
-                    f"Supported commodity symbols are: {', '.join(supported)}"
-                )
-        if FUT:
-            if "_" in self.symbol:
-                symbol = self.symbol[:-2]
-            else:
-                symbol = self.symbol
-            supported = _ADMIRAL_MARKETS_FUTURES_ + __PEPPERSTONE_FUTURES__
-            if not self.copy_mode and str(symbol) not in supported:
-                raise ValueError(
-                    f"Currency risk calculation for '{self.symbol}' is not a currently supported. \n"
-                    f"Supported future symbols are: {', '.join(supported)}"
-                )
+
         if trade_risk > 0:
             currency_risk = round(self.var_loss_value(), 5)
             volume = round(currency_risk * laverage)

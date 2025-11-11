@@ -291,9 +291,11 @@ class Mt5ExecutionEngine:
         self._running = True
 
     def __repr__(self):
-        trades = self.trades_instances.keys()
+        symbols = self.trades_instances.keys()
         strategy = self.strategy_cls.__name__
-        return f"{self.__class__.__name__}(Symbols={list(trades)}, Strategy={strategy})"
+        return (
+            f"{self.__class__.__name__}(Symbols={list(symbols)}, Strategy={strategy})"
+        )
 
     def _initialize_engine(self, **kwargs):
         global logger
@@ -811,6 +813,15 @@ class Mt5ExecutionEngine:
         signal = {"LONG": "BMKT", "BUY": "BMKT", "SHORT": "SMKT", "SELL": "SMKT"}.get(
             signal, signal
         )
+        if (
+            self.trades_instances[symbol].dailydd == 0
+            and signal not in EXIT_SIGNAL_ACTIONS
+        ):
+            logger.info(
+                f"Daily Risk is set to 0 !!! No trades allowed for SYMBOL={symbol}, "
+                f"STRATEGY={self.STRATEGY} , ACCOUNT={self.ACCOUNT}"
+            )
+            return
         info, sigmsg, msg, tfmsg, riskmsg = self._get_signal_info(
             signal, symbol, price, stoplimit
         )
@@ -821,26 +832,16 @@ class Mt5ExecutionEngine:
             elif signal not in NON_EXEC_RETCODES:
                 logger.info(info)
 
+        signal_handler = None
         if signal in EXIT_SIGNAL_ACTIONS:
             self._handle_exit_signals(signal, symbol, id, trade, sigmsg, comment)
         elif signal in BUYS:
-            self._handle_buy_signal(
-                signal,
-                symbol,
-                id,
-                trade,
-                price,
-                stoplimit,
-                buys,
-                sells,
-                sigmsg,
-                msg,
-                tfmsg,
-                riskmsg,
-                comment,
-            )
+            signal_handler = self._handle_buy_signal
         elif signal in SELLS:
-            self._handle_sell_signal(
+            signal_handler = self._handle_sell_signal
+        
+        if signal_handler is not None:
+            signal_handler(
                 signal,
                 symbol,
                 id,
@@ -971,17 +972,19 @@ class Mt5ExecutionEngine:
             msg = f"Handling period end actions, STRATEGY={self.STRATEGY} , ACCOUNT={self.ACCOUNT}"
             self._print_exc(msg, e)
             pass
-    
-    def select_symbols(self):
+
+    def _select_symbols(self):
         for symbol in self.symbols:
             if not MT5.symbol_select(symbol, True):
-                logger.error(f"Failed to select symbol {symbol} error = {MT5.last_error()}")
+                logger.error(
+                    f"Failed to select symbol {symbol} error = {MT5.last_error()}"
+                )
 
     def run(self):
         while self._running and not self.shutdown_event.is_set():
             try:
                 check_mt5_connection(**self.kwargs)
-                self.select_symbols()
+                self._select_symbols()
                 positions_orders = self._check_positions_orders()
                 if self.show_positions_orders:
                     self._display_positions_orders(positions_orders)
