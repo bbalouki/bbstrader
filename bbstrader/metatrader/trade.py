@@ -590,7 +590,6 @@ class Trade(RiskManagement):
             "symbol": symbol or self.symbol,
             "volume": float(lot),
             "type": Mt5.ORDER_TYPE_BUY,
-            "price": _price,
             "deviation": deviation,
             "magic": Id,
             "comment": comment or f"@{self.expert_name}",
@@ -599,6 +598,7 @@ class Trade(RiskManagement):
         }
         mm_price = _price
         if action != "BMKT":
+            request["price"] = _price
             request["action"] = Mt5.TRADE_ACTION_PENDING
             request["type"] = self._order_type()[action][0]
         if action == "BSTPLMT":
@@ -683,7 +683,6 @@ class Trade(RiskManagement):
             "symbol": symbol or self.symbol,
             "volume": float(lot),
             "type": Mt5.ORDER_TYPE_SELL,
-            "price": _price,
             "deviation": deviation,
             "magic": Id,
             "comment": comment or f"@{self.expert_name}",
@@ -692,6 +691,7 @@ class Trade(RiskManagement):
         }
         mm_price = _price
         if action != "SMKT":
+            request["price"] = _price
             request["action"] = Mt5.TRADE_ACTION_PENDING
             request["type"] = self._order_type()[action][0]
         if action == "SSTPLMT":
