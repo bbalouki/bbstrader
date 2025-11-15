@@ -526,7 +526,8 @@ class SentimentAnalyzer(object):
                         **{k: kwargs.get(k) for k in fm_params},
                     )
                     fmp_source_news.extend(source_news)
-                except Exception:
+                except Exception as e:
+                    print(f"FMP {ticker} news fetch error for source {src}: {e}")
                     continue
 
         # 2. Analyze sentiment for each source
@@ -631,54 +632,55 @@ class SentimentAnalyzer(object):
         sentiment_results = {}
 
         # Suppress stdout/stderr from underlying  libraries during execution
-        with open(os.devnull, "w") as devnull:
-            with (
-                contextlib.redirect_stdout(devnull),
-                contextlib.redirect_stderr(devnull),
-            ):
-                with ThreadPoolExecutor() as executor:
-                    # Map each future to its ticker for easy result lookup
-                    future_to_ticker = {}
-                    for ticker_info in tickers:
-                        # Normalize input to (ticker, asset_type)
-                        if isinstance(ticker_info, tuple):
-                            ticker_symbol, ticker_asset_type = ticker_info
-                        else:
-                            ticker_symbol, ticker_asset_type = ticker_info, asset_type
+        # with open(os.devnull, "w") as devnull:
+        #     with (
+        #         contextlib.redirect_stdout(devnull),
+        #         contextlib.redirect_stderr(devnull),
+        #     ):
+        with ThreadPoolExecutor() as executor:
+            # Map each future to its ticker for easy result lookup
+            future_to_ticker = {}
+            for ticker_info in tickers:
+                # Normalize input to (ticker, asset_type)
+                if isinstance(ticker_info, tuple):
+                    ticker_symbol, ticker_asset_type = ticker_info
+                else:
+                    ticker_symbol, ticker_asset_type = ticker_info, asset_type
 
-                        if ticker_asset_type not in [
-                            "stock",
-                            "etf",
-                            "future",
-                            "forex",
-                            "crypto",
-                            "index",
-                        ]:
-                            raise ValueError(
-                                f"Unsupported asset type '{ticker_asset_type}' for {ticker_symbol}."
-                            )
+                if ticker_asset_type not in [
+                    "stock",
+                    "etf",
+                    "future",
+                    "forex",
+                    "crypto",
+                    "index",
+                ]:
+                    raise ValueError(
+                        f"Unsupported asset type '{ticker_asset_type}' for {ticker_symbol}."
+                    )
 
-                        # Submit the job to the thread pool
-                        future = executor.submit(
-                            self._get_sentiment_for_one_ticker,
-                            ticker=ticker_symbol,
-                            asset_type=ticker_asset_type,
-                            lexicon=lexicon,
-                            top_news=top_news,
-                            **kwargs,
-                        )
-                        future_to_ticker[future] = ticker_symbol
+                # Submit the job to the thread pool
+                future = executor.submit(
+                    self._get_sentiment_for_one_ticker,
+                    ticker=ticker_symbol,
+                    asset_type=ticker_asset_type,
+                    lexicon=lexicon,
+                    top_news=top_news,
+                    **kwargs,
+                )
+                future_to_ticker[future] = ticker_symbol
 
-                    # Collect results as they are completed
-                    for future in as_completed(future_to_ticker):
-                        ticker_symbol = future_to_ticker[future]
-                        try:
-                            sentiment_score = future.result()
-                            sentiment_results[ticker_symbol] = sentiment_score
-                        except Exception:
-                            sentiment_results[ticker_symbol] = (
-                                0.0  # Assign a neutral score on error
-                            )
+            # Collect results as they are completed
+            for future in as_completed(future_to_ticker):
+                ticker_symbol = future_to_ticker[future]
+                try:
+                    sentiment_score = future.result()
+                    sentiment_results[ticker_symbol] = sentiment_score
+                except Exception as e:
+                    print(f"Error processing {ticker_symbol}: {e}")
+                    sentiment_results[ticker_symbol] = (
+                        0.0  # Assign a neutral score on error
+                    )
 
         return sentiment_results
 
