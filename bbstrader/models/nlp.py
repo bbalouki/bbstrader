@@ -404,6 +404,7 @@ class SentimentAnalyzer(object):
         """
         nltk.download("punkt", quiet=True)
         nltk.download("stopwords", quiet=True)
+        nltk.download("popular", quiet=True)
 
         self.analyzer = SentimentIntensityAnalyzer()
         self._stopwords = set(stopwords.words("english"))
