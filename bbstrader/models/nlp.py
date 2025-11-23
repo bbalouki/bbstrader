@@ -403,6 +403,7 @@ class SentimentAnalyzer(object):
 
         """
         nltk.download("punkt", quiet=True)
+        nltk.download('punkt_tab', quiet=True)
         nltk.download("stopwords", quiet=True)
 
         self.analyzer = SentimentIntensityAnalyzer()

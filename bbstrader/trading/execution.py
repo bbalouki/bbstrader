@@ -545,7 +545,7 @@ class Mt5ExecutionEngine:
         if self.period_end_action == "break" and closing:
             sys.exit(0)
         elif (
-            self.period_end_action == "sleep" and today not in WEEK_ENDS or not closing
+            self.period_end_action == "sleep" and today not in WEEK_ENDS
         ):
             self._sleep_over_night(sessionmsg)
         elif self.period_end_action == "sleep" and today in WEEK_ENDS:
