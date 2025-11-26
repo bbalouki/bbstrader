@@ -4,7 +4,7 @@ import sys
 import textwrap
 import time
 from datetime import datetime, timedelta
-from typing import Any, Coroutine, Dict, List, Literal
+from typing import Any, Dict, List, Literal
 
 import nltk
 from loguru import logger
@@ -40,7 +40,7 @@ def format_coindesk_article(article: Dict[str, Any]) -> str:
         )
     ):
         return ""
-    summary = summarize_text(article["body"])
+    summary = summarize_text(article["body"], sentences_count=3)
     text = (
         f"📰 {article['title']}\n"
         f"Published Date: {article['published_on']}\n"
@@ -57,7 +57,7 @@ def format_coindesk_article(article: Dict[str, Any]) -> str:
 def format_fmp_article(article: Dict[str, Any]) -> str:
     if not all(k in article for k in ("title", "date", "content", "tickers")):
         return ""
-    summary = summarize_text(article["content"])
+    summary = summarize_text(article["content"], sentences_count=3)
     text = (
         f"📰 {article['title']}\n"
         f"Published Date: {article['date']}\n"
@@ -88,6 +88,7 @@ async def send_articles(
             message = format_fmp_article(article)
         if message == "":
             continue
+        await asyncio.sleep(2)  # To avoid hitting Telegram rate limits
         await send_telegram_message(token, id, text=message)
 
 
@@ -148,12 +149,7 @@ def send_news_feed(unknown: List[str]) -> None:
         try:
             fmp_articles: List[Dict[str, Any]] = []
             if fmp_news is not None:
-                start = datetime.now() - timedelta(minutes=args.interval)
-                start_str = start.strftime("%Y-%m-%d %H:%M:%S")
-                end_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                fmp_articles = fmp_news.get_latest_articles(
-                    save=True, start=start_str, end=end_str
-                )
+                fmp_articles = fmp_news.get_latest_articles(limit=5)
             coindesk_articles = news.get_coindesk_news(query=args.query)
             if coindesk_articles and isinstance(coindesk_articles, list):
                 asyncio.run(
