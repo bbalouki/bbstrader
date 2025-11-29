@@ -93,7 +93,7 @@ class FmpNews(object):
         df = pd.DataFrame(articles)
         df = df[["title", "date", "content", "tickers"]]
         df["content"] = df["content"].apply(html_parser)
-        return df.to_dict(orient="records") # type: ignore
+        return df.to_dict(orient="records")  # type: ignore
 
     def get_releases(
         self, symbol: Optional[str] = None, **kwargs: Any
@@ -139,7 +139,7 @@ class FmpNews(object):
         parsed_news = []
         for record in news:
             date = record.get("publishedDate")
-            published_date = self._last_date(record.get("date", date)).date() # type: ignore
+            published_date = self._last_date(record.get("date", date)).date()  # type: ignore
             start_date = (
                 self._last_date(start).date() if start is not None else published_date
             )
@@ -164,12 +164,12 @@ class FmpNews(object):
         end_date = self._last_date(end) if end is not None else self._last_date(now)
         if articles is None:
             try:
-                articles = pd.read_csv("latest_fmp_articles.csv") # type: ignore
-                articles = articles.to_dict(orient="records") # type: ignore
-                if self._last_date(articles[0]["date"]).hour < end_date.hour: # type: ignore
+                articles = pd.read_csv("latest_fmp_articles.csv")  # type: ignore
+                articles = articles.to_dict(orient="records")  # type: ignore
+                if self._last_date(articles[0]["date"]).hour < end_date.hour:  # type: ignore
                     articles = self.get_articles(**kwargs)
                 else:
-                    return articles # type: ignore
+                    return articles  # type: ignore
             except FileNotFoundError:
                 articles = self.get_articles(**kwargs)
 
@@ -499,19 +499,19 @@ class FinancialNews(object):
                 query=search, max_results=100, tweet_fields=["text"]
             )
             query = _get_search_query(query)
-            news = [tweet.text for tweet in tweets.data] if tweets.data else [] # type: ignore
+            news = [tweet.text for tweet in tweets.data] if tweets.data else []  # type: ignore
             return _filter_news(news, query)[:n_posts]
         except tweepy.TweepyException:
             return []
 
-    def get_fmp_news(self, api:str |None =None) -> FmpNews:
-        return FmpNews(api=api) # type: ignore
+    def get_fmp_news(self, api: str | None = None) -> FmpNews:
+        return FmpNews(api=api)  # type: ignore
 
     def get_coindesk_news(
         self,
         query="",
         lang: Literal["EN", "ES", "TR", "FR", "JP", "PT"] = "EN",
-        limit=50,
+        limit=10,
         list_of_str=False,
     ) -> List[str] | List[dict]:
         """
