@@ -511,7 +511,7 @@ class FinancialNews(object):
         self,
         query="",
         lang: Literal["EN", "ES", "TR", "FR", "JP", "PT"] = "EN",
-        limit=50,
+        limit=10,
         list_of_str=False,
     ) -> List[str] | List[dict]:
         """
