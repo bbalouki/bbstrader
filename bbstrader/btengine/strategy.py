@@ -351,12 +351,14 @@ class MT5Strategy(Strategy):
         from bbstrader.trading.utils import send_message
 
         history = self.account.get_trades_history()
-        if history is None:
+        if history is None or history.empty:
             return
 
         ID = getattr(self, "id", None) or getattr(self, "ID")
         history = history[history["magic"] == ID]
         performance = perf_analyzer(history, **kwargs)
+        if performance.empty:
+            return
 
         account = self.kwargs.get("account", "MT5 Account")
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
