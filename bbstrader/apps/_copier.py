@@ -9,7 +9,7 @@ from typing import List
 
 from PIL import Image, ImageTk
 
-from bbstrader.metatrader.copier import copier_worker_process, get_symbols_from_string
+from bbstrader.metatrader.copier import copier_worker_process, get_symbols_from_string, get_lots_from_string
 
 
 from typing import Any, Dict, Union
@@ -64,11 +64,11 @@ class TradeCopierApp:
         main_frame.columnconfigure(1, weight=1)
         main_frame.rowconfigure(3, weight=1)
 
-        # --- visual/logo frame ---
+        #  visual/logo frame 
         self.visual_frame = ttk.Frame(main_frame)
         self.visual_frame.grid(row=0, column=1, padx=5, pady=5, sticky=(tk.W, tk.E)) # type: ignore
 
-        # --- opier settings---
+        #  opier settings
         self.right_panel_frame = ttk.Frame(main_frame)
         self.right_panel_frame.grid(
             row=1, column=1, rowspan=2, padx=5, pady=5, sticky="nsew"
@@ -80,7 +80,7 @@ class TradeCopierApp:
         return main_frame
 
     def add_source_account_frame(self, main_frame: ttk.Frame) -> None:
-        # --- Source Account ---
+        #  Source Account 
         source_frame = ttk.LabelFrame(
             main_frame, text="Source Account", style="Bold.TLabelframe"
         )
@@ -135,7 +135,7 @@ class TradeCopierApp:
         self.allow_copy_check.grid(row=1, column=3, sticky=tk.W, padx=5, pady=2)
 
     def add_destination_accounts_frame(self, main_frame: ttk.Frame) -> None:
-        # --- Destination Accounts Scrollable Area ---
+        #  Destination Accounts Scrollable Area 
         self.destinations_outer_frame = ttk.LabelFrame(
             main_frame, text="Destination Accounts", style="Bold.TLabelframe"
         )
@@ -193,7 +193,7 @@ class TradeCopierApp:
         self.add_destination_account()
 
     def add_copier_settings(self, main_frame: ttk.Frame) -> None:
-        # --- Copier Settings ---
+        # Copier Settings
         settings_frame = ttk.LabelFrame(
             self.right_panel_frame, text="Copier Settings", style="Bold.TLabelframe"
         )
@@ -218,7 +218,7 @@ class TradeCopierApp:
         self.end_time_entry = ttk.Entry(settings_frame)
         self.end_time_entry.grid(row=2, column=1, sticky=tk.EW, padx=5, pady=2)
 
-        # --- Controls ---
+        #  Controls 
         controls_frame = ttk.Frame(main_frame)
         controls_frame.grid(row=2, column=0, columnspan=2, pady=10)
 
@@ -235,7 +235,7 @@ class TradeCopierApp:
         )
         self.stop_button.pack(side=tk.LEFT, padx=5)
 
-        # --- Log Area ---
+        #  Log Area 
         log_frame = ttk.LabelFrame(main_frame, text="Logs", style="Bold.TLabelframe")
         log_frame.grid(
             row=3,
@@ -334,7 +334,7 @@ class TradeCopierApp:
         ttk.Label(frame, text="Mode").grid(row=3, column=0, sticky=tk.W, padx=5, pady=2)
         dest_widgets["mode"] = ttk.Combobox(
             frame,
-            values=["fix", "multiply", "percentage", "dynamic", "replicate"],
+            values=["fix", "multiply", "percentage", "dynamic", "replicate", "specific"],
             width=10,
         )
         dest_widgets["mode"].grid(row=3, column=1, sticky=tk.EW, padx=5, pady=2)
@@ -348,6 +348,13 @@ class TradeCopierApp:
             row=3, column=3, columnspan=2, sticky=tk.EW, padx=5, pady=2
         )
         dest_widgets["value"].insert(0, "0.01")
+
+        lots_load_button = ttk.Button(
+            frame,
+            text="Load...",
+            command=lambda w=dest_widgets["value"]: self.browse_lots_file(w),
+        )
+        lots_load_button.grid(row=3, column=4, sticky=tk.W, padx=(0, 5), pady=2)
 
         # Row 4: Copy what and slippage
         ttk.Label(frame, text="Copy What").grid(
@@ -438,7 +445,7 @@ class TradeCopierApp:
                 )
                 return False
             if (
-                dest["mode"].get() in ["fix", "multiply", "percentage"]
+                dest["mode"].get() in ["fix", "multiply", "percentage", "specific"]
                 and not dest["value"].get()
             ):
                 messagebox.showerror(
@@ -448,7 +455,10 @@ class TradeCopierApp:
                 return False
             try:
                 if dest["value"].get():
-                    float(dest["value"].get())
+                    try:
+                        float(dest["value"].get())
+                    except ValueError:
+                        pass
                 if dest["slippage"].get():
                     float(dest["slippage"].get())
             except ValueError:
@@ -492,7 +502,10 @@ class TradeCopierApp:
                 "copy_what": dest_widget_map["copy_what"].get().strip(),
             }
             if dest_widget_map["value"].get().strip():
-                dest["value"] = float(dest_widget_map["value"].get().strip())
+                try:
+                    dest["value"] = float(dest_widget_map["value"].get().strip())
+                except ValueError:
+                    dest["value"] = get_lots_from_string(dest_widget_map["value"].get().strip())
             if dest_widget_map["slippage"].get().strip():
                 dest["slippage"] = float(dest_widget_map["slippage"].get().strip())
             destinations_config.append(dest)
@@ -625,6 +638,29 @@ class TradeCopierApp:
                 )
                 self.log_message(f"Error loading symbols: {e}")
 
+    def browse_lots_file(self, lots_entry_widget: ttk.Entry) -> None:
+        """
+        Opens a file dialog to select a .txt file, reads the content,
+        and populates the given lots_entry_widget with the content.
+        """
+        filetypes = (("Text files", "*.txt"), ("All files", "*.*"))
+        filepath = filedialog.askopenfilename(
+            title="Select Lots File", filetypes=filetypes
+        )
+        if filepath:
+            try:
+                with open(filepath, "r") as f:
+                    content = f.read().strip()
+
+                # Update the entry widget
+                lots_entry_widget.delete(0, tk.END)
+                lots_entry_widget.insert(0, content)
+                self.log_message(f"Loaded lots from {filepath}")
+            except Exception as e:
+                messagebox.showerror(
+                    "Error Reading File", f"Could not read lots from file: {e}"
+                )
+                self.log_message(f"Error loading lots: {e}")
 
 def main() -> None:
     """
