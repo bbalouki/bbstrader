@@ -85,7 +85,7 @@ class OrderAction(Enum):
     SYNC_ADD = "SYNC_ADD"
 
 
-CopyMode = Literal["fix", "multiply", "percentage", "dynamic", "replicate"]
+CopyMode = Literal["fix", "multiply", "percentage", "dynamic", "replicate", "specific"]
 
 
 def fix_lot(fixed):
@@ -113,6 +113,10 @@ def dynamic_lot(source_lot, source_eqty: float, dest_eqty: float):
     except ZeroDivisionError:
         raise ValueError("Source or destination account equity is zero")
 
+def specific_lot(symbol, value) -> float:
+    if not isinstance(value, dict):
+        raise ValueError("Specific lot size must be provided as a dictionary mapping symbols to lot sizes")
+    return value.get(symbol, 0.01)
 
 def fixed_lot(lot, symbol, destination) -> float:
     def _volume_step(value):
@@ -151,24 +155,28 @@ def calculate_copy_lot(
     source_eqty: float = None,
     dest_eqty: float = None,
 ):
-    if mode == "replicate":
-        return fixed_lot(source_lot, symbol, destination)
-    elif mode == "fix":
-        return fixed_lot(fix_lot(value), symbol, destination)
-    elif mode == "multiply":
-        lot = multiply_lot(source_lot, value)
-        return fixed_lot(lot, symbol, destination)
-    elif mode == "percentage":
-        lot = percentage_lot(source_lot, value)
-        return fixed_lot(lot, symbol, destination)
-    elif mode == "dynamic":
-        lot = dynamic_lot(source_lot, source_eqty, dest_eqty)
-        return fixed_lot(lot, symbol, destination)
-    else:
-        raise ValueError("Invalid mode selected")
+    match mode:
+        case "replicate":
+            return fixed_lot(source_lot, symbol, destination)
+        case "fix":
+            return fixed_lot(fix_lot(value), symbol, destination)
+        case "multiply":
+            lot = multiply_lot(source_lot, value)
+            return fixed_lot(lot, symbol, destination)
+        case "percentage":
+            lot = percentage_lot(source_lot, value)
+            return fixed_lot(lot, symbol, destination)
+        case "dynamic":
+            lot = dynamic_lot(source_lot, source_eqty, dest_eqty)
+            return fixed_lot(lot, symbol, destination)
+        case "specific":
+            lot = specific_lot(symbol, value)
+            return fixed_lot(lot, symbol, destination)
+        case _:
+            raise ValueError("Invalid mode selected")
 
 
-def get_symbols_from_string(symbols_string: str):
+def get_symbols_from_string(symbols_string: str) -> List[str] | Dict[str, str]:
     if not symbols_string:
         raise ValueError("Input Error", "Tickers string cannot be empty.")
     string = (
@@ -194,6 +202,27 @@ def get_symbols_from_string(symbols_string: str):
         symbols = all (copy all symbols)
         symbols = * (copy all symbols) """)
 
+def get_lots_from_string(lots_string: str) -> Dict[str, float]:
+    if not lots_string:
+        raise ValueError("Input Error", "Lots string cannot be empty.")
+    string = (
+        lots_string.strip().replace("\n", "").replace(" ", "").replace('"""', "")
+    )
+    if ":" in string and "," in string:
+        if string.endswith(","):
+            string = string[:-1]
+        lot_dict = {}
+        for item in string.split(","):
+            key, value = item.split(":")
+            lot_dict[key] = float(value)
+        return lot_dict
+    else:
+        raise ValueError("""
+        Invalid lots format.
+        You must use a dictionary to map symbols to lot sizes as shown below.
+
+        lots = EURUSD:0.1, GBPUSD:0.2, USDJPY:0.15 (dictionary) 
+        """)
 
 def get_copy_symbols(destination: dict, source: dict) -> List[str] | Dict[str, str]:
     symbols = destination.get("symbols", "all")
@@ -317,9 +346,10 @@ class TradeCopier(object):
                     `"dynamic"` Calculate the lot size dynamically based on account equity and risk parameters.
                         The `value` key is ignored.
                     `"replicate"` Copy the exact lot size from the source account. The `value` key is ignored.
+                    `"specific"` Use a specific lot size defined in the `value` key for each symbol.
 
-                    - `value` (float, optional)  A numerical value used in conjunction with the selected `mode`.
-                        Its meaning depends on the chosen `mode` (see above). Required for "fix", "multiply",
+                    - `value` (float or dict,  optional)  A numerical value or dict used in conjunction with the selected `mode`.
+                        Its meaning depends on the chosen `mode` (see above). Required for "fix", "multiply", specific
                         and "percentage" modes; optional for "dynamic".
 
                     - `slippage` (float, optional) The maximum allowed slippage in percentage when opening trades on the destination account,
@@ -341,7 +371,6 @@ class TradeCopier(object):
 
             start_time (str, optional): The time (HH:MM) from which the copier start copying from the source.
             end_time (str, optional): The time (HH:MM) from which the copier stop copying from the source.
-            sleeptime (float, optional): The delay between each check from the source account.
             custom_logger (Any, Optional): Used to set a cutum logger (default is ``loguru.logger``)
             shutdown_event (Any, Otional): Use to terminate the copy process when runs in a custum environment like web App or GUI.
             log_queue (multiprocessing.Queue, Optional): Use to send log to an external program, usefule in GUI apps
@@ -556,7 +585,7 @@ class TradeCopier(object):
                 type=ORDER_TYPE[trade.type][0],
                 magic=self._get_magic(trade.ticket),
                 deviation=Mt5.symbol_info(symbol).spread,
-                comment=destination.get("comment", trade.comment + "#Copied"),
+                comment=destination.get("comment", trade.comment + "#bbstrader"),
                 type_time=Mt5.ORDER_TIME_GTC,
                 type_filling=Mt5.ORDER_FILLING_FOK,
             )
@@ -1340,6 +1369,13 @@ def _parse_symbols(section):
         symbols = get_symbols_from_string(symbols)
         section["symbols"] = symbols
 
+def _parse_lots(section):
+    lots = section.get("value")
+    if not lots:
+        raise ValueError("Lot size value must be specified for the selected mode")
+    lots = get_lots_from_string(lots)
+    section["value"] = lots
+
 
 def config_copier(
     source_section: str = None,
@@ -1396,6 +1432,7 @@ def config_copier(
                 f"Destination section {dest_section} not found in {inifile}"
             )
         _parse_symbols(section)
+        _parse_lots(section)
         destinations.append(section)
 
     return source, destinations
