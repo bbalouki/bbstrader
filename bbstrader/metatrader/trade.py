@@ -129,7 +129,7 @@ class TradeSignal:
     def __repr__(self):
         return (
             f"TradeSignal(id={self.id}, symbol='{self.symbol}', action='{self.action.value}', "
-            f"price={self.price}, stoplimit={self.stoplimit}, comment='{self.comment or ''}')"
+            f"price={self.price}, stoplimit={self.stoplimit}, sl={self.sl}, tp={self.tp}, comment='{self.comment or ''}')"
         )
 
 
