@@ -358,6 +358,7 @@ class MT5Strategy(Strategy):
         history = history[history["magic"] == ID]
         performance = perf_analyzer(history, **kwargs)
         if performance.empty:
+            self.logger.warning("No trades found for the current strategy.")
             return
 
         account = self.kwargs.get("account", "MT5 Account")
