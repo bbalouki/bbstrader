@@ -104,6 +104,8 @@ class TradeSignal:
     - action (TradeAction): The trading action to perform. Must be an instance of the ``TradeAction`` enum (e.g., BUY, SELL).
     - price (float, optional): The price at which the trade should be executed.
     - stoplimit (float, optional): A stop-limit price for the trade. Must not be set without specifying a price.
+    - sl (float, optional): A stop loss price for the trade.
+    - tp (float, optional): A take profit price for the trade.
     - comment (str, optional): An optional comment or description related to the trade signal.
     """
 
@@ -112,6 +114,8 @@ class TradeSignal:
     action: TradeAction
     price: float = None
     stoplimit: float = None
+    sl: float = None
+    tp: float = None
     comment: str = None
 
     def __post_init__(self):
@@ -135,6 +139,8 @@ def generate_signal(
     action: TradeAction,
     price: float = None,
     stoplimit: float = None,
+    sl: float = None,
+    tp: float = None,
     comment: str = None,
 ) -> TradeSignal:
     """
@@ -146,6 +152,8 @@ def generate_signal(
         action (TradeAction): The action to be taken (e.g., BUY, SELL).
         price (float, optional): The price at which to execute the trade.
         stoplimit (float, optional): The stop limit price for the trade.
+        sl (float, optional): The stop loss price for the trade.
+        tp (float, optional): The take profit price for the trade.
         comment (str, optional): Additional comments for the trade.
 
     Returns:
@@ -157,6 +165,8 @@ def generate_signal(
         action=action,
         price=price,
         stoplimit=stoplimit,
+        sl=sl,
+        tp=tp,
         comment=comment,
     )
 

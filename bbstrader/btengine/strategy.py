@@ -272,7 +272,7 @@ class MT5Strategy(Strategy):
         """
         raise NotImplementedError("Should implement calculate_signals()")
 
-    def signal(self, signal: int, symbol: str) -> TradeSignal:
+    def signal(self, signal: int, symbol: str, sl: float = None, tp: float = None) -> TradeSignal:
         """
         Generate a ``TradeSignal`` object based on the signal value.
 
@@ -311,9 +311,9 @@ class MT5Strategy(Strategy):
 
         match signal:
             case 0:
-                return generate_signal(signal_id, symbol, TradeAction.BUY)
+                return generate_signal(signal_id, symbol, TradeAction.BUY, sl=sl, tp=tp)
             case 1:
-                return generate_signal(signal_id, symbol, TradeAction.SELL)
+                return generate_signal(signal_id, symbol, TradeAction.SELL, sl=sl, tp=tp)
             case 2:
                 return generate_signal(signal_id, symbol, TradeAction.EXIT_LONG)
             case 3:
