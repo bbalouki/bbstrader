@@ -352,6 +352,7 @@ class MT5Strategy(Strategy):
 
         history = self.account.get_trades_history()
         if history is None or history.empty:
+            self.logger.warning("No trades found on this account.")
             return
 
         ID = getattr(self, "id", None) or getattr(self, "ID")
