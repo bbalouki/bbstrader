@@ -19,6 +19,7 @@ logger.add(
     sys.stdout,
     level="DEBUG",
     format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}",
+    colorize=True
 )
 
 
