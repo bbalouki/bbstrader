@@ -2,23 +2,26 @@ import argparse
 import multiprocessing
 import sys
 from enum import Enum
-from loguru import logger
 
 import pyfiglet
 from colorama import Fore
+from loguru import logger
 
 from bbstrader.btengine.scripts import backtest
 from bbstrader.core.scripts import send_news_feed
 from bbstrader.metatrader.scripts import copy_trades
 from bbstrader.trading.scripts import execute_strategy
+
 from . import __author__, __version__
 
 logger.remove()
 
+custom_format = "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level}</level> | <white>{message}</white>"
+
 logger.add(
     sys.stdout,
     level="DEBUG",
-    format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}",
+    format=custom_format,
     colorize=True
 )
 
