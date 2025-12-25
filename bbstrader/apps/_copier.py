@@ -3,26 +3,29 @@ import os
 import sys
 import tkinter as tk
 import traceback
+from importlib import resources
 from pathlib import Path
 from tkinter import filedialog, messagebox, scrolledtext, ttk
-from typing import List
+from typing import Any, Dict, List, Union
 
 from PIL import Image, ImageTk
 
-from bbstrader.metatrader.copier import copier_worker_process, get_symbols_from_string, get_lots_from_string
-
-
-from typing import Any, Dict, Union
+from bbstrader.metatrader.copier import (
+    copier_worker_process,
+    get_lots_from_string,
+    get_symbols_from_string,
+)
 
 
 def resource_path(relative_path: str) -> Path:
     """Get absolute path to resource"""
     try:
         base_path = Path(sys._MEIPASS)  # type: ignore
+        resource_path_obj = base_path / relative_path
     except AttributeError:
-        base_path = Path(__file__).resolve().parent.parent.parent
+        resource_path_obj = resources.files("bbstrader").joinpath(relative_path)
 
-    return base_path / relative_path
+    return Path(os.fspath(resource_path_obj))
 
 
 TITLE = "Trade Copier"
@@ -64,9 +67,9 @@ class TradeCopierApp:
         main_frame.columnconfigure(1, weight=1)
         main_frame.rowconfigure(3, weight=1)
 
-        #  visual/logo frame 
+        #  visual/logo frame
         self.visual_frame = ttk.Frame(main_frame)
-        self.visual_frame.grid(row=0, column=1, padx=5, pady=5, sticky=(tk.W, tk.E)) # type: ignore
+        self.visual_frame.grid(row=0, column=1, padx=5, pady=5, sticky=(tk.W, tk.E))  # type: ignore
 
         #  opier settings
         self.right_panel_frame = ttk.Frame(main_frame)
@@ -80,11 +83,11 @@ class TradeCopierApp:
         return main_frame
 
     def add_source_account_frame(self, main_frame: ttk.Frame) -> None:
-        #  Source Account 
+        #  Source Account
         source_frame = ttk.LabelFrame(
             main_frame, text="Source Account", style="Bold.TLabelframe"
         )
-        source_frame.grid(row=0, column=0, padx=5, pady=5, sticky=(tk.W, tk.E, tk.N)) # type: ignore
+        source_frame.grid(row=0, column=0, padx=5, pady=5, sticky=(tk.W, tk.E, tk.N))  # type: ignore
         source_frame.columnconfigure(1, weight=1)
         source_frame.columnconfigure(3, weight=1)
 
@@ -135,12 +138,16 @@ class TradeCopierApp:
         self.allow_copy_check.grid(row=1, column=3, sticky=tk.W, padx=5, pady=2)
 
     def add_destination_accounts_frame(self, main_frame: ttk.Frame) -> None:
-        #  Destination Accounts Scrollable Area 
+        #  Destination Accounts Scrollable Area
         self.destinations_outer_frame = ttk.LabelFrame(
             main_frame, text="Destination Accounts", style="Bold.TLabelframe"
         )
         self.destinations_outer_frame.grid(
-            row=1, column=0, padx=5, pady=5, sticky=(tk.W, tk.E, tk.N, tk.S) # type: ignore
+            row=1,
+            column=0,
+            padx=5,
+            pady=5,
+            sticky=(tk.W, tk.E, tk.N, tk.S),  # type: ignore
         )
         self.destinations_outer_frame.rowconfigure(0, weight=1)
         self.destinations_outer_frame.columnconfigure(0, weight=1)
@@ -197,7 +204,7 @@ class TradeCopierApp:
         settings_frame = ttk.LabelFrame(
             self.right_panel_frame, text="Copier Settings", style="Bold.TLabelframe"
         )
-        settings_frame.grid(row=0, column=0, sticky=(tk.W, tk.E), padx=5, pady=5) # type: ignore
+        settings_frame.grid(row=0, column=0, sticky=(tk.W, tk.E), padx=5, pady=5)  # type: ignore
 
         ttk.Label(settings_frame, text="Sleep Time (s)").grid(
             row=0, column=0, sticky=tk.W, padx=5, pady=2
@@ -218,7 +225,7 @@ class TradeCopierApp:
         self.end_time_entry = ttk.Entry(settings_frame)
         self.end_time_entry.grid(row=2, column=1, sticky=tk.EW, padx=5, pady=2)
 
-        #  Controls 
+        #  Controls
         controls_frame = ttk.Frame(main_frame)
         controls_frame.grid(row=2, column=0, columnspan=2, pady=10)
 
@@ -235,7 +242,7 @@ class TradeCopierApp:
         )
         self.stop_button.pack(side=tk.LEFT, padx=5)
 
-        #  Log Area 
+        #  Log Area
         log_frame = ttk.LabelFrame(main_frame, text="Logs", style="Bold.TLabelframe")
         log_frame.grid(
             row=3,
@@ -243,7 +250,7 @@ class TradeCopierApp:
             columnspan=2,
             padx=5,
             pady=5,
-            sticky=(tk.W, tk.E, tk.N, tk.S), # type: ignore
+            sticky=(tk.W, tk.E, tk.N, tk.S),  # type: ignore
         )
 
         self.log_text = scrolledtext.ScrolledText(log_frame, wrap=tk.WORD, height=10)
@@ -334,7 +341,14 @@ class TradeCopierApp:
         ttk.Label(frame, text="Mode").grid(row=3, column=0, sticky=tk.W, padx=5, pady=2)
         dest_widgets["mode"] = ttk.Combobox(
             frame,
-            values=["fix", "multiply", "percentage", "dynamic", "replicate", "specific"],
+            values=[
+                "fix",
+                "multiply",
+                "percentage",
+                "dynamic",
+                "replicate",
+                "specific",
+            ],
             width=10,
         )
         dest_widgets["mode"].grid(row=3, column=1, sticky=tk.EW, padx=5, pady=2)
@@ -505,7 +519,9 @@ class TradeCopierApp:
                 try:
                     dest["value"] = float(dest_widget_map["value"].get().strip())
                 except ValueError:
-                    dest["value"] = get_lots_from_string(dest_widget_map["value"].get().strip())
+                    dest["value"] = get_lots_from_string(
+                        dest_widget_map["value"].get().strip()
+                    )
             if dest_widget_map["slippage"].get().strip():
                 dest["slippage"] = float(dest_widget_map["slippage"].get().strip())
             destinations_config.append(dest)
@@ -597,7 +613,7 @@ class TradeCopierApp:
         # Cleanup references
         self.copier_processes = []
         self.shutdown_event = None
-        self.log_queue = None # type: ignore
+        self.log_queue = None  # type: ignore
 
         self.start_button.config(state=tk.NORMAL)
         self.stop_button.config(state=tk.DISABLED)
@@ -662,6 +678,7 @@ class TradeCopierApp:
                 )
                 self.log_message(f"Error loading lots: {e}")
 
+
 def main() -> None:
     """
     Main function to initialize and run the Trade Copier GUI.
@@ -675,8 +692,8 @@ def main() -> None:
             try:
                 if (
                     hasattr(app, "copier_process")
-                    and app.copier_process # type: ignore
-                    and app.copier_process.is_alive() # type: ignore
+                    and app.copier_process  # type: ignore
+                    and app.copier_process.is_alive()  # type: ignore
                 ):
                     app.log_message("Window closed, stopping Trade Copier...")
                     app.stop_copier()
