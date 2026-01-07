@@ -269,196 +269,62 @@ class PyMetaTraderClient : public MetaTraderClient {
     }
 };
 
+// Helper function to register RateInfo manually
+void register_rate_info() {
+    // We manually define the field descriptors to avoid name collisions with 'time', 'open',
+    // 'close'
+    auto fields = std::vector<py::detail::field_descriptor>{
+        {"time", offsetof(RateInfo, time), sizeof(int64_t), "q", py::dtype::of<int64_t>()},
+        {"open", offsetof(RateInfo, open), sizeof(double), "d", py::dtype::of<double>()},
+        {"high", offsetof(RateInfo, high), sizeof(double), "d", py::dtype::of<double>()},
+        {"low", offsetof(RateInfo, low), sizeof(double), "d", py::dtype::of<double>()},
+        {"close", offsetof(RateInfo, close), sizeof(double), "d", py::dtype::of<double>()},
+        {"tick_volume",
+         offsetof(RateInfo, tick_volume),
+         sizeof(uint64_t),
+         "Q",
+         py::dtype::of<uint64_t>()},
+        {"spread", offsetof(RateInfo, spread), sizeof(int32_t), "i", py::dtype::of<int32_t>()},
+        {"real_volume",
+         offsetof(RateInfo, real_volume),
+         sizeof(uint64_t),
+         "Q",
+         py::dtype::of<uint64_t>()}
+    };
+
+    py::detail::register_structured_dtype(
+        std::move(fields), typeid(RateInfo), sizeof(RateInfo), nullptr
+    );
+}
+
+// Helper function to register TickInfo manually
+void register_tick_info() {
+    auto fields = std::vector<py::detail::field_descriptor>{
+        {"time", offsetof(TickInfo, time), sizeof(int64_t), "q", py::dtype::of<int64_t>()},
+        {"bid", offsetof(TickInfo, bid), sizeof(double), "d", py::dtype::of<double>()},
+        {"ask", offsetof(TickInfo, ask), sizeof(double), "d", py::dtype::of<double>()},
+        {"last", offsetof(TickInfo, last), sizeof(double), "d", py::dtype::of<double>()},
+        {"volume", offsetof(TickInfo, volume), sizeof(int64_t), "q", py::dtype::of<int64_t>()},
+        {"time_msc", offsetof(TickInfo, time_msc), sizeof(int64_t), "q", py::dtype::of<int64_t>()},
+        {"flags", offsetof(TickInfo, flags), sizeof(uint32_t), "I", py::dtype::of<uint32_t>()},
+        {"volume_real",
+         offsetof(TickInfo, volume_real),
+         sizeof(double),
+         "d",
+         py::dtype::of<double>()}
+    };
+
+    py::detail::register_structured_dtype(
+        std::move(fields), typeid(TickInfo), sizeof(TickInfo), nullptr
+    );
+}
 
 PYBIND11_MODULE(metatrader_client, m) {
     m.doc() = "High-performance MetaTrader 5 C++/Python Bridge";
+    register_rate_info();
+    register_tick_info();
 
-    py::class_<MetaTraderClient::Handlers>(m, "Handlers")
-        .def(py::init<>())
-        // System & Session
-        .def_readwrite("init_auto", &MetaTraderClient::Handlers::init_auto)
-        .def_readwrite("init_path", &MetaTraderClient::Handlers::init_path)
-        .def_readwrite("init_full", &MetaTraderClient::Handlers::init_full)
-        .def_readwrite("login", &MetaTraderClient::Handlers::login)
-        .def_readwrite("shutdown", &MetaTraderClient::Handlers::shutdown)
-        .def_readwrite("get_version", &MetaTraderClient::Handlers::get_version)
-        .def_readwrite("get_last_error", &MetaTraderClient::Handlers::get_last_error)
-        .def_readwrite("get_terminal_info", &MetaTraderClient::Handlers::get_terminal_info)
-        .def_readwrite("get_account_info", &MetaTraderClient::Handlers::get_account_info)
-        // Symbols & Market Depth
-        .def_readwrite("get_total_symbols", &MetaTraderClient::Handlers::get_total_symbols)
-        .def_readwrite("get_symbols_all", &MetaTraderClient::Handlers::get_symbols_all)
-        .def_readwrite("get_symbol_info", &MetaTraderClient::Handlers::get_symbol_info)
-        .def_readwrite("select_symbol", &MetaTraderClient::Handlers::select_symbol)
-        .def_readwrite("get_symbols_by_group", &MetaTraderClient::Handlers::get_symbols_by_group)
-        .def_readwrite("subscribe_book", &MetaTraderClient::Handlers::subscribe_book)
-        .def_readwrite("unsubscribe_book", &MetaTraderClient::Handlers::unsubscribe_book)
-        .def_readwrite("get_book_info", &MetaTraderClient::Handlers::get_book_info)
-        // Market Data (Rates & Ticks)
-        .def_readwrite("get_rates_by_date", &MetaTraderClient::Handlers::get_rates_by_date)
-        .def_readwrite("get_rates_by_pos", &MetaTraderClient::Handlers::get_rates_by_pos)
-        .def_readwrite("get_rates_by_range", &MetaTraderClient::Handlers::get_rates_by_range)
-        .def_readwrite("get_ticks_by_date", &MetaTraderClient::Handlers::get_ticks_by_date)
-        .def_readwrite("get_ticks_by_range", &MetaTraderClient::Handlers::get_ticks_by_range)
-        .def_readwrite("get_tick_info", &MetaTraderClient::Handlers::get_tick_info)
-        // Orders & Positions (Active)
-        .def_readwrite("get_orders_all", &MetaTraderClient::Handlers::get_orders_all)
-        .def_readwrite("get_orders_by_symbol", &MetaTraderClient::Handlers::get_orders_by_symbol)
-        .def_readwrite("get_orders_by_group", &MetaTraderClient::Handlers::get_orders_by_group)
-        .def_readwrite("get_order_by_ticket", &MetaTraderClient::Handlers::get_order_by_ticket)
-        .def_readwrite("get_total_orders", &MetaTraderClient::Handlers::get_total_orders)
-        .def_readwrite("get_positions_all", &MetaTraderClient::Handlers::get_positions_all)
-        .def_readwrite("get_positions_symbol", &MetaTraderClient::Handlers::get_positions_symbol)
-        .def_readwrite("get_positions_group", &MetaTraderClient::Handlers::get_positions_group)
-        .def_readwrite("get_position_ticket", &MetaTraderClient::Handlers::get_position_ticket)
-        .def_readwrite("get_total_positions", &MetaTraderClient::Handlers::get_total_positions)
-        // Trading Operations
-        .def_readwrite("check_order", &MetaTraderClient::Handlers::check_order)
-        .def_readwrite("send_order", &MetaTraderClient::Handlers::send_order)
-        .def_readwrite("calc_margin", &MetaTraderClient::Handlers::calc_margin)
-        .def_readwrite("calc_profit", &MetaTraderClient::Handlers::calc_profit)
-        // History (Orders & Deals)
-        .def_readwrite("get_hist_orders_range", &MetaTraderClient::Handlers::get_hist_orders_range)
-        .def_readwrite("get_hist_order_ticket", &MetaTraderClient::Handlers::get_hist_order_ticket)
-        .def_readwrite("get_hist_orders_pos", &MetaTraderClient::Handlers::get_hist_orders_pos)
-        .def_readwrite("get_hist_orders_total", &MetaTraderClient::Handlers::get_hist_orders_total)
-        .def_readwrite("get_hist_deals_range", &MetaTraderClient::Handlers::get_hist_deals_range)
-        .def_readwrite("get_hist_deals_ticket", &MetaTraderClient::Handlers::get_hist_deals_ticket)
-        .def_readwrite("get_hist_deals_pos", &MetaTraderClient::Handlers::get_hist_deals_pos)
-        .def_readwrite("get_hist_deals_total", &MetaTraderClient::Handlers::get_hist_deals_total);
-
-    // 2. Main MetaTraderClient Binding
-    py::class_<MetaTraderClient, PyMetaTraderClient>(m, "MetaTraderClient")
-        .def(py::init<>())
-        .def(py::init<MetaTraderClient::Handlers>())
-
-        // --- System Methods ---
-        .def("initialize", py::overload_cast<>(&MetaTraderClient::initialize))
-        .def("initialize", py::overload_cast<const std::string&>(&MetaTraderClient::initialize))
-        .def(
-            "initialize",
-            py::overload_cast<
-                const std::string&,
-                uint64_t,
-                const std::string&,
-                const std::string&,
-                uint32_t,
-                bool>(&MetaTraderClient::initialize)
-        )
-        .def("login", &MetaTraderClient::login)
-        .def("shutdown", &MetaTraderClient::shutdown)
-        .def("version", &MetaTraderClient::version)
-        .def("last_error", &MetaTraderClient::last_error)
-        .def("terminal_info", &MetaTraderClient::terminal_info)
-        .def("account_info", &MetaTraderClient::account_info)
-
-        // --- Symbol & Market Depth Methods ---
-        .def("symbols_total", &MetaTraderClient::symbols_total)
-        .def(
-            "symbols_get",
-            py::overload_cast<>(&MetaTraderClient::symbols_get),
-            py::return_value_policy::move
-        )
-        .def(
-            "symbols_get",
-            py::overload_cast<const std::string&>(&MetaTraderClient::symbols_get),
-            py::return_value_policy::move
-        )
-        .def("symbol_info", &MetaTraderClient::symbol_info)
-        .def("symbol_select", &MetaTraderClient::symbol_select)
-        .def("market_book_add", &MetaTraderClient::market_book_add)
-        .def("market_book_release", &MetaTraderClient::market_book_release)
-        .def("market_book_get", &MetaTraderClient::market_book_get, py::return_value_policy::move)
-
-        // --- Market Data Methods (Optimized Policy) ---
-        .def("copy_rates_from", &MetaTraderClient::copy_rates_from, py::return_value_policy::move)
-        .def(
-            "copy_rates_from_pos",
-            &MetaTraderClient::copy_rates_from_pos,
-            py::return_value_policy::move
-        )
-        .def("copy_rates_range", &MetaTraderClient::copy_rates_range, py::return_value_policy::move)
-        .def("copy_ticks_from", &MetaTraderClient::copy_ticks_from, py::return_value_policy::move)
-        .def("copy_ticks_range", &MetaTraderClient::copy_ticks_range, py::return_value_policy::move)
-        .def("symbol_info_tick", &MetaTraderClient::symbol_info_tick, py::return_value_policy::move)
-
-        // --- Active Orders & Positions Methods ---
-        .def(
-            "orders_get",
-            py::overload_cast<>(&MetaTraderClient::orders_get),
-            py::return_value_policy::move
-        )
-        .def(
-            "orders_get",
-            py::overload_cast<const std::string&>(&MetaTraderClient::orders_get),
-            py::return_value_policy::move
-        )
-        .def(
-            "orders_get_by_group",
-            &MetaTraderClient::orders_get_by_group,
-            py::return_value_policy::move
-        )
-        .def("order_get_by_ticket", &MetaTraderClient::order_get_by_ticket)
-        .def("orders_total", &MetaTraderClient::orders_total)
-
-        .def(
-            "positions_get",
-            py::overload_cast<>(&MetaTraderClient::positions_get),
-            py::return_value_policy::move
-        )
-        .def(
-            "positions_get",
-            py::overload_cast<const std::string&>(&MetaTraderClient::positions_get),
-            py::return_value_policy::move
-        )
-        .def(
-            "positions_get_by_group",
-            &MetaTraderClient::positions_get_by_group,
-            py::return_value_policy::move
-        )
-        .def("position_get_by_ticket", &MetaTraderClient::position_get_by_ticket)
-        .def("positions_total", &MetaTraderClient::positions_total)
-
-        // --- Trading Methods ---
-        .def("order_send", &MetaTraderClient::order_send)
-        .def("order_check", &MetaTraderClient::order_check)
-        .def("order_calc_margin", &MetaTraderClient::order_calc_margin)
-        .def("order_calc_profit", &MetaTraderClient::order_calc_profit)
-
-        // --- History Methods (Optimized Policy) ---
-        .def(
-            "history_orders_get",
-            py::overload_cast<int64_t, int64_t, const std::string&>(
-                &MetaTraderClient::history_orders_get
-            ),
-            py::return_value_policy::move
-        )
-        .def(
-            "history_orders_get", py::overload_cast<uint64_t>(&MetaTraderClient::history_orders_get)
-        )
-        .def(
-            "history_orders_get_by_pos",
-            &MetaTraderClient::history_orders_get_by_pos,
-            py::return_value_policy::move
-        )
-        .def("history_orders_total", &MetaTraderClient::history_orders_total)
-
-        .def(
-            "history_deals_get",
-            py::overload_cast<int64_t, int64_t, const std::string&>(
-                &MetaTraderClient::history_deals_get
-            ),
-            py::return_value_policy::move
-        )
-        .def("history_deals_get", py::overload_cast<uint64_t>(&MetaTraderClient::history_deals_get))
-        .def(
-            "history_deals_get_by_pos",
-            &MetaTraderClient::history_deals_get_by_pos,
-            py::return_value_policy::move
-        )
-        .def("history_deals_total", &MetaTraderClient::history_deals_total);
-
-    // 1. Terminal Info
+    // --- 1. Terminal Info ---
     py::class_<TerminalInfo>(m, "TerminalInfo")
         .def(py::init<>())
         .def_readwrite("community_account", &TerminalInfo::community_account)
@@ -484,7 +350,7 @@ PYBIND11_MODULE(metatrader_client, m) {
         .def_readwrite("data_path", &TerminalInfo::data_path)
         .def_readwrite("commondata_path", &TerminalInfo::commondata_path);
 
-    // 2. Account Info
+    // --- 2. Account Info ---
     py::class_<AccountInfo>(m, "AccountInfo")
         .def(py::init<>())
         .def_readwrite("login", &AccountInfo::login)
@@ -516,7 +382,7 @@ PYBIND11_MODULE(metatrader_client, m) {
         .def_readwrite("currency", &AccountInfo::currency)
         .def_readwrite("company", &AccountInfo::company);
 
-    // 3. Symbol Info (Extensive Mapping)
+    // --- 3. Symbol Info ---
     py::class_<SymbolInfo>(m, "SymbolInfo")
         .def(py::init<>())
         .def_readwrite("custom", &SymbolInfo::custom)
@@ -616,7 +482,7 @@ PYBIND11_MODULE(metatrader_client, m) {
         .def_readwrite("page", &SymbolInfo::page)
         .def_readwrite("path", &SymbolInfo::path);
 
-    // 4. Market Data Structs
+    // --- 4. Market Data Structs ---
     py::class_<TickInfo>(m, "TickInfo")
         .def(py::init<>())
         .def_readwrite("time", &TickInfo::time)
@@ -646,9 +512,47 @@ PYBIND11_MODULE(metatrader_client, m) {
         .def_readwrite("volume", &BookInfo::volume)
         .def_readwrite("volume_real", &BookInfo::volume_real);
 
-    // 5. Trade Request & Results
+    // --- 5. Trading Request & Result ---
     py::class_<TradeRequest>(m, "TradeRequest")
         .def(py::init<>())
+        .def(py::init([](const py::dict& dict) {
+            auto req = std::make_unique<TradeRequest>();
+            if (dict.contains("action"))
+                req->action = dict["action"].cast<int32_t>();
+            if (dict.contains("magic"))
+                req->magic = dict["magic"].cast<int64_t>();
+            if (dict.contains("order"))
+                req->order = dict["order"].cast<int64_t>();
+            if (dict.contains("symbol"))
+                req->symbol = dict["symbol"].cast<std::string>();
+            if (dict.contains("volume"))
+                req->volume = dict["volume"].cast<double>();
+            if (dict.contains("price"))
+                req->price = dict["price"].cast<double>();
+            if (dict.contains("stoplimit"))
+                req->stoplimit = dict["stoplimit"].cast<double>();
+            if (dict.contains("sl"))
+                req->sl = dict["sl"].cast<double>();
+            if (dict.contains("tp"))
+                req->tp = dict["tp"].cast<double>();
+            if (dict.contains("deviation"))
+                req->deviation = dict["deviation"].cast<int64_t>();
+            if (dict.contains("type"))
+                req->type = dict["type"].cast<int32_t>();
+            if (dict.contains("type_filling"))
+                req->type_filling = dict["type_filling"].cast<int32_t>();
+            if (dict.contains("type_time"))
+                req->type_time = dict["type_time"].cast<int32_t>();
+            if (dict.contains("expiration"))
+                req->expiration = dict["expiration"].cast<int64_t>();
+            if (dict.contains("comment"))
+                req->comment = dict["comment"].cast<std::string>();
+            if (dict.contains("position"))
+                req->position = dict["position"].cast<int64_t>();
+            if (dict.contains("position_by"))
+                req->position_by = dict["position_by"].cast<int64_t>();
+            return req;
+        }))
         .def_readwrite("action", &TradeRequest::action)
         .def_readwrite("magic", &TradeRequest::magic)
         .def_readwrite("order", &TradeRequest::order)
@@ -666,6 +570,9 @@ PYBIND11_MODULE(metatrader_client, m) {
         .def_readwrite("comment", &TradeRequest::comment)
         .def_readwrite("position", &TradeRequest::position)
         .def_readwrite("position_by", &TradeRequest::position_by);
+
+    // 3. Enable implicit conversion from Python dict to C++ TradeRequest
+    py::implicitly_convertible<py::dict, TradeRequest>();
 
     py::class_<OrderCheckResult>(m, "OrderCheckResult")
         .def(py::init<>())
@@ -693,7 +600,7 @@ PYBIND11_MODULE(metatrader_client, m) {
         .def_readwrite("retcode_external", &OrderSentResult::retcode_external)
         .def_readwrite("request", &OrderSentResult::request);
 
-    // 6. Execution Objects (Orders, Positions, Deals)
+    // --- 6. Records (Order, Position, Deal) ---
     py::class_<TradeOrder>(m, "TradeOrder")
         .def(py::init<>())
         .def_readwrite("ticket", &TradeOrder::ticket)
@@ -763,4 +670,302 @@ PYBIND11_MODULE(metatrader_client, m) {
         .def_readwrite("symbol", &TradeDeal::symbol)
         .def_readwrite("comment", &TradeDeal::comment)
         .def_readwrite("external_id", &TradeDeal::external_id);
+
+    // --- 7. Handlers Struct ---
+    py::class_<MetaTraderClient::Handlers>(m, "Handlers")
+        .def(py::init<>())
+        // System & Session
+        .def_readwrite("init_auto", &MetaTraderClient::Handlers::init_auto)
+        .def_readwrite("init_path", &MetaTraderClient::Handlers::init_path)
+        .def_readwrite("init_full", &MetaTraderClient::Handlers::init_full)
+        .def_readwrite("login", &MetaTraderClient::Handlers::login)
+        .def_readwrite("shutdown", &MetaTraderClient::Handlers::shutdown)
+        .def_readwrite("get_version", &MetaTraderClient::Handlers::get_version)
+        .def_readwrite("get_last_error", &MetaTraderClient::Handlers::get_last_error)
+        .def_readwrite("get_terminal_info", &MetaTraderClient::Handlers::get_terminal_info)
+        .def_readwrite("get_account_info", &MetaTraderClient::Handlers::get_account_info)
+        // Symbols & Market Depth
+        .def_readwrite("get_total_symbols", &MetaTraderClient::Handlers::get_total_symbols)
+        .def_readwrite("get_symbols_all", &MetaTraderClient::Handlers::get_symbols_all)
+        .def_readwrite("get_symbol_info", &MetaTraderClient::Handlers::get_symbol_info)
+        .def_readwrite("select_symbol", &MetaTraderClient::Handlers::select_symbol)
+        .def_readwrite("get_symbols_by_group", &MetaTraderClient::Handlers::get_symbols_by_group)
+        .def_readwrite("subscribe_book", &MetaTraderClient::Handlers::subscribe_book)
+        .def_readwrite("unsubscribe_book", &MetaTraderClient::Handlers::unsubscribe_book)
+        .def_readwrite("get_book_info", &MetaTraderClient::Handlers::get_book_info)
+        // Market Data (Rates & Ticks)
+        .def_readwrite("get_rates_by_date", &MetaTraderClient::Handlers::get_rates_by_date)
+        .def_readwrite("get_rates_by_pos", &MetaTraderClient::Handlers::get_rates_by_pos)
+        .def_readwrite("get_rates_by_range", &MetaTraderClient::Handlers::get_rates_by_range)
+        .def_readwrite("get_ticks_by_date", &MetaTraderClient::Handlers::get_ticks_by_date)
+        .def_readwrite("get_ticks_by_range", &MetaTraderClient::Handlers::get_ticks_by_range)
+        .def_readwrite("get_tick_info", &MetaTraderClient::Handlers::get_tick_info)
+        // Orders & Positions (Active)
+        .def_readwrite("get_orders_all", &MetaTraderClient::Handlers::get_orders_all)
+        .def_readwrite("get_orders_by_symbol", &MetaTraderClient::Handlers::get_orders_by_symbol)
+        .def_readwrite("get_orders_by_group", &MetaTraderClient::Handlers::get_orders_by_group)
+        .def_readwrite("get_order_by_ticket", &MetaTraderClient::Handlers::get_order_by_ticket)
+        .def_readwrite("get_total_orders", &MetaTraderClient::Handlers::get_total_orders)
+        .def_readwrite("get_positions_all", &MetaTraderClient::Handlers::get_positions_all)
+        .def_readwrite("get_positions_symbol", &MetaTraderClient::Handlers::get_positions_symbol)
+        .def_readwrite("get_positions_group", &MetaTraderClient::Handlers::get_positions_group)
+        .def_readwrite("get_position_ticket", &MetaTraderClient::Handlers::get_position_ticket)
+        .def_readwrite("get_total_positions", &MetaTraderClient::Handlers::get_total_positions)
+        // Trading Operations
+        .def_readwrite("check_order", &MetaTraderClient::Handlers::check_order)
+        .def_readwrite("send_order", &MetaTraderClient::Handlers::send_order)
+        .def_readwrite("calc_margin", &MetaTraderClient::Handlers::calc_margin)
+        .def_readwrite("calc_profit", &MetaTraderClient::Handlers::calc_profit)
+        // History (Orders & Deals)
+        .def_readwrite("get_hist_orders_range", &MetaTraderClient::Handlers::get_hist_orders_range)
+        .def_readwrite("get_hist_order_ticket", &MetaTraderClient::Handlers::get_hist_order_ticket)
+        .def_readwrite("get_hist_orders_pos", &MetaTraderClient::Handlers::get_hist_orders_pos)
+        .def_readwrite("get_hist_orders_total", &MetaTraderClient::Handlers::get_hist_orders_total)
+        .def_readwrite("get_hist_deals_range", &MetaTraderClient::Handlers::get_hist_deals_range)
+        .def_readwrite("get_hist_deals_ticket", &MetaTraderClient::Handlers::get_hist_deals_ticket)
+        .def_readwrite("get_hist_deals_pos", &MetaTraderClient::Handlers::get_hist_deals_pos)
+        .def_readwrite("get_hist_deals_total", &MetaTraderClient::Handlers::get_hist_deals_total);
+
+    // --- 8. Main Client Class ---
+    py::class_<MetaTraderClient, PyMetaTraderClient>(m, "MetaTraderClient")
+        .def(py::init<>())
+        .def(py::init<MetaTraderClient::Handlers>(), py::arg("handlers"))
+
+        // System
+        .def("initialize", py::overload_cast<>(&MetaTraderClient::initialize))
+        .def(
+            "initialize",
+            py::overload_cast<const std::string&>(&MetaTraderClient::initialize),
+            py::arg("path")
+        )
+        .def(
+            "initialize",
+            py::overload_cast<
+                const std::string&,
+                uint64_t,
+                const std::string&,
+                const std::string&,
+                uint32_t,
+                bool>(&MetaTraderClient::initialize),
+            py::arg("path"),
+            py::arg("login"),
+            py::arg("password"),
+            py::arg("server"),
+            py::arg("timeout"),
+            py::arg("portable")
+        )
+        .def(
+            "login",
+            &MetaTraderClient::login,
+            py::arg("login"),
+            py::arg("password"),
+            py::arg("server"),
+            py::arg("timeout")
+        )
+        .def("shutdown", &MetaTraderClient::shutdown)
+        .def("version", &MetaTraderClient::version)
+        .def("last_error", &MetaTraderClient::last_error)
+        .def("terminal_info", &MetaTraderClient::terminal_info)
+        .def("account_info", &MetaTraderClient::account_info)
+
+        // Symbols
+        .def("symbols_total", &MetaTraderClient::symbols_total)
+        .def(
+            "symbols_get",
+            py::overload_cast<>(&MetaTraderClient::symbols_get),
+            py::return_value_policy::move
+        )
+        .def(
+            "symbols_get",
+            py::overload_cast<const std::string&>(&MetaTraderClient::symbols_get),
+            py::arg("group"),
+            py::return_value_policy::move
+        )
+        .def("symbol_info", &MetaTraderClient::symbol_info, py::arg("symbol"))
+        .def(
+            "symbol_select", &MetaTraderClient::symbol_select, py::arg("symbol"), py::arg("enable")
+        )
+
+        // Market Depth
+        .def("market_book_add", &MetaTraderClient::market_book_add, py::arg("symbol"))
+        .def("market_book_release", &MetaTraderClient::market_book_release, py::arg("symbol"))
+        .def(
+            "market_book_get",
+            &MetaTraderClient::market_book_get,
+            py::arg("symbol"),
+            py::return_value_policy::move
+        )
+
+        // Market Data
+        .def(
+            "copy_rates_from",
+            &MetaTraderClient::copy_rates_from,
+            py::arg("symbol"),
+            py::arg("timeframe"),
+            py::arg("date_from"),
+            py::arg("count"),
+            py::return_value_policy::move
+        )
+        .def(
+            "copy_rates_from_pos",
+            &MetaTraderClient::copy_rates_from_pos,
+            py::arg("symbol"),
+            py::arg("timeframe"),
+            py::arg("start_pos"),
+            py::arg("count"),
+            py::return_value_policy::move
+        )
+        .def(
+            "copy_rates_range",
+            &MetaTraderClient::copy_rates_range,
+            py::arg("symbol"),
+            py::arg("timeframe"),
+            py::arg("date_from"),
+            py::arg("date_to"),
+            py::return_value_policy::move
+        )
+        .def(
+            "copy_ticks_from",
+            &MetaTraderClient::copy_ticks_from,
+            py::arg("symbol"),
+            py::arg("date_from"),
+            py::arg("count"),
+            py::arg("flags"),
+            py::return_value_policy::move
+        )
+        .def(
+            "copy_ticks_range",
+            &MetaTraderClient::copy_ticks_range,
+            py::arg("symbol"),
+            py::arg("date_from"),
+            py::arg("date_to"),
+            py::arg("flags"),
+            py::return_value_policy::move
+        )
+        .def(
+            "symbol_info_tick",
+            &MetaTraderClient::symbol_info_tick,
+            py::arg("symbol"),
+            py::return_value_policy::move
+        )
+
+        // Active Orders
+        .def(
+            "orders_get",
+            py::overload_cast<>(&MetaTraderClient::orders_get),
+            py::return_value_policy::move
+        )
+        .def(
+            "orders_get",
+            py::overload_cast<const std::string&>(&MetaTraderClient::orders_get),
+            py::arg("symbol"),
+            py::return_value_policy::move
+        )
+        .def(
+            "orders_get_by_group",
+            &MetaTraderClient::orders_get_by_group,
+            py::arg("group"),
+            py::return_value_policy::move
+        )
+        .def("order_get_by_ticket", &MetaTraderClient::order_get_by_ticket, py::arg("ticket"))
+        .def("orders_total", &MetaTraderClient::orders_total)
+
+        // Active Positions
+        .def(
+            "positions_get",
+            py::overload_cast<>(&MetaTraderClient::positions_get),
+            py::return_value_policy::move
+        )
+        .def(
+            "positions_get",
+            py::overload_cast<const std::string&>(&MetaTraderClient::positions_get),
+            py::arg("symbol"),
+            py::return_value_policy::move
+        )
+        .def(
+            "positions_get_by_group",
+            &MetaTraderClient::positions_get_by_group,
+            py::arg("group"),
+            py::return_value_policy::move
+        )
+        .def("position_get_by_ticket", &MetaTraderClient::position_get_by_ticket, py::arg("ticket"))
+        .def("positions_total", &MetaTraderClient::positions_total)
+
+        // Trading Operations
+        .def("order_send", &MetaTraderClient::order_send, py::arg("request"))
+        .def("order_check", &MetaTraderClient::order_check, py::arg("request"))
+        .def(
+            "order_calc_margin",
+            &MetaTraderClient::order_calc_margin,
+            py::arg("action"),
+            py::arg("symbol"),
+            py::arg("volume"),
+            py::arg("price")
+        )
+        .def(
+            "order_calc_profit",
+            &MetaTraderClient::order_calc_profit,
+            py::arg("action"),
+            py::arg("symbol"),
+            py::arg("volume"),
+            py::arg("price_open"),
+            py::arg("price_close")
+        )
+
+        // History
+        .def(
+            "history_orders_get",
+            py::overload_cast<int64_t, int64_t, const std::string&>(
+                &MetaTraderClient::history_orders_get
+            ),
+            py::arg("date_from"),
+            py::arg("date_to"),
+            py::arg("group"),
+            py::return_value_policy::move
+        )
+        .def(
+            "history_orders_get",
+            py::overload_cast<uint64_t>(&MetaTraderClient::history_orders_get),
+            py::arg("ticket")
+        )
+        .def(
+            "history_orders_get_by_pos",
+            &MetaTraderClient::history_orders_get_by_pos,
+            py::arg("position_id"),
+            py::return_value_policy::move
+        )
+        .def(
+            "history_orders_total",
+            &MetaTraderClient::history_orders_total,
+            py::arg("date_from"),
+            py::arg("date_to")
+        )
+
+        .def(
+            "history_deals_get",
+            py::overload_cast<int64_t, int64_t, const std::string&>(
+                &MetaTraderClient::history_deals_get
+            ),
+            py::arg("date_from"),
+            py::arg("date_to"),
+            py::arg("group"),
+            py::return_value_policy::move
+        )
+        .def(
+            "history_deals_get",
+            py::overload_cast<uint64_t>(&MetaTraderClient::history_deals_get),
+            py::arg("ticket")
+        )
+        .def(
+            "history_deals_get_by_pos",
+            &MetaTraderClient::history_deals_get_by_pos,
+            py::arg("position_id"),
+            py::return_value_policy::move
+        )
+        .def(
+            "history_deals_total",
+            &MetaTraderClient::history_deals_total,
+            py::arg("date_from"),
+            py::arg("date_to")
+        );
 }

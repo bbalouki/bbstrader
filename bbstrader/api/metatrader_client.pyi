@@ -2,8 +2,6 @@ import collections.abc
 import typing
 from typing import overload
 
-from _typeshed import Incomplete
-
 class AccountInfo:
     assets: float
     balance: float
@@ -57,40 +55,71 @@ class Handlers:
         ],
         float | None,
     ]
-    check_order: Incomplete
-    get_account_info: Incomplete
-    get_book_info: Incomplete
-    get_hist_deals_pos: Incomplete
-    get_hist_deals_range: Incomplete
-    get_hist_deals_ticket: Incomplete
+    check_order: collections.abc.Callable[[TradeRequest], OrderCheckResult]
+    get_account_info: collections.abc.Callable[[], AccountInfo | None]
+    get_book_info: collections.abc.Callable[[str], list[BookInfo] | None]
+    get_hist_deals_pos: collections.abc.Callable[
+        [typing.SupportsInt], list[TradeDeal] | None
+    ]
+    get_hist_deals_range: collections.abc.Callable[
+        [typing.SupportsInt, typing.SupportsInt, str], list[TradeDeal] | None
+    ]
+    get_hist_deals_ticket: collections.abc.Callable[
+        [typing.SupportsInt], list[TradeDeal] | None
+    ]
     get_hist_deals_total: collections.abc.Callable[
         [typing.SupportsInt, typing.SupportsInt], int
     ]
-    get_hist_order_ticket: Incomplete
-    get_hist_orders_pos: Incomplete
-    get_hist_orders_range: Incomplete
+    get_hist_order_ticket: collections.abc.Callable[
+        [typing.SupportsInt], TradeOrder | None
+    ]
+    get_hist_orders_pos: collections.abc.Callable[
+        [typing.SupportsInt], list[TradeOrder] | None
+    ]
+    get_hist_orders_range: collections.abc.Callable[
+        [typing.SupportsInt, typing.SupportsInt, str], list[TradeOrder] | None
+    ]
     get_hist_orders_total: collections.abc.Callable[
         [typing.SupportsInt, typing.SupportsInt], int
     ]
     get_last_error: collections.abc.Callable[[], tuple[int, str]]
-    get_order_by_ticket: Incomplete
-    get_orders_all: Incomplete
-    get_orders_by_group: Incomplete
-    get_orders_by_symbol: Incomplete
-    get_position_ticket: Incomplete
-    get_positions_all: Incomplete
-    get_positions_group: Incomplete
-    get_positions_symbol: Incomplete
-    get_rates_by_date: Incomplete
-    get_rates_by_pos: Incomplete
-    get_rates_by_range: Incomplete
-    get_symbol_info: Incomplete
-    get_symbols_all: Incomplete
-    get_symbols_by_group: Incomplete
-    get_terminal_info: Incomplete
-    get_tick_info: Incomplete
-    get_ticks_by_date: Incomplete
-    get_ticks_by_range: Incomplete
+    get_order_by_ticket: collections.abc.Callable[
+        [typing.SupportsInt], TradeOrder | None
+    ]
+    get_orders_all: collections.abc.Callable[[], list[TradeOrder] | None]
+    get_orders_by_group: collections.abc.Callable[[str], list[TradeOrder] | None]
+    get_orders_by_symbol: collections.abc.Callable[[str], list[TradeOrder] | None]
+    get_position_ticket: collections.abc.Callable[
+        [typing.SupportsInt], TradePosition | None
+    ]
+    get_positions_all: collections.abc.Callable[[], list[TradePosition] | None]
+    get_positions_group: collections.abc.Callable[[str], list[TradePosition] | None]
+    get_positions_symbol: collections.abc.Callable[[str], list[TradePosition] | None]
+    get_rates_by_date: collections.abc.Callable[
+        [str, typing.SupportsInt, typing.SupportsInt, typing.SupportsInt],
+        list[RateInfo] | None,
+    ]
+    get_rates_by_pos: collections.abc.Callable[
+        [str, typing.SupportsInt, typing.SupportsInt, typing.SupportsInt],
+        list[RateInfo] | None,
+    ]
+    get_rates_by_range: collections.abc.Callable[
+        [str, typing.SupportsInt, typing.SupportsInt, typing.SupportsInt],
+        list[RateInfo] | None,
+    ]
+    get_symbol_info: collections.abc.Callable[[str], SymbolInfo | None]
+    get_symbols_all: collections.abc.Callable[[], list[SymbolInfo] | None]
+    get_symbols_by_group: collections.abc.Callable[[str], list[SymbolInfo] | None]
+    get_terminal_info: collections.abc.Callable[[], TerminalInfo | None]
+    get_tick_info: collections.abc.Callable[[str], TickInfo | None]
+    get_ticks_by_date: collections.abc.Callable[
+        [str, typing.SupportsInt, typing.SupportsInt, typing.SupportsInt],
+        list[TickInfo] | None,
+    ]
+    get_ticks_by_range: collections.abc.Callable[
+        [str, typing.SupportsInt, typing.SupportsInt, typing.SupportsInt],
+        list[TickInfo] | None,
+    ]
     get_total_orders: collections.abc.Callable[[], int]
     get_total_positions: collections.abc.Callable[[], int]
     get_total_symbols: collections.abc.Callable[[], int]
@@ -104,7 +133,7 @@ class Handlers:
         [typing.SupportsInt, str, str, typing.SupportsInt], bool
     ]
     select_symbol: collections.abc.Callable[[str, bool], bool]
-    send_order: Incomplete
+    send_order: collections.abc.Callable[[TradeRequest], OrderSentResult]
     shutdown: collections.abc.Callable[[], None]
     subscribe_book: collections.abc.Callable[[str], bool]
     unsubscribe_book: collections.abc.Callable[[str], bool]
@@ -114,76 +143,137 @@ class MetaTraderClient:
     @overload
     def __init__(self) -> None: ...
     @overload
-    def __init__(self, arg0: Handlers) -> None: ...
-    def account_info(self, *args, **kwargs): ...
-    def copy_rates_from(self, *args, **kwargs): ...
-    def copy_rates_from_pos(self, *args, **kwargs): ...
-    def copy_rates_range(self, *args, **kwargs): ...
-    def copy_ticks_from(self, *args, **kwargs): ...
-    def copy_ticks_range(self, *args, **kwargs): ...
-    def history_deals_get(self, *args, **kwargs): ...
-    def history_deals_get_by_pos(self, *args, **kwargs): ...
+    def __init__(self, handlers: Handlers) -> None: ...
+    def account_info(self) -> AccountInfo | None: ...
+    def copy_rates_from(
+        self,
+        symbol: str,
+        timeframe: typing.SupportsInt,
+        date_from: typing.SupportsInt,
+        count: typing.SupportsInt,
+    ) -> list[RateInfo] | None: ...
+    def copy_rates_from_pos(
+        self,
+        symbol: str,
+        timeframe: typing.SupportsInt,
+        start_pos: typing.SupportsInt,
+        count: typing.SupportsInt,
+    ) -> list[RateInfo] | None: ...
+    def copy_rates_range(
+        self,
+        symbol: str,
+        timeframe: typing.SupportsInt,
+        date_from: typing.SupportsInt,
+        date_to: typing.SupportsInt,
+    ) -> list[RateInfo] | None: ...
+    def copy_ticks_from(
+        self,
+        symbol: str,
+        date_from: typing.SupportsInt,
+        count: typing.SupportsInt,
+        flags: typing.SupportsInt,
+    ) -> list[TickInfo] | None: ...
+    def copy_ticks_range(
+        self,
+        symbol: str,
+        date_from: typing.SupportsInt,
+        date_to: typing.SupportsInt,
+        flags: typing.SupportsInt,
+    ) -> list[TickInfo] | None: ...
+    @overload
+    def history_deals_get(
+        self, date_from: typing.SupportsInt, date_to: typing.SupportsInt, group: str
+    ) -> list[TradeDeal] | None: ...
+    @overload
+    def history_deals_get(
+        self, ticket: typing.SupportsInt
+    ) -> list[TradeDeal] | None: ...
+    def history_deals_get_by_pos(
+        self, position_id: typing.SupportsInt
+    ) -> list[TradeDeal] | None: ...
     def history_deals_total(
-        self, arg0: typing.SupportsInt, arg1: typing.SupportsInt
+        self, date_from: typing.SupportsInt, date_to: typing.SupportsInt
     ) -> int: ...
-    def history_orders_get(self, *args, **kwargs): ...
-    def history_orders_get_by_pos(self, *args, **kwargs): ...
+    @overload
+    def history_orders_get(
+        self, date_from: typing.SupportsInt, date_to: typing.SupportsInt, group: str
+    ) -> list[TradeOrder] | None: ...
+    @overload
+    def history_orders_get(self, ticket: typing.SupportsInt) -> TradeOrder | None: ...
+    def history_orders_get_by_pos(
+        self, position_id: typing.SupportsInt
+    ) -> list[TradeOrder] | None: ...
     def history_orders_total(
-        self, arg0: typing.SupportsInt, arg1: typing.SupportsInt
+        self, date_from: typing.SupportsInt, date_to: typing.SupportsInt
     ) -> int: ...
     @overload
     def initialize(self) -> bool: ...
     @overload
-    def initialize(self, arg0: str) -> bool: ...
+    def initialize(self, path: str) -> bool: ...
     @overload
     def initialize(
         self,
-        arg0: str,
-        arg1: typing.SupportsInt,
-        arg2: str,
-        arg3: str,
-        arg4: typing.SupportsInt,
-        arg5: bool,
+        path: str,
+        login: typing.SupportsInt,
+        password: str,
+        server: str,
+        timeout: typing.SupportsInt,
+        portable: bool,
     ) -> bool: ...
     def last_error(self) -> tuple[int, str]: ...
     def login(
-        self, arg0: typing.SupportsInt, arg1: str, arg2: str, arg3: typing.SupportsInt
+        self,
+        login: typing.SupportsInt,
+        password: str,
+        server: str,
+        timeout: typing.SupportsInt,
     ) -> bool: ...
-    def market_book_add(self, arg0: str) -> bool: ...
-    def market_book_get(self, *args, **kwargs): ...
-    def market_book_release(self, arg0: str) -> bool: ...
+    def market_book_add(self, symbol: str) -> bool: ...
+    def market_book_get(self, symbol: str) -> list[BookInfo] | None: ...
+    def market_book_release(self, symbol: str) -> bool: ...
     def order_calc_margin(
         self,
-        arg0: typing.SupportsInt,
-        arg1: str,
-        arg2: typing.SupportsFloat,
-        arg3: typing.SupportsFloat,
+        action: typing.SupportsInt,
+        symbol: str,
+        volume: typing.SupportsFloat,
+        price: typing.SupportsFloat,
     ) -> float | None: ...
     def order_calc_profit(
         self,
-        arg0: typing.SupportsInt,
-        arg1: str,
-        arg2: typing.SupportsFloat,
-        arg3: typing.SupportsFloat,
-        arg4: typing.SupportsFloat,
+        action: typing.SupportsInt,
+        symbol: str,
+        volume: typing.SupportsFloat,
+        price_open: typing.SupportsFloat,
+        price_close: typing.SupportsFloat,
     ) -> float | None: ...
-    def order_check(self, *args, **kwargs): ...
-    def order_get_by_ticket(self, *args, **kwargs): ...
-    def order_send(self, *args, **kwargs): ...
-    def orders_get(self, *args, **kwargs): ...
-    def orders_get_by_group(self, *args, **kwargs): ...
+    def order_check(self, request: TradeRequest) -> OrderCheckResult: ...
+    def order_get_by_ticket(self, ticket: typing.SupportsInt) -> TradeOrder | None: ...
+    def order_send(self, request: TradeRequest) -> OrderSentResult: ...
+    @overload
+    def orders_get(self) -> list[TradeOrder] | None: ...
+    @overload
+    def orders_get(self, symbol: str) -> list[TradeOrder] | None: ...
+    def orders_get_by_group(self, group: str) -> list[TradeOrder] | None: ...
     def orders_total(self) -> int: ...
-    def position_get_by_ticket(self, *args, **kwargs): ...
-    def positions_get(self, *args, **kwargs): ...
-    def positions_get_by_group(self, *args, **kwargs): ...
+    def position_get_by_ticket(
+        self, ticket: typing.SupportsInt
+    ) -> TradePosition | None: ...
+    @overload
+    def positions_get(self) -> list[TradePosition] | None: ...
+    @overload
+    def positions_get(self, symbol: str) -> list[TradePosition] | None: ...
+    def positions_get_by_group(self, group: str) -> list[TradePosition] | None: ...
     def positions_total(self) -> int: ...
     def shutdown(self) -> None: ...
-    def symbol_info(self, *args, **kwargs): ...
-    def symbol_info_tick(self, *args, **kwargs): ...
-    def symbol_select(self, arg0: str, arg1: bool) -> bool: ...
-    def symbols_get(self, *args, **kwargs): ...
+    def symbol_info(self, symbol: str) -> SymbolInfo | None: ...
+    def symbol_info_tick(self, symbol: str) -> TickInfo | None: ...
+    def symbol_select(self, symbol: str, enable: bool) -> bool: ...
+    @overload
+    def symbols_get(self) -> list[SymbolInfo] | None: ...
+    @overload
+    def symbols_get(self, group: str) -> list[SymbolInfo] | None: ...
     def symbols_total(self) -> int: ...
-    def terminal_info(self, *args, **kwargs): ...
+    def terminal_info(self) -> TerminalInfo | None: ...
     def version(self) -> tuple[int, int, str] | None: ...
 
 class OrderCheckResult:
@@ -446,4 +536,7 @@ class TradeRequest:
     type_filling: int
     type_time: int
     volume: float
+    @overload
     def __init__(self) -> None: ...
+    @overload
+    def __init__(self, arg0: dict) -> None: ...

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <pybind11/numpy.h>
+
 #include <string>
 #include <vector>
 
@@ -131,11 +133,11 @@ enum class SymbolCalcMode : int32_t {
 };
 
 enum class SymbolTradeMode : int32_t {
-    DISABLED  = 0,
-    LONGONLY  = 1,
-    SHORTONLY = 2,
-    CLOSEONLY = 3,
-    FULL      = 4
+    DISABLED    = 0,
+    int64_tONLY = 1,
+    SHORTONLY   = 2,
+    CLOSEONLY   = 3,
+    FULL        = 4
 };
 
 enum class SymbolSwapMode : int32_t {
@@ -224,7 +226,7 @@ enum class TradeRetcode : int32_t {
     CLOSE_ORDER_EXIST    = 10039,
     LIMIT_POSITIONS      = 10040,
     REJECT_CANCEL        = 10041,
-    LONG_ONLY            = 10042,
+    int64_t_ONLY         = 10042,
     SHORT_ONLY           = 10043,
     CLOSE_ONLY           = 10044,
     FIFO_CLOSE           = 10045
@@ -246,6 +248,19 @@ enum class ReturnCode : int32_t {
     INTERNAL_FAIL_INIT    = -10003,
     INTERNAL_FAIL_CONNECT = -10004,
     INTERNAL_FAIL_TIMEOUT = -10005
+};
+
+enum class SymbolType : int32_t {
+    FOREX       = 0,  // Forex currency pairs
+    FUTURES     = 1,  // Futures contracts
+    STOCKS      = 2,  // Stocks and shares
+    BONDS       = 3,  // Bonds
+    CRYPTO      = 4,  // Cryptocurrencies
+    ETFS        = 5,  // Exchange-Traded Funds
+    INDICES     = 6,  // Market indices
+    COMMODITIES = 7,  // Commodities
+    OPTIONS     = 8,  // Options contracts
+    UNKNOWN     = 9   // Unknown or unsupported type
 };
 
 struct TerminalInfo {
@@ -274,9 +289,9 @@ struct TerminalInfo {
 };
 
 struct AccountInfo {
-    long        login;
+    int64_t     login;
     int32_t     trade_mode;
-    long        leverage;
+    int64_t     leverage;
     int         limit_orders;
     int32_t     margin_so_mode;
     bool        trade_allowed;
@@ -309,12 +324,12 @@ struct SymbolInfo {
     int32_t     chart_mode;
     bool        select;
     bool        visible;
-    long        session_deals;
-    long        session_buy_orders;
-    long        session_sell_orders;
-    long        volume;
-    long        volumehigh;
-    long        volumelow;
+    int64_t     session_deals;
+    int64_t     session_buy_orders;
+    int64_t     session_sell_orders;
+    int64_t     volume;
+    int64_t     volumehigh;
+    int64_t     volumelow;
     int64_t     time;
     int         digits;
     int         spread;
@@ -403,19 +418,7 @@ struct SymbolInfo {
     std::string path;
 };
 
-enum class SymbolType : int32_t {
-    FOREX       = 0,  // Forex currency pairs
-    FUTURES     = 1,  // Futures contracts
-    STOCKS      = 2,  // Stocks and shares
-    BONDS       = 3,  // Bonds
-    CRYPTO      = 4,  // Cryptocurrencies
-    ETFS        = 5,  // Exchange-Traded Funds
-    INDICES     = 6,  // Market indices
-    COMMODITIES = 7,  // Commodities
-    OPTIONS     = 8,  // Options contracts
-    UNKNOWN     = 9   // Unknown or unsupported type
-};
-
+#pragma pack(push, 1)
 struct TickInfo {
     int64_t  time;         // Time of the last prices update
     double   bid;          // Current Bid price
@@ -428,41 +431,42 @@ struct TickInfo {
 };
 
 struct RateInfo {
-    int64_t time;         // Period start time
-    double  open;         // Open price
-    double  high;         // The highest price of the period
-    double  low;          // The lowest price of the period
-    double  close;        // Close price
-    long    tick_volume;  // Tick volume
-    int     spread;       // Spread
-    long    real_volume;  // Trade volume
+    int64_t  time;         // Period start time
+    double   open;         // Open price
+    double   high;         // The highest price of the period
+    double   low;          // The lowest price of the period
+    double   close;        // Close price
+    uint64_t tick_volume;  // Tick volume
+    int32_t  spread;       // Spread
+    uint64_t real_volume;  // Trade volume
 };
+#pragma pack(pop)
 
 struct BookInfo {
-    int32_t type;         // Order type from ENUM_BOOK_TYPE enumeration
-    double  price;        // Price
-    long    volume;       // Volume
-    double  volume_real;  // Volume with greater accuracy
+    int32_t  type;         // Order type from ENUM_BOOK_TYPE enumeration
+    double   price;        // Price
+    uint64_t volume;       // Volume
+    double   volume_real;  // Volume with greater accuracy
 };
 
 struct TradeRequest {
-    int32_t     action;        // Trade operation type
-    int64_t     magic;         // Expert Advisor ID (magic number)
-    int64_t     order;         // Order ticket
-    std::string symbol;        // Trade symbol
-    double      volume;        // Requested volume for a deal in lots
-    double      price;         // Price
-    double      stoplimit;     // StopLimit level of the order
-    double      sl;            // Stop Loss level of the order
-    double      tp;            // Take Profit level of the order
-    int64_t     deviation;     // Maximal possible deviation from the requested price
-    int32_t     type;          // Order type
-    int32_t     type_filling;  // Order execution type
-    int32_t     type_time;     // Order expiration type
-    int64_t     expiration;   // Order expiration time (for the orders of ORDER_TIME_SPECIFIED type)
-    std::string comment;      // Order comment
-    int64_t     position;     // Position ticket
-    int64_t     position_by;  // The ticket of an opposite position
+    int32_t     action       = 0;    // Trade operation type
+    int64_t     magic        = 0;    // Expert Advisor ID (magic number)
+    int64_t     order        = 0;    // Order ticket
+    std::string symbol       = "";   // Trade symbol
+    double      volume       = 0.0;  // Requested volume for a deal in lots
+    double      price        = 0.0;  // Price
+    double      stoplimit    = 0.0;  // StopLimit level of the order
+    double      sl           = 0.0;  // Stop Loss level of the order
+    double      tp           = 0.0;  // Take Profit level of the order
+    int64_t     deviation    = 0;    // Maximal possible deviation from the requested price
+    int32_t     type         = 0;    // Order type
+    int32_t     type_filling = 0;    // Order execution type
+    int32_t     type_time    = 0;    // Order expiration type
+    int64_t     expiration   = 0;    // Order expiration time
+    std::string comment      = "";   // Order comment
+    int64_t     position     = 0;    // Position ticket
+    int64_t     position_by  = 0;    // The ticket of an opposite position
 };
 
 struct OrderCheckResult {
@@ -493,7 +497,7 @@ struct OrderSentResult {
 };
 
 struct TradeOrder {
-    long        ticket;
+    int64_t     ticket;
     int64_t     time_setup;
     int64_t     time_setup_msc;
     int64_t     time_done;
@@ -503,9 +507,9 @@ struct TradeOrder {
     int32_t     type_time;
     int32_t     type_filling;
     int32_t     state;
-    long        magic;
-    long        position_id;
-    long        position_by_id;
+    int64_t     magic;
+    int64_t     position_id;
+    int64_t     position_by_id;
     int32_t     reason;
     double      volume_initial;
     double      volume_current;
@@ -520,14 +524,14 @@ struct TradeOrder {
 };
 
 struct TradePosition {
-    long        ticket;
+    int64_t     ticket;
     int64_t     time;
     int64_t     time_msc;
     int64_t     time_update;
     int64_t     time_update_msc;
     int32_t     type;
-    long        magic;
-    long        identifier;
+    int64_t     magic;
+    int64_t     identifier;
     int32_t     reason;
     double      volume;
     double      price_open;
@@ -542,14 +546,14 @@ struct TradePosition {
 };
 
 struct TradeDeal {
-    long        ticket;
-    long        order;
+    int64_t     ticket;
+    int64_t     order;
     int64_t     time;
     int64_t     time_msc;
     int32_t     type;
     int32_t     entry;
-    long        magic;
-    long        position_id;
+    int64_t     magic;
+    int64_t     position_id;
     int32_t     reason;
     double      volume;
     double      price;

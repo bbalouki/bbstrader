@@ -44,25 +44,19 @@ using SubscribeBook   = std::function<bool(const std::string& symbol)>;
 using UnsubscribeBook = std::function<bool(const std::string& symbol)>;
 using GetBookInfo = std::function<std::optional<std::vector<BookInfo>>(const std::string& symbol)>;
 
-using GetRatesByDate = std::function<std::optional<std::vector<RateInfo>>(
-    const std::string& symbol, int32_t tf, int64_t from, int32_t count
-)>;
+using GetRatesByDate = std::function<
+    std::optional<std::vector<RateInfo>>(const std::string&, int32_t, int64_t, int32_t)>;
+using GetRatesByPos = std::function<
+    std::optional<std::vector<RateInfo>>(const std::string&, int32_t, int32_t, int32_t)>;
+using GetRatesByRange = std::function<
+    std::optional<std::vector<RateInfo>>(const std::string&, int32_t, int64_t, int64_t)>;
 
-using GetRatesByPos   = std::function<std::optional<std::vector<RateInfo>>(
-    const std::string& symbol, int32_t tf, int32_t start_pos, int32_t count
-)>;
-using GetRatesByRange = std::function<std::optional<std::vector<RateInfo>>(
-    const std::string& symbol, int32_t tf, int64_t from, int64_t to
-)>;
+using GetTicksByDate = std::function<
+    std::optional<std::vector<TickInfo>>(const std::string&, int64_t, int32_t, uint32_t)>;
+using GetTicksByRange = std::function<
+    std::optional<std::vector<TickInfo>>(const std::string&, int64_t, int64_t, uint32_t)>;
 
-using GetTicksByDate = std::function<std::optional<std::vector<TickInfo>>(
-    const std::string& symbol, int64_t from, int32_t count, uint32_t flags
-)>;
-
-using GetTicksByRange = std::function<std::optional<std::vector<TickInfo>>(
-    const std::string& symbol, int64_t from, int64_t to, uint32_t flags
-)>;
-using GetTickInfo     = std::function<std::optional<TickInfo>(const std::string& symbol)>;
+using GetTickInfo = std::function<std::optional<TickInfo>(const std::string& symbol)>;
 
 using GetOrdersAll = std::function<std::optional<std::vector<TradeOrder>>()>;
 using GetOrdersBySymbol =

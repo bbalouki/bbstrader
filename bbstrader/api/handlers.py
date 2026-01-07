@@ -9,7 +9,6 @@ from bbstrader.api import (
     Handlers,
     OrderCheckResult,
     OrderSentResult,
-    RateInfo,
     SymbolInfo,
     TerminalInfo,
     TickInfo,
@@ -21,31 +20,29 @@ from bbstrader.api import (
 
 
 def _convert_obj(obj, nt_type):
-    """Converts a single MT5 object to the target NamedTuple type."""
+    """Converts a single MT5 object to the target C++ class instance."""
     if obj is None:
         return None
 
-    # Create a dictionary of the fields from the source object
     if hasattr(obj, "_asdict"):
         field_data: dict = obj._asdict()
-        object_type = nt_type()
+        cpp_instance = nt_type()
+
         for k, v in field_data.items():
-            try:
-                setattr(object_type, k, v)
-            except Exception as e:
-                print(f"Error on {type(obj)} k: {k}, v: {v}")
-                print(e)
+            if not hasattr(cpp_instance, k):
+                continue
+            if (
+                k == "request"
+                and hasattr(v, "_asdict")
+                and nt_type in (OrderCheckResult, OrderSentResult)
+            ):
+                setattr(cpp_instance, k, v._asdict())
+            else:
+                setattr(cpp_instance, k, v)
 
-        # Handle nested object conversion for specific types
-        if nt_type is OrderCheckResult or nt_type is OrderSentResult:
-            if "request" in field_data and field_data["request"] is not None:
-                field_data["request"] = _convert_obj(
-                    field_data["request"], TradeRequest
-                )
-
-        return object_type
+        return cpp_instance
     else:
-        raise TypeError(f"Can not handle object of type {type(obj)}")
+        raise TypeError(f"Expected MT5 namedtuple, got {type(obj)}")
 
 
 def _convert_list(obj_list, nt_type):
@@ -54,33 +51,57 @@ def _convert_list(obj_list, nt_type):
     return [_convert_obj(obj, nt_type) for obj in obj_list]
 
 
-def _convert_nparray(arr, nt_type):
-    if arr is None:
-        return None
-    return [nt_type(**{name: row[name] for name in arr.dtype.names}) for row in arr]
+# def _convert_nparray(arr, nt_type):
+#     if arr is None:
+#         return None
+#     rates = []
+#     for rate in arr:
+#         rate_info = nt_type()
+#         for row in arr.dtype.names:
+#             setattr(rate_info, row, rate[row])
+#         rates.append(rate_info)
+#     return rates
 
 
 ENUM_TYPES = {"action", "type", "type_time", "type_filling"}
 
 
-def _build_request(req: TradeRequest) -> dict:
+def _build_request(req: TradeRequest | dict) -> dict:
+    if isinstance(req, dict):
+        return req
+
     request = {}
-    for attr in dir(mt5.TradeRequest):
-        if attr.startswith("_") or attr.startswith("n_"):
-            continue
-        if attr not in ENUM_TYPES and attr == 0 or "":
-            continue
-        request[attr] = getattr(req, attr)
+    attrs = [
+        "action",
+        "magic",
+        "order",
+        "symbol",
+        "volume",
+        "price",
+        "stoplimit",
+        "sl",
+        "tp",
+        "deviation",
+        "type",
+        "type_filling",
+        "type_time",
+        "expiration",
+        "comment",
+        "position",
+        "position_by",
+    ]
+    for attr in attrs:
+        val = getattr(req, attr)
+        if attr in ENUM_TYPES or (val != 0 and val != ""):
+            request[attr] = val
+    return request
 
 
 def check_order(request: TradeRequest) -> OrderCheckResult:
-
-    
     return mt5.order_check(_build_request(request))
 
 
 def send_order(request: TradeRequest) -> OrderSentResult:
-
     return mt5.order_send(_build_request(request))
 
 
@@ -138,28 +159,31 @@ def get_mt5_handlers():
     )
 
     # 3. Market Data (Rates & Ticks)
-    h.get_rates_by_date = lambda symbol, timeframe, date_from, count: _convert_nparray(
-        mt5.copy_rates_from(symbol, timeframe, get_time(get_time(date_from)), count),
-        RateInfo,
+    h.get_rates_by_date = (
+        lambda symbol, timeframe, date_from, count: mt5.copy_rates_from(
+            symbol, timeframe, get_time(get_time(date_from)), count
+        ),
     )
-    h.get_rates_by_pos = lambda symbol, timeframe, start_pos, count: _convert_nparray(
-        mt5.copy_rates_from_pos(symbol, timeframe, start_pos, count), RateInfo
-    )
-    h.get_rates_by_range = (
-        lambda symbol, timeframe, date_from, date_to: _convert_nparray(
-            mt5.copy_rates_range(
-                symbol, timeframe, get_time(date_from), get_time(date_to)
-            ),
-            RateInfo,
+
+    h.get_rates_by_pos = (
+        lambda symbol, timeframe, start_pos, count: mt5.copy_rates_from_pos(
+            symbol, timeframe, start_pos, count
         )
     )
-    h.get_ticks_by_date = lambda symbol, date_from, count, flags: _convert_nparray(
-        mt5.copy_ticks_from(symbol, get_time(date_from), count, flags), TickInfo
+    h.get_rates_by_range = (
+        lambda symbol, timeframe, date_from, date_to: mt5.copy_rates_range(
+            symbol, timeframe, get_time(date_from), get_time(date_to)
+        )
     )
-    h.get_ticks_by_range = lambda symbol, date_from, date_to, flags: _convert_nparray(
-        mt5.copy_ticks_range(symbol, get_time(date_from), get_time(date_to), flags),
-        TickInfo,
+    h.get_ticks_by_date = lambda symbol, date_from, count, flags: mt5.copy_ticks_from(
+        symbol, get_time(date_from), count, flags
     )
+    h.get_ticks_by_range = (
+        lambda symbol, date_from, date_to, flags: mt5.copy_ticks_range(
+            symbol, get_time(date_from), get_time(date_to), flags
+        )
+    )
+
     h.get_tick_info = lambda symbol: _convert_obj(
         mt5.symbol_info_tick(symbol), TickInfo
     )
@@ -179,7 +203,7 @@ def get_mt5_handlers():
         mt5.orders_get(group=group), TradeOrder
     )
     h.get_order_by_ticket = lambda ticket: _convert_obj(
-        mt5.orders_get(ticket=ticket), TradeOrder
+        (mt5.orders_get(ticket=ticket) or [None])[0], TradeOrder
     )
     h.get_total_orders = mt5.orders_total
     h.get_positions_all = lambda: _convert_list(mt5.positions_get(), TradePosition)
@@ -190,7 +214,7 @@ def get_mt5_handlers():
         mt5.positions_get(group=group), TradePosition
     )
     h.get_position_ticket = lambda ticket: _convert_obj(
-        mt5.positions_get(ticket=ticket), TradePosition
+        (mt5.positions_get(ticket=ticket) or [None])[0], TradePosition
     )
     h.get_total_positions = mt5.positions_total
 
