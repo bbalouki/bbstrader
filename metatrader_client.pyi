@@ -94,7 +94,7 @@ class Handlers:
     get_total_orders: collections.abc.Callable[[], int]
     get_total_positions: collections.abc.Callable[[], int]
     get_total_symbols: collections.abc.Callable[[], int]
-    get_version: collections.abc.Callable[[], str | None]
+    get_version: collections.abc.Callable[[], tuple[int, int, str] | None]
     init_auto: collections.abc.Callable[[], bool]
     init_full: collections.abc.Callable[
         [str, typing.SupportsInt, str, str, typing.SupportsInt, bool], bool
@@ -184,7 +184,7 @@ class MetaTraderClient:
     def symbols_get(self, *args, **kwargs): ...
     def symbols_total(self) -> int: ...
     def terminal_info(self, *args, **kwargs): ...
-    def version(self) -> str | None: ...
+    def version(self) -> tuple[int, int, str] | None: ...
 
 class OrderCheckResult:
     balance: float

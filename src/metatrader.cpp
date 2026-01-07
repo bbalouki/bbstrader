@@ -12,47 +12,45 @@ class PyMetaTraderClient : public MetaTraderClient {
     using MetaTraderClient::MetaTraderClient;
 
     // --- System ---
-    bool initialize() override { PYBIND11_OVERRIDE(bool, MetaTraderClient, initialize, ); }
+    bool initialize() override { PYBIND11_OVERRIDE(bool, MetaTraderClient, initialize); }
     bool initialize(const std::string& path) override {
         PYBIND11_OVERRIDE(bool, MetaTraderClient, initialize, path);
     }
     bool initialize(
         const std::string& path,
-        uint64_t           login,
+        uint64_t           account,
         const std::string& pw,
         const std::string& srv,
         uint32_t           to,
         bool               port
     ) override {
-        PYBIND11_OVERRIDE(bool, MetaTraderClient, initialize, path, login, pw, srv, to, port);
+        PYBIND11_OVERRIDE(bool, MetaTraderClient, initialize, path, account, pw, srv, to, port);
     }
     bool login(
-        uint64_t login, const std::string& pw, const std::string& srv, uint32_t timeout
+        uint64_t account, const std::string& pw, const std::string& srv, uint32_t timeout
     ) override {
-        PYBIND11_OVERRIDE(bool, MetaTraderClient, login, login, pw, srv, timeout);
+        PYBIND11_OVERRIDE(bool, MetaTraderClient, login, account, pw, srv, timeout);
     }
-    void shutdown() override { PYBIND11_OVERRIDE(void, MetaTraderClient, shutdown, ); }
-    std::optional<std::string> version() override {
-        PYBIND11_OVERRIDE(std::optional<std::string>, MetaTraderClient, version, );
+    void shutdown() override { PYBIND11_OVERRIDE(void, MetaTraderClient, shutdown); }
+    std::optional<VersionInfo> version() override {
+        PYBIND11_OVERRIDE(std::optional<VersionInfo>, MetaTraderClient, version);
     }
     LastErrorResult last_error() override {
-        PYBIND11_OVERRIDE(LastErrorResult, MetaTraderClient, last_error, );
+        PYBIND11_OVERRIDE(LastErrorResult, MetaTraderClient, last_error);
     }
-
     std::optional<TerminalInfo> terminal_info() override {
-        PYBIND11_OVERRIDE(std::optional<TerminalInfo>, MetaTraderClient, terminal_info, );
+        PYBIND11_OVERRIDE(std::optional<TerminalInfo>, MetaTraderClient, terminal_info);
     }
-
     std::optional<AccountInfo> account_info() override {
-        PYBIND11_OVERRIDE(std::optional<AccountInfo>, MetaTraderClient, account_info, );
+        PYBIND11_OVERRIDE(std::optional<AccountInfo>, MetaTraderClient, account_info);
     }
 
     // --- Symbols ---
     int32_t symbols_total() override {
-        PYBIND11_OVERRIDE(int32_t, MetaTraderClient, symbols_total, );
+        PYBIND11_OVERRIDE(int32_t, MetaTraderClient, symbols_total);
     }
     std::optional<std::vector<SymbolInfo>> symbols_get() override {
-        PYBIND11_OVERRIDE(std::optional<std::vector<SymbolInfo>>, MetaTraderClient, symbols_get, );
+        PYBIND11_OVERRIDE(std::optional<std::vector<SymbolInfo>>, MetaTraderClient, symbols_get);
     }
     std::optional<std::vector<SymbolInfo>> symbols_get(const std::string& group) override {
         PYBIND11_OVERRIDE(
@@ -165,6 +163,54 @@ class PyMetaTraderClient : public MetaTraderClient {
         );
     }
 
+    // --- Active Orders & Positions ---
+    std::optional<std::vector<TradeOrder>> orders_get() override {
+        PYBIND11_OVERRIDE(std::optional<std::vector<TradeOrder>>, MetaTraderClient, orders_get);
+    }
+    std::optional<std::vector<TradeOrder>> orders_get(const std::string& symbol) override {
+        PYBIND11_OVERRIDE(
+            std::optional<std::vector<TradeOrder>>, MetaTraderClient, orders_get, symbol
+        );
+    }
+    std::optional<std::vector<TradeOrder>> orders_get_by_group(const std::string& group) override {
+        PYBIND11_OVERRIDE(
+            std::optional<std::vector<TradeOrder>>, MetaTraderClient, orders_get_by_group, group
+        );
+    }
+    std::optional<TradeOrder> order_get_by_ticket(uint64_t ticket) override {
+        PYBIND11_OVERRIDE(std::optional<TradeOrder>, MetaTraderClient, order_get_by_ticket, ticket);
+    }
+    int32_t orders_total() override { PYBIND11_OVERRIDE(int32_t, MetaTraderClient, orders_total); }
+
+    std::optional<std::vector<TradePosition>> positions_get() override {
+        PYBIND11_OVERRIDE(
+            std::optional<std::vector<TradePosition>>, MetaTraderClient, positions_get
+        );
+    }
+    std::optional<std::vector<TradePosition>> positions_get(const std::string& symbol) override {
+        PYBIND11_OVERRIDE(
+            std::optional<std::vector<TradePosition>>, MetaTraderClient, positions_get, symbol
+        );
+    }
+    std::optional<std::vector<TradePosition>> positions_get_by_group(
+        const std::string& group
+    ) override {
+        PYBIND11_OVERRIDE(
+            std::optional<std::vector<TradePosition>>,
+            MetaTraderClient,
+            positions_get_by_group,
+            group
+        );
+    }
+    std::optional<TradePosition> position_get_by_ticket(uint64_t ticket) override {
+        PYBIND11_OVERRIDE(
+            std::optional<TradePosition>, MetaTraderClient, position_get_by_ticket, ticket
+        );
+    }
+    int32_t positions_total() override {
+        PYBIND11_OVERRIDE(int32_t, MetaTraderClient, positions_total);
+    }
+
     // --- History ---
     std::optional<std::vector<TradeOrder>> history_orders_get(
         int64_t from, int64_t to, const std::string& group
@@ -178,11 +224,9 @@ class PyMetaTraderClient : public MetaTraderClient {
             group
         );
     }
-
     std::optional<TradeOrder> history_orders_get(uint64_t ticket) override {
         PYBIND11_OVERRIDE(std::optional<TradeOrder>, MetaTraderClient, history_orders_get, ticket);
     }
-
     std::optional<std::vector<TradeOrder>> history_orders_get_by_pos(uint64_t pos_id) override {
         PYBIND11_OVERRIDE(
             std::optional<std::vector<TradeOrder>>,
@@ -191,7 +235,6 @@ class PyMetaTraderClient : public MetaTraderClient {
             pos_id
         );
     }
-
     int32_t history_orders_total(int64_t from, int64_t to) override {
         PYBIND11_OVERRIDE(int32_t, MetaTraderClient, history_orders_total, from, to);
     }
@@ -208,13 +251,11 @@ class PyMetaTraderClient : public MetaTraderClient {
             group
         );
     }
-
     std::optional<std::vector<TradeDeal>> history_deals_get(uint64_t ticket) override {
         PYBIND11_OVERRIDE(
             std::optional<std::vector<TradeDeal>>, MetaTraderClient, history_deals_get, ticket
         );
     }
-
     std::optional<std::vector<TradeDeal>> history_deals_get_by_pos(uint64_t pos_id) override {
         PYBIND11_OVERRIDE(
             std::optional<std::vector<TradeDeal>>,
@@ -223,16 +264,15 @@ class PyMetaTraderClient : public MetaTraderClient {
             pos_id
         );
     }
-
     int32_t history_deals_total(int64_t from, int64_t to) override {
         PYBIND11_OVERRIDE(int32_t, MetaTraderClient, history_deals_total, from, to);
     }
 };
 
+
 PYBIND11_MODULE(metatrader_client, m) {
     m.doc() = "High-performance MetaTrader 5 C++/Python Bridge";
 
-    // 1. Handlers Struct Binding (Mapping all 40+ function pointers)
     py::class_<MetaTraderClient::Handlers>(m, "Handlers")
         .def(py::init<>())
         // System & Session

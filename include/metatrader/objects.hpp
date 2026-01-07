@@ -417,14 +417,14 @@ enum class SymbolType : int32_t {
 };
 
 struct TickInfo {
-    int64_t       time;         // Time of the last prices update
-    double        bid;          // Current Bid price
-    double        ask;          // Current Ask price
-    double        last;         // Price of the last deal (Last)
-    unsigned long volume;       // Volume for the current Last price
-    long          time_msc;     // Time of a price last update in milliseconds
-    unsigned int  flags;        // Tick flags
-    double        volume_real;  // Volume for the current Last price with greater accuracy
+    int64_t  time;         // Time of the last prices update
+    double   bid;          // Current Bid price
+    double   ask;          // Current Ask price
+    double   last;         // Price of the last deal (Last)
+    int64_t  volume;       // Volume for the current Last price
+    int64_t  time_msc;     // Time of a price last update in milliseconds
+    uint32_t flags;        // Tick flags
+    double   volume_real;  // Volume for the current Last price with greater accuracy
 };
 
 struct RateInfo {
@@ -446,27 +446,27 @@ struct BookInfo {
 };
 
 struct TradeRequest {
-    int32_t       action;        // Trade operation type
-    unsigned long magic;         // Expert Advisor ID (magic number)
-    unsigned long order;         // Order ticket
-    std::string   symbol;        // Trade symbol
-    double        volume;        // Requested volume for a deal in lots
-    double        price;         // Price
-    double        stoplimit;     // StopLimit level of the order
-    double        sl;            // Stop Loss level of the order
-    double        tp;            // Take Profit level of the order
-    unsigned long deviation;     // Maximal possible deviation from the requested price
-    int32_t       type;          // Order type
-    int32_t       type_filling;  // Order execution type
-    int32_t       type_time;     // Order expiration type
-    int64_t     expiration;  // Order expiration time (for the orders of ORDER_TIME_SPECIFIED type)
-    std::string comment;     // Order comment
-    unsigned long position;  // Position ticket
-    unsigned long position_by;  // The ticket of an opposite position
+    int32_t     action;        // Trade operation type
+    int64_t     magic;         // Expert Advisor ID (magic number)
+    int64_t     order;         // Order ticket
+    std::string symbol;        // Trade symbol
+    double      volume;        // Requested volume for a deal in lots
+    double      price;         // Price
+    double      stoplimit;     // StopLimit level of the order
+    double      sl;            // Stop Loss level of the order
+    double      tp;            // Take Profit level of the order
+    int64_t     deviation;     // Maximal possible deviation from the requested price
+    int32_t     type;          // Order type
+    int32_t     type_filling;  // Order execution type
+    int32_t     type_time;     // Order expiration type
+    int64_t     expiration;   // Order expiration time (for the orders of ORDER_TIME_SPECIFIED type)
+    std::string comment;      // Order comment
+    int64_t     position;     // Position ticket
+    int64_t     position_by;  // The ticket of an opposite position
 };
 
 struct OrderCheckResult {
-    unsigned int retcode;       // Reply code
+    uint32_t     retcode;       // Reply code
     double       balance;       // Balance after the execution of the deal
     double       equity;        // Equity after the execution of the deal
     double       profit;        // Floating profit
@@ -478,16 +478,16 @@ struct OrderCheckResult {
 };
 
 struct OrderSentResult {
-    unsigned int  retcode;  // Operation return code
-    unsigned long deal;     // Deal ticket, if it is performed
-    unsigned long order;    // Order ticket, if it is placed
-    double        volume;   // Deal volume, confirmed by broker
-    double        price;    // Deal price, confirmed by broker
-    double        bid;      // Current Bid price
-    double        ask;      // Current Ask price
+    uint32_t    retcode;  // Operation return code
+    int64_t     deal;     // Deal ticket, if it is performed
+    int64_t     order;    // Order ticket, if it is placed
+    double      volume;   // Deal volume, confirmed by broker
+    double      price;    // Deal price, confirmed by broker
+    double      bid;      // Current Bid price
+    double      ask;      // Current Ask price
     std::string comment;  // Broker comment to operation (by default it is filled by description of
                           // trade server return code)
-    unsigned int request_id;        // Request ID set by the terminal during the dispatch
+    uint32_t     request_id;        // Request ID set by the terminal during the dispatch
     int          retcode_external;  // Return code of an external trading system
     TradeRequest request;
 };

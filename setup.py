@@ -13,6 +13,7 @@ ext_modules = [
         ],
         define_macros=[
             ("VERSION_INFO", __version__),
+            ("PYBIND11_DETAILED_ERROR_MESSAGES", 1),
         ],
         include_dirs=[
             os.path.abspath("./include"),

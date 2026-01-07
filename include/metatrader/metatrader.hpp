@@ -25,7 +25,8 @@ using Login = std::function<
     bool(uint64_t login, const std::string& password, const std::string& server, uint32_t timeout)>;
 
 using Shutdown        = std::function<void()>;
-using GetVersion      = std::function<std::optional<std::string>()>;
+using VersionInfo     = std::tuple<int32_t, int32_t, std::string>;
+using GetVersion      = std::function<std::optional<VersionInfo>()>;
 using LastErrorResult = std::tuple<int32_t, std::string>;
 using GetLastError    = std::function<LastErrorResult()>;
 
@@ -82,9 +83,8 @@ using GetTotalPositions   = std::function<int32_t()>;
 using CheckOrder = std::function<OrderCheckResult(const TradeRequest& request)>;
 using SendOrder  = std::function<OrderSentResult(const TradeRequest& request)>;
 
-using CalculateMargin = std::function<std::optional<double>(
-    int32_t action, const std::string& symbol, double volume, double price
-)>;
+using CalculateMargin = std::function<
+    std::optional<double>(int32_t action, const std::string& symbol, double volume, double price)>;
 using CalculateProfit = std::function<std::optional<double>(
     int32_t action, const std::string& symbol, double volume, double open, double close
 )>;
@@ -182,25 +182,25 @@ class MetaTraderClient {
     }
     virtual bool initialize(
         const std::string& path,
-        uint64_t           login,
+        uint64_t           account,
         const std::string& pw,
         const std::string& srv,
         uint32_t           timeout,
         bool               portable
     ) {
-        return h.init_full ? h.init_full(path, login, pw, srv, timeout, portable) : false;
+        return h.init_full ? h.init_full(path, account, pw, srv, timeout, portable) : false;
     }
     virtual bool login(
-        uint64_t login, const std::string& pw, const std::string& srv, uint32_t timeout
+        uint64_t account, const std::string& pw, const std::string& srv, uint32_t timeout
     ) {
-        return h.login ? h.login(login, pw, srv, timeout) : false;
+        return h.login ? h.login(account, pw, srv, timeout) : false;
     }
 
     virtual void shutdown() {
         if (h.shutdown)
             h.shutdown();
     }
-    virtual std::optional<std::string> version() {
+    virtual std::optional<VersionInfo> version() {
         return h.get_version ? h.get_version() : std::nullopt;
     }
     virtual LastErrorResult last_error() {
