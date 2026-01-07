@@ -74,15 +74,13 @@ def _build_request(req: TradeRequest) -> dict:
 
 
 def check_order(request: TradeRequest) -> OrderCheckResult:
-    if isinstance(request, dict):
-        return mt5.order_check(request)
+
     
     return mt5.order_check(_build_request(request))
 
 
 def send_order(request: TradeRequest) -> OrderSentResult:
-    if isinstance(request, dict):
-        return mt5.order_send(request)
+
     return mt5.order_send(_build_request(request))
 
 
