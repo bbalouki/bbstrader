@@ -6,9 +6,12 @@
 #include <string>
 #include <tuple>
 #include <vector>
+#include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
 
 #include "metatrader/objects.hpp"
 
+namespace py = pybind11;
 namespace MT5 {
 using InitializeAuto     = std::function<bool()>;
 using InitializeWithPath = std::function<bool(const std::string& path)>;
@@ -44,17 +47,17 @@ using SubscribeBook   = std::function<bool(const std::string& symbol)>;
 using UnsubscribeBook = std::function<bool(const std::string& symbol)>;
 using GetBookInfo = std::function<std::optional<std::vector<BookInfo>>(const std::string& symbol)>;
 
-using GetRatesByDate = std::function<
-    std::optional<std::vector<RateInfo>>(const std::string&, int32_t, int64_t, int32_t)>;
-using GetRatesByPos = std::function<
-    std::optional<std::vector<RateInfo>>(const std::string&, int32_t, int32_t, int32_t)>;
-using GetRatesByRange = std::function<
-    std::optional<std::vector<RateInfo>>(const std::string&, int32_t, int64_t, int64_t)>;
+using GetRatesByDate =
+    std::function<py::array_t<RateInfo>(const std::string&, int32_t, int64_t, int32_t)>;
+using GetRatesByPos =
+    std::function<py::array_t<RateInfo>(const std::string&, int32_t, int32_t, int32_t)>;
+using GetRatesByRange =
+    std::function<py::array_t<RateInfo>(const std::string&, int32_t, int64_t, int64_t)>;
 
-using GetTicksByDate = std::function<
-    std::optional<std::vector<TickInfo>>(const std::string&, int64_t, int32_t, uint32_t)>;
-using GetTicksByRange = std::function<
-    std::optional<std::vector<TickInfo>>(const std::string&, int64_t, int64_t, uint32_t)>;
+using GetTicksByDate =
+    std::function<py::array_t<TickInfo>(const std::string&, int64_t, int32_t, uint32_t)>;
+using GetTicksByRange =
+    std::function<py::array_t<TickInfo>(const std::string&, int64_t, int64_t, uint32_t)>;
 
 using GetTickInfo = std::function<std::optional<TickInfo>(const std::string& symbol)>;
 
@@ -234,30 +237,35 @@ class MetaTraderClient {
     }
 
     // --- Market Data ---
-    virtual std::optional<std::vector<RateInfo>> copy_rates_from(
+    virtual py::array_t<RateInfo> copy_rates_from(
         const std::string& s, int32_t t, int64_t from, int32_t count
     ) {
-        return h.get_rates_by_date ? h.get_rates_by_date(s, t, from, count) : std::nullopt;
+        return h.get_rates_by_date ? h.get_rates_by_date(s, t, from, count)
+                                   : py::array_t<RateInfo>();
     }
-    virtual std::optional<std::vector<RateInfo>> copy_rates_from_pos(
+    virtual py::array_t<RateInfo> copy_rates_from_pos(
         const std::string& s, int32_t t, int32_t start, int32_t count
     ) {
-        return h.get_rates_by_pos ? h.get_rates_by_pos(s, t, start, count) : std::nullopt;
+        return h.get_rates_by_pos ? h.get_rates_by_pos(s, t, start, count)
+                                  : py::array_t<RateInfo>();
     }
-    virtual std::optional<std::vector<RateInfo>> copy_rates_range(
+    virtual py::array_t<RateInfo> copy_rates_range(
         const std::string& s, int32_t t, int64_t from, int64_t to
     ) {
-        return h.get_rates_by_range ? h.get_rates_by_range(s, t, from, to) : std::nullopt;
+        return h.get_rates_by_range ? h.get_rates_by_range(s, t, from, to)
+                                    : py::array_t<RateInfo>();
     }
-    virtual std::optional<std::vector<TickInfo>> copy_ticks_from(
+    virtual py::array_t<TickInfo> copy_ticks_from(
         const std::string& s, int64_t from, int32_t count, uint32_t flags
     ) {
-        return h.get_ticks_by_date ? h.get_ticks_by_date(s, from, count, flags) : std::nullopt;
+        return h.get_ticks_by_date ? h.get_ticks_by_date(s, from, count, flags)
+                                   : py::array_t<TickInfo>();
     }
-    virtual std::optional<std::vector<TickInfo>> copy_ticks_range(
+    virtual py::array_t<TickInfo> copy_ticks_range(
         const std::string& s, int64_t from, int64_t to, uint32_t flags
     ) {
-        return h.get_ticks_by_range ? h.get_ticks_by_range(s, from, to, flags) : std::nullopt;
+        return h.get_ticks_by_range ? h.get_ticks_by_range(s, from, to, flags)
+                                    : py::array_t<TickInfo>();
     }
     virtual std::optional<TickInfo> symbol_info_tick(const std::string& symbol) {
         return h.get_tick_info ? h.get_tick_info(symbol) : std::nullopt;

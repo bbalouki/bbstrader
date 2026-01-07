@@ -1,6 +1,7 @@
 import collections.abc
 import typing
 from typing import overload
+import numpy
 
 class AccountInfo:
     assets: float
@@ -97,15 +98,15 @@ class Handlers:
     get_positions_symbol: collections.abc.Callable[[str], list[TradePosition] | None]
     get_rates_by_date: collections.abc.Callable[
         [str, typing.SupportsInt, typing.SupportsInt, typing.SupportsInt],
-        list[RateInfo] | None,
+        numpy.ndarray,
     ]
     get_rates_by_pos: collections.abc.Callable[
         [str, typing.SupportsInt, typing.SupportsInt, typing.SupportsInt],
-        list[RateInfo] | None,
+        numpy.ndarray,
     ]
     get_rates_by_range: collections.abc.Callable[
         [str, typing.SupportsInt, typing.SupportsInt, typing.SupportsInt],
-        list[RateInfo] | None,
+        numpy.ndarray,
     ]
     get_symbol_info: collections.abc.Callable[[str], SymbolInfo | None]
     get_symbols_all: collections.abc.Callable[[], list[SymbolInfo] | None]
@@ -114,11 +115,11 @@ class Handlers:
     get_tick_info: collections.abc.Callable[[str], TickInfo | None]
     get_ticks_by_date: collections.abc.Callable[
         [str, typing.SupportsInt, typing.SupportsInt, typing.SupportsInt],
-        list[TickInfo] | None,
+        numpy.ndarray,
     ]
     get_ticks_by_range: collections.abc.Callable[
         [str, typing.SupportsInt, typing.SupportsInt, typing.SupportsInt],
-        list[TickInfo] | None,
+        numpy.ndarray,
     ]
     get_total_orders: collections.abc.Callable[[], int]
     get_total_positions: collections.abc.Callable[[], int]
@@ -151,35 +152,35 @@ class MetaTraderClient:
         timeframe: typing.SupportsInt,
         date_from: typing.SupportsInt,
         count: typing.SupportsInt,
-    ) -> list[RateInfo] | None: ...
+    ) -> numpy.ndarray: ...
     def copy_rates_from_pos(
         self,
         symbol: str,
         timeframe: typing.SupportsInt,
         start_pos: typing.SupportsInt,
         count: typing.SupportsInt,
-    ) -> list[RateInfo] | None: ...
+    ) -> numpy.ndarray: ...
     def copy_rates_range(
         self,
         symbol: str,
         timeframe: typing.SupportsInt,
         date_from: typing.SupportsInt,
         date_to: typing.SupportsInt,
-    ) -> list[RateInfo] | None: ...
+    ) -> numpy.ndarray: ...
     def copy_ticks_from(
         self,
         symbol: str,
         date_from: typing.SupportsInt,
         count: typing.SupportsInt,
         flags: typing.SupportsInt,
-    ) -> list[TickInfo] | None: ...
+    ) -> numpy.ndarray: ...
     def copy_ticks_range(
         self,
         symbol: str,
         date_from: typing.SupportsInt,
         date_to: typing.SupportsInt,
         flags: typing.SupportsInt,
-    ) -> list[TickInfo] | None: ...
+    ) -> numpy.ndarray: ...
     @overload
     def history_deals_get(
         self, date_from: typing.SupportsInt, date_to: typing.SupportsInt, group: str

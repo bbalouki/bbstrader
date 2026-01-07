@@ -159,12 +159,9 @@ def get_mt5_handlers():
     )
 
     # 3. Market Data (Rates & Ticks)
-    h.get_rates_by_date = (
-        lambda symbol, timeframe, date_from, count: mt5.copy_rates_from(
-            symbol, timeframe, get_time(get_time(date_from)), count
-        ),
+    h.get_rates_by_date = lambda symbol, timeframe, date_from, count: mt5.copy_rates_from(
+        symbol, timeframe, get_time(date_from), count
     )
-
     h.get_rates_by_pos = (
         lambda symbol, timeframe, start_pos, count: mt5.copy_rates_from_pos(
             symbol, timeframe, start_pos, count
