@@ -8,247 +8,6 @@ namespace py = pybind11;
 using namespace MT5;
 
 // ===================================================================================
-// Conversion Helpers to NamedTuple
-// ===================================================================================
-
-namespace {  // Anonymous namespace for helpers
-
-// Forward declaration for nested types
-py::object to_namedtuple(const TradeRequest& req);
-
-py::object to_namedtuple(const TerminalInfo& info) {
-    static auto nt = py::module_::import("collections").attr("namedtuple")(
-        "TerminalInfo",
-        std::vector<std::string>{
-            "community_account", "community_connection", "connected",       "dlls_allowed",
-            "trade_allowed",     "tradeapi_disabled",    "email_enabled",   "ftp_enabled",
-            "notifications_enabled", "mqid",             "build",           "maxbars",
-            "codepage",          "ping_last",            "community_balance", "retransmission",
-            "company",           "name",                 "language",        "path",
-            "data_path",         "commondata_path"}
-    );
-    return nt(
-        info.community_account, info.community_connection, info.connected, info.dlls_allowed,
-        info.trade_allowed, info.tradeapi_disabled, info.email_enabled, info.ftp_enabled,
-        info.notifications_enabled, info.mqid, info.build, info.maxbars, info.codepage,
-        info.ping_last, info.community_balance, info.retransmission, info.company, info.name,
-        info.language, info.path, info.data_path, info.commondata_path
-    );
-}
-
-py::object to_namedtuple(const AccountInfo& info) {
-    static auto nt = py::module_::import("collections").attr("namedtuple")(
-        "AccountInfo",
-        std::vector<std::string>{
-            "login",          "trade_mode",     "leverage",       "limit_orders", "margin_so_mode",
-            "trade_allowed",  "trade_expert",   "margin_mode",    "currency_digits", "fifo_close",
-            "balance",        "credit",         "profit",         "equity",       "margin",
-            "margin_free",    "margin_level",   "margin_so_call", "margin_so_so", "margin_initial",
-            "margin_maintenance", "assets",     "liabilities",    "commission_blocked", "name",
-            "server",         "currency",       "company"}
-    );
-    return nt(
-        info.login, info.trade_mode, info.leverage, info.limit_orders, info.margin_so_mode,
-        info.trade_allowed, info.trade_expert, info.margin_mode, info.currency_digits,
-        info.fifo_close, info.balance, info.credit, info.profit, info.equity, info.margin,
-        info.margin_free, info.margin_level, info.margin_so_call, info.margin_so_so,
-        info.margin_initial, info.margin_maintenance, info.assets, info.liabilities,
-        info.commission_blocked, info.name, info.server, info.currency, info.company
-    );
-}
-
-py::object to_namedtuple(const SymbolInfo& info) {
-    static auto nt = py::module_::import("collections").attr("namedtuple")(
-        "SymbolInfo",
-        std::vector<std::string>{
-            "custom", "chart_mode", "select", "visible", "session_deals",
-            "session_buy_orders", "session_sell_orders", "volume", "volumehigh", "volumelow",
-            "time", "digits", "spread", "spread_float", "ticks_bookdepth", "trade_calc_mode",
-            "trade_mode", "start_time", "expiration_time", "trade_stops_level",
-            "trade_freeze_level", "trade_exemode", "swap_mode", "swap_rollover3days",
-            "margin_hedged_use_leg", "expiration_mode", "filling_mode", "order_mode",
-            "order_gtc_mode", "option_mode", "option_right", "bid", "bidhigh", "bidlow", "ask",
-            "askhigh", "asklow", "last", "lasthigh", "lastlow", "volume_real",
-            "volumehigh_real", "volumelow_real", "option_strike", "point", "trade_tick_value",
-            "trade_tick_value_profit", "trade_tick_value_loss", "trade_tick_size",
-            "trade_contract_size", "trade_accrued_interest", "trade_face_value",
-            "trade_liquidity_rate", "volume_min", "volume_max", "volume_step", "volume_limit",
-            "swap_long", "swap_short", "margin_initial", "margin_maintenance", "session_volume",
-            "session_turnover", "session_interest", "session_buy_orders_volume",
-            "session_sell_orders_volume", "session_open", "session_close", "session_aw",
-            "session_price_settlement", "session_price_limit_min", "session_price_limit_max",
-            "margin_hedged", "price_change", "price_volatility", "price_theoretical",
-            "price_greeks_delta", "price_greeks_theta", "price_greeks_gamma",
-            "price_greeks_vega", "price_greeks_rho", "price_greeks_omega", "price_sensitivity",
-            "basis", "category", "currency_base", "currency_profit", "currency_margin", "bank",
-            "description", "exchange", "formula", "isin", "name", "page", "path"}
-    );
-    return nt(
-        info.custom, info.chart_mode, info.select, info.visible, info.session_deals,
-        info.session_buy_orders, info.session_sell_orders, info.volume, info.volumehigh,
-        info.volumelow, info.time, info.digits, info.spread, info.spread_float,
-        info.ticks_bookdepth, info.trade_calc_mode, info.trade_mode, info.start_time,
-        info.expiration_time, info.trade_stops_level, info.trade_freeze_level,
-        info.trade_exemode, info.swap_mode, info.swap_rollover3days,
-        info.margin_hedged_use_leg, info.expiration_mode, info.filling_mode, info.order_mode,
-        info.order_gtc_mode, info.option_mode, info.option_right, info.bid, info.bidhigh,
-        info.bidlow, info.ask, info.askhigh, info.asklow, info.last, info.lasthigh,
-        info.lastlow, info.volume_real, info.volumehigh_real, info.volumelow_real,
-        info.option_strike, info.point, info.trade_tick_value, info.trade_tick_value_profit,
-        info.trade_tick_value_loss, info.trade_tick_size, info.trade_contract_size,
-        info.trade_accrued_interest, info.trade_face_value, info.trade_liquidity_rate,
-        info.volume_min, info.volume_max, info.volume_step, info.volume_limit, info.swap_long,
-        info.swap_short, info.margin_initial, info.margin_maintenance, info.session_volume,
-        info.session_turnover, info.session_interest, info.session_buy_orders_volume,
-        info.session_sell_orders_volume, info.session_open, info.session_close, info.session_aw,
-        info.session_price_settlement, info.session_price_limit_min,
-        info.session_price_limit_max, info.margin_hedged, info.price_change,
-        info.price_volatility, info.price_theoretical, info.price_greeks_delta,
-        info.price_greeks_theta, info.price_greeks_gamma, info.price_greeks_vega,
-        info.price_greeks_rho, info.price_greeks_omega, info.price_sensitivity, info.basis,
-        info.category, info.currency_base, info.currency_profit, info.currency_margin,
-        info.bank, info.description, info.exchange, info.formula, info.isin, info.name,
-        info.page, info.path
-    );
-}
-
-py::object to_namedtuple(const TickInfo& info) {
-    static auto nt = py::module_::import("collections").attr("namedtuple")(
-        "TickInfo",
-        std::vector<std::string>{
-            "time", "bid", "ask", "last", "volume", "time_msc", "flags", "volume_real"}
-    );
-    return nt(
-        info.time, info.bid, info.ask, info.last, info.volume, info.time_msc, info.flags,
-        info.volume_real
-    );
-}
-
-py::object to_namedtuple(const RateInfo& info) {
-    static auto nt = py::module_::import("collections").attr("namedtuple")(
-        "RateInfo",
-        std::vector<std::string>{
-            "time", "open", "high", "low", "close", "tick_volume", "spread", "real_volume"}
-    );
-    return nt(
-        info.time, info.open, info.high, info.low, info.close, info.tick_volume, info.spread,
-        info.real_volume
-    );
-}
-
-py::object to_namedtuple(const BookInfo& info) {
-    static auto nt = py::module_::import("collections").attr("namedtuple")(
-        "BookInfo", std::vector<std::string>{"type", "price", "volume", "volume_real"}
-    );
-    return nt(info.type, info.price, info.volume, info.volume_real);
-}
-
-py::object to_namedtuple(const TradeRequest& req) {
-    static auto nt = py::module_::import("collections").attr("namedtuple")(
-        "TradeRequest",
-        std::vector<std::string>{
-            "action", "magic", "order", "symbol", "volume", "price", "stoplimit", "sl", "tp",
-            "deviation", "type", "type_filling", "type_time", "expiration", "comment",
-            "position", "position_by"}
-    );
-    return nt(
-        req.action, req.magic, req.order, req.symbol, req.volume, req.price, req.stoplimit,
-        req.sl, req.tp, req.deviation, req.type, req.type_filling, req.type_time,
-        req.expiration, req.comment, req.position, req.position_by
-    );
-}
-
-py::object to_namedtuple(const OrderCheckResult& res) {
-    static auto nt = py::module_::import("collections").attr("namedtuple")(
-        "OrderCheckResult",
-        std::vector<std::string>{
-            "retcode", "balance", "equity", "profit", "margin", "margin_free", "margin_level",
-            "comment", "request"}
-    );
-    return nt(
-        res.retcode, res.balance, res.equity, res.profit, res.margin, res.margin_free,
-        res.margin_level, res.comment, to_namedtuple(res.request)
-    );
-}
-
-py::object to_namedtuple(const OrderSentResult& res) {
-    static auto nt = py::module_::import("collections").attr("namedtuple")(
-        "OrderSentResult",
-        std::vector<std::string>{
-            "retcode", "deal", "order", "volume", "price", "bid", "ask", "comment",
-            "request_id", "retcode_external", "request"}
-    );
-    return nt(
-        res.retcode, res.deal, res.order, res.volume, res.price, res.bid, res.ask, res.comment,
-        res.request_id, res.retcode_external, to_namedtuple(res.request)
-    );
-}
-
-py::object to_namedtuple(const TradeOrder& order) {
-    static auto nt = py::module_::import("collections").attr("namedtuple")(
-        "TradeOrder",
-        std::vector<std::string>{
-            "ticket", "time_setup", "time_setup_msc", "time_done", "time_done_msc",
-            "time_expiration", "type", "type_time", "type_filling", "state", "magic",
-            "position_id", "position_by_id", "reason", "volume_initial", "volume_current",
-            "price_open", "sl", "tp", "price_current", "price_stoplimit", "symbol", "comment",
-            "external_id"}
-    );
-    return nt(
-        order.ticket, order.time_setup, order.time_setup_msc, order.time_done,
-        order.time_done_msc, order.time_expiration, order.type, order.type_time,
-        order.type_filling, order.state, order.magic, order.position_id, order.position_by_id,
-        order.reason, order.volume_initial, order.volume_current, order.price_open, order.sl,
-        order.tp, order.price_current, order.price_stoplimit, order.symbol, order.comment,
-        order.external_id
-    );
-}
-
-py::object to_namedtuple(const TradePosition& pos) {
-    static auto nt = py::module_::import("collections").attr("namedtuple")(
-        "TradePosition",
-        std::vector<std::string>{
-            "ticket", "time", "time_msc", "time_update", "time_update_msc", "type", "magic",
-            "identifier", "reason", "volume", "price_open", "sl", "tp", "price_current",
-            "swap", "profit", "symbol", "comment", "external_id"}
-    );
-    return nt(
-        pos.ticket, pos.time, pos.time_msc, pos.time_update, pos.time_update_msc, pos.type,
-        pos.magic, pos.identifier, pos.reason, pos.volume, pos.price_open, pos.sl, pos.tp,
-        pos.price_current, pos.swap, pos.profit, pos.symbol, pos.comment, pos.external_id
-    );
-}
-
-py::object to_namedtuple(const TradeDeal& deal) {
-    static auto nt = py::module_::import("collections").attr("namedtuple")(
-        "TradeDeal",
-        std::vector<std::string>{
-            "ticket", "order", "time", "time_msc", "type", "entry", "magic", "position_id",
-            "reason", "volume", "price", "commission", "swap", "profit", "fee", "symbol",
-            "comment", "external_id"}
-    );
-    return nt(
-        deal.ticket, deal.order, deal.time, deal.time_msc, deal.type, deal.entry, deal.magic,
-        deal.position_id, deal.reason, deal.volume, deal.price, deal.commission, deal.swap,
-        deal.profit, deal.fee, deal.symbol, deal.comment, deal.external_id
-    );
-}
-
-// Generic list converter
-template <typename T> py::object to_list_of_namedtuples(const std::optional<std::vector<T>>& vec_opt) {
-    if (!vec_opt) {
-        return py::none();
-    }
-    py::list list;
-    for (const auto& item : *vec_opt) {
-        list.append(to_namedtuple(item));
-    }
-    return list;
-}
-
-}  // anonymous namespace
-
-// ===================================================================================
 // Trampoline class for virtual functions
 // ===================================================================================
 
@@ -400,8 +159,6 @@ PYBIND11_MODULE(metatrader_client, m) {
     py::class_<MetaTraderClient, PyMetaTraderClient>(m, "MetaTraderClient")
         .def(py::init<>())
         .def(py::init<MetaTraderClient::Handlers>())
-
-        // --- System Methods ---
         .def("initialize", py::overload_cast<>(&MetaTraderClient::initialize))
         .def("initialize", py::overload_cast<const std::string&>(&MetaTraderClient::initialize))
         .def("initialize", py::overload_cast<const std::string&, uint64_t, const std::string&, const std::string&, uint32_t, bool>(&MetaTraderClient::initialize))
@@ -409,73 +166,238 @@ PYBIND11_MODULE(metatrader_client, m) {
         .def("shutdown", &MetaTraderClient::shutdown)
         .def("version", &MetaTraderClient::version)
         .def("last_error", &MetaTraderClient::last_error)
-        .def("terminal_info", [](MetaTraderClient& self) {
-            auto result = self.terminal_info();
-            return result ? to_namedtuple(*result) : py::none();
-        })
-        .def("account_info", [](MetaTraderClient& self) {
-            auto result = self.account_info();
-            return result ? to_namedtuple(*result) : py::none();
-        })
-
-        // --- Symbol & Market Depth Methods ---
+        .def("terminal_info", &MetaTraderClient::terminal_info, py::return_value_policy::move)
+        .def("account_info", &MetaTraderClient::account_info, py::return_value_policy::move)
         .def("symbols_total", &MetaTraderClient::symbols_total)
-        .def("symbols_get", [](MetaTraderClient& self) { return to_list_of_namedtuples(self.symbols_get()); })
-        .def("symbols_get", [](MetaTraderClient& self, const std::string& group) { return to_list_of_namedtuples(self.symbols_get(group)); })
-        .def("symbol_info", [](MetaTraderClient& self, const std::string& symbol) {
-            auto result = self.symbol_info(symbol);
-            return result ? to_namedtuple(*result) : py::none();
-        })
+        .def("symbols_get", py::overload_cast<>(&MetaTraderClient::symbols_get), py::return_value_policy::move)
+        .def("symbols_get", py::overload_cast<const std::string&>(&MetaTraderClient::symbols_get), py::return_value_policy::move)
+        .def("symbol_info", &MetaTraderClient::symbol_info, py::return_value_policy::move)
         .def("symbol_select", &MetaTraderClient::symbol_select)
         .def("market_book_add", &MetaTraderClient::market_book_add)
         .def("market_book_release", &MetaTraderClient::market_book_release)
-        .def("market_book_get", [](MetaTraderClient& self, const std::string& symbol) { return to_list_of_namedtuples(self.market_book_get(symbol)); })
-
-        // --- Market Data Methods ---
-        .def("copy_rates_from", [](MetaTraderClient& self, const std::string& s, int32_t t, int64_t from, int32_t count) { return to_list_of_namedtuples(self.copy_rates_from(s, t, from, count)); })
-        .def("copy_rates_from_pos", [](MetaTraderClient& self, const std::string& s, int32_t t, int32_t start, int32_t count) { return to_list_of_namedtuples(self.copy_rates_from_pos(s, t, start, count)); })
-        .def("copy_rates_range", [](MetaTraderClient& self, const std::string& s, int32_t t, int64_t from, int64_t to) { return to_list_of_namedtuples(self.copy_rates_range(s, t, from, to)); })
-        .def("copy_ticks_from", [](MetaTraderClient& self, const std::string& s, int64_t from, int32_t count, uint32_t flags) { return to_list_of_namedtuples(self.copy_ticks_from(s, from, count, flags)); })
-        .def("copy_ticks_range", [](MetaTraderClient& self, const std::string& s, int64_t from, int64_t to, uint32_t flags) { return to_list_of_namedtuples(self.copy_ticks_range(s, from, to, flags)); })
-        .def("symbol_info_tick", [](MetaTraderClient& self, const std::string& symbol) {
-            auto result = self.symbol_info_tick(symbol);
-            return result ? to_namedtuple(*result) : py::none();
-        })
-
-        // --- Trading Methods ---
-        .def("order_check", [](MetaTraderClient& self, const TradeRequest& req) { return to_namedtuple(self.order_check(req)); })
-        .def("order_send", [](MetaTraderClient& self, const TradeRequest& req) { return to_namedtuple(self.order_send(req)); })
+        .def("market_book_get", &MetaTraderClient::market_book_get, py::return_value_policy::move)
+        .def("copy_rates_from", &MetaTraderClient::copy_rates_from, py::return_value_policy::move)
+        .def("copy_rates_from_pos", &MetaTraderClient::copy_rates_from_pos, py::return_value_policy::move)
+        .def("copy_rates_range", &MetaTraderClient::copy_rates_range, py::return_value_policy::move)
+        .def("copy_ticks_from", &MetaTraderClient::copy_ticks_from, py::return_value_policy::move)
+        .def("copy_ticks_range", &MetaTraderClient::copy_ticks_range, py::return_value_policy::move)
+        .def("symbol_info_tick", &MetaTraderClient::symbol_info_tick, py::return_value_policy::move)
+        .def("order_check", &MetaTraderClient::order_check, py::return_value_policy::move)
+        .def("order_send", &MetaTraderClient::order_send, py::return_value_policy::move)
         .def("order_calc_margin", &MetaTraderClient::order_calc_margin)
         .def("order_calc_profit", &MetaTraderClient::order_calc_profit)
-
-        // --- Active Orders & Positions Methods ---
-        .def("orders_get", [](MetaTraderClient& self) { return to_list_of_namedtuples(self.orders_get()); })
-        .def("orders_get", [](MetaTraderClient& self, const std::string& symbol) { return to_list_of_namedtuples(self.orders_get(symbol)); })
-        .def("orders_get_by_group", [](MetaTraderClient& self, const std::string& group) { return to_list_of_namedtuples(self.orders_get_by_group(group)); })
-        .def("order_get_by_ticket", [](MetaTraderClient& self, uint64_t ticket) {
-            auto result = self.order_get_by_ticket(ticket);
-            return result ? to_namedtuple(*result) : py::none();
-        })
+        .def("orders_get", py::overload_cast<>(&MetaTraderClient::orders_get), py::return_value_policy::move)
+        .def("orders_get", py::overload_cast<const std::string&>(&MetaTraderClient::orders_get), py::return_value_policy::move)
+        .def("orders_get_by_group", &MetaTraderClient::orders_get_by_group, py::return_value_policy::move)
+        .def("order_get_by_ticket", &MetaTraderClient::order_get_by_ticket, py::return_value_policy::move)
         .def("orders_total", &MetaTraderClient::orders_total)
-        .def("positions_get", [](MetaTraderClient& self) { return to_list_of_namedtuples(self.positions_get()); })
-        .def("positions_get", [](MetaTraderClient& self, const std::string& symbol) { return to_list_of_namedtuples(self.positions_get(symbol)); })
-        .def("positions_get_by_group", [](MetaTraderClient& self, const std::string& group) { return to_list_of_namedtuples(self.positions_get_by_group(group)); })
-        .def("position_get_by_ticket", [](MetaTraderClient& self, uint64_t ticket) {
-            auto result = self.position_get_by_ticket(ticket);
-            return result ? to_namedtuple(*result) : py::none();
-        })
+        .def("positions_get", py::overload_cast<>(&MetaTraderClient::positions_get), py::return_value_policy::move)
+        .def("positions_get", py::overload_cast<const std::string&>(&MetaTraderClient::positions_get), py::return_value_policy::move)
+        .def("positions_get_by_group", &MetaTraderClient::positions_get_by_group, py::return_value_policy::move)
+        .def("position_get_by_ticket", &MetaTraderClient::position_get_by_ticket, py::return_value_policy::move)
         .def("positions_total", &MetaTraderClient::positions_total)
-
-        // --- History Methods ---
-        .def("history_orders_get", [](MetaTraderClient& self, int64_t from, int64_t to, const std::string& group) { return to_list_of_namedtuples(self.history_orders_get(from, to, group)); })
-        .def("history_orders_get", [](MetaTraderClient& self, uint64_t ticket) {
-            auto result = self.history_orders_get(ticket);
-            return result ? to_namedtuple(*result) : py::none();
-        })
-        .def("history_orders_get_by_pos", [](MetaTraderClient& self, uint64_t pos_id) { return to_list_of_namedtuples(self.history_orders_get_by_pos(pos_id)); })
+        .def("history_orders_get", py::overload_cast<int64_t, int64_t, const std::string&>(&MetaTraderClient::history_orders_get), py::return_value_policy::move)
+        .def("history_orders_get", py::overload_cast<uint64_t>(&MetaTraderClient::history_orders_get), py::return_value_policy::move)
+        .def("history_orders_get_by_pos", &MetaTraderClient::history_orders_get_by_pos, py::return_value_policy::move)
         .def("history_orders_total", &MetaTraderClient::history_orders_total)
-        .def("history_deals_get", [](MetaTraderClient& self, int64_t from, int64_t to, const std::string& group) { return to_list_of_namedtuples(self.history_deals_get(from, to, group)); })
-        .def("history_deals_get", [](MetaTraderClient& self, uint64_t ticket) { return to_list_of_namedtuples(self.history_deals_get(ticket)); })
-        .def("history_deals_get_by_pos", [](MetaTraderClient& self, uint64_t pos_id) { return to_list_of_namedtuples(self.history_deals_get_by_pos(pos_id)); })
+        .def("history_deals_get", py::overload_cast<int64_t, int64_t, const std::string&>(&MetaTraderClient::history_deals_get), py::return_value_policy::move)
+        .def("history_deals_get", py::overload_cast<uint64_t>(&MetaTraderClient::history_deals_get), py::return_value_policy::move)
+        .def("history_deals_get_by_pos", &MetaTraderClient::history_deals_get_by_pos, py::return_value_policy::move)
         .def("history_deals_total", &MetaTraderClient::history_deals_total);
+
+    py::class_<TerminalInfo>(m, "TerminalInfo")
+        .def(py::init<>())
+        .def_readonly("community_account", &TerminalInfo::community_account)
+        .def_readonly("community_connection", &TerminalInfo::community_connection)
+        .def_readonly("connected", &TerminalInfo::connected)
+        .def_readonly("dlls_allowed", &TerminalInfo::dlls_allowed)
+        .def_readonly("trade_allowed", &TerminalInfo::trade_allowed)
+        .def_readonly("tradeapi_disabled", &TerminalInfo::tradeapi_disabled)
+        .def_readonly("email_enabled", &TerminalInfo::email_enabled)
+        .def_readonly("ftp_enabled", &TerminalInfo::ftp_enabled)
+        .def_readonly("notifications_enabled", &TerminalInfo::notifications_enabled)
+        .def_readonly("mqid", &TerminalInfo::mqid)
+        .def_readonly("build", &TerminalInfo::build)
+        .def_readonly("maxbars", &TerminalInfo::maxbars)
+        .def_readonly("codepage", &TerminalInfo::codepage)
+        .def_readonly("ping_last", &TerminalInfo::ping_last)
+        .def_readonly("community_balance", &TerminalInfo::community_balance)
+        .def_readonly("retransmission", &TerminalInfo::retransmission)
+        .def_readonly("company", &TerminalInfo::company)
+        .def_readonly("name", &TerminalInfo::name)
+        .def_readonly("language", &TerminalInfo::language)
+        .def_readonly("path", &TerminalInfo::path)
+        .def_readonly("data_path", &TerminalInfo::data_path)
+        .def_readonly("commondata_path", &TerminalInfo::commondata_path)
+        .def("__repr__", [](const TerminalInfo &self) {
+            return py::str("TerminalInfo(name='{}', company='{}', connected={})").format(self.name, self.company, self.connected);
+        });
+
+    py::class_<AccountInfo>(m, "AccountInfo")
+        .def(py::init<>())
+        .def_readonly("login", &AccountInfo::login)
+        .def_readonly("trade_mode", &AccountInfo::trade_mode)
+        .def_readonly("leverage", &AccountInfo::leverage)
+        .def_readonly("limit_orders", &AccountInfo::limit_orders)
+        .def_readonly("margin_so_mode", &AccountInfo::margin_so_mode)
+        .def_readonly("trade_allowed", &AccountInfo::trade_allowed)
+        .def_readonly("trade_expert", &AccountInfo::trade_expert)
+        .def_readonly("margin_mode", &AccountInfo::margin_mode)
+        .def_readonly("currency_digits", &AccountInfo::currency_digits)
+        .def_readonly("fifo_close", &AccountInfo::fifo_close)
+        .def_readonly("balance", &AccountInfo::balance)
+        .def_readonly("credit", &AccountInfo::credit)
+        .def_readonly("profit", &AccountInfo::profit)
+        .def_readonly("equity", &AccountInfo::equity)
+        .def_readonly("margin", &AccountInfo::margin)
+        .def_readonly("margin_free", &AccountInfo::margin_free)
+        .def_readonly("margin_level", &AccountInfo::margin_level)
+        .def_readonly("margin_so_call", &AccountInfo::margin_so_call)
+        .def_readonly("margin_so_so", &AccountInfo::margin_so_so)
+        .def_readonly("margin_initial", &AccountInfo::margin_initial)
+        .def_readonly("margin_maintenance", &AccountInfo::margin_maintenance)
+        .def_readonly("assets", &AccountInfo::assets)
+        .def_readonly("liabilities", &AccountInfo::liabilities)
+        .def_readonly("commission_blocked", &AccountInfo::commission_blocked)
+        .def_readonly("name", &AccountInfo::name)
+        .def_readonly("server", &AccountInfo::server)
+        .def_readonly("currency", &AccountInfo::currency)
+        .def_readonly("company", &AccountInfo::company)
+        .def("__repr__", [](const AccountInfo &self) {
+            return py::str("AccountInfo(login={}, name='{}', balance={})").format(self.login, self.name, self.balance);
+        });
+
+    py::class_<SymbolInfo>(m, "SymbolInfo")
+        .def(py::init<>())
+        .def_readonly("custom", &SymbolInfo::custom).def_readonly("chart_mode", &SymbolInfo::chart_mode).def_readonly("select", &SymbolInfo::select)
+        .def_readonly("visible", &SymbolInfo::visible).def_readonly("session_deals", &SymbolInfo::session_deals).def_readonly("session_buy_orders", &SymbolInfo::session_buy_orders)
+        .def_readonly("session_sell_orders", &SymbolInfo::session_sell_orders).def_readonly("volume", &SymbolInfo::volume).def_readonly("volumehigh", &SymbolInfo::volumehigh)
+        .def_readonly("volumelow", &SymbolInfo::volumelow).def_readonly("time", &SymbolInfo::time).def_readonly("digits", &SymbolInfo::digits)
+        .def_readonly("spread", &SymbolInfo::spread).def_readonly("spread_float", &SymbolInfo::spread_float).def_readonly("ticks_bookdepth", &SymbolInfo::ticks_bookdepth)
+        .def_readonly("trade_calc_mode", &SymbolInfo::trade_calc_mode).def_readonly("trade_mode", &SymbolInfo::trade_mode).def_readonly("start_time", &SymbolInfo::start_time)
+        .def_readonly("expiration_time", &SymbolInfo::expiration_time).def_readonly("trade_stops_level", &SymbolInfo::trade_stops_level).def_readonly("trade_freeze_level", &SymbolInfo::trade_freeze_level)
+        .def_readonly("trade_exemode", &SymbolInfo::trade_exemode).def_readonly("swap_mode", &SymbolInfo::swap_mode).def_readonly("swap_rollover3days", &SymbolInfo::swap_rollover3days)
+        .def_readonly("margin_hedged_use_leg", &SymbolInfo::margin_hedged_use_leg).def_readonly("expiration_mode", &SymbolInfo::expiration_mode).def_readonly("filling_mode", &SymbolInfo::filling_mode)
+        .def_readonly("order_mode", &SymbolInfo::order_mode).def_readonly("order_gtc_mode", &SymbolInfo::order_gtc_mode).def_readonly("option_mode", &SymbolInfo::option_mode)
+        .def_readonly("option_right", &SymbolInfo::option_right).def_readonly("bid", &SymbolInfo::bid).def_readonly("bidhigh", &SymbolInfo::bidhigh)
+        .def_readonly("bidlow", &SymbolInfo::bidlow).def_readonly("ask", &SymbolInfo::ask).def_readonly("askhigh", &SymbolInfo::askhigh)
+        .def_readonly("asklow", &SymbolInfo::asklow).def_readonly("last", &SymbolInfo::last).def_readonly("lasthigh", &SymbolInfo::lasthigh)
+        .def_readonly("lastlow", &SymbolInfo::lastlow).def_readonly("volume_real", &SymbolInfo::volume_real).def_readonly("volumehigh_real", &SymbolInfo::volumehigh_real)
+        .def_readonly("volumelow_real", &SymbolInfo::volumelow_real).def_readonly("option_strike", &SymbolInfo::option_strike).def_readonly("point", &SymbolInfo::point)
+        .def_readonly("trade_tick_value", &SymbolInfo::trade_tick_value).def_readonly("trade_tick_value_profit", &SymbolInfo::trade_tick_value_profit).def_readonly("trade_tick_value_loss", &SymbolInfo::trade_tick_value_loss)
+        .def_readonly("trade_tick_size", &SymbolInfo::trade_tick_size).def_readonly("trade_contract_size", &SymbolInfo::trade_contract_size).def_readonly("trade_accrued_interest", &SymbolInfo::trade_accrued_interest)
+        .def_readonly("trade_face_value", &SymbolInfo::trade_face_value).def_readonly("trade_liquidity_rate", &SymbolInfo::trade_liquidity_rate).def_readonly("volume_min", &SymbolInfo::volume_min)
+        .def_readonly("volume_max", &SymbolInfo::volume_max).def_readonly("volume_step", &SymbolInfo::volume_step).def_readonly("volume_limit", &SymbolInfo::volume_limit)
+        .def_readonly("swap_long", &SymbolInfo::swap_long).def_readonly("swap_short", &SymbolInfo::swap_short).def_readonly("margin_initial", &SymbolInfo::margin_initial)
+        .def_readonly("margin_maintenance", &SymbolInfo::margin_maintenance).def_readonly("session_volume", &SymbolInfo::session_volume).def_readonly("session_turnover", &SymbolInfo::session_turnover)
+        .def_readonly("session_interest", &SymbolInfo::session_interest).def_readonly("session_buy_orders_volume", &SymbolInfo::session_buy_orders_volume).def_readonly("session_sell_orders_volume", &SymbolInfo::session_sell_orders_volume)
+        .def_readonly("session_open", &SymbolInfo::session_open).def_readonly("session_close", &SymbolInfo::session_close).def_readonly("session_aw", &SymbolInfo::session_aw)
+        .def_readonly("session_price_settlement", &SymbolInfo::session_price_settlement).def_readonly("session_price_limit_min", &SymbolInfo::session_price_limit_min).def_readonly("session_price_limit_max", &SymbolInfo::session_price_limit_max)
+        .def_readonly("margin_hedged", &SymbolInfo::margin_hedged).def_readonly("price_change", &SymbolInfo::price_change).def_readonly("price_volatility", &SymbolInfo::price_volatility)
+        .def_readonly("price_theoretical", &SymbolInfo::price_theoretical).def_readonly("price_greeks_delta", &SymbolInfo::price_greeks_delta).def_readonly("price_greeks_theta", &SymbolInfo::price_greeks_theta)
+        .def_readonly("price_greeks_gamma", &SymbolInfo::price_greeks_gamma).def_readonly("price_greeks_vega", &SymbolInfo::price_greeks_vega).def_readonly("price_greeks_rho", &SymbolInfo::price_greeks_rho)
+        .def_readonly("price_greeks_omega", &SymbolInfo::price_greeks_omega).def_readonly("price_sensitivity", &SymbolInfo::price_sensitivity).def_readonly("basis", &SymbolInfo::basis)
+        .def_readonly("category", &SymbolInfo::category).def_readonly("currency_base", &SymbolInfo::currency_base).def_readonly("currency_profit", &SymbolInfo::currency_profit)
+        .def_readonly("currency_margin", &SymbolInfo::currency_margin).def_readonly("bank", &SymbolInfo::bank).def_readonly("description", &SymbolInfo::description)
+        .def_readonly("exchange", &SymbolInfo::exchange).def_readonly("formula", &SymbolInfo::formula).def_readonly("isin", &SymbolInfo::isin)
+        .def_readonly("name", &SymbolInfo::name).def_readonly("page", &SymbolInfo::page).def_readonly("path", &SymbolInfo::path)
+        .def("__repr__", [](const SymbolInfo &self) {
+            return py::str("SymbolInfo(name='{}', description='{}')").format(self.name, self.description);
+        });
+
+    py::class_<TickInfo>(m, "TickInfo")
+        .def(py::init<>())
+        .def_readonly("time", &TickInfo::time).def_readonly("bid", &TickInfo::bid).def_readonly("ask", &TickInfo::ask)
+        .def_readonly("last", &TickInfo::last).def_readonly("volume", &TickInfo::volume).def_readonly("time_msc", &TickInfo::time_msc)
+        .def_readonly("flags", &TickInfo::flags).def_readonly("volume_real", &TickInfo::volume_real)
+        .def("__repr__", [](const TickInfo &self) {
+            return py::str("TickInfo(time={}, bid={}, ask={})").format(self.time, self.bid, self.ask);
+        });
+
+    py::class_<RateInfo>(m, "RateInfo")
+        .def(py::init<>())
+        .def_readonly("time", &RateInfo::time).def_readonly("open", &RateInfo::open).def_readonly("high", &RateInfo::high)
+        .def_readonly("low", &RateInfo::low).def_readonly("close", &RateInfo::close).def_readonly("tick_volume", &RateInfo::tick_volume)
+        .def_readonly("spread", &RateInfo::spread).def_readonly("real_volume", &RateInfo::real_volume)
+        .def("__repr__", [](const RateInfo &self) {
+            return py::str("RateInfo(time={}, open={}, high={}, low={}, close={})").format(self.time, self.open, self.high, self.low, self.close);
+        });
+
+    py::class_<BookInfo>(m, "BookInfo")
+        .def(py::init<>())
+        .def_readonly("type", &BookInfo::type).def_readonly("price", &BookInfo::price).def_readonly("volume", &BookInfo::volume)
+        .def_readonly("volume_real", &BookInfo::volume_real)
+        .def("__repr__", [](const BookInfo &self) {
+            return py::str("BookInfo(type={}, price={}, volume={})").format(self.type, self.price, self.volume);
+        });
+
+    py::class_<TradeRequest>(m, "TradeRequest")
+        .def(py::init<>())
+        .def_readonly("action", &TradeRequest::action).def_readonly("magic", &TradeRequest::magic).def_readonly("order", &TradeRequest::order)
+        .def_readonly("symbol", &TradeRequest::symbol).def_readonly("volume", &TradeRequest::volume).def_readonly("price", &TradeRequest::price)
+        .def_readonly("stoplimit", &TradeRequest::stoplimit).def_readonly("sl", &TradeRequest::sl).def_readonly("tp", &TradeRequest::tp)
+        .def_readonly("deviation", &TradeRequest::deviation).def_readonly("type", &TradeRequest::type).def_readonly("type_filling", &TradeRequest::type_filling)
+        .def_readonly("type_time", &TradeRequest::type_time).def_readonly("expiration", &TradeRequest::expiration).def_readonly("comment", &TradeRequest::comment)
+        .def_readonly("position", &TradeRequest::position).def_readonly("position_by", &TradeRequest::position_by)
+        .def("__repr__", [](const TradeRequest &self) {
+            return py::str("TradeRequest(action={}, symbol='{}', volume={})").format(self.action, self.symbol, self.volume);
+        });
+
+    py::class_<OrderCheckResult>(m, "OrderCheckResult")
+        .def(py::init<>())
+        .def_readonly("retcode", &OrderCheckResult::retcode).def_readonly("balance", &OrderCheckResult::balance).def_readonly("equity", &OrderCheckResult::equity)
+        .def_readonly("profit", &OrderCheckResult::profit).def_readonly("margin", &OrderCheckResult::margin).def_readonly("margin_free", &OrderCheckResult::margin_free)
+        .def_readonly("margin_level", &OrderCheckResult::margin_level).def_readonly("comment", &OrderCheckResult::comment).def_readonly("request", &OrderCheckResult::request)
+        .def("__repr__", [](const OrderCheckResult &self) {
+            return py::str("OrderCheckResult(retcode={}, comment='{}')").format(self.retcode, self.comment);
+        });
+
+    py::class_<OrderSentResult>(m, "OrderSentResult")
+        .def(py::init<>())
+        .def_readonly("retcode", &OrderSentResult::retcode).def_readonly("deal", &OrderSentResult::deal).def_readonly("order", &OrderSentResult::order)
+        .def_readonly("volume", &OrderSentResult::volume).def_readonly("price", &OrderSentResult::price).def_readonly("bid", &OrderSentResult::bid)
+        .def_readonly("ask", &OrderSentResult::ask).def_readonly("comment", &OrderSentResult::comment).def_readonly("request_id", &OrderSentResult::request_id)
+        .def_readonly("retcode_external", &OrderSentResult::retcode_external).def_readonly("request", &OrderSentResult::request)
+        .def("__repr__", [](const OrderSentResult &self) {
+            return py::str("OrderSentResult(retcode={}, order={}, deal={})").format(self.retcode, self.order, self.deal);
+        });
+
+    py::class_<TradeOrder>(m, "TradeOrder")
+        .def(py::init<>())
+        .def_readonly("ticket", &TradeOrder::ticket).def_readonly("time_setup", &TradeOrder::time_setup).def_readonly("time_setup_msc", &TradeOrder::time_setup_msc)
+        .def_readonly("time_done", &TradeOrder::time_done).def_readonly("time_done_msc", &TradeOrder::time_done_msc).def_readonly("time_expiration", &TradeOrder::time_expiration)
+        .def_readonly("type", &TradeOrder::type).def_readonly("type_time", &TradeOrder::type_time).def_readonly("type_filling", &TradeOrder::type_filling)
+        .def_readonly("state", &TradeOrder::state).def_readonly("magic", &TradeOrder::magic).def_readonly("position_id", &TradeOrder::position_id)
+        .def_readonly("position_by_id", &TradeOrder::position_by_id).def_readonly("reason", &TradeOrder::reason).def_readonly("volume_initial", &TradeOrder::volume_initial)
+        .def_readonly("volume_current", &TradeOrder::volume_current).def_readonly("price_open", &TradeOrder::price_open).def_readonly("sl", &TradeOrder::sl)
+        .def_readonly("tp", &TradeOrder::tp).def_readonly("price_current", &TradeOrder::price_current).def_readonly("price_stoplimit", &TradeOrder::price_stoplimit)
+        .def_readonly("symbol", &TradeOrder::symbol).def_readonly("comment", &TradeOrder::comment).def_readonly("external_id", &TradeOrder::external_id)
+        .def("__repr__", [](const TradeOrder &self) {
+            return py::str("TradeOrder(ticket={}, symbol='{}', price_open={})").format(self.ticket, self.symbol, self.price_open);
+        });
+
+    py::class_<TradePosition>(m, "TradePosition")
+        .def(py::init<>())
+        .def_readonly("ticket", &TradePosition::ticket).def_readonly("time", &TradePosition::time).def_readonly("time_msc", &TradePosition::time_msc)
+        .def_readonly("time_update", &TradePosition::time_update).def_readonly("time_update_msc", &TradePosition::time_update_msc).def_readonly("type", &TradePosition::type)
+        .def_readonly("magic", &TradePosition::magic).def_readonly("identifier", &TradePosition::identifier).def_readonly("reason", &TradePosition::reason)
+        .def_readonly("volume", &TradePosition::volume).def_readonly("price_open", &TradePosition::price_open).def_readonly("sl", &TradePosition::sl)
+        .def_readonly("tp", &TradePosition::tp).def_readonly("price_current", &TradePosition::price_current).def_readonly("swap", &TradePosition::swap)
+        .def_readonly("profit", &TradePosition::profit).def_readonly("symbol", &TradePosition::symbol).def_readonly("comment", &TradePosition::comment)
+        .def_readonly("external_id", &TradePosition::external_id)
+        .def("__repr__", [](const TradePosition &self) {
+            return py::str("TradePosition(ticket={}, symbol='{}', volume={}, price_open={})").format(self.ticket, self.symbol, self.volume, self.price_open);
+        });
+
+    py::class_<TradeDeal>(m, "TradeDeal")
+        .def(py::init<>())
+        .def_readonly("ticket", &TradeDeal::ticket).def_readonly("order", &TradeDeal::order).def_readonly("time", &TradeDeal::time)
+        .def_readonly("time_msc", &TradeDeal::time_msc).def_readonly("type", &TradeDeal::type).def_readonly("entry", &TradeDeal::entry)
+        .def_readonly("magic", &TradeDeal::magic).def_readonly("position_id", &TradeDeal::position_id).def_readonly("reason", &TradeDeal::reason)
+        .def_readonly("volume", &TradeDeal::volume).def_readonly("price", &TradeDeal::price).def_readonly("commission", &TradeDeal::commission)
+        .def_readonly("swap", &TradeDeal::swap).def_readonly("profit", &TradeDeal::profit).def_readonly("fee", &TradeDeal::fee)
+        .def_readonly("symbol", &TradeDeal::symbol).def_readonly("comment", &TradeDeal::comment).def_readonly("external_id", &TradeDeal::external_id)
+        .def("__repr__", [](const TradeDeal &self) {
+            return py::str("TradeDeal(ticket={}, order={}, symbol='{}', volume={}, price={})").format(self.ticket, self.order, self.symbol, self.volume, self.price);
+        });
 }
