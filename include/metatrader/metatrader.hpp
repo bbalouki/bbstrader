@@ -44,14 +44,14 @@ using UnsubscribeBook = std::function<bool(const std::string& symbol)>;
 using GetBookInfo = std::function<std::optional<std::vector<BookInfo>>(const std::string& symbol)>;
 
 using GetRatesByDate = std::function<std::optional<std::vector<RateInfo>>(
-    const std::string& symbol, Timeframe tf, int64_t from, int32_t count
+    const std::string& symbol, int32_t tf, int64_t from, int32_t count
 )>;
 
 using GetRatesByPos   = std::function<std::optional<std::vector<RateInfo>>(
-    const std::string& symbol, Timeframe tf, int32_t start_pos, int32_t count
+    const std::string& symbol, int32_t tf, int32_t start_pos, int32_t count
 )>;
 using GetRatesByRange = std::function<std::optional<std::vector<RateInfo>>(
-    const std::string& symbol, Timeframe tf, int64_t from, int64_t to
+    const std::string& symbol, int32_t tf, int64_t from, int64_t to
 )>;
 
 using GetTicksByDate = std::function<std::optional<std::vector<TickInfo>>(
@@ -83,10 +83,10 @@ using CheckOrder = std::function<OrderCheckResult(const TradeRequest& request)>;
 using SendOrder  = std::function<OrderSentResult(const TradeRequest& request)>;
 
 using CalculateMargin = std::function<std::optional<double>(
-    TradeAction action, const std::string& symbol, double volume, double price
+    int32_t action, const std::string& symbol, double volume, double price
 )>;
 using CalculateProfit = std::function<std::optional<double>(
-    TradeAction action, const std::string& symbol, double volume, double open, double close
+    int32_t action, const std::string& symbol, double volume, double open, double close
 )>;
 
 using GetHistoryOrdersByRange = std::function<
@@ -241,17 +241,17 @@ class MetaTraderClient {
 
     // --- Market Data ---
     virtual std::optional<std::vector<RateInfo>> copy_rates_from(
-        const std::string& s, Timeframe t, int64_t from, int32_t count
+        const std::string& s, int32_t t, int64_t from, int32_t count
     ) {
         return h.get_rates_by_date ? h.get_rates_by_date(s, t, from, count) : std::nullopt;
     }
     virtual std::optional<std::vector<RateInfo>> copy_rates_from_pos(
-        const std::string& s, Timeframe t, int32_t start, int32_t count
+        const std::string& s, int32_t t, int32_t start, int32_t count
     ) {
         return h.get_rates_by_pos ? h.get_rates_by_pos(s, t, start, count) : std::nullopt;
     }
     virtual std::optional<std::vector<RateInfo>> copy_rates_range(
-        const std::string& s, Timeframe t, int64_t from, int64_t to
+        const std::string& s, int32_t t, int64_t from, int64_t to
     ) {
         return h.get_rates_by_range ? h.get_rates_by_range(s, t, from, to) : std::nullopt;
     }
@@ -311,12 +311,12 @@ class MetaTraderClient {
         return h.send_order ? h.send_order(req) : OrderSentResult{};
     }
     virtual std::optional<double> order_calc_margin(
-        TradeAction act, const std::string& sym, double vol, double prc
+        int32_t act, const std::string& sym, double vol, double prc
     ) {
         return h.calc_margin ? h.calc_margin(act, sym, vol, prc) : std::nullopt;
     }
     virtual std::optional<double> order_calc_profit(
-        TradeAction act, const std::string& sym, double vol, double open, double close
+        int32_t act, const std::string& sym, double vol, double open, double close
     ) {
         return h.calc_profit ? h.calc_profit(act, sym, vol, open, close) : std::nullopt;
     }

@@ -81,7 +81,7 @@ class PyMetaTraderClient : public MetaTraderClient {
 
     // --- Market Data ---
     std::optional<std::vector<RateInfo>> copy_rates_from(
-        const std::string& s, Timeframe t, int64_t from, int32_t count
+        const std::string& s, int32_t t, int64_t from, int32_t count
     ) override {
         PYBIND11_OVERRIDE(
             std::optional<std::vector<RateInfo>>,
@@ -94,7 +94,7 @@ class PyMetaTraderClient : public MetaTraderClient {
         );
     }
     std::optional<std::vector<RateInfo>> copy_rates_from_pos(
-        const std::string& s, Timeframe t, int32_t start, int32_t count
+        const std::string& s, int32_t t, int32_t start, int32_t count
     ) override {
         PYBIND11_OVERRIDE(
             std::optional<std::vector<RateInfo>>,
@@ -107,7 +107,7 @@ class PyMetaTraderClient : public MetaTraderClient {
         );
     }
     std::optional<std::vector<RateInfo>> copy_rates_range(
-        const std::string& s, Timeframe t, int64_t from, int64_t to
+        const std::string& s, int32_t t, int64_t from, int64_t to
     ) override {
         PYBIND11_OVERRIDE(
             std::optional<std::vector<RateInfo>>, MetaTraderClient, copy_rates_range, s, t, from, to
@@ -151,14 +151,14 @@ class PyMetaTraderClient : public MetaTraderClient {
         PYBIND11_OVERRIDE(OrderSentResult, MetaTraderClient, order_send, req);
     }
     std::optional<double> order_calc_margin(
-        TradeAction act, const std::string& sym, double vol, double prc
+        int32_t act, const std::string& sym, double vol, double prc
     ) override {
         PYBIND11_OVERRIDE(
             std::optional<double>, MetaTraderClient, order_calc_margin, act, sym, vol, prc
         );
     }
     std::optional<double> order_calc_profit(
-        TradeAction act, const std::string& sym, double vol, double open, double close
+        int32_t act, const std::string& sym, double vol, double open, double close
     ) override {
         PYBIND11_OVERRIDE(
             std::optional<double>, MetaTraderClient, order_calc_profit, act, sym, vol, open, close

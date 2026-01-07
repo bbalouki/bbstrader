@@ -43,8 +43,20 @@ class BookInfo:
     def __init__(self) -> None: ...
 
 class Handlers:
-    calc_margin: Incomplete
-    calc_profit: Incomplete
+    calc_margin: collections.abc.Callable[
+        [typing.SupportsInt, str, typing.SupportsFloat, typing.SupportsFloat],
+        float | None,
+    ]
+    calc_profit: collections.abc.Callable[
+        [
+            typing.SupportsInt,
+            str,
+            typing.SupportsFloat,
+            typing.SupportsFloat,
+            typing.SupportsFloat,
+        ],
+        float | None,
+    ]
     check_order: Incomplete
     get_account_info: Incomplete
     get_book_info: Incomplete
@@ -60,7 +72,7 @@ class Handlers:
     get_hist_orders_total: collections.abc.Callable[
         [typing.SupportsInt, typing.SupportsInt], int
     ]
-    get_last_error: collections.abc.Callable[[], int]
+    get_last_error: collections.abc.Callable[[], tuple[int, str]]
     get_order_by_ticket: Incomplete
     get_orders_all: Incomplete
     get_orders_by_group: Incomplete
@@ -133,7 +145,7 @@ class MetaTraderClient:
         arg4: typing.SupportsInt,
         arg5: bool,
     ) -> bool: ...
-    def last_error(self) -> int: ...
+    def last_error(self) -> tuple[int, str]: ...
     def login(
         self, arg0: typing.SupportsInt, arg1: str, arg2: str, arg3: typing.SupportsInt
     ) -> bool: ...
@@ -141,11 +153,15 @@ class MetaTraderClient:
     def market_book_get(self, *args, **kwargs): ...
     def market_book_release(self, arg0: str) -> bool: ...
     def order_calc_margin(
-        self, arg0, arg1: str, arg2: typing.SupportsFloat, arg3: typing.SupportsFloat
+        self,
+        arg0: typing.SupportsInt,
+        arg1: str,
+        arg2: typing.SupportsFloat,
+        arg3: typing.SupportsFloat,
     ) -> float | None: ...
     def order_calc_profit(
         self,
-        arg0,
+        arg0: typing.SupportsInt,
         arg1: str,
         arg2: typing.SupportsFloat,
         arg3: typing.SupportsFloat,
