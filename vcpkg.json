@@ -1,0 +1,6 @@
+{
+  "dependencies": [
+    "pybind11"
+  ],
+  "builtin-baseline": "185dae611bb46c62358d74eb8bb909bc4aff14e8"
+}

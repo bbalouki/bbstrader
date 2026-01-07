@@ -18,3 +18,6 @@ notes.txt
 *.exe
 *.iss
 cmd.ps1
+.vscode
+CMakePresets.json
+scripts.sh
