@@ -217,6 +217,12 @@ class MetaTraderClient {
 
     // --- Market Data ---
     virtual std::optional<py::array_t<RateInfo>> copy_rates_from(
+        const std::string& s, int32_t t, const py::datetime& from, int32_t count
+    ) {
+        int64_t from_ts = from.attr("timestamp")().cast<int64_t>();
+        return copy_rates_from(s, t, from_ts, count);
+    }
+    virtual std::optional<py::array_t<RateInfo>> copy_rates_from(
         const std::string& s, int32_t t, int64_t from, int32_t count
     ) {
         return h.get_rates_by_date ? h.get_rates_by_date(s, t, from, count)
@@ -240,6 +246,12 @@ class MetaTraderClient {
     ) {
         return h.get_rates_by_range ? h.get_rates_by_range(s, t, from, to)
                                     : py::array_t<RateInfo>();
+    }
+    virtual std::optional<py::array_t<TickInfo>> copy_ticks_from(
+        const std::string& s, const py::datetime& from, int32_t count, int32_t flags
+    ) {
+        int64_t from_ts = from.attr("timestamp")().cast<int64_t>();
+        return copy_ticks_from(s, from_ts, count, flags);
     }
     virtual std::optional<py::array_t<TickInfo>> copy_ticks_from(
         const std::string& s, int64_t from, int32_t count, int32_t flags

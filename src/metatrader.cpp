@@ -72,7 +72,20 @@ class PyMetaTraderClient : public MetaTraderClient {
 
     // --- Market Data ---
     std::optional<py::array_t<RateInfo>> copy_rates_from(
-        str& s, int32_t tf, int64_t from, int32_t count
+        const std::string& s, int32_t tf, const py::datetime& from, int32_t count
+    ) override {
+        PYBIND11_OVERRIDE(
+            std::optional<py::array_t<RateInfo>>,
+            MetaTraderClient,
+            copy_rates_from,
+            s,
+            tf,
+            from,
+            count
+        );
+    }
+    std::optional<py::array_t<RateInfo>> copy_rates_from(
+        const std::string& s, int32_t tf, int64_t from, int32_t count
     ) override {
         PYBIND11_OVERRIDE(
             std::optional<py::array_t<RateInfo>>,
@@ -98,7 +111,7 @@ class PyMetaTraderClient : public MetaTraderClient {
         );
     }
     std::optional<py::array_t<RateInfo>> copy_rates_range(
-        str& s, int32_t tf, const py::datetime& from, const py::datetime& to
+        const std::string& s, int32_t tf, const py::datetime& from, const py::datetime& to
     ) override {
         PYBIND11_OVERRIDE(
             std::optional<py::array_t<RateInfo>>,
@@ -111,7 +124,7 @@ class PyMetaTraderClient : public MetaTraderClient {
         );
     }
     std::optional<py::array_t<RateInfo>> copy_rates_range(
-        str& s, int32_t tf, int64_t from, int64_t to
+        const std::string& s, int32_t tf, int64_t from, int64_t to
     ) override {
         PYBIND11_OVERRIDE(
             std::optional<py::array_t<RateInfo>>,
@@ -124,7 +137,20 @@ class PyMetaTraderClient : public MetaTraderClient {
         );
     }
     std::optional<py::array_t<TickInfo>> copy_ticks_from(
-        str& s, int64_t from, int32_t count, int32_t flags
+        const std::string& s, const py::datetime& from, int32_t count, int32_t flags
+    ) override {
+        PYBIND11_OVERRIDE(
+            std::optional<py::array_t<TickInfo>>,
+            MetaTraderClient,
+            copy_ticks_from,
+            s,
+            from,
+            count,
+            flags
+        );
+    }
+    std::optional<py::array_t<TickInfo>> copy_ticks_from(
+        const std::string& s, int64_t from, int32_t count, int32_t flags
     ) override {
         PYBIND11_OVERRIDE(
             std::optional<py::array_t<TickInfo>>,
@@ -137,7 +163,7 @@ class PyMetaTraderClient : public MetaTraderClient {
         );
     }
     std::optional<py::array_t<TickInfo>> copy_ticks_range(
-        str& s, const py::datetime& from, const py::datetime& to, int32_t flags
+        const std::string& s, const py::datetime& from, const py::datetime& to, int32_t flags
     ) override {
         PYBIND11_OVERRIDE(
             std::optional<py::array_t<TickInfo>>,
@@ -150,7 +176,7 @@ class PyMetaTraderClient : public MetaTraderClient {
         );
     }
     std::optional<py::array_t<TickInfo>> copy_ticks_range(
-        str& s, int64_t from, int64_t to, int32_t flags
+        const std::string& s, int64_t from, int64_t to, int32_t flags
     ) override {
         PYBIND11_OVERRIDE(
             std::optional<py::array_t<TickInfo>>,
@@ -830,7 +856,20 @@ PYBIND11_MODULE(metatrader_client, m) {
         // Market Data
         .def(
             "copy_rates_from",
-            &MetaTraderClient::copy_rates_from,
+            py::overload_cast<const std::string&, int32_t, int64_t, int32_t>(
+                &MetaTraderClient::copy_rates_from
+            ),
+            py::arg("symbol"),
+            py::arg("timeframe"),
+            py::arg("date_from"),
+            py::arg("count"),
+            py::return_value_policy::move
+        )
+        .def(
+            "copy_rates_from",
+            py::overload_cast<const std::string&, int32_t, const py::datetime&, int32_t>(
+                &MetaTraderClient::copy_rates_from
+            ),
             py::arg("symbol"),
             py::arg("timeframe"),
             py::arg("date_from"),
@@ -848,7 +887,7 @@ PYBIND11_MODULE(metatrader_client, m) {
         )
         .def(
             "copy_rates_range",
-            py::overload_cast<str&, int32_t, int64_t, int64_t>(
+            py::overload_cast<const std::string&, int32_t, int64_t, int64_t>(
                 &MetaTraderClient::copy_rates_range
             ),
             py::arg("symbol"),
@@ -859,7 +898,7 @@ PYBIND11_MODULE(metatrader_client, m) {
         )
         .def(
             "copy_rates_range",
-            py::overload_cast<str&, int32_t, const py::datetime&, const py::datetime&>(
+            py::overload_cast<const std::string&, int32_t, const py::datetime&, const py::datetime&>(
                 &MetaTraderClient::copy_rates_range
             ),
             py::arg("symbol"),
@@ -870,7 +909,20 @@ PYBIND11_MODULE(metatrader_client, m) {
         )
         .def(
             "copy_ticks_from",
-            &MetaTraderClient::copy_ticks_from,
+            py::overload_cast<const std::string&, int64_t, int32_t, int32_t>(
+                &MetaTraderClient::copy_ticks_from
+            ),
+            py::arg("symbol"),
+            py::arg("date_from"),
+            py::arg("count"),
+            py::arg("flags"),
+            py::return_value_policy::move
+        )
+        .def(
+            "copy_ticks_from",
+            py::overload_cast<const std::string&, const py::datetime&, int32_t, int32_t>(
+                &MetaTraderClient::copy_ticks_from
+            ),
             py::arg("symbol"),
             py::arg("date_from"),
             py::arg("count"),
@@ -879,7 +931,7 @@ PYBIND11_MODULE(metatrader_client, m) {
         )
         .def(
             "copy_ticks_range",
-            py::overload_cast<str&, int64_t, int64_t, int32_t>(
+            py::overload_cast<const std::string&, int64_t, int64_t, int32_t>(
                 &MetaTraderClient::copy_ticks_range
             ),
             py::arg("symbol"),
@@ -890,7 +942,7 @@ PYBIND11_MODULE(metatrader_client, m) {
         )
         .def(
             "copy_ticks_range",
-            py::overload_cast<str&, const py::datetime&, const py::datetime&, int32_t>(
+            py::overload_cast<const std::string&, const py::datetime&, const py::datetime&, int32_t>(
                 &MetaTraderClient::copy_ticks_range
             ),
             py::arg("symbol"),
