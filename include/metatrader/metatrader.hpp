@@ -229,6 +229,13 @@ class MetaTraderClient {
                                   : py::array_t<RateInfo>();
     }
     virtual std::optional<py::array_t<RateInfo>> copy_rates_range(
+        const std::string& s, int32_t t, const py::datetime& from, const py::datetime& to
+    ) {
+        int64_t from_ts = from.attr("timestamp")().cast<int64_t>();
+        int64_t to_ts   = to.attr("timestamp")().cast<int64_t>();
+        return copy_rates_range(s, t, from_ts, to_ts);
+    }
+    virtual std::optional<py::array_t<RateInfo>> copy_rates_range(
         const std::string& s, int32_t t, int64_t from, int64_t to
     ) {
         return h.get_rates_by_range ? h.get_rates_by_range(s, t, from, to)
@@ -239,6 +246,13 @@ class MetaTraderClient {
     ) {
         return h.get_ticks_by_date ? h.get_ticks_by_date(s, from, count, flags)
                                    : py::array_t<TickInfo>();
+    }
+    virtual std::optional<py::array_t<TickInfo>> copy_ticks_range(
+        const std::string& s, const py::datetime& from, const py::datetime& to, int32_t flags
+    ) {
+        int64_t from_ts = from.attr("timestamp")().cast<int64_t>();
+        int64_t to_ts   = to.attr("timestamp")().cast<int64_t>();
+        return copy_ticks_range(s, from_ts, to_ts, flags);
     }
     virtual std::optional<py::array_t<TickInfo>> copy_ticks_range(
         const std::string& s, int64_t from, int64_t to, int32_t flags
@@ -282,8 +296,14 @@ class MetaTraderClient {
     }
 
     // --- Trading ---
+    virtual std::optional<OrderCheckResult> order_check(const py::dict& dict) {
+        return order_check(dict.cast<TradeRequest>());
+    }
     virtual std::optional<OrderCheckResult> order_check(const TradeRequest& req) {
         return h.check_order ? h.check_order(req) : OrderCheckResult{};
+    }
+    virtual std::optional<OrderSentResult> order_send(const py::dict& dict) {
+        return order_send(dict.cast<TradeRequest>());
     }
     virtual std::optional<OrderSentResult> order_send(const TradeRequest& req) {
         return h.send_order ? h.send_order(req) : OrderSentResult{};

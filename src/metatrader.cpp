@@ -98,6 +98,19 @@ class PyMetaTraderClient : public MetaTraderClient {
         );
     }
     std::optional<py::array_t<RateInfo>> copy_rates_range(
+        str& s, int32_t tf, const py::datetime& from, const py::datetime& to
+    ) override {
+        PYBIND11_OVERRIDE(
+            std::optional<py::array_t<RateInfo>>,
+            MetaTraderClient,
+            copy_rates_range,
+            s,
+            tf,
+            from,
+            to
+        );
+    }
+    std::optional<py::array_t<RateInfo>> copy_rates_range(
         str& s, int32_t tf, int64_t from, int64_t to
     ) override {
         PYBIND11_OVERRIDE(
@@ -124,6 +137,19 @@ class PyMetaTraderClient : public MetaTraderClient {
         );
     }
     std::optional<py::array_t<TickInfo>> copy_ticks_range(
+        str& s, const py::datetime& from, const py::datetime& to, int32_t flags
+    ) override {
+        PYBIND11_OVERRIDE(
+            std::optional<py::array_t<TickInfo>>,
+            MetaTraderClient,
+            copy_ticks_range,
+            s,
+            from,
+            to,
+            flags
+        );
+    }
+    std::optional<py::array_t<TickInfo>> copy_ticks_range(
         str& s, int64_t from, int64_t to, int32_t flags
     ) override {
         PYBIND11_OVERRIDE(
@@ -141,8 +167,14 @@ class PyMetaTraderClient : public MetaTraderClient {
     }
 
     // --- Trading ---
+    std::optional<OrderCheckResult> order_check(const py::dict& dict) override {
+        PYBIND11_OVERRIDE(std::optional<OrderCheckResult>, MetaTraderClient, order_check, dict);
+    }
     std::optional<OrderCheckResult> order_check(const TradeRequest& req) override {
         PYBIND11_OVERRIDE(std::optional<OrderCheckResult>, MetaTraderClient, order_check, req);
+    }
+    std::optional<OrderSentResult> order_send(const py::dict& dict) override {
+        PYBIND11_OVERRIDE(std::optional<OrderSentResult>, MetaTraderClient, order_send, dict);
     }
     std::optional<OrderSentResult> order_send(const TradeRequest& req) override {
         PYBIND11_OVERRIDE(std::optional<OrderSentResult>, MetaTraderClient, order_send, req);
@@ -816,7 +848,20 @@ PYBIND11_MODULE(metatrader_client, m) {
         )
         .def(
             "copy_rates_range",
-            &MetaTraderClient::copy_rates_range,
+            py::overload_cast<str&, int32_t, int64_t, int64_t>(
+                &MetaTraderClient::copy_rates_range
+            ),
+            py::arg("symbol"),
+            py::arg("timeframe"),
+            py::arg("date_from"),
+            py::arg("date_to"),
+            py::return_value_policy::move
+        )
+        .def(
+            "copy_rates_range",
+            py::overload_cast<str&, int32_t, const py::datetime&, const py::datetime&>(
+                &MetaTraderClient::copy_rates_range
+            ),
             py::arg("symbol"),
             py::arg("timeframe"),
             py::arg("date_from"),
@@ -834,7 +879,20 @@ PYBIND11_MODULE(metatrader_client, m) {
         )
         .def(
             "copy_ticks_range",
-            &MetaTraderClient::copy_ticks_range,
+            py::overload_cast<str&, int64_t, int64_t, int32_t>(
+                &MetaTraderClient::copy_ticks_range
+            ),
+            py::arg("symbol"),
+            py::arg("date_from"),
+            py::arg("date_to"),
+            py::arg("flags"),
+            py::return_value_policy::move
+        )
+        .def(
+            "copy_ticks_range",
+            py::overload_cast<str&, const py::datetime&, const py::datetime&, int32_t>(
+                &MetaTraderClient::copy_ticks_range
+            ),
             py::arg("symbol"),
             py::arg("date_from"),
             py::arg("date_to"),
@@ -891,8 +949,26 @@ PYBIND11_MODULE(metatrader_client, m) {
         .def("positions_total", &MetaTraderClient::positions_total)
 
         // Trading Operations
-        .def("order_send", &MetaTraderClient::order_send, py::arg("request"))
-        .def("order_check", &MetaTraderClient::order_check, py::arg("request"))
+        .def(
+            "order_send",
+            py::overload_cast<const TradeRequest&>(&MetaTraderClient::order_send),
+            py::arg("request")
+        )
+        .def(
+            "order_send",
+            py::overload_cast<const py::dict&>(&MetaTraderClient::order_send),
+            py::arg("request")
+        )
+        .def(
+            "order_check",
+            py::overload_cast<const TradeRequest&>(&MetaTraderClient::order_check),
+            py::arg("request")
+        )
+        .def(
+            "order_check",
+            py::overload_cast<const py::dict&>(&MetaTraderClient::order_check),
+            py::arg("request")
+        )
         .def(
             "order_calc_margin",
             &MetaTraderClient::order_calc_margin,
