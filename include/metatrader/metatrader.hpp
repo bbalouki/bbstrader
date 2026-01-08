@@ -25,12 +25,12 @@ using Shutdown        = std::function<void()>;
 using VersionInfo     = std::tuple<int32_t, int32_t, std::string>;
 using GetVersion      = std::function<std::optional<VersionInfo>()>;
 using LastErrorResult = std::tuple<int32_t, std::string>;
-using GetLastError    = std::function<LastErrorResult()>;
+using GetLastError    = std::function<std::optional<LastErrorResult>()>;
 
 using GetTerminalInfo = std::function<std::optional<TerminalInfo>()>;
 using GetAccountInfo  = std::function<std::optional<AccountInfo>()>;
 
-using GetTotalSymbols   = std::function<int32_t()>;
+using GetTotalSymbols   = std::function<std::optional<int32_t>()>;
 using GetSymbolsAll     = std::function<std::optional<std::vector<SymbolInfo>>()>;
 using GetSymbolInfo     = std::function<std::optional<SymbolInfo>(str&)>;
 using SelectSymbol      = std::function<bool(str&, bool)>;
@@ -40,23 +40,10 @@ using SubscribeBook   = std::function<bool(str&)>;
 using UnsubscribeBook = std::function<bool(str&)>;
 using GetBookInfo     = std::function<std::optional<std::vector<BookInfo>>(str&)>;
 
-// using GetRatesByDate =
-//     std::function<std::optional<std::vector<RateInfo>>(str&, int32_t, int64_t, int32_t)>;
-// using GetRatesByPos =
-//     std::function<std::optional<std::vector<RateInfo>>(str&, int32_t, int32_t, int32_t)>;
-// using GetRatesByRange =
-//     std::function<std::optional<std::vector<RateInfo>>(str&, int32_t, int64_t, int64_t)>;
-
-// using GetTicksByDate =
-//     std::function<std::optional<std::vector<TickInfo>>(str&, int64_t, int32_t, uint32_t)>;
-// using GetTicksByRange =
-//     std::function<std::optional<std::vector<TickInfo>>(str&, int64_t, int64_t, uint32_t)>;
-
-using GetRatesByDate = std::function<std::optional<py::array_t<RateInfo>>(
-    const std::string&, int32_t, int64_t, int32_t
-)>;
-using GetRatesByPos  = std::function<
-     std::optional<py::array_t<RateInfo>>(const std::string&, int32_t, int32_t, int32_t)>;
+using GetRatesByDate = std::function<
+    std::optional<py::array_t<RateInfo>>(const std::string&, int32_t, int64_t, int32_t)>;
+using GetRatesByPos = std::function<
+    std::optional<py::array_t<RateInfo>>(const std::string&, int32_t, int32_t, int32_t)>;
 using GetRatesByRange = std::function<
     std::optional<py::array_t<RateInfo>>(const std::string&, int32_t, int64_t, int64_t)>;
 
@@ -71,16 +58,16 @@ using GetOrdersAll      = std::function<std::optional<std::vector<TradeOrder>>()
 using GetOrdersBySymbol = std::function<std::optional<std::vector<TradeOrder>>(str&)>;
 using GetOrdersByGroup  = std::function<std::optional<std::vector<TradeOrder>>(str&)>;
 using GetOrderByTicket  = std::function<std::optional<TradeOrder>(uint64_t)>;
-using GetTotalOrders    = std::function<int32_t()>;
+using GetTotalOrders    = std::function<std::optional<int32_t>()>;
 
 using GetPositionsAll      = std::function<std::optional<std::vector<TradePosition>>()>;
 using GetPositionsBySymbol = std::function<std::optional<std::vector<TradePosition>>(str&)>;
 using GetPositionsByGroup  = std::function<std::optional<std::vector<TradePosition>>(str&)>;
 using GetPositionByTicket  = std::function<std::optional<TradePosition>(uint64_t)>;
-using GetTotalPositions    = std::function<int32_t()>;
+using GetTotalPositions    = std::function<std::optional<int32_t>()>;
 
-using CheckOrder = std::function<OrderCheckResult(const TradeRequest&)>;
-using SendOrder  = std::function<OrderSentResult(const TradeRequest&)>;
+using CheckOrder = std::function<std::optional<OrderCheckResult>(const TradeRequest&)>;
+using SendOrder  = std::function<std::optional<OrderSentResult>(const TradeRequest&)>;
 
 using CalculateMargin = std::function<std::optional<double>(int32_t, str&, double, double)>;
 using CalculateProfit = std::function<std::optional<double>(int32_t, str&, double, double, double)>;
@@ -89,13 +76,13 @@ using GetHistoryOrdersByRange =
     std::function<std::optional<std::vector<TradeOrder>>(int64_t, int64_t, str&)>;
 using GetHistoryOrderByTicket = std::function<std::optional<TradeOrder>(uint64_t)>;
 using GetHistoryOrdersByPosId = std::function<std::optional<std::vector<TradeOrder>>(uint64_t)>;
-using GetHistoryOrdersTotal   = std::function<int32_t(int64_t, int64_t)>;
+using GetHistoryOrdersTotal   = std::function<std::optional<int32_t>(int64_t, int64_t)>;
 
 using GetHistoryDealsByRange =
     std::function<std::optional<std::vector<TradeDeal>>(int64_t, int64_t, str&)>;
 using GetHistoryDealsByTicket = std::function<std::optional<std::vector<TradeDeal>>(uint64_t)>;
 using GetHistoryDealsByPosId  = std::function<std::optional<std::vector<TradeDeal>>(uint64_t)>;
-using GetHistoryDealsTotal    = std::function<int32_t(int64_t, int64_t)>;
+using GetHistoryDealsTotal    = std::function<std::optional<int32_t>(int64_t, int64_t)>;
 
 class MetaTraderClient {
    public:
@@ -187,7 +174,7 @@ class MetaTraderClient {
     virtual std::optional<VersionInfo> version() {
         return h.get_version ? h.get_version() : std::nullopt;
     }
-    virtual LastErrorResult last_error() {
+    virtual std::optional<LastErrorResult> last_error() {
         return h.get_last_error ? h.get_last_error() : std::make_tuple(-1, std::string("fail"));
     }
     virtual std::optional<TerminalInfo> terminal_info() {
@@ -198,7 +185,9 @@ class MetaTraderClient {
     }
 
     // --- Symbols ---
-    virtual int32_t symbols_total() { return h.get_total_symbols ? h.get_total_symbols() : 0; }
+    virtual std::optional<int32_t> symbols_total() {
+        return h.get_total_symbols ? h.get_total_symbols() : 0;
+    }
     virtual std::optional<std::vector<SymbolInfo>> symbols_get() {
         return h.get_symbols_all ? h.get_symbols_all() : std::nullopt;
     }
@@ -271,7 +260,9 @@ class MetaTraderClient {
     virtual std::optional<TradeOrder> order_get_by_ticket(uint64_t ticket) {
         return h.get_order_by_ticket ? h.get_order_by_ticket(ticket) : std::nullopt;
     }
-    virtual int32_t orders_total() { return h.get_total_orders ? h.get_total_orders() : 0; }
+    virtual std::optional<int32_t> orders_total() {
+        return h.get_total_orders ? h.get_total_orders() : 0;
+    }
 
     // --- Active Positions ---
     virtual std::optional<std::vector<TradePosition>> positions_get() {
@@ -286,15 +277,15 @@ class MetaTraderClient {
     virtual std::optional<TradePosition> position_get_by_ticket(uint64_t ticket) {
         return h.get_position_ticket ? h.get_position_ticket(ticket) : std::nullopt;
     }
-    virtual int32_t positions_total() {
+    virtual std::optional<int32_t> positions_total() {
         return h.get_total_positions ? h.get_total_positions() : 0;
     }
 
     // --- Trading ---
-    virtual OrderCheckResult order_check(const TradeRequest& req) {
+    virtual std::optional<OrderCheckResult> order_check(const TradeRequest& req) {
         return h.check_order ? h.check_order(req) : OrderCheckResult{};
     }
-    virtual OrderSentResult order_send(const TradeRequest& req) {
+    virtual std::optional<OrderSentResult> order_send(const TradeRequest& req) {
         return h.send_order ? h.send_order(req) : OrderSentResult{};
     }
     virtual std::optional<double> order_calc_margin(
@@ -320,7 +311,7 @@ class MetaTraderClient {
     virtual std::optional<std::vector<TradeOrder>> history_orders_get_by_pos(uint64_t pos_id) {
         return h.get_hist_orders_pos ? h.get_hist_orders_pos(pos_id) : std::nullopt;
     }
-    virtual int32_t history_orders_total(int64_t from, int64_t to) {
+    virtual std::optional<int32_t> history_orders_total(int64_t from, int64_t to) {
         return h.get_hist_orders_total ? h.get_hist_orders_total(from, to) : 0;
     }
 
@@ -336,7 +327,7 @@ class MetaTraderClient {
     virtual std::optional<std::vector<TradeDeal>> history_deals_get_by_pos(uint64_t pos_id) {
         return h.get_hist_deals_pos ? h.get_hist_deals_pos(pos_id) : std::nullopt;
     }
-    virtual int32_t history_deals_total(int64_t from, int64_t to) {
+    virtual std::optional<int32_t> history_deals_total(int64_t from, int64_t to) {
         return h.get_hist_deals_total ? h.get_hist_deals_total(from, to) : 0;
     }
 

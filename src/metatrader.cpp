@@ -28,8 +28,8 @@ class PyMetaTraderClient : public MetaTraderClient {
     std::optional<VersionInfo> version() override {
         PYBIND11_OVERRIDE(std::optional<VersionInfo>, MetaTraderClient, version);
     }
-    LastErrorResult last_error() override {
-        PYBIND11_OVERRIDE(LastErrorResult, MetaTraderClient, last_error);
+    std::optional<LastErrorResult> last_error() override {
+        PYBIND11_OVERRIDE(std::optional<LastErrorResult>, MetaTraderClient, last_error);
     }
     std::optional<TerminalInfo> terminal_info() override {
         PYBIND11_OVERRIDE(std::optional<TerminalInfo>, MetaTraderClient, terminal_info);
@@ -39,8 +39,8 @@ class PyMetaTraderClient : public MetaTraderClient {
     }
 
     // --- Symbols ---
-    int32_t symbols_total() override {
-        PYBIND11_OVERRIDE(int32_t, MetaTraderClient, symbols_total);
+    std::optional<int32_t> symbols_total() override {
+        PYBIND11_OVERRIDE(std::optional<int32_t>, MetaTraderClient, symbols_total);
     }
     std::optional<std::vector<SymbolInfo>> symbols_get() override {
         PYBIND11_OVERRIDE(std::optional<std::vector<SymbolInfo>>, MetaTraderClient, symbols_get);
@@ -141,11 +141,11 @@ class PyMetaTraderClient : public MetaTraderClient {
     }
 
     // --- Trading ---
-    OrderCheckResult order_check(const TradeRequest& req) override {
-        PYBIND11_OVERRIDE(OrderCheckResult, MetaTraderClient, order_check, req);
+    std::optional<OrderCheckResult> order_check(const TradeRequest& req) override {
+        PYBIND11_OVERRIDE(std::optional<OrderCheckResult>, MetaTraderClient, order_check, req);
     }
-    OrderSentResult order_send(const TradeRequest& req) override {
-        PYBIND11_OVERRIDE(OrderSentResult, MetaTraderClient, order_send, req);
+    std::optional<OrderSentResult> order_send(const TradeRequest& req) override {
+        PYBIND11_OVERRIDE(std::optional<OrderSentResult>, MetaTraderClient, order_send, req);
     }
     std::optional<double> order_calc_margin(
         int32_t action, str& sym, double vol, double prc
@@ -186,7 +186,9 @@ class PyMetaTraderClient : public MetaTraderClient {
     std::optional<TradeOrder> order_get_by_ticket(uint64_t ticket) override {
         PYBIND11_OVERRIDE(std::optional<TradeOrder>, MetaTraderClient, order_get_by_ticket, ticket);
     }
-    int32_t orders_total() override { PYBIND11_OVERRIDE(int32_t, MetaTraderClient, orders_total); }
+    std::optional<int32_t> orders_total() override {
+        PYBIND11_OVERRIDE(std::optional<int32_t>, MetaTraderClient, orders_total);
+    }
 
     std::optional<std::vector<TradePosition>> positions_get() override {
         PYBIND11_OVERRIDE(
@@ -211,8 +213,8 @@ class PyMetaTraderClient : public MetaTraderClient {
             std::optional<TradePosition>, MetaTraderClient, position_get_by_ticket, ticket
         );
     }
-    int32_t positions_total() override {
-        PYBIND11_OVERRIDE(int32_t, MetaTraderClient, positions_total);
+    std::optional<int32_t> positions_total() override {
+        PYBIND11_OVERRIDE(std::optional<int32_t>, MetaTraderClient, positions_total);
     }
 
     // --- History ---
@@ -239,8 +241,8 @@ class PyMetaTraderClient : public MetaTraderClient {
             pos_id
         );
     }
-    int32_t history_orders_total(int64_t from, int64_t to) override {
-        PYBIND11_OVERRIDE(int32_t, MetaTraderClient, history_orders_total, from, to);
+    std::optional<int32_t> history_orders_total(int64_t from, int64_t to) override {
+        PYBIND11_OVERRIDE(std::optional<int32_t>, MetaTraderClient, history_orders_total, from, to);
     }
 
     std::optional<std::vector<TradeDeal>> history_deals_get(
@@ -268,8 +270,8 @@ class PyMetaTraderClient : public MetaTraderClient {
             pos_id
         );
     }
-    int32_t history_deals_total(int64_t from, int64_t to) override {
-        PYBIND11_OVERRIDE(int32_t, MetaTraderClient, history_deals_total, from, to);
+    std::optional<int32_t> history_deals_total(int64_t from, int64_t to) override {
+        PYBIND11_OVERRIDE(std::optional<int32_t>, MetaTraderClient, history_deals_total, from, to);
     }
 };
 
