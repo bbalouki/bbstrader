@@ -333,6 +333,13 @@ class MetaTraderClient {
 
     // --- History Orders ---
     virtual std::optional<std::vector<TradeOrder>> history_orders_get(
+        const py::datetime& from, const py::datetime& to, str& group
+    ) {
+        int64_t from_ts = from.attr("timestamp")().cast<int64_t>();
+        int64_t to_ts   = to.attr("timestamp")().cast<int64_t>();
+        return history_orders_get(from_ts, to_ts, group);
+    }
+    virtual std::optional<std::vector<TradeOrder>> history_orders_get(
         int64_t from, int64_t to, str& group
     ) {
         return h.get_hist_orders_range ? h.get_hist_orders_range(from, to, group) : std::nullopt;
@@ -343,11 +350,25 @@ class MetaTraderClient {
     virtual std::optional<std::vector<TradeOrder>> history_orders_get_by_pos(uint64_t pos_id) {
         return h.get_hist_orders_pos ? h.get_hist_orders_pos(pos_id) : std::nullopt;
     }
+    virtual std::optional<int32_t> history_orders_total(
+        const py::datetime& from, const py::datetime& to
+    ) {
+        int64_t from_ts = from.attr("timestamp")().cast<int64_t>();
+        int64_t to_ts   = to.attr("timestamp")().cast<int64_t>();
+        return history_orders_total(from_ts, to_ts);
+    }
     virtual std::optional<int32_t> history_orders_total(int64_t from, int64_t to) {
         return h.get_hist_orders_total ? h.get_hist_orders_total(from, to) : 0;
     }
 
     // --- History Deals ---
+    virtual std::optional<std::vector<TradeDeal>> history_deals_get(
+        const py::datetime& from, const py::datetime& to, str& group
+    ) {
+        int64_t from_ts = from.attr("timestamp")().cast<int64_t>();
+        int64_t to_ts   = to.attr("timestamp")().cast<int64_t>();
+        return history_deals_get(from_ts, to_ts, group);
+    }
     virtual std::optional<std::vector<TradeDeal>> history_deals_get(
         int64_t from, int64_t to, str& group
     ) {
@@ -358,6 +379,13 @@ class MetaTraderClient {
     }
     virtual std::optional<std::vector<TradeDeal>> history_deals_get_by_pos(uint64_t pos_id) {
         return h.get_hist_deals_pos ? h.get_hist_deals_pos(pos_id) : std::nullopt;
+    }
+    virtual std::optional<int32_t> history_deals_total(
+        const py::datetime& from, const py::datetime& to
+    ) {
+        int64_t from_ts = from.attr("timestamp")().cast<int64_t>();
+        int64_t to_ts   = to.attr("timestamp")().cast<int64_t>();
+        return history_deals_total(from_ts, to_ts);
     }
     virtual std::optional<int32_t> history_deals_total(int64_t from, int64_t to) {
         return h.get_hist_deals_total ? h.get_hist_deals_total(from, to) : 0;

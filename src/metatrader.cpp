@@ -72,20 +72,7 @@ class PyMetaTraderClient : public MetaTraderClient {
 
     // --- Market Data ---
     std::optional<py::array_t<RateInfo>> copy_rates_from(
-        const std::string& s, int32_t tf, const py::datetime& from, int32_t count
-    ) override {
-        PYBIND11_OVERRIDE(
-            std::optional<py::array_t<RateInfo>>,
-            MetaTraderClient,
-            copy_rates_from,
-            s,
-            tf,
-            from,
-            count
-        );
-    }
-    std::optional<py::array_t<RateInfo>> copy_rates_from(
-        const std::string& s, int32_t tf, int64_t from, int32_t count
+        str& s, int32_t tf, int64_t from, int32_t count
     ) override {
         PYBIND11_OVERRIDE(
             std::optional<py::array_t<RateInfo>>,
@@ -111,20 +98,7 @@ class PyMetaTraderClient : public MetaTraderClient {
         );
     }
     std::optional<py::array_t<RateInfo>> copy_rates_range(
-        const std::string& s, int32_t tf, const py::datetime& from, const py::datetime& to
-    ) override {
-        PYBIND11_OVERRIDE(
-            std::optional<py::array_t<RateInfo>>,
-            MetaTraderClient,
-            copy_rates_range,
-            s,
-            tf,
-            from,
-            to
-        );
-    }
-    std::optional<py::array_t<RateInfo>> copy_rates_range(
-        const std::string& s, int32_t tf, int64_t from, int64_t to
+        str& s, int32_t tf, int64_t from, int64_t to
     ) override {
         PYBIND11_OVERRIDE(
             std::optional<py::array_t<RateInfo>>,
@@ -137,20 +111,7 @@ class PyMetaTraderClient : public MetaTraderClient {
         );
     }
     std::optional<py::array_t<TickInfo>> copy_ticks_from(
-        const std::string& s, const py::datetime& from, int32_t count, int32_t flags
-    ) override {
-        PYBIND11_OVERRIDE(
-            std::optional<py::array_t<TickInfo>>,
-            MetaTraderClient,
-            copy_ticks_from,
-            s,
-            from,
-            count,
-            flags
-        );
-    }
-    std::optional<py::array_t<TickInfo>> copy_ticks_from(
-        const std::string& s, int64_t from, int32_t count, int32_t flags
+        str& s, int64_t from, int32_t count, int32_t flags
     ) override {
         PYBIND11_OVERRIDE(
             std::optional<py::array_t<TickInfo>>,
@@ -163,20 +124,7 @@ class PyMetaTraderClient : public MetaTraderClient {
         );
     }
     std::optional<py::array_t<TickInfo>> copy_ticks_range(
-        const std::string& s, const py::datetime& from, const py::datetime& to, int32_t flags
-    ) override {
-        PYBIND11_OVERRIDE(
-            std::optional<py::array_t<TickInfo>>,
-            MetaTraderClient,
-            copy_ticks_range,
-            s,
-            from,
-            to,
-            flags
-        );
-    }
-    std::optional<py::array_t<TickInfo>> copy_ticks_range(
-        const std::string& s, int64_t from, int64_t to, int32_t flags
+        str& s, int64_t from, int64_t to, int32_t flags
     ) override {
         PYBIND11_OVERRIDE(
             std::optional<py::array_t<TickInfo>>,
@@ -193,14 +141,8 @@ class PyMetaTraderClient : public MetaTraderClient {
     }
 
     // --- Trading ---
-    std::optional<OrderCheckResult> order_check(const py::dict& dict) override {
-        PYBIND11_OVERRIDE(std::optional<OrderCheckResult>, MetaTraderClient, order_check, dict);
-    }
     std::optional<OrderCheckResult> order_check(const TradeRequest& req) override {
         PYBIND11_OVERRIDE(std::optional<OrderCheckResult>, MetaTraderClient, order_check, req);
-    }
-    std::optional<OrderSentResult> order_send(const py::dict& dict) override {
-        PYBIND11_OVERRIDE(std::optional<OrderSentResult>, MetaTraderClient, order_send, dict);
     }
     std::optional<OrderSentResult> order_send(const TradeRequest& req) override {
         PYBIND11_OVERRIDE(std::optional<OrderSentResult>, MetaTraderClient, order_send, req);
@@ -1050,6 +992,16 @@ PYBIND11_MODULE(metatrader_client, m) {
         )
         .def(
             "history_orders_get",
+            py::overload_cast<const py::datetime&, const py::datetime&, str&>(
+                &MetaTraderClient::history_orders_get
+            ),
+            py::arg("date_from"),
+            py::arg("date_to"),
+            py::arg("group"),
+            py::return_value_policy::move
+        )
+        .def(
+            "history_orders_get",
             py::overload_cast<uint64_t>(&MetaTraderClient::history_orders_get),
             py::arg("ticket")
         )
@@ -1061,14 +1013,31 @@ PYBIND11_MODULE(metatrader_client, m) {
         )
         .def(
             "history_orders_total",
-            &MetaTraderClient::history_orders_total,
+            py::overload_cast<int64_t, int64_t>(&MetaTraderClient::history_orders_total),
             py::arg("date_from"),
             py::arg("date_to")
         )
-
+        .def(
+            "history_orders_total",
+            py::overload_cast<const py::datetime&, const py::datetime&>(
+                &MetaTraderClient::history_orders_total
+            ),
+            py::arg("date_from"),
+            py::arg("date_to")
+        )
         .def(
             "history_deals_get",
             py::overload_cast<int64_t, int64_t, str&>(&MetaTraderClient::history_deals_get),
+            py::arg("date_from"),
+            py::arg("date_to"),
+            py::arg("group"),
+            py::return_value_policy::move
+        )
+        .def(
+            "history_deals_get",
+            py::overload_cast<const py::datetime&, const py::datetime&, str&>(
+                &MetaTraderClient::history_deals_get
+            ),
             py::arg("date_from"),
             py::arg("date_to"),
             py::arg("group"),
@@ -1087,7 +1056,15 @@ PYBIND11_MODULE(metatrader_client, m) {
         )
         .def(
             "history_deals_total",
-            &MetaTraderClient::history_deals_total,
+            py::overload_cast<int64_t, int64_t>(&MetaTraderClient::history_deals_total),
+            py::arg("date_from"),
+            py::arg("date_to")
+        )
+        .def(
+            "history_deals_total",
+            py::overload_cast<const py::datetime&, const py::datetime&>(
+                &MetaTraderClient::history_deals_total
+            ),
             py::arg("date_from"),
             py::arg("date_to")
         );
