@@ -12,115 +12,121 @@ class PyMetaTraderClient : public MetaTraderClient {
     using MetaTraderClient::MetaTraderClient;
 
     // --- System ---
-    bool initialize() override { PYBIND11_OVERRIDE(bool, MetaTraderClient, initialize); }
-    bool initialize(str& path) override {
+    auto initialize() -> bool override { PYBIND11_OVERRIDE(bool, MetaTraderClient, initialize); }
+    auto initialize(str& path) -> bool override {
         PYBIND11_OVERRIDE(bool, MetaTraderClient, initialize, path);
     }
-    bool initialize(
+    auto initialize(
         str& path, uint64_t account, str& pw, str& srv, uint32_t to, bool port
-    ) override {
+    ) -> bool override {
         PYBIND11_OVERRIDE(bool, MetaTraderClient, initialize, path, account, pw, srv, to, port);
     }
-    bool login(uint64_t account, str& pw, str& srv, uint32_t timeout) override {
+    auto login(uint64_t account, str& pw, str& srv, uint32_t timeout) -> bool override {
         PYBIND11_OVERRIDE(bool, MetaTraderClient, login, account, pw, srv, timeout);
     }
-    void shutdown() override { PYBIND11_OVERRIDE(void, MetaTraderClient, shutdown); }
-    std::optional<VersionInfo> version() override {
+    auto shutdown() -> void override { PYBIND11_OVERRIDE(void, MetaTraderClient, shutdown); }
+    auto version() -> std::optional<VersionInfo> override {
         PYBIND11_OVERRIDE(std::optional<VersionInfo>, MetaTraderClient, version);
     }
-    std::optional<LastErrorResult> last_error() override {
+    auto last_error() -> std::optional<LastErrorResult> override {
         PYBIND11_OVERRIDE(std::optional<LastErrorResult>, MetaTraderClient, last_error);
     }
-    std::optional<TerminalInfo> terminal_info() override {
+    auto terminal_info() -> std::optional<TerminalInfo> override {
         PYBIND11_OVERRIDE(std::optional<TerminalInfo>, MetaTraderClient, terminal_info);
     }
-    std::optional<AccountInfo> account_info() override {
+    auto account_info() -> std::optional<AccountInfo> override {
         PYBIND11_OVERRIDE(std::optional<AccountInfo>, MetaTraderClient, account_info);
     }
 
     // --- Symbols ---
-    std::optional<int32_t> symbols_total() override {
+    auto symbols_total() -> std::optional<int32_t> override {
         PYBIND11_OVERRIDE(std::optional<int32_t>, MetaTraderClient, symbols_total);
     }
-    SymbolsData symbols_get() override {
+    auto symbols_get() -> SymbolsData override {
         PYBIND11_OVERRIDE(SymbolsData, MetaTraderClient, symbols_get);
     }
-    SymbolsData symbols_get(str& group) override {
+    auto symbols_get(str& group) -> SymbolsData override {
         PYBIND11_OVERRIDE(SymbolsData, MetaTraderClient, symbols_get, group);
     }
-    std::optional<SymbolInfo> symbol_info(str& symbol) override {
+    auto symbol_info(str& symbol) -> std::optional<SymbolInfo> override {
         PYBIND11_OVERRIDE(std::optional<SymbolInfo>, MetaTraderClient, symbol_info, symbol);
     }
-    bool symbol_select(str& symbol, bool enable) override {
+    auto symbol_select(str& symbol, bool enable) -> bool override {
         PYBIND11_OVERRIDE(bool, MetaTraderClient, symbol_select, symbol, enable);
     }
 
     // --- Market Depth ---
-    bool market_book_add(str& symbol) override {
+    auto market_book_add(str& symbol) -> bool override {
         PYBIND11_OVERRIDE(bool, MetaTraderClient, market_book_add, symbol);
     }
-    bool market_book_release(str& symbol) override {
+    auto market_book_release(str& symbol) -> bool override {
         PYBIND11_OVERRIDE(bool, MetaTraderClient, market_book_release, symbol);
     }
-    BookData market_book_get(str& symbol) override {
+    auto market_book_get(str& symbol) -> BookData override {
         PYBIND11_OVERRIDE(BookData, MetaTraderClient, market_book_get, symbol);
     }
 
     // --- Market Data ---
-    RateInfoType copy_rates_from(str& s, int32_t tf, DateTime from, int32_t count) override {
+    auto copy_rates_from(str& s, int32_t tf, DateTime from, int32_t count)
+        -> RateInfoType override {
         PYBIND11_OVERRIDE(RateInfoType, MetaTraderClient, copy_rates_from, s, tf, from, count);
     }
-    RateInfoType copy_rates_from(str& s, int32_t tf, int64_t from, int32_t count) override {
+    auto copy_rates_from(str& s, int32_t tf, int64_t from, int32_t count)
+        -> RateInfoType override {
         PYBIND11_OVERRIDE(RateInfoType, MetaTraderClient, copy_rates_from, s, tf, from, count);
     }
-    RateInfoType copy_rates_from_pos(str& s, int32_t tf, int32_t start, int32_t count) override {
+    auto copy_rates_from_pos(str& s, int32_t tf, int32_t start, int32_t count)
+        -> RateInfoType override {
         PYBIND11_OVERRIDE(RateInfoType, MetaTraderClient, copy_rates_from_pos, s, tf, start, count);
     }
-    RateInfoType copy_rates_range(str& s, int32_t tf, DateTime from, DateTime to) override {
+    auto copy_rates_range(str& s, int32_t tf, DateTime from, DateTime to)
+        -> RateInfoType override {
         PYBIND11_OVERRIDE(RateInfoType, MetaTraderClient, copy_rates_range, s, tf, from, to);
     }
-    RateInfoType copy_rates_range(str& s, int32_t tf, int64_t from, int64_t to) override {
+    auto copy_rates_range(str& s, int32_t tf, int64_t from, int64_t to) -> RateInfoType override {
         PYBIND11_OVERRIDE(RateInfoType, MetaTraderClient, copy_rates_range, s, tf, from, to);
     }
-    TickInfoType copy_ticks_from(str& s, DateTime from, int32_t count, int32_t flags) override {
+    auto copy_ticks_from(str& s, DateTime from, int32_t count, int32_t flags)
+        -> TickInfoType override {
         PYBIND11_OVERRIDE(TickInfoType, MetaTraderClient, copy_ticks_from, s, from, count, flags);
     }
-    TickInfoType copy_ticks_from(str& s, int64_t from, int32_t count, int32_t flags) override {
+    auto copy_ticks_from(str& s, int64_t from, int32_t count, int32_t flags)
+        -> TickInfoType override {
         PYBIND11_OVERRIDE(TickInfoType, MetaTraderClient, copy_ticks_from, s, from, count, flags);
     }
-    TickInfoType copy_ticks_range(str& s, DateTime from, DateTime to, int32_t flags) override {
+    auto copy_ticks_range(str& s, DateTime from, DateTime to, int32_t flags)
+        -> TickInfoType override {
         PYBIND11_OVERRIDE(TickInfoType, MetaTraderClient, copy_ticks_range, s, from, to, flags);
     }
-    TickInfoType copy_ticks_range(str& s, int64_t from, int64_t to, int32_t flags) override {
+    auto copy_ticks_range(str& s, int64_t from, int64_t to, int32_t flags)
+        -> TickInfoType override {
         PYBIND11_OVERRIDE(TickInfoType, MetaTraderClient, copy_ticks_range, s, from, to, flags);
     }
-    std::optional<TickInfo> symbol_info_tick(str& symbol) override {
+    auto symbol_info_tick(str& symbol) -> std::optional<TickInfo> override {
         PYBIND11_OVERRIDE(std::optional<TickInfo>, MetaTraderClient, symbol_info_tick, symbol);
     }
 
     // --- Trading ---
-    std::optional<OrderCheckResult> order_check(const py::dict& dict) override {
+    auto order_check(const py::dict& dict) -> std::optional<OrderCheckResult> override {
         PYBIND11_OVERRIDE(std::optional<OrderCheckResult>, MetaTraderClient, order_check, dict);
     }
-    std::optional<OrderCheckResult> order_check(const TradeRequest& req) override {
+    auto order_check(const TradeRequest& req) -> std::optional<OrderCheckResult> override {
         PYBIND11_OVERRIDE(std::optional<OrderCheckResult>, MetaTraderClient, order_check, req);
     }
-    std::optional<OrderSentResult> order_send(const py::dict& dict) override {
+    auto order_send(const py::dict& dict) -> std::optional<OrderSentResult> override {
         PYBIND11_OVERRIDE(std::optional<OrderSentResult>, MetaTraderClient, order_send, dict);
     }
-    std::optional<OrderSentResult> order_send(const TradeRequest& req) override {
+    auto order_send(const TradeRequest& req) -> std::optional<OrderSentResult> override {
         PYBIND11_OVERRIDE(std::optional<OrderSentResult>, MetaTraderClient, order_send, req);
     }
-    std::optional<double> order_calc_margin(
-        int32_t action, str& sym, double vol, double prc
-    ) override {
+    auto order_calc_margin(int32_t action, str& sym, double vol, double prc)
+        -> std::optional<double> override {
         PYBIND11_OVERRIDE(
             std::optional<double>, MetaTraderClient, order_calc_margin, action, sym, vol, prc
         );
     }
-    std::optional<double> order_calc_profit(
-        int32_t action, str& sym, double vol, double open, double close
-    ) override {
+    auto order_calc_profit(int32_t action, str& sym, double vol, double open, double close)
+        -> std::optional<double> override {
         PYBIND11_OVERRIDE(
             std::optional<double>,
             MetaTraderClient,
@@ -134,70 +140,70 @@ class PyMetaTraderClient : public MetaTraderClient {
     }
 
     // --- Active Orders & Positions ---
-    OrdersData orders_get() override {
+    auto orders_get() -> OrdersData override {
         PYBIND11_OVERRIDE(OrdersData, MetaTraderClient, orders_get);
     }
-    OrdersData orders_get(str& symbol) override {
+    auto orders_get(str& symbol) -> OrdersData override {
         PYBIND11_OVERRIDE(OrdersData, MetaTraderClient, orders_get, symbol);
     }
-    OrdersData orders_get_by_group(str& group) override {
+    auto orders_get_by_group(str& group) -> OrdersData override {
         PYBIND11_OVERRIDE(OrdersData, MetaTraderClient, orders_get_by_group, group);
     }
-    std::optional<TradeOrder> order_get_by_ticket(uint64_t ticket) override {
+    auto order_get_by_ticket(uint64_t ticket) -> std::optional<TradeOrder> override {
         PYBIND11_OVERRIDE(std::optional<TradeOrder>, MetaTraderClient, order_get_by_ticket, ticket);
     }
-    std::optional<int32_t> orders_total() override {
+    auto orders_total() -> std::optional<int32_t> override {
         PYBIND11_OVERRIDE(std::optional<int32_t>, MetaTraderClient, orders_total);
     }
 
-    PositionsData positions_get() override {
+    auto positions_get() -> PositionsData override {
         PYBIND11_OVERRIDE(PositionsData, MetaTraderClient, positions_get);
     }
-    PositionsData positions_get(str& symbol) override {
+    auto positions_get(str& symbol) -> PositionsData override {
         PYBIND11_OVERRIDE(PositionsData, MetaTraderClient, positions_get, symbol);
     }
-    PositionsData positions_get_by_group(str& group) override {
+    auto positions_get_by_group(str& group) -> PositionsData override {
         PYBIND11_OVERRIDE(PositionsData, MetaTraderClient, positions_get_by_group, group);
     }
-    std::optional<TradePosition> position_get_by_ticket(uint64_t ticket) override {
+    auto position_get_by_ticket(uint64_t ticket) -> std::optional<TradePosition> override {
         PYBIND11_OVERRIDE(
             std::optional<TradePosition>, MetaTraderClient, position_get_by_ticket, ticket
         );
     }
-    std::optional<int32_t> positions_total() override {
+    auto positions_total() -> std::optional<int32_t> override {
         PYBIND11_OVERRIDE(std::optional<int32_t>, MetaTraderClient, positions_total);
     }
 
     // --- History ---
-    OrdersData history_orders_get(int64_t from, int64_t to, str& group) override {
+    auto history_orders_get(int64_t from, int64_t to, str& group) -> OrdersData override {
         PYBIND11_OVERRIDE(OrdersData, MetaTraderClient, history_orders_get, from, to, group);
     }
-    std::optional<TradeOrder> history_orders_get(uint64_t ticket) override {
+    auto history_orders_get(uint64_t ticket) -> std::optional<TradeOrder> override {
         PYBIND11_OVERRIDE(std::optional<TradeOrder>, MetaTraderClient, history_orders_get, ticket);
     }
-    OrdersData history_orders_get_by_pos(uint64_t pos_id) override {
+    auto history_orders_get_by_pos(uint64_t pos_id) -> OrdersData override {
         PYBIND11_OVERRIDE(OrdersData, MetaTraderClient, history_orders_get_by_pos, pos_id);
     }
-    std::optional<int32_t> history_orders_total(int64_t from, int64_t to) override {
+    auto history_orders_total(int64_t from, int64_t to) -> std::optional<int32_t> override {
         PYBIND11_OVERRIDE(std::optional<int32_t>, MetaTraderClient, history_orders_total, from, to);
     }
 
-    DealsData history_deals_get(int64_t from, int64_t to, str& group) override {
+    auto history_deals_get(int64_t from, int64_t to, str& group) -> DealsData override {
         PYBIND11_OVERRIDE(DealsData, MetaTraderClient, history_deals_get, from, to, group);
     }
-    DealsData history_deals_get(uint64_t ticket) override {
+    auto history_deals_get(uint64_t ticket) -> DealsData override {
         PYBIND11_OVERRIDE(DealsData, MetaTraderClient, history_deals_get, ticket);
     }
-    DealsData history_deals_get_by_pos(uint64_t pos_id) override {
+    auto history_deals_get_by_pos(uint64_t pos_id) -> DealsData override {
         PYBIND11_OVERRIDE(DealsData, MetaTraderClient, history_deals_get_by_pos, pos_id);
     }
-    std::optional<int32_t> history_deals_total(int64_t from, int64_t to) override {
+    auto history_deals_total(int64_t from, int64_t to) -> std::optional<int32_t> override {
         PYBIND11_OVERRIDE(std::optional<int32_t>, MetaTraderClient, history_deals_total, from, to);
     }
 };
 
 // Helper function to register RateInfo manually
-void register_rate_info() {
+auto register_rate_info() -> void {
     // We manually define the field descriptors to avoid name collisions with
     // 'time', 'open', 'close'
     auto fields = std::vector<py::detail::field_descriptor>{
@@ -225,7 +231,7 @@ void register_rate_info() {
 }
 
 // Helper function to register TickInfo manually
-void register_tick_info() {
+auto register_tick_info() -> void {
     auto fields = std::vector<py::detail::field_descriptor>{
         {"time", offsetof(TickInfo, time), sizeof(int64_t), "q", py::dtype::of<int64_t>()},
         {"bid", offsetof(TickInfo, bid), sizeof(double), "d", py::dtype::of<double>()},

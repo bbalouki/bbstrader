@@ -157,204 +157,209 @@ class MetaTraderClient {
     explicit MetaTraderClient(Handlers handlers) : h(std::move(handlers)) {}
 
     // System
-    virtual bool initialize() { return h.init_auto ? h.init_auto() : false; }
-    virtual bool initialize(str& path) { return h.init_path ? h.init_path(path) : false; }
-    virtual bool initialize(
+    virtual auto initialize() -> bool { return h.init_auto ? h.init_auto() : false; }
+    virtual auto initialize(str& path) -> bool { return h.init_path ? h.init_path(path) : false; }
+    virtual auto initialize(
         str& path, uint64_t account, str& pw, str& srv, uint32_t timeout, bool portable
-    ) {
+    ) -> bool {
         return h.init_full ? h.init_full(path, account, pw, srv, timeout, portable) : false;
     }
-    virtual bool login(uint64_t account, str& pw, str& srv, uint32_t timeout) {
+    virtual auto login(uint64_t account, str& pw, str& srv, uint32_t timeout) -> bool {
         return h.login ? h.login(account, pw, srv, timeout) : false;
     }
 
-    virtual void shutdown() {
+    virtual auto shutdown() -> void {
         if (h.shutdown)
             h.shutdown();
     }
-    virtual std::optional<VersionInfo> version() {
+    virtual auto version() -> std::optional<VersionInfo> {
         return h.get_version ? h.get_version() : std::nullopt;
     }
-    virtual std::optional<LastErrorResult> last_error() {
+    virtual auto last_error() -> std::optional<LastErrorResult> {
         return h.get_last_error ? h.get_last_error() : std::make_tuple(-1, std::string("fail"));
     }
-    virtual std::optional<TerminalInfo> terminal_info() {
+    virtual auto terminal_info() -> std::optional<TerminalInfo> {
         return h.get_terminal_info ? h.get_terminal_info() : std::nullopt;
     }
-    virtual std::optional<AccountInfo> account_info() {
+    virtual auto account_info() -> std::optional<AccountInfo> {
         return h.get_account_info ? h.get_account_info() : std::nullopt;
     }
 
     // Symbols
-    virtual std::optional<int32_t> symbols_total() {
+    virtual auto symbols_total() -> std::optional<int32_t> {
         return h.get_total_symbols ? h.get_total_symbols() : 0;
     }
-    virtual SymbolsData symbols_get() {
+    virtual auto symbols_get() -> SymbolsData {
         return h.get_symbols_all ? h.get_symbols_all() : std::nullopt;
     }
-    virtual SymbolsData symbols_get(str& group) {
+    virtual auto symbols_get(str& group) -> SymbolsData {
         return h.get_symbols_by_group ? h.get_symbols_by_group(group) : std::nullopt;
     }
-    virtual std::optional<SymbolInfo> symbol_info(str& symbol) {
+    virtual auto symbol_info(str& symbol) -> std::optional<SymbolInfo> {
         return h.get_symbol_info ? h.get_symbol_info(symbol) : std::nullopt;
     }
-    virtual bool symbol_select(str& symbol, bool enable) {
+    virtual auto symbol_select(str& symbol, bool enable) -> bool {
         return h.select_symbol ? h.select_symbol(symbol, enable) : false;
     }
-    virtual std::optional<TickInfo> symbol_info_tick(str& symbol) {
+    virtual auto symbol_info_tick(str& symbol) -> std::optional<TickInfo> {
         return h.get_tick_info ? h.get_tick_info(symbol) : std::nullopt;
     }
 
     // Market Depth
-    virtual bool market_book_add(str& symbol) {
+    virtual auto market_book_add(str& symbol) -> bool {
         return h.subscribe_book ? h.subscribe_book(symbol) : false;
     }
-    virtual bool market_book_release(str& symbol) {
+    virtual auto market_book_release(str& symbol) -> bool {
         return h.unsubscribe_book ? h.unsubscribe_book(symbol) : false;
     }
-    virtual BookData market_book_get(str& symbol) {
+    virtual auto market_book_get(str& symbol) -> BookData {
         return h.get_book_info ? h.get_book_info(symbol) : std::nullopt;
     }
 
     // Market Data
-    virtual RateInfoType copy_rates_from(str& s, int32_t t, DateTime from, int32_t count) {
+    virtual auto copy_rates_from(str& s, int32_t t, DateTime from, int32_t count) -> RateInfoType {
         auto from_ts = static_cast<int64_t>(std::chrono::system_clock::to_time_t(from));
         return copy_rates_from(s, t, from_ts, count);
     }
-    virtual RateInfoType copy_rates_from(str& s, int32_t t, int64_t from, int32_t count) {
+    virtual auto copy_rates_from(str& s, int32_t t, int64_t from, int32_t count) -> RateInfoType {
         return h.get_rates_by_date ? h.get_rates_by_date(s, t, from, count)
                                    : py::array_t<RateInfo>();
     }
-    virtual RateInfoType copy_rates_from_pos(str& s, int32_t t, int32_t start, int32_t count) {
+    virtual auto copy_rates_from_pos(str& s, int32_t t, int32_t start, int32_t count)
+        -> RateInfoType {
         return h.get_rates_by_pos ? h.get_rates_by_pos(s, t, start, count)
                                   : py::array_t<RateInfo>();
     }
-    virtual RateInfoType copy_rates_range(str& s, int32_t t, DateTime from, DateTime to) {
+    virtual auto copy_rates_range(str& s, int32_t t, DateTime from, DateTime to) -> RateInfoType {
         auto from_ts = static_cast<int64_t>(std::chrono::system_clock::to_time_t(from));
         auto to_ts   = static_cast<int64_t>(std::chrono::system_clock::to_time_t(to));
         return copy_rates_range(s, t, from_ts, to_ts);
     }
-    virtual RateInfoType copy_rates_range(str& s, int32_t t, int64_t from, int64_t to) {
+    virtual auto copy_rates_range(str& s, int32_t t, int64_t from, int64_t to) -> RateInfoType {
         return h.get_rates_by_range ? h.get_rates_by_range(s, t, from, to)
                                     : py::array_t<RateInfo>();
     }
-    virtual TickInfoType copy_ticks_from(str& s, DateTime from, int32_t count, int32_t flags) {
+    virtual auto copy_ticks_from(str& s, DateTime from, int32_t count, int32_t flags)
+        -> TickInfoType {
         auto from_ts = static_cast<int64_t>(std::chrono::system_clock::to_time_t(from));
         return copy_ticks_from(s, from_ts, count, flags);
     }
-    virtual TickInfoType copy_ticks_from(str& s, int64_t from, int32_t count, int32_t flags) {
+    virtual auto copy_ticks_from(str& s, int64_t from, int32_t count, int32_t flags)
+        -> TickInfoType {
         return h.get_ticks_by_date ? h.get_ticks_by_date(s, from, count, flags)
                                    : py::array_t<TickInfo>();
     }
-    virtual TickInfoType copy_ticks_range(str& s, DateTime from, DateTime to, int32_t flags) {
+    virtual auto copy_ticks_range(str& s, DateTime from, DateTime to, int32_t flags)
+        -> TickInfoType {
         auto from_ts = static_cast<int64_t>(std::chrono::system_clock::to_time_t(from));
         auto to_ts   = static_cast<int64_t>(std::chrono::system_clock::to_time_t(to));
         return copy_ticks_range(s, from_ts, to_ts, flags);
     }
-    virtual TickInfoType copy_ticks_range(str& s, int64_t from, int64_t to, int32_t flags) {
+    virtual auto copy_ticks_range(str& s, int64_t from, int64_t to, int32_t flags)
+        -> TickInfoType {
         return h.get_ticks_by_range ? h.get_ticks_by_range(s, from, to, flags)
                                     : py::array_t<TickInfo>();
     }
 
     // Active Orders
-    virtual OrdersData orders_get() { return h.get_orders_all ? h.get_orders_all() : std::nullopt; }
-    virtual OrdersData orders_get(str& symbol) {
+    virtual auto orders_get() -> OrdersData {
+        return h.get_orders_all ? h.get_orders_all() : std::nullopt;
+    }
+    virtual auto orders_get(str& symbol) -> OrdersData {
         return h.get_orders_by_symbol ? h.get_orders_by_symbol(symbol) : std::nullopt;
     }
-    virtual OrdersData orders_get_by_group(str& group) {
+    virtual auto orders_get_by_group(str& group) -> OrdersData {
         return h.get_orders_by_group ? h.get_orders_by_group(group) : std::nullopt;
     }
-    virtual std::optional<TradeOrder> order_get_by_ticket(uint64_t ticket) {
+    virtual auto order_get_by_ticket(uint64_t ticket) -> std::optional<TradeOrder> {
         return h.get_order_by_ticket ? h.get_order_by_ticket(ticket) : std::nullopt;
     }
-    virtual std::optional<int32_t> orders_total() {
+    virtual auto orders_total() -> std::optional<int32_t> {
         return h.get_total_orders ? h.get_total_orders() : 0;
     }
 
     // Active Positions
-    virtual PositionsData positions_get() {
+    virtual auto positions_get() -> PositionsData {
         return h.get_positions_all ? h.get_positions_all() : std::nullopt;
     }
-    virtual PositionsData positions_get(str& symbol) {
+    virtual auto positions_get(str& symbol) -> PositionsData {
         return h.get_positions_symbol ? h.get_positions_symbol(symbol) : std::nullopt;
     }
-    virtual PositionsData positions_get_by_group(str& group) {
+    virtual auto positions_get_by_group(str& group) -> PositionsData {
         return h.get_positions_group ? h.get_positions_group(group) : std::nullopt;
     }
-    virtual std::optional<TradePosition> position_get_by_ticket(uint64_t ticket) {
+    virtual auto position_get_by_ticket(uint64_t ticket) -> std::optional<TradePosition> {
         return h.get_position_ticket ? h.get_position_ticket(ticket) : std::nullopt;
     }
-    virtual std::optional<int32_t> positions_total() {
+    virtual auto positions_total() -> std::optional<int32_t> {
         return h.get_total_positions ? h.get_total_positions() : 0;
     }
 
     // Trading
-    virtual std::optional<OrderCheckResult> order_check(const py::dict& dict) {
+    virtual auto order_check(const py::dict& dict) -> std::optional<OrderCheckResult> {
         return order_check(dict.cast<TradeRequest>());
     }
-    virtual std::optional<OrderCheckResult> order_check(const TradeRequest& req) {
+    virtual auto order_check(const TradeRequest& req) -> std::optional<OrderCheckResult> {
         return h.check_order ? h.check_order(req) : OrderCheckResult{};
     }
-    virtual std::optional<OrderSentResult> order_send(const py::dict& dict) {
+    virtual auto order_send(const py::dict& dict) -> std::optional<OrderSentResult> {
         return order_send(dict.cast<TradeRequest>());
     }
-    virtual std::optional<OrderSentResult> order_send(const TradeRequest& req) {
+    virtual auto order_send(const TradeRequest& req) -> std::optional<OrderSentResult> {
         return h.send_order ? h.send_order(req) : OrderSentResult{};
     }
-    virtual std::optional<double> order_calc_margin(
-        int32_t action, str& sym, double vol, double prc
-    ) {
+    virtual auto order_calc_margin(int32_t action, str& sym, double vol, double prc)
+        -> std::optional<double> {
         return h.calc_margin ? h.calc_margin(action, sym, vol, prc) : std::nullopt;
     }
-    virtual std::optional<double> order_calc_profit(
-        int32_t action, str& sym, double vol, double open, double close
-    ) {
+    virtual auto order_calc_profit(int32_t action, str& sym, double vol, double open, double close)
+        -> std::optional<double> {
         return h.calc_profit ? h.calc_profit(action, sym, vol, open, close) : std::nullopt;
     }
 
     // History Orders
-    virtual OrdersData history_orders_get(int64_t from, int64_t to, str& group) {
+    virtual auto history_orders_get(int64_t from, int64_t to, str& group) -> OrdersData {
         return h.get_hist_orders_range ? h.get_hist_orders_range(from, to, group) : std::nullopt;
     }
-    virtual OrdersData history_orders_get(DateTime from, DateTime to, str& group) {
+    virtual auto history_orders_get(DateTime from, DateTime to, str& group) -> OrdersData {
         auto from_ts = static_cast<int64_t>(std::chrono::system_clock::to_time_t(from));
         auto to_ts   = static_cast<int64_t>(std::chrono::system_clock::to_time_t(to));
         return history_orders_get(from_ts, to_ts, group);
     }
-    virtual std::optional<TradeOrder> history_orders_get(uint64_t ticket) {
+    virtual auto history_orders_get(uint64_t ticket) -> std::optional<TradeOrder> {
         return h.get_hist_order_ticket ? h.get_hist_order_ticket(ticket) : std::nullopt;
     }
-    virtual OrdersData history_orders_get_by_pos(uint64_t pos_id) {
+    virtual auto history_orders_get_by_pos(uint64_t pos_id) -> OrdersData {
         return h.get_hist_orders_pos ? h.get_hist_orders_pos(pos_id) : std::nullopt;
     }
-    virtual std::optional<int32_t> history_orders_total(int64_t from, int64_t to) {
+    virtual auto history_orders_total(int64_t from, int64_t to) -> std::optional<int32_t> {
         return h.get_hist_orders_total ? h.get_hist_orders_total(from, to) : 0;
     }
-    virtual std::optional<int32_t> history_orders_total(DateTime from, DateTime to) {
+    virtual auto history_orders_total(DateTime from, DateTime to) -> std::optional<int32_t> {
         auto from_ts = static_cast<int64_t>(std::chrono::system_clock::to_time_t(from));
         auto to_ts   = static_cast<int64_t>(std::chrono::system_clock::to_time_t(to));
         return history_orders_total(from_ts, to_ts);
     }
 
     // History Deals
-    virtual DealsData history_deals_get(int64_t from, int64_t to, str& group) {
+    virtual auto history_deals_get(int64_t from, int64_t to, str& group) -> DealsData {
         return h.get_hist_deals_range ? h.get_hist_deals_range(from, to, group) : std::nullopt;
     }
-    virtual DealsData history_deals_get(DateTime from, DateTime to, str& group) {
+    virtual auto history_deals_get(DateTime from, DateTime to, str& group) -> DealsData {
         auto from_ts = static_cast<int64_t>(std::chrono::system_clock::to_time_t(from));
         auto to_ts   = static_cast<int64_t>(std::chrono::system_clock::to_time_t(to));
         return history_deals_get(from_ts, to_ts, group);
     }
-    virtual DealsData history_deals_get(uint64_t ticket) {
+    virtual auto history_deals_get(uint64_t ticket) -> DealsData {
         return h.get_hist_deals_ticket ? h.get_hist_deals_ticket(ticket) : std::nullopt;
     }
-    virtual DealsData history_deals_get_by_pos(uint64_t pos_id) {
+    virtual auto history_deals_get_by_pos(uint64_t pos_id) -> DealsData {
         return h.get_hist_deals_pos ? h.get_hist_deals_pos(pos_id) : std::nullopt;
     }
-    virtual std::optional<int32_t> history_deals_total(int64_t from, int64_t to) {
+    virtual auto history_deals_total(int64_t from, int64_t to) -> std::optional<int32_t> {
         return h.get_hist_deals_total ? h.get_hist_deals_total(from, to) : 0;
     }
-    virtual std::optional<int32_t> history_deals_total(DateTime from, DateTime to) {
+    virtual auto history_deals_total(DateTime from, DateTime to) -> std::optional<int32_t> {
         auto from_ts = static_cast<int64_t>(std::chrono::system_clock::to_time_t(from));
         auto to_ts   = static_cast<int64_t>(std::chrono::system_clock::to_time_t(to));
         return history_deals_total(from_ts, to_ts);
