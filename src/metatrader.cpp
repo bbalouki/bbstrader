@@ -13,22 +13,15 @@ class PyMetaTraderClient : public MetaTraderClient {
 
     // --- System ---
     bool initialize() override { PYBIND11_OVERRIDE(bool, MetaTraderClient, initialize); }
-    bool initialize(const std::string& path) override {
+    bool initialize(str& path) override {
         PYBIND11_OVERRIDE(bool, MetaTraderClient, initialize, path);
     }
     bool initialize(
-        const std::string& path,
-        uint64_t           account,
-        const std::string& pw,
-        const std::string& srv,
-        uint32_t           to,
-        bool               port
+        str& path, uint64_t account, str& pw, str& srv, uint32_t to, bool port
     ) override {
         PYBIND11_OVERRIDE(bool, MetaTraderClient, initialize, path, account, pw, srv, to, port);
     }
-    bool login(
-        uint64_t account, const std::string& pw, const std::string& srv, uint32_t timeout
-    ) override {
+    bool login(uint64_t account, str& pw, str& srv, uint32_t timeout) override {
         PYBIND11_OVERRIDE(bool, MetaTraderClient, login, account, pw, srv, timeout);
     }
     void shutdown() override { PYBIND11_OVERRIDE(void, MetaTraderClient, shutdown); }
@@ -52,26 +45,26 @@ class PyMetaTraderClient : public MetaTraderClient {
     std::optional<std::vector<SymbolInfo>> symbols_get() override {
         PYBIND11_OVERRIDE(std::optional<std::vector<SymbolInfo>>, MetaTraderClient, symbols_get);
     }
-    std::optional<std::vector<SymbolInfo>> symbols_get(const std::string& group) override {
+    std::optional<std::vector<SymbolInfo>> symbols_get(str& group) override {
         PYBIND11_OVERRIDE(
             std::optional<std::vector<SymbolInfo>>, MetaTraderClient, symbols_get, group
         );
     }
-    std::optional<SymbolInfo> symbol_info(const std::string& symbol) override {
+    std::optional<SymbolInfo> symbol_info(str& symbol) override {
         PYBIND11_OVERRIDE(std::optional<SymbolInfo>, MetaTraderClient, symbol_info, symbol);
     }
-    bool symbol_select(const std::string& symbol, bool enable) override {
+    bool symbol_select(str& symbol, bool enable) override {
         PYBIND11_OVERRIDE(bool, MetaTraderClient, symbol_select, symbol, enable);
     }
 
     // --- Market Depth ---
-    bool market_book_add(const std::string& symbol) override {
+    bool market_book_add(str& symbol) override {
         PYBIND11_OVERRIDE(bool, MetaTraderClient, market_book_add, symbol);
     }
-    bool market_book_release(const std::string& symbol) override {
+    bool market_book_release(str& symbol) override {
         PYBIND11_OVERRIDE(bool, MetaTraderClient, market_book_release, symbol);
     }
-    std::optional<std::vector<BookInfo>> market_book_get(const std::string& symbol) override {
+    std::optional<std::vector<BookInfo>> market_book_get(str& symbol) override {
         PYBIND11_OVERRIDE(
             std::optional<std::vector<BookInfo>>, MetaTraderClient, market_book_get, symbol
         );
@@ -79,40 +72,46 @@ class PyMetaTraderClient : public MetaTraderClient {
 
     // --- Market Data ---
     std::optional<std::vector<RateInfo>> copy_rates_from(
-        const std::string& s, int32_t t, int64_t from, int32_t count
+        str& s, int32_t tf, int64_t from, int32_t count
     ) override {
         PYBIND11_OVERRIDE(
             std::optional<std::vector<RateInfo>>,
             MetaTraderClient,
             copy_rates_from,
             s,
-            t,
+            tf,
             from,
             count
         );
     }
     std::optional<std::vector<RateInfo>> copy_rates_from_pos(
-        const std::string& s, int32_t t, int32_t start, int32_t count
+        str& s, int32_t tf, int32_t start, int32_t count
     ) override {
         PYBIND11_OVERRIDE(
             std::optional<std::vector<RateInfo>>,
             MetaTraderClient,
             copy_rates_from_pos,
             s,
-            t,
+            tf,
             start,
             count
         );
     }
     std::optional<std::vector<RateInfo>> copy_rates_range(
-        const std::string& s, int32_t t, int64_t from, int64_t to
+        str& s, int32_t tf, int64_t from, int64_t to
     ) override {
         PYBIND11_OVERRIDE(
-            std::optional<std::vector<RateInfo>>, MetaTraderClient, copy_rates_range, s, t, from, to
+            std::optional<std::vector<RateInfo>>,
+            MetaTraderClient,
+            copy_rates_range,
+            s,
+            tf,
+            from,
+            to
         );
     }
     std::optional<std::vector<TickInfo>> copy_ticks_from(
-        const std::string& s, int64_t from, int32_t count, uint32_t flags
+        str& s, int64_t from, int32_t count, uint32_t flags
     ) override {
         PYBIND11_OVERRIDE(
             std::optional<std::vector<TickInfo>>,
@@ -125,7 +124,7 @@ class PyMetaTraderClient : public MetaTraderClient {
         );
     }
     std::optional<std::vector<TickInfo>> copy_ticks_range(
-        const std::string& s, int64_t from, int64_t to, uint32_t flags
+        str& s, int64_t from, int64_t to, uint32_t flags
     ) override {
         PYBIND11_OVERRIDE(
             std::optional<std::vector<TickInfo>>,
@@ -137,7 +136,7 @@ class PyMetaTraderClient : public MetaTraderClient {
             flags
         );
     }
-    std::optional<TickInfo> symbol_info_tick(const std::string& symbol) override {
+    std::optional<TickInfo> symbol_info_tick(str& symbol) override {
         PYBIND11_OVERRIDE(std::optional<TickInfo>, MetaTraderClient, symbol_info_tick, symbol);
     }
 
@@ -149,17 +148,24 @@ class PyMetaTraderClient : public MetaTraderClient {
         PYBIND11_OVERRIDE(OrderSentResult, MetaTraderClient, order_send, req);
     }
     std::optional<double> order_calc_margin(
-        int32_t act, const std::string& sym, double vol, double prc
+        int32_t action, str& sym, double vol, double prc
     ) override {
         PYBIND11_OVERRIDE(
-            std::optional<double>, MetaTraderClient, order_calc_margin, act, sym, vol, prc
+            std::optional<double>, MetaTraderClient, order_calc_margin, action, sym, vol, prc
         );
     }
     std::optional<double> order_calc_profit(
-        int32_t act, const std::string& sym, double vol, double open, double close
+        int32_t action, str& sym, double vol, double open, double close
     ) override {
         PYBIND11_OVERRIDE(
-            std::optional<double>, MetaTraderClient, order_calc_profit, act, sym, vol, open, close
+            std::optional<double>,
+            MetaTraderClient,
+            order_calc_profit,
+            action,
+            sym,
+            vol,
+            open,
+            close
         );
     }
 
@@ -167,12 +173,12 @@ class PyMetaTraderClient : public MetaTraderClient {
     std::optional<std::vector<TradeOrder>> orders_get() override {
         PYBIND11_OVERRIDE(std::optional<std::vector<TradeOrder>>, MetaTraderClient, orders_get);
     }
-    std::optional<std::vector<TradeOrder>> orders_get(const std::string& symbol) override {
+    std::optional<std::vector<TradeOrder>> orders_get(str& symbol) override {
         PYBIND11_OVERRIDE(
             std::optional<std::vector<TradeOrder>>, MetaTraderClient, orders_get, symbol
         );
     }
-    std::optional<std::vector<TradeOrder>> orders_get_by_group(const std::string& group) override {
+    std::optional<std::vector<TradeOrder>> orders_get_by_group(str& group) override {
         PYBIND11_OVERRIDE(
             std::optional<std::vector<TradeOrder>>, MetaTraderClient, orders_get_by_group, group
         );
@@ -187,14 +193,12 @@ class PyMetaTraderClient : public MetaTraderClient {
             std::optional<std::vector<TradePosition>>, MetaTraderClient, positions_get
         );
     }
-    std::optional<std::vector<TradePosition>> positions_get(const std::string& symbol) override {
+    std::optional<std::vector<TradePosition>> positions_get(str& symbol) override {
         PYBIND11_OVERRIDE(
             std::optional<std::vector<TradePosition>>, MetaTraderClient, positions_get, symbol
         );
     }
-    std::optional<std::vector<TradePosition>> positions_get_by_group(
-        const std::string& group
-    ) override {
+    std::optional<std::vector<TradePosition>> positions_get_by_group(str& group) override {
         PYBIND11_OVERRIDE(
             std::optional<std::vector<TradePosition>>,
             MetaTraderClient,
@@ -213,7 +217,7 @@ class PyMetaTraderClient : public MetaTraderClient {
 
     // --- History ---
     std::optional<std::vector<TradeOrder>> history_orders_get(
-        int64_t from, int64_t to, const std::string& group
+        int64_t from, int64_t to, str& group
     ) override {
         PYBIND11_OVERRIDE(
             std::optional<std::vector<TradeOrder>>,
@@ -240,7 +244,7 @@ class PyMetaTraderClient : public MetaTraderClient {
     }
 
     std::optional<std::vector<TradeDeal>> history_deals_get(
-        int64_t from, int64_t to, const std::string& group
+        int64_t from, int64_t to, str& group
     ) override {
         PYBIND11_OVERRIDE(
             std::optional<std::vector<TradeDeal>>,
@@ -672,59 +676,60 @@ PYBIND11_MODULE(metatrader_client, m) {
         .def_readwrite("external_id", &TradeDeal::external_id);
 
     // --- 7. Handlers Struct ---
+    using MT5Handlers = MetaTraderClient::Handlers;
     py::class_<MetaTraderClient::Handlers>(m, "Handlers")
         .def(py::init<>())
         // System & Session
-        .def_readwrite("init_auto", &MetaTraderClient::Handlers::init_auto)
-        .def_readwrite("init_path", &MetaTraderClient::Handlers::init_path)
-        .def_readwrite("init_full", &MetaTraderClient::Handlers::init_full)
-        .def_readwrite("login", &MetaTraderClient::Handlers::login)
-        .def_readwrite("shutdown", &MetaTraderClient::Handlers::shutdown)
-        .def_readwrite("get_version", &MetaTraderClient::Handlers::get_version)
-        .def_readwrite("get_last_error", &MetaTraderClient::Handlers::get_last_error)
-        .def_readwrite("get_terminal_info", &MetaTraderClient::Handlers::get_terminal_info)
-        .def_readwrite("get_account_info", &MetaTraderClient::Handlers::get_account_info)
+        .def_readwrite("init_auto", &MT5Handlers::init_auto)
+        .def_readwrite("init_path", &MT5Handlers::init_path)
+        .def_readwrite("init_full", &MT5Handlers::init_full)
+        .def_readwrite("login", &MT5Handlers::login)
+        .def_readwrite("shutdown", &MT5Handlers::shutdown)
+        .def_readwrite("get_version", &MT5Handlers::get_version)
+        .def_readwrite("get_last_error", &MT5Handlers::get_last_error)
+        .def_readwrite("get_terminal_info", &MT5Handlers::get_terminal_info)
+        .def_readwrite("get_account_info", &MT5Handlers::get_account_info)
         // Symbols & Market Depth
-        .def_readwrite("get_total_symbols", &MetaTraderClient::Handlers::get_total_symbols)
-        .def_readwrite("get_symbols_all", &MetaTraderClient::Handlers::get_symbols_all)
-        .def_readwrite("get_symbol_info", &MetaTraderClient::Handlers::get_symbol_info)
-        .def_readwrite("select_symbol", &MetaTraderClient::Handlers::select_symbol)
-        .def_readwrite("get_symbols_by_group", &MetaTraderClient::Handlers::get_symbols_by_group)
-        .def_readwrite("subscribe_book", &MetaTraderClient::Handlers::subscribe_book)
-        .def_readwrite("unsubscribe_book", &MetaTraderClient::Handlers::unsubscribe_book)
-        .def_readwrite("get_book_info", &MetaTraderClient::Handlers::get_book_info)
+        .def_readwrite("get_total_symbols", &MT5Handlers::get_total_symbols)
+        .def_readwrite("get_symbols_all", &MT5Handlers::get_symbols_all)
+        .def_readwrite("get_symbol_info", &MT5Handlers::get_symbol_info)
+        .def_readwrite("select_symbol", &MT5Handlers::select_symbol)
+        .def_readwrite("get_symbols_by_group", &MT5Handlers::get_symbols_by_group)
+        .def_readwrite("subscribe_book", &MT5Handlers::subscribe_book)
+        .def_readwrite("unsubscribe_book", &MT5Handlers::unsubscribe_book)
+        .def_readwrite("get_book_info", &MT5Handlers::get_book_info)
         // Market Data (Rates & Ticks)
-        .def_readwrite("get_rates_by_date", &MetaTraderClient::Handlers::get_rates_by_date)
-        .def_readwrite("get_rates_by_pos", &MetaTraderClient::Handlers::get_rates_by_pos)
-        .def_readwrite("get_rates_by_range", &MetaTraderClient::Handlers::get_rates_by_range)
-        .def_readwrite("get_ticks_by_date", &MetaTraderClient::Handlers::get_ticks_by_date)
-        .def_readwrite("get_ticks_by_range", &MetaTraderClient::Handlers::get_ticks_by_range)
-        .def_readwrite("get_tick_info", &MetaTraderClient::Handlers::get_tick_info)
+        .def_readwrite("get_rates_by_date", &MT5Handlers::get_rates_by_date)
+        .def_readwrite("get_rates_by_pos", &MT5Handlers::get_rates_by_pos)
+        .def_readwrite("get_rates_by_range", &MT5Handlers::get_rates_by_range)
+        .def_readwrite("get_ticks_by_date", &MT5Handlers::get_ticks_by_date)
+        .def_readwrite("get_ticks_by_range", &MT5Handlers::get_ticks_by_range)
+        .def_readwrite("get_tick_info", &MT5Handlers::get_tick_info)
         // Orders & Positions (Active)
-        .def_readwrite("get_orders_all", &MetaTraderClient::Handlers::get_orders_all)
-        .def_readwrite("get_orders_by_symbol", &MetaTraderClient::Handlers::get_orders_by_symbol)
-        .def_readwrite("get_orders_by_group", &MetaTraderClient::Handlers::get_orders_by_group)
-        .def_readwrite("get_order_by_ticket", &MetaTraderClient::Handlers::get_order_by_ticket)
-        .def_readwrite("get_total_orders", &MetaTraderClient::Handlers::get_total_orders)
-        .def_readwrite("get_positions_all", &MetaTraderClient::Handlers::get_positions_all)
-        .def_readwrite("get_positions_symbol", &MetaTraderClient::Handlers::get_positions_symbol)
-        .def_readwrite("get_positions_group", &MetaTraderClient::Handlers::get_positions_group)
-        .def_readwrite("get_position_ticket", &MetaTraderClient::Handlers::get_position_ticket)
-        .def_readwrite("get_total_positions", &MetaTraderClient::Handlers::get_total_positions)
+        .def_readwrite("get_orders_all", &MT5Handlers::get_orders_all)
+        .def_readwrite("get_orders_by_symbol", &MT5Handlers::get_orders_by_symbol)
+        .def_readwrite("get_orders_by_group", &MT5Handlers::get_orders_by_group)
+        .def_readwrite("get_order_by_ticket", &MT5Handlers::get_order_by_ticket)
+        .def_readwrite("get_total_orders", &MT5Handlers::get_total_orders)
+        .def_readwrite("get_positions_all", &MT5Handlers::get_positions_all)
+        .def_readwrite("get_positions_symbol", &MT5Handlers::get_positions_symbol)
+        .def_readwrite("get_positions_group", &MT5Handlers::get_positions_group)
+        .def_readwrite("get_position_ticket", &MT5Handlers::get_position_ticket)
+        .def_readwrite("get_total_positions", &MT5Handlers::get_total_positions)
         // Trading Operations
-        .def_readwrite("check_order", &MetaTraderClient::Handlers::check_order)
-        .def_readwrite("send_order", &MetaTraderClient::Handlers::send_order)
-        .def_readwrite("calc_margin", &MetaTraderClient::Handlers::calc_margin)
-        .def_readwrite("calc_profit", &MetaTraderClient::Handlers::calc_profit)
+        .def_readwrite("check_order", &MT5Handlers::check_order)
+        .def_readwrite("send_order", &MT5Handlers::send_order)
+        .def_readwrite("calc_margin", &MT5Handlers::calc_margin)
+        .def_readwrite("calc_profit", &MT5Handlers::calc_profit)
         // History (Orders & Deals)
-        .def_readwrite("get_hist_orders_range", &MetaTraderClient::Handlers::get_hist_orders_range)
-        .def_readwrite("get_hist_order_ticket", &MetaTraderClient::Handlers::get_hist_order_ticket)
-        .def_readwrite("get_hist_orders_pos", &MetaTraderClient::Handlers::get_hist_orders_pos)
-        .def_readwrite("get_hist_orders_total", &MetaTraderClient::Handlers::get_hist_orders_total)
-        .def_readwrite("get_hist_deals_range", &MetaTraderClient::Handlers::get_hist_deals_range)
-        .def_readwrite("get_hist_deals_ticket", &MetaTraderClient::Handlers::get_hist_deals_ticket)
-        .def_readwrite("get_hist_deals_pos", &MetaTraderClient::Handlers::get_hist_deals_pos)
-        .def_readwrite("get_hist_deals_total", &MetaTraderClient::Handlers::get_hist_deals_total);
+        .def_readwrite("get_hist_orders_range", &MT5Handlers::get_hist_orders_range)
+        .def_readwrite("get_hist_order_ticket", &MT5Handlers::get_hist_order_ticket)
+        .def_readwrite("get_hist_orders_pos", &MT5Handlers::get_hist_orders_pos)
+        .def_readwrite("get_hist_orders_total", &MT5Handlers::get_hist_orders_total)
+        .def_readwrite("get_hist_deals_range", &MT5Handlers::get_hist_deals_range)
+        .def_readwrite("get_hist_deals_ticket", &MT5Handlers::get_hist_deals_ticket)
+        .def_readwrite("get_hist_deals_pos", &MT5Handlers::get_hist_deals_pos)
+        .def_readwrite("get_hist_deals_total", &MT5Handlers::get_hist_deals_total);
 
     // --- 8. Main Client Class ---
     py::class_<MetaTraderClient, PyMetaTraderClient>(m, "MetaTraderClient")
@@ -733,20 +738,12 @@ PYBIND11_MODULE(metatrader_client, m) {
 
         // System
         .def("initialize", py::overload_cast<>(&MetaTraderClient::initialize))
+        .def("initialize", py::overload_cast<str&>(&MetaTraderClient::initialize), py::arg("path"))
         .def(
             "initialize",
-            py::overload_cast<const std::string&>(&MetaTraderClient::initialize),
-            py::arg("path")
-        )
-        .def(
-            "initialize",
-            py::overload_cast<
-                const std::string&,
-                uint64_t,
-                const std::string&,
-                const std::string&,
-                uint32_t,
-                bool>(&MetaTraderClient::initialize),
+            py::overload_cast<str&, uint64_t, str&, str&, uint32_t, bool>(
+                &MetaTraderClient::initialize
+            ),
             py::arg("path"),
             py::arg("login"),
             py::arg("password"),
@@ -777,7 +774,7 @@ PYBIND11_MODULE(metatrader_client, m) {
         )
         .def(
             "symbols_get",
-            py::overload_cast<const std::string&>(&MetaTraderClient::symbols_get),
+            py::overload_cast<str&>(&MetaTraderClient::symbols_get),
             py::arg("group"),
             py::return_value_policy::move
         )
@@ -857,7 +854,7 @@ PYBIND11_MODULE(metatrader_client, m) {
         )
         .def(
             "orders_get",
-            py::overload_cast<const std::string&>(&MetaTraderClient::orders_get),
+            py::overload_cast<str&>(&MetaTraderClient::orders_get),
             py::arg("symbol"),
             py::return_value_policy::move
         )
@@ -878,7 +875,7 @@ PYBIND11_MODULE(metatrader_client, m) {
         )
         .def(
             "positions_get",
-            py::overload_cast<const std::string&>(&MetaTraderClient::positions_get),
+            py::overload_cast<str&>(&MetaTraderClient::positions_get),
             py::arg("symbol"),
             py::return_value_policy::move
         )
@@ -915,9 +912,7 @@ PYBIND11_MODULE(metatrader_client, m) {
         // History
         .def(
             "history_orders_get",
-            py::overload_cast<int64_t, int64_t, const std::string&>(
-                &MetaTraderClient::history_orders_get
-            ),
+            py::overload_cast<int64_t, int64_t, str&>(&MetaTraderClient::history_orders_get),
             py::arg("date_from"),
             py::arg("date_to"),
             py::arg("group"),
@@ -943,9 +938,7 @@ PYBIND11_MODULE(metatrader_client, m) {
 
         .def(
             "history_deals_get",
-            py::overload_cast<int64_t, int64_t, const std::string&>(
-                &MetaTraderClient::history_deals_get
-            ),
+            py::overload_cast<int64_t, int64_t, str&>(&MetaTraderClient::history_deals_get),
             py::arg("date_from"),
             py::arg("date_to"),
             py::arg("group"),

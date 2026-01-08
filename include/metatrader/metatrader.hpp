@@ -10,19 +10,12 @@
 #include "metatrader/objects.hpp"
 
 namespace MT5 {
+using str                = const std::string;
 using InitializeAuto     = std::function<bool()>;
-using InitializeWithPath = std::function<bool(const std::string& path)>;
-using InitializeFull     = std::function<bool(
-    const std::string& path,
-    uint64_t           login,
-    const std::string& password,
-    const std::string& server,
-    uint32_t           timeout,
-    bool               portable
-)>;
+using InitializeWithPath = std::function<bool(const std::string)>;
+using InitializeFull     = std::function<bool(str&, uint64_t, str&, str&, uint32_t, bool)>;
 
-using Login = std::function<
-    bool(uint64_t login, const std::string& password, const std::string& server, uint32_t timeout)>;
+using Login = std::function<bool(uint64_t, str&, str&, uint32_t)>;
 
 using Shutdown        = std::function<void()>;
 using VersionInfo     = std::tuple<int32_t, int32_t, std::string>;
@@ -33,70 +26,59 @@ using GetLastError    = std::function<LastErrorResult()>;
 using GetTerminalInfo = std::function<std::optional<TerminalInfo>()>;
 using GetAccountInfo  = std::function<std::optional<AccountInfo>()>;
 
-using GetTotalSymbols = std::function<int32_t()>;
-using GetSymbolsAll   = std::function<std::optional<std::vector<SymbolInfo>>()>;
-using GetSymbolInfo   = std::function<std::optional<SymbolInfo>(const std::string& symbol)>;
-using SelectSymbol    = std::function<bool(const std::string& symbol, bool enable)>;
-using GetSymbolsByGroup =
-    std::function<std::optional<std::vector<SymbolInfo>>(const std::string& group)>;
+using GetTotalSymbols   = std::function<int32_t()>;
+using GetSymbolsAll     = std::function<std::optional<std::vector<SymbolInfo>>()>;
+using GetSymbolInfo     = std::function<std::optional<SymbolInfo>(str&)>;
+using SelectSymbol      = std::function<bool(str&, bool)>;
+using GetSymbolsByGroup = std::function<std::optional<std::vector<SymbolInfo>>(str&)>;
 
-using SubscribeBook   = std::function<bool(const std::string& symbol)>;
-using UnsubscribeBook = std::function<bool(const std::string& symbol)>;
-using GetBookInfo = std::function<std::optional<std::vector<BookInfo>>(const std::string& symbol)>;
+using SubscribeBook   = std::function<bool(str&)>;
+using UnsubscribeBook = std::function<bool(str&)>;
+using GetBookInfo     = std::function<std::optional<std::vector<BookInfo>>(str&)>;
 
-using GetRatesByDate = std::function<
-    std::optional<std::vector<RateInfo>>(const std::string&, int32_t, int64_t, int32_t)>;
-using GetRatesByPos = std::function<
-    std::optional<std::vector<RateInfo>>(const std::string&, int32_t, int32_t, int32_t)>;
-using GetRatesByRange = std::function<
-    std::optional<std::vector<RateInfo>>(const std::string&, int32_t, int64_t, int64_t)>;
+using GetRatesByDate =
+    std::function<std::optional<std::vector<RateInfo>>(str&, int32_t, int64_t, int32_t)>;
+using GetRatesByPos =
+    std::function<std::optional<std::vector<RateInfo>>(str&, int32_t, int32_t, int32_t)>;
+using GetRatesByRange =
+    std::function<std::optional<std::vector<RateInfo>>(str&, int32_t, int64_t, int64_t)>;
 
-using GetTicksByDate = std::function<
-    std::optional<std::vector<TickInfo>>(const std::string&, int64_t, int32_t, uint32_t)>;
-using GetTicksByRange = std::function<
-    std::optional<std::vector<TickInfo>>(const std::string&, int64_t, int64_t, uint32_t)>;
+using GetTicksByDate =
+    std::function<std::optional<std::vector<TickInfo>>(str&, int64_t, int32_t, uint32_t)>;
+using GetTicksByRange =
+    std::function<std::optional<std::vector<TickInfo>>(str&, int64_t, int64_t, uint32_t)>;
 
-using GetTickInfo = std::function<std::optional<TickInfo>(const std::string& symbol)>;
+using GetTickInfo = std::function<std::optional<TickInfo>(str& symbol)>;
 
-using GetOrdersAll = std::function<std::optional<std::vector<TradeOrder>>()>;
-using GetOrdersBySymbol =
-    std::function<std::optional<std::vector<TradeOrder>>(const std::string& symbol)>;
-using GetOrdersByGroup =
-    std::function<std::optional<std::vector<TradeOrder>>(const std::string& group)>;
-using GetOrderByTicket = std::function<std::optional<TradeOrder>(uint64_t ticket)>;
-using GetTotalOrders   = std::function<int32_t()>;
+using GetOrdersAll      = std::function<std::optional<std::vector<TradeOrder>>()>;
+using GetOrdersBySymbol = std::function<std::optional<std::vector<TradeOrder>>(str&)>;
+using GetOrdersByGroup  = std::function<std::optional<std::vector<TradeOrder>>(str&)>;
+using GetOrderByTicket  = std::function<std::optional<TradeOrder>(uint64_t)>;
+using GetTotalOrders    = std::function<int32_t()>;
 
-using GetPositionsAll = std::function<std::optional<std::vector<TradePosition>>()>;
-using GetPositionsBySymbol =
-    std::function<std::optional<std::vector<TradePosition>>(const std::string& symbol)>;
-using GetPositionsByGroup =
-    std::function<std::optional<std::vector<TradePosition>>(const std::string& group)>;
-using GetPositionByTicket = std::function<std::optional<TradePosition>(uint64_t ticket)>;
-using GetTotalPositions   = std::function<int32_t()>;
+using GetPositionsAll      = std::function<std::optional<std::vector<TradePosition>>()>;
+using GetPositionsBySymbol = std::function<std::optional<std::vector<TradePosition>>(str&)>;
+using GetPositionsByGroup  = std::function<std::optional<std::vector<TradePosition>>(str&)>;
+using GetPositionByTicket  = std::function<std::optional<TradePosition>(uint64_t)>;
+using GetTotalPositions    = std::function<int32_t()>;
 
-using CheckOrder = std::function<OrderCheckResult(const TradeRequest& request)>;
-using SendOrder  = std::function<OrderSentResult(const TradeRequest& request)>;
+using CheckOrder = std::function<OrderCheckResult(const TradeRequest&)>;
+using SendOrder  = std::function<OrderSentResult(const TradeRequest&)>;
 
-using CalculateMargin = std::function<
-    std::optional<double>(int32_t action, const std::string& symbol, double volume, double price)>;
-using CalculateProfit = std::function<std::optional<double>(
-    int32_t action, const std::string& symbol, double volume, double open, double close
-)>;
+using CalculateMargin = std::function<std::optional<double>(int32_t, str&, double, double)>;
+using CalculateProfit = std::function<std::optional<double>(int32_t, str&, double, double, double)>;
 
-using GetHistoryOrdersByRange = std::function<
-    std::optional<std::vector<TradeOrder>>(int64_t from, int64_t to, const std::string& group)>;
-using GetHistoryOrderByTicket = std::function<std::optional<TradeOrder>(uint64_t ticket)>;
-using GetHistoryOrdersByPosId =
-    std::function<std::optional<std::vector<TradeOrder>>(uint64_t position_id)>;
-using GetHistoryOrdersTotal = std::function<int32_t(int64_t from, int64_t to)>;
+using GetHistoryOrdersByRange =
+    std::function<std::optional<std::vector<TradeOrder>>(int64_t, int64_t, str&)>;
+using GetHistoryOrderByTicket = std::function<std::optional<TradeOrder>(uint64_t)>;
+using GetHistoryOrdersByPosId = std::function<std::optional<std::vector<TradeOrder>>(uint64_t)>;
+using GetHistoryOrdersTotal   = std::function<int32_t(int64_t, int64_t)>;
 
-using GetHistoryDealsByRange = std::function<
-    std::optional<std::vector<TradeDeal>>(int64_t from, int64_t to, const std::string& group)>;
-using GetHistoryDealsByTicket =
-    std::function<std::optional<std::vector<TradeDeal>>(uint64_t order_ticket)>;
-using GetHistoryDealsByPosId =
-    std::function<std::optional<std::vector<TradeDeal>>(uint64_t position_id)>;
-using GetHistoryDealsTotal = std::function<int32_t(int64_t from, int64_t to)>;
+using GetHistoryDealsByRange =
+    std::function<std::optional<std::vector<TradeDeal>>(int64_t, int64_t, str&)>;
+using GetHistoryDealsByTicket = std::function<std::optional<std::vector<TradeDeal>>(uint64_t)>;
+using GetHistoryDealsByPosId  = std::function<std::optional<std::vector<TradeDeal>>(uint64_t)>;
+using GetHistoryDealsTotal    = std::function<int32_t(int64_t, int64_t)>;
 
 class MetaTraderClient {
    public:
@@ -171,22 +153,13 @@ class MetaTraderClient {
 
     // --- System ---
     virtual bool initialize() { return h.init_auto ? h.init_auto() : false; }
-    virtual bool initialize(const std::string& path) {
-        return h.init_path ? h.init_path(path) : false;
-    }
+    virtual bool initialize(str& path) { return h.init_path ? h.init_path(path) : false; }
     virtual bool initialize(
-        const std::string& path,
-        uint64_t           account,
-        const std::string& pw,
-        const std::string& srv,
-        uint32_t           timeout,
-        bool               portable
+        str& path, uint64_t account, str& pw, str& srv, uint32_t timeout, bool portable
     ) {
         return h.init_full ? h.init_full(path, account, pw, srv, timeout, portable) : false;
     }
-    virtual bool login(
-        uint64_t account, const std::string& pw, const std::string& srv, uint32_t timeout
-    ) {
+    virtual bool login(uint64_t account, str& pw, str& srv, uint32_t timeout) {
         return h.login ? h.login(account, pw, srv, timeout) : false;
     }
 
@@ -212,54 +185,54 @@ class MetaTraderClient {
     virtual std::optional<std::vector<SymbolInfo>> symbols_get() {
         return h.get_symbols_all ? h.get_symbols_all() : std::nullopt;
     }
-    virtual std::optional<std::vector<SymbolInfo>> symbols_get(const std::string& group) {
+    virtual std::optional<std::vector<SymbolInfo>> symbols_get(str& group) {
         return h.get_symbols_by_group ? h.get_symbols_by_group(group) : std::nullopt;
     }
-    virtual std::optional<SymbolInfo> symbol_info(const std::string& symbol) {
+    virtual std::optional<SymbolInfo> symbol_info(str& symbol) {
         return h.get_symbol_info ? h.get_symbol_info(symbol) : std::nullopt;
     }
-    virtual bool symbol_select(const std::string& symbol, bool enable) {
+    virtual bool symbol_select(str& symbol, bool enable) {
         return h.select_symbol ? h.select_symbol(symbol, enable) : false;
     }
 
     // --- Market Depth ---
-    virtual bool market_book_add(const std::string& symbol) {
+    virtual bool market_book_add(str& symbol) {
         return h.subscribe_book ? h.subscribe_book(symbol) : false;
     }
-    virtual bool market_book_release(const std::string& symbol) {
+    virtual bool market_book_release(str& symbol) {
         return h.unsubscribe_book ? h.unsubscribe_book(symbol) : false;
     }
-    virtual std::optional<std::vector<BookInfo>> market_book_get(const std::string& symbol) {
+    virtual std::optional<std::vector<BookInfo>> market_book_get(str& symbol) {
         return h.get_book_info ? h.get_book_info(symbol) : std::nullopt;
     }
 
     // --- Market Data ---
     virtual std::optional<std::vector<RateInfo>> copy_rates_from(
-        const std::string& s, int32_t t, int64_t from, int32_t count
+        str& s, int32_t tf, int64_t from, int32_t count
     ) {
-        return h.get_rates_by_date ? h.get_rates_by_date(s, t, from, count) : std::nullopt;
+        return h.get_rates_by_date ? h.get_rates_by_date(s, tf, from, count) : std::nullopt;
     }
     virtual std::optional<std::vector<RateInfo>> copy_rates_from_pos(
-        const std::string& s, int32_t t, int32_t start, int32_t count
+        str& s, int32_t tf, int32_t start, int32_t count
     ) {
-        return h.get_rates_by_pos ? h.get_rates_by_pos(s, t, start, count) : std::nullopt;
+        return h.get_rates_by_pos ? h.get_rates_by_pos(s, tf, start, count) : std::nullopt;
     }
     virtual std::optional<std::vector<RateInfo>> copy_rates_range(
-        const std::string& s, int32_t t, int64_t from, int64_t to
+        str& s, int32_t tf, int64_t from, int64_t to
     ) {
-        return h.get_rates_by_range ? h.get_rates_by_range(s, t, from, to) : std::nullopt;
+        return h.get_rates_by_range ? h.get_rates_by_range(s, tf, from, to) : std::nullopt;
     }
     virtual std::optional<std::vector<TickInfo>> copy_ticks_from(
-        const std::string& s, int64_t from, int32_t count, uint32_t flags
+        str& s, int64_t from, int32_t count, uint32_t flags
     ) {
         return h.get_ticks_by_date ? h.get_ticks_by_date(s, from, count, flags) : std::nullopt;
     }
     virtual std::optional<std::vector<TickInfo>> copy_ticks_range(
-        const std::string& s, int64_t from, int64_t to, uint32_t flags
+        str& s, int64_t from, int64_t to, uint32_t flags
     ) {
         return h.get_ticks_by_range ? h.get_ticks_by_range(s, from, to, flags) : std::nullopt;
     }
-    virtual std::optional<TickInfo> symbol_info_tick(const std::string& symbol) {
+    virtual std::optional<TickInfo> symbol_info_tick(str& symbol) {
         return h.get_tick_info ? h.get_tick_info(symbol) : std::nullopt;
     }
 
@@ -267,10 +240,10 @@ class MetaTraderClient {
     virtual std::optional<std::vector<TradeOrder>> orders_get() {
         return h.get_orders_all ? h.get_orders_all() : std::nullopt;
     }
-    virtual std::optional<std::vector<TradeOrder>> orders_get(const std::string& symbol) {
+    virtual std::optional<std::vector<TradeOrder>> orders_get(str& symbol) {
         return h.get_orders_by_symbol ? h.get_orders_by_symbol(symbol) : std::nullopt;
     }
-    virtual std::optional<std::vector<TradeOrder>> orders_get_by_group(const std::string& group) {
+    virtual std::optional<std::vector<TradeOrder>> orders_get_by_group(str& group) {
         return h.get_orders_by_group ? h.get_orders_by_group(group) : std::nullopt;
     }
     virtual std::optional<TradeOrder> order_get_by_ticket(uint64_t ticket) {
@@ -282,12 +255,10 @@ class MetaTraderClient {
     virtual std::optional<std::vector<TradePosition>> positions_get() {
         return h.get_positions_all ? h.get_positions_all() : std::nullopt;
     }
-    virtual std::optional<std::vector<TradePosition>> positions_get(const std::string& symbol) {
+    virtual std::optional<std::vector<TradePosition>> positions_get(str& symbol) {
         return h.get_positions_symbol ? h.get_positions_symbol(symbol) : std::nullopt;
     }
-    virtual std::optional<std::vector<TradePosition>> positions_get_by_group(
-        const std::string& group
-    ) {
+    virtual std::optional<std::vector<TradePosition>> positions_get_by_group(str& group) {
         return h.get_positions_group ? h.get_positions_group(group) : std::nullopt;
     }
     virtual std::optional<TradePosition> position_get_by_ticket(uint64_t ticket) {
@@ -305,19 +276,19 @@ class MetaTraderClient {
         return h.send_order ? h.send_order(req) : OrderSentResult{};
     }
     virtual std::optional<double> order_calc_margin(
-        int32_t act, const std::string& sym, double vol, double prc
+        int32_t action, str& sym, double vol, double prc
     ) {
-        return h.calc_margin ? h.calc_margin(act, sym, vol, prc) : std::nullopt;
+        return h.calc_margin ? h.calc_margin(action, sym, vol, prc) : std::nullopt;
     }
     virtual std::optional<double> order_calc_profit(
-        int32_t act, const std::string& sym, double vol, double open, double close
+        int32_t action, str& sym, double vol, double open, double close
     ) {
-        return h.calc_profit ? h.calc_profit(act, sym, vol, open, close) : std::nullopt;
+        return h.calc_profit ? h.calc_profit(action, sym, vol, open, close) : std::nullopt;
     }
 
     // --- History Orders ---
     virtual std::optional<std::vector<TradeOrder>> history_orders_get(
-        int64_t from, int64_t to, const std::string& group
+        int64_t from, int64_t to, str& group
     ) {
         return h.get_hist_orders_range ? h.get_hist_orders_range(from, to, group) : std::nullopt;
     }
@@ -333,7 +304,7 @@ class MetaTraderClient {
 
     // --- History Deals ---
     virtual std::optional<std::vector<TradeDeal>> history_deals_get(
-        int64_t from, int64_t to, const std::string& group
+        int64_t from, int64_t to, str& group
     ) {
         return h.get_hist_deals_range ? h.get_hist_deals_range(from, to, group) : std::nullopt;
     }
