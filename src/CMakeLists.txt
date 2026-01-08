@@ -9,12 +9,11 @@ find_package(pybind11 CONFIG REQUIRED)
 # 1. Core C++ Library 
 add_library(bbstrader INTERFACE)
 add_library(bbstrader::bbstrader ALIAS bbstrader)
-configure_visibility(bbstrader)
 
 target_include_directories(
     bbstrader INTERFACE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${Python_INCLUDE_DIRS}>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
@@ -28,7 +27,7 @@ if (NOT ANDROID)
         INTERFACE warnings::strict
     )
 endif()
-target_link_libraries(bbstrader INTERFACE pybind11::module)
+target_link_libraries(bbstrader INTERFACE pybind11::headers)
 
 # 2. Python Bindings
 option(BUILD_PYTHON_BINDINGS "Build Python bindings" OFF)

@@ -5,6 +5,8 @@ string(STRIP "${RAW_VERSION}" APP_VERSION)
 
 project(BBSTRADER VERSION ${APP_VERSION})
 
+enable_testing()
+
 include(${PROJECT_SOURCE_DIR}/cmake/Helpers.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/Versions.cmake)
 
@@ -23,3 +25,4 @@ if(${PROJECT_NAME}_ENABLE_ADDRESS_SANITIZER)
 endif()
 
 add_subdirectory(src)
+add_subdirectory(tests)

@@ -61,6 +61,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU|AppleClang")
         -pedantic-errors            # Like -pedantic but issue them as errors.
         -Wsign-conversion           # Warns about implicit conversions between signed and unsigned types.
         -Wshadow                    # Warn when one variable shadows another (globally).
+        -Wno-attributes
     )
 endif()
 
@@ -227,3 +228,11 @@ function(anable_address_sanitizer)
     message(WARNING "Sanitizers are NOT supported with ${CMAKE_CXX_COMPILER_ID} on MinGW. Skipping.")
   endif()  
 endfunction()
+
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  GIT_REPOSITORY https://github.com/google/googletest.git
+  GIT_TAG    release-1.12.1
+)
+FetchContent_MakeAvailable(googletest)
