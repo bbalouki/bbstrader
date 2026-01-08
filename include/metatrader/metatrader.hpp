@@ -306,11 +306,13 @@ class MetaTraderClient {
     }
 
     // --- Trading ---
-    virtual OrderCheckResult order_check(const TradeRequest& req) {
-        return h.check_order ? h.check_order(req) : OrderCheckResult{};
+    virtual OrderCheckResult order_check(py::object req) {
+        return h.check_order ? h.check_order(req.cast<const TradeRequest&>())
+                             : OrderCheckResult{};
     }
-    virtual OrderSentResult order_send(const TradeRequest& req) {
-        return h.send_order ? h.send_order(req) : OrderSentResult{};
+    virtual OrderSentResult order_send(py::object req) {
+        return h.send_order ? h.send_order(req.cast<const TradeRequest&>())
+                            : OrderSentResult{};
     }
     virtual std::optional<double> order_calc_margin(
         int32_t act, const std::string& sym, double vol, double prc

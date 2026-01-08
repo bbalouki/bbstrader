@@ -118,10 +118,10 @@ class PyMetaTraderClient : public MetaTraderClient {
     }
 
     // --- Trading ---
-    OrderCheckResult order_check(const TradeRequest& req) override {
+    OrderCheckResult order_check(py::object req) override {
         PYBIND11_OVERRIDE(OrderCheckResult, MetaTraderClient, order_check, req);
     }
-    OrderSentResult order_send(const TradeRequest& req) override {
+    OrderSentResult order_send(py::object req) override {
         PYBIND11_OVERRIDE(OrderSentResult, MetaTraderClient, order_send, req);
     }
     std::optional<double> order_calc_margin(
