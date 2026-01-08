@@ -19,36 +19,36 @@ from bbstrader.api import (
 )
 
 
-def _convert_obj(obj, nt_type):
+def _convert_obj(obj, obj_type):
     """Converts a single MT5 object to the target C++ class instance."""
     if obj is None:
         return None
 
     if hasattr(obj, "_asdict"):
         field_data: dict = obj._asdict()
-        cpp_instance = nt_type()
+        instance = obj_type()
 
         for k, v in field_data.items():
-            if not hasattr(cpp_instance, k):
+            if not hasattr(instance, k):
                 continue
             if (
                 k == "request"
                 and hasattr(v, "_asdict")
-                and nt_type in (OrderCheckResult, OrderSentResult)
+                and obj_type in (OrderCheckResult, OrderSentResult)
             ):
-                setattr(cpp_instance, k, v._asdict())
+                setattr(instance, k, v._asdict())
             else:
-                setattr(cpp_instance, k, v)
+                setattr(instance, k, v)
 
-        return cpp_instance
+        return instance
     else:
         raise TypeError(f"Expected MT5 namedtuple, got {type(obj)}")
 
 
-def _convert_list(obj_list, nt_type):
+def _convert_list(obj_list, obj_type):
     if obj_list is None:
         return None
-    return [_convert_obj(obj, nt_type) for obj in obj_list]
+    return [_convert_obj(obj, obj_type) for obj in obj_list]
 
 
 # def _convert_nparray(arr, nt_type):
@@ -61,9 +61,6 @@ def _convert_list(obj_list, nt_type):
 #             setattr(rate_info, row, rate[row])
 #         rates.append(rate_info)
 #     return rates
-
-
-ENUM_TYPES = {"action", "type", "type_time", "type_filling"}
 
 
 def _build_request(req: TradeRequest | dict) -> dict:
@@ -90,9 +87,10 @@ def _build_request(req: TradeRequest | dict) -> dict:
         "position",
         "position_by",
     ]
+    enum_types = {"action", "type", "type_time", "type_filling"}
     for attr in attrs:
         val = getattr(req, attr)
-        if attr in ENUM_TYPES or (val != 0 and val != ""):
+        if attr in enum_types or (val != 0 and val != ""):
             request[attr] = val
     return request
 
@@ -118,7 +116,7 @@ def get_time(ts):
 def get_mt5_handlers():
     """
     Exhaustively maps all MetaTrader 5 Python functions to the C++ Handlers struct,
-    converting return values to the appropriate NamedTuple types.
+    converting return values to the appropriate types.
     """
     h = Handlers()
 
@@ -161,10 +159,9 @@ def get_mt5_handlers():
     # 3. Market Data (Rates & Ticks)
     h.get_rates_by_date = (
         lambda symbol, timeframe, date_from, count: mt5.copy_rates_from(
-            symbol, timeframe, get_time(get_time(date_from)), count
-        ),
+            symbol, timeframe, get_time(date_from), count
+        )
     )
-
     h.get_rates_by_pos = (
         lambda symbol, timeframe, start_pos, count: mt5.copy_rates_from_pos(
             symbol, timeframe, start_pos, count

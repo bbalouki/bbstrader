@@ -71,11 +71,11 @@ class PyMetaTraderClient : public MetaTraderClient {
     }
 
     // --- Market Data ---
-    std::optional<std::vector<RateInfo>> copy_rates_from(
+    std::optional<py::array_t<RateInfo>> copy_rates_from(
         str& s, int32_t tf, int64_t from, int32_t count
     ) override {
         PYBIND11_OVERRIDE(
-            std::optional<std::vector<RateInfo>>,
+            std::optional<py::array_t<RateInfo>>,
             MetaTraderClient,
             copy_rates_from,
             s,
@@ -84,11 +84,11 @@ class PyMetaTraderClient : public MetaTraderClient {
             count
         );
     }
-    std::optional<std::vector<RateInfo>> copy_rates_from_pos(
+    std::optional<py::array_t<RateInfo>> copy_rates_from_pos(
         str& s, int32_t tf, int32_t start, int32_t count
     ) override {
         PYBIND11_OVERRIDE(
-            std::optional<std::vector<RateInfo>>,
+            std::optional<py::array_t<RateInfo>>,
             MetaTraderClient,
             copy_rates_from_pos,
             s,
@@ -97,11 +97,11 @@ class PyMetaTraderClient : public MetaTraderClient {
             count
         );
     }
-    std::optional<std::vector<RateInfo>> copy_rates_range(
+    std::optional<py::array_t<RateInfo>> copy_rates_range(
         str& s, int32_t tf, int64_t from, int64_t to
     ) override {
         PYBIND11_OVERRIDE(
-            std::optional<std::vector<RateInfo>>,
+            std::optional<py::array_t<RateInfo>>,
             MetaTraderClient,
             copy_rates_range,
             s,
@@ -110,11 +110,11 @@ class PyMetaTraderClient : public MetaTraderClient {
             to
         );
     }
-    std::optional<std::vector<TickInfo>> copy_ticks_from(
-        str& s, int64_t from, int32_t count, uint32_t flags
+    std::optional<py::array_t<TickInfo>> copy_ticks_from(
+        str& s, int64_t from, int32_t count, int32_t flags
     ) override {
         PYBIND11_OVERRIDE(
-            std::optional<std::vector<TickInfo>>,
+            std::optional<py::array_t<TickInfo>>,
             MetaTraderClient,
             copy_ticks_from,
             s,
@@ -123,11 +123,11 @@ class PyMetaTraderClient : public MetaTraderClient {
             flags
         );
     }
-    std::optional<std::vector<TickInfo>> copy_ticks_range(
-        str& s, int64_t from, int64_t to, uint32_t flags
+    std::optional<py::array_t<TickInfo>> copy_ticks_range(
+        str& s, int64_t from, int64_t to, int32_t flags
     ) override {
         PYBIND11_OVERRIDE(
-            std::optional<std::vector<TickInfo>>,
+            std::optional<py::array_t<TickInfo>>,
             MetaTraderClient,
             copy_ticks_range,
             s,

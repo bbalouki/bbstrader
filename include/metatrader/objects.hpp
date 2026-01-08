@@ -177,7 +177,7 @@ enum class PositionType : int32_t { BUY = 0, SELL = 1 };
 enum class PositionReason : int32_t { CLIENT = 0, MOBILE = 1, WEB = 2, EXPERT = 3 };
 enum class CopyTicks : int32_t { ALL = -1, INFO = 1, TRADE = 2 };
 
-enum class TickFlag : uint32_t {
+enum class TickFlag : int32_t {
     BID    = 0x02,
     ASK    = 0x04,
     LAST   = 0x08,
@@ -186,7 +186,7 @@ enum class TickFlag : uint32_t {
     SELL   = 0x40
 };
 inline TickFlag operator|(TickFlag a, TickFlag b) {
-    return static_cast<TickFlag>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b));
+    return static_cast<TickFlag>(static_cast<int32_t>(a) | static_cast<int32_t>(b));
 }
 
 enum class TradeRetcode : int32_t {

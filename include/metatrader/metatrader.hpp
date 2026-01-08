@@ -1,5 +1,8 @@
 #pragma once
 
+#include <pybind11/numpy.h>
+#include <pybind11/pybind11.h>
+
 #include <cstdint>
 #include <functional>
 #include <optional>
@@ -8,6 +11,7 @@
 #include <vector>
 
 #include "metatrader/objects.hpp"
+namespace py = pybind11;
 
 namespace MT5 {
 using str                = const std::string;
@@ -36,19 +40,32 @@ using SubscribeBook   = std::function<bool(str&)>;
 using UnsubscribeBook = std::function<bool(str&)>;
 using GetBookInfo     = std::function<std::optional<std::vector<BookInfo>>(str&)>;
 
-using GetRatesByDate =
-    std::function<std::optional<std::vector<RateInfo>>(str&, int32_t, int64_t, int32_t)>;
-using GetRatesByPos =
-    std::function<std::optional<std::vector<RateInfo>>(str&, int32_t, int32_t, int32_t)>;
-using GetRatesByRange =
-    std::function<std::optional<std::vector<RateInfo>>(str&, int32_t, int64_t, int64_t)>;
+// using GetRatesByDate =
+//     std::function<std::optional<std::vector<RateInfo>>(str&, int32_t, int64_t, int32_t)>;
+// using GetRatesByPos =
+//     std::function<std::optional<std::vector<RateInfo>>(str&, int32_t, int32_t, int32_t)>;
+// using GetRatesByRange =
+//     std::function<std::optional<std::vector<RateInfo>>(str&, int32_t, int64_t, int64_t)>;
 
-using GetTicksByDate =
-    std::function<std::optional<std::vector<TickInfo>>(str&, int64_t, int32_t, uint32_t)>;
-using GetTicksByRange =
-    std::function<std::optional<std::vector<TickInfo>>(str&, int64_t, int64_t, uint32_t)>;
+// using GetTicksByDate =
+//     std::function<std::optional<std::vector<TickInfo>>(str&, int64_t, int32_t, uint32_t)>;
+// using GetTicksByRange =
+//     std::function<std::optional<std::vector<TickInfo>>(str&, int64_t, int64_t, uint32_t)>;
 
-using GetTickInfo = std::function<std::optional<TickInfo>(str& symbol)>;
+using GetRatesByDate = std::function<std::optional<py::array_t<RateInfo>>(
+    const std::string&, int32_t, int64_t, int32_t
+)>;
+using GetRatesByPos  = std::function<
+     std::optional<py::array_t<RateInfo>>(const std::string&, int32_t, int32_t, int32_t)>;
+using GetRatesByRange = std::function<
+    std::optional<py::array_t<RateInfo>>(const std::string&, int32_t, int64_t, int64_t)>;
+
+using GetTicksByDate = std::function<
+    std::optional<py::array_t<TickInfo>>(const std::string&, int64_t, int32_t, int32_t)>;
+using GetTicksByRange = std::function<
+    std::optional<py::array_t<TickInfo>>(const std::string&, int64_t, int64_t, int32_t)>;
+
+using GetTickInfo = std::function<std::optional<TickInfo>(str&)>;
 
 using GetOrdersAll      = std::function<std::optional<std::vector<TradeOrder>>()>;
 using GetOrdersBySymbol = std::function<std::optional<std::vector<TradeOrder>>(str&)>;
@@ -194,6 +211,9 @@ class MetaTraderClient {
     virtual bool symbol_select(str& symbol, bool enable) {
         return h.select_symbol ? h.select_symbol(symbol, enable) : false;
     }
+    virtual std::optional<TickInfo> symbol_info_tick(const std::string& symbol) {
+        return h.get_tick_info ? h.get_tick_info(symbol) : std::nullopt;
+    }
 
     // --- Market Depth ---
     virtual bool market_book_add(str& symbol) {
@@ -207,33 +227,35 @@ class MetaTraderClient {
     }
 
     // --- Market Data ---
-    virtual std::optional<std::vector<RateInfo>> copy_rates_from(
-        str& s, int32_t tf, int64_t from, int32_t count
+    virtual std::optional<py::array_t<RateInfo>> copy_rates_from(
+        const std::string& s, int32_t t, int64_t from, int32_t count
     ) {
-        return h.get_rates_by_date ? h.get_rates_by_date(s, tf, from, count) : std::nullopt;
+        return h.get_rates_by_date ? h.get_rates_by_date(s, t, from, count)
+                                   : py::array_t<RateInfo>();
     }
-    virtual std::optional<std::vector<RateInfo>> copy_rates_from_pos(
-        str& s, int32_t tf, int32_t start, int32_t count
+    virtual std::optional<py::array_t<RateInfo>> copy_rates_from_pos(
+        const std::string& s, int32_t t, int32_t start, int32_t count
     ) {
-        return h.get_rates_by_pos ? h.get_rates_by_pos(s, tf, start, count) : std::nullopt;
+        return h.get_rates_by_pos ? h.get_rates_by_pos(s, t, start, count)
+                                  : py::array_t<RateInfo>();
     }
-    virtual std::optional<std::vector<RateInfo>> copy_rates_range(
-        str& s, int32_t tf, int64_t from, int64_t to
+    virtual std::optional<py::array_t<RateInfo>> copy_rates_range(
+        const std::string& s, int32_t t, int64_t from, int64_t to
     ) {
-        return h.get_rates_by_range ? h.get_rates_by_range(s, tf, from, to) : std::nullopt;
+        return h.get_rates_by_range ? h.get_rates_by_range(s, t, from, to)
+                                    : py::array_t<RateInfo>();
     }
-    virtual std::optional<std::vector<TickInfo>> copy_ticks_from(
-        str& s, int64_t from, int32_t count, uint32_t flags
+    virtual std::optional<py::array_t<TickInfo>> copy_ticks_from(
+        const std::string& s, int64_t from, int32_t count, int32_t flags
     ) {
-        return h.get_ticks_by_date ? h.get_ticks_by_date(s, from, count, flags) : std::nullopt;
+        return h.get_ticks_by_date ? h.get_ticks_by_date(s, from, count, flags)
+                                   : py::array_t<TickInfo>();
     }
-    virtual std::optional<std::vector<TickInfo>> copy_ticks_range(
-        str& s, int64_t from, int64_t to, uint32_t flags
+    virtual std::optional<py::array_t<TickInfo>> copy_ticks_range(
+        const std::string& s, int64_t from, int64_t to, int32_t flags
     ) {
-        return h.get_ticks_by_range ? h.get_ticks_by_range(s, from, to, flags) : std::nullopt;
-    }
-    virtual std::optional<TickInfo> symbol_info_tick(str& symbol) {
-        return h.get_tick_info ? h.get_tick_info(symbol) : std::nullopt;
+        return h.get_ticks_by_range ? h.get_ticks_by_range(s, from, to, flags)
+                                    : py::array_t<TickInfo>();
     }
 
     // --- Active Orders ---
