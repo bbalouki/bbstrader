@@ -43,53 +43,14 @@ except ImportError:
 __all__ = [
     "Account",
     "Broker",
-    "MetaQuotes",
-    "AdmiralMarktsGroup",
-    "JustGlobalMarkets",
-    "PepperstoneGroupLimited",
     "check_mt5_connection",
-    "FTMO",
 ]
 
-__BROKERS__ = {
-    "MQL": "MetaQuotes Ltd.",
-    "AMG": "Admirals SC Ltd",
-    "JGM": "Just Global Markets Ltd.",
-    "FTMO": "FTMO S.R.O.",
-    "PGL": "Pepperstone Group Limited",
-}
-
-BROKERS_TIMEZONES = {
-    "AMG": "Europe/Helsinki",
-    "JGM": "Europe/Helsinki",
-    "FTMO": "Europe/Helsinki",
-    "PGL": "Europe/Helsinki",
-}
-
-_ADMIRAL_MARKETS_URL_ = "https://one.justmarkets.link/a/tufvj0xugm/registration/trader"
-_JUST_MARKETS_URL_ = "https://one.justmarkets.link/a/tufvj0xugm/registration/trader"
-_FTMO_URL_ = "https://trader.ftmo.com/?affiliates=JGmeuQqepAZLMcdOEQRp"
-_ADMIRAL_MARKETS_PRODUCTS_ = [
-    "Stocks",
-    "ETFs",
-    "Indices",
-    "Commodities",
-    "Futures",
-    "Forex",
-]
-_JUST_MARKETS_PRODUCTS_ = ["Stocks", "Crypto", "indices", "Commodities", "Forex"]
 
 INIT_MSG = (
     f"\n* Check your internet connection\n"
     f"* Make sure MT5 is installed and active\n"
-    f"* Looking for a boker? See [{_ADMIRAL_MARKETS_URL_}] "
-    f"or [{_JUST_MARKETS_URL_}]\n"
-    f"* Looking for a prop firm? See [{_FTMO_URL_}]\n"
 )
-
-amg_url = _ADMIRAL_MARKETS_URL_
-jgm_url = _JUST_MARKETS_URL_
-ftmo_url = _FTMO_URL_
 
 
 _SYMBOLS_TYPE_ = {
@@ -226,16 +187,17 @@ def check_mt5_connection(
 
 
 class Broker(object):
-    def __init__(self, name: str = None, **kwargs):
-        if name is None:
-            check_mt5_connection(**kwargs)
-            self._name = mt5.account_info().company
-        else:
-            self._name = name
+    def __init__(self, name: str, timezone: Optional[str] = None):
+        self._name = name
+        self._timezone = timezone
 
     @property
     def name(self):
         return self._name
+
+    @property
+    def timezone(self):
+        return self._timezone
 
     def __str__(self):
         return self.name
@@ -248,21 +210,6 @@ class Broker(object):
 
     def __repr__(self):
         return f"{self.__class__.__name__}({self.name})"
-
-    @property
-    def timezone(self) -> Optional[str]:
-        broker_code = next((code for code, name in __BROKERS__.items() if name == self.name), None)
-        if broker_code:
-            return BROKERS_TIMEZONES.get(broker_code)
-        return None
-
-    @property
-    def is_pepperstone(self) -> bool:
-        return self.name == "Pepperstone Group Limited"
-
-    @property
-    def is_admiral_markets(self) -> bool:
-        return self.name == "Admirals SC Ltd"
 
 
 class Account(object):
@@ -301,7 +248,7 @@ class Account(object):
         >>> trade_history = account.get_trade_history(from_date, to_date)
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, broker: Broker, **kwargs):
         """
         Initialize the Account class.
 
@@ -310,7 +257,7 @@ class Account(object):
         """
         check_mt5_connection(**kwargs)
         self._info = Mt5client.account_info()
-        self._broker = Broker(name=self._info.company)
+        self._broker = broker
 
     @property
     def info(self) -> AccountInfo:
@@ -702,14 +649,6 @@ class Account(object):
         commodity = self.get_symbols(symbol_type=SymbolType.COMMODITIES)
         if info is not None:
             for symbol_type, pattern in patterns.items():
-                if (
-                    symbol_type in [SymbolType.COMMODITIES, SymbolType.INDICES]
-                    and self.broker.is_pepperstone
-                    and info.name.endswith("-F")
-                    and info.name in indices + commodity
-                ):
-                    symbol_type = SymbolType.FUTURES
-                    pattern = r"\b(Forwards?)\b"
                 search = re.compile(pattern)
                 if re.search(search, info.path):
                     return symbol_type
@@ -751,49 +690,14 @@ class Account(object):
 
         Raises:
             ValueError: If an unsupported category is provided.
-
-        Notes:
-            This mthods works primarly with Admirals Group AS products and Pepperstone Group Limited,
-            For other brokers use `get_symbols()` or this method will use it by default.
         """
-        if not (self.broker.is_admiral_markets or self.broker.is_pepperstone):
-            return self.get_symbols(symbol_type=SymbolType.FOREX)
-        else:
-            fx_categories = {
-                "majors": r"\b(Majors?)\b",
-                "minors": r"\b(Minors?)\b",
-                "exotics": r"\b(Exotics?)\b",
-                "crosses": r"\b(Crosses?)\b",
-                "ndfs": r"\b(NDFs?)\b",
-            }
-            return self._get_symbols_by_category(
-                SymbolType.FOREX, category, fx_categories
-            )
+        return self.get_symbols(symbol_type=SymbolType.FOREX)
 
     def get_stocks_from_country(
         self, country_code: str = "USA", etf=False
     ) -> List[str]:
         """
         Retrieves a list of stock symbols from a specific country.
-
-        Supported countries are:
-            * **Australia:** AUS
-            * **Belgium:** BEL
-            * **Denmark:** DNK
-            * **Finland:** FIN
-            * **France:** FRA
-            * **Germany:** DEU
-            * **Netherlands:** NLD
-            * **Norway:** NOR
-            * **Portugal:** PRT
-            * **Spain:** ESP
-            * **Sweden:** SWE
-            * **United Kingdom:** GBR
-            * **United States:** USA
-            * **Switzerland:** CHE
-            * **Hong Kong:** HKG
-            * **Ireland:** IRL
-            * **Austria:** AUT
 
         Args:
             country (str, optional): The country code of stocks to retrieve.
@@ -804,51 +708,14 @@ class Account(object):
 
         Raises:
             ValueError: If an unsupported country is provided.
-
-        Notes:
-            This mthods works primarly with Admirals Group AS products and Pepperstone Group Limited,
-            For other brokers use `get_symbols()` or this method will use it by default.
         """
-
-        if not (self.broker.is_admiral_markets or self.broker.is_pepperstone):
-            return self.get_symbols(symbol_type=SymbolType.STOCKS)
-        else:
-            stocks, etfs = [], []
-            country_map = _COUNTRY_MAP_
-            stocks = self._get_symbols_by_category(
-                SymbolType.STOCKS, country_code, country_map
-            )
-            etfs = self._get_symbols_by_category(
-                SymbolType.ETFs, country_code, country_map
-            )
-            return stocks + etfs if etf else stocks
+        return self.get_symbols(symbol_type=SymbolType.STOCKS)
 
     def get_stocks_from_exchange(
         self, exchange_code: str = "XNYS", etf=True
     ) -> List[str]:
         """
         Get stock symbols from a specific exchange using the ISO Code for the exchange.
-
-        Supported exchanges are from Admirals Group AS products:
-        * **XASX:**        **Australian Securities Exchange**
-        * **XBRU:**        **Euronext Brussels Exchange**
-        * **XCSE:**        **Copenhagen Stock Exchange**
-        * **XHEL:**        **NASDAQ OMX Helsinki**
-        * **XPAR:**        **Euronext Paris**
-        * **XETR:**        **Xetra Frankfurt**
-        * **XOSL:**        **Oslo Stock Exchange**
-        * **XLIS:**        **Euronext Lisbon**
-        * **XMAD:**        **Bolsa de Madrid**
-        * **XSTO:**        **NASDAQ OMX Stockholm**
-        * **XLON:**        **London Stock Exchange**
-        * **NYSE:**        **New York Stock Exchange**
-        * **ARCA:**        **NYSE ARCA**
-        * **AMEX:**        **NYSE AMEX**
-        * **XNYS:**        **New York Stock Exchange (AMEX, ARCA, NYSE)**
-        * **NASDAQ:**      **NASDAQ**
-        * **BATS:**        **BATS Exchange**
-        * **XSWX:**        **SWX Swiss Exchange**
-        * **XAMS:**        **Euronext Amsterdam**
 
         Args:
             exchange_code (str, optional): The ISO code of the exchange.
@@ -859,23 +726,8 @@ class Account(object):
 
         Raises:
             ValueError: If an unsupported exchange is provided.
-
-        Notes:
-            This mthods works primarly with Admirals Group AS products,
-            For other brokers use `get_symbols()` or this method will use it by default.
         """
-        if not self.broker.is_admiral_markets:
-            return self.get_symbols(symbol_type=SymbolType.STOCKS)
-        else:
-            stocks, etfs = [], []
-            exchange_map = AMG_EXCHANGES
-            stocks = self._get_symbols_by_category(
-                SymbolType.STOCKS, exchange_code, exchange_map
-            )
-            etfs = self._get_symbols_by_category(
-                SymbolType.ETFs, exchange_code, exchange_map
-            )
-            return stocks + etfs if etf else stocks
+        return self.get_symbols(symbol_type=SymbolType.STOCKS)
 
     def get_future_symbols(self, category: str = "ALL") -> List[str]:
         """
@@ -891,49 +743,8 @@ class Account(object):
 
         Raises:
             ValueError: If an unsupported category is provided.
-
-        Notes:
-            This mthods works primarly with Admirals Group AS products,
-            For other brokers use `get_symbols()` or this method will use it by default.
         """
-        category = category.lower()
-        if not self.broker.is_admiral_markets:
-            return self.get_symbols(symbol_type=SymbolType.FUTURES)
-        elif category in ["all", "index"]:
-            categories = {
-                "all": r"\b(Futures?)\b",
-                "index": r"\b(Index)\b",
-            }
-            return self._get_symbols_by_category(
-                SymbolType.FUTURES, category, categories
-            )
-        else:
-            futures_types = {}
-            for future_type in ("metals", "energies", "agricultures", "bonds"):
-                futures_types[future_type] = []
-            commodities = self.get_symbols(symbol_type=SymbolType.COMMODITIES)
-            futures = self.get_symbols(symbol_type=SymbolType.FUTURES)
-            for symbol in futures:
-                info = self.get_symbol_info(symbol)
-                if info.name.startswith("_"):
-                    if "XAU" in info.name:
-                        futures_types["metals"].append(info.name)
-                    if "oil" in info.name.lower():
-                        futures_types["energies"].append(info.name)
-                    name = info.name.split("_")[1]
-                    if name in commodities:
-                        _info = self.get_symbol_info(name)
-                        if "Metals" in _info.path:
-                            futures_types["metals"].append(info.name)
-                        elif "Energies" in _info.path:
-                            futures_types["energies"].append(info.name)
-                        elif "Agricultures" in _info.path:
-                            futures_types["agricultures"].append(info.name)
-
-                elif info.name.startswith("#"):
-                    if "Index" not in info.path:
-                        futures_types["bonds"].append(info.name)
-            return futures_types[category]
+        return self.get_symbols(symbol_type=SymbolType.FUTURES)
 
     def get_symbol_info(self, symbol: str) -> SymbolInfo | None:
         """Get symbol properties
