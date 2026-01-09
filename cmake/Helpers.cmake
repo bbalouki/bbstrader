@@ -8,10 +8,6 @@ set(CMAKE_CXX_STANDARD ${${PROJECT_NAME}_CXX_STANDARD})
 option(${PROJECT_NAME}_BUILD_TESTS "Add tests" OFF)
 option(${PROJECT_NAME}_BUILD_EXAMPLES "Build some examples" OFF)
 
-set(${PROJECT_NAME}_PROJECT_ENV "DEV" CACHE STRING "Development environment")
-set_property(CACHE ${PROJECT_NAME}_PROJECT_ENV PROPERTY STRINGS "DEV" "PROD")
-message(STATUS "Building for environment: ${${PROJECT_NAME}_PROJECT_ENV}")
-
 option(${PROJECT_NAME}_ADD_COVERAGE_ANALYSIS "Enable coverage analisys" OFF)
 option(${PROJECT_NAME}_APPLY_FORMATING "Apply formating with clang-format" OFF)
 option(${PROJECT_NAME}_USE_PER_FILE_FORMATTING "For very large projects" OFF)
