@@ -11,26 +11,29 @@ from numpy.typing import NDArray
 
 from bbstrader.metatrader.utils import (
     TIMEFRAMES,
-    AccountInfo,
-    BookInfo,
     InvalidBroker,
-    OrderCheckResult,
-    OrderSentResult,
     RateDtype,
     RateInfo,
-    SymbolInfo,
     SymbolType,
-    TerminalInfo,
-    TickDtype,
     TickFlag,
+    TickDtype,
+    raise_mt5_error,
+)
+from bbstrader.api import (
+    Mt5client,
     TickInfo,
     TradeDeal,
     TradeOrder,
     TradePosition,
     TradeRequest,
-    raise_mt5_error,
-)
+    TerminalInfo,
+    SymbolInfo,
+    OrderCheckResult,
+    OrderSentResult,
+    AccountInfo,
+    BookInfo,
 
+)
 try:
     import MetaTrader5 as mt5
 except ImportError:
@@ -91,14 +94,14 @@ ftmo_url = _FTMO_URL_
 
 
 _SYMBOLS_TYPE_ = {
-    SymbolType.ETFs: r"\b(ETFs?)\b",
-    SymbolType.BONDS: r"\b(Treasuries?)\b",
-    SymbolType.FOREX: r"\b(Forex|Exotics?)\b",
-    SymbolType.FUTURES: r"\b(Futures?|Forwards)\b",
-    SymbolType.STOCKS: r"\b(Stocks?|Equities?|Shares?)\b",
-    SymbolType.INDICES: r"\b(?:Indices?|Cash|Index)\b(?!.*\\(?:UKOIL|USOIL))",
-    SymbolType.COMMODITIES: r"\b(Commodity|Commodities?|Metals?|Agricultures?|Energies?|OIL|Oil|USOIL|UKOIL)\b",
-    SymbolType.CRYPTO: r"\b(Cryptos?|Cryptocurrencies|Cryptocurrency)\b",
+    SymbolType.ETFs: r"\b(ETFs?|Exchange\s?Traded\s?Funds?|Trackers?)\b",
+    SymbolType.BONDS: r"\b(Treasuries|Bonds|Bunds|Gilts|T-Notes|Fixed\s?Income)\b",
+    SymbolType.FOREX: r"\b(Forex|FX|Currencies|Exotics?|Majors?|Minors?)\b",
+    SymbolType.FUTURES: r"\b(Futures?|Forwards|Expiring|Front\s?Month)\b",
+    SymbolType.STOCKS: r"\b(Stocks?|Equities?|Shares?|Blue\s?Chips?|Large\s?Cap)\b",
+    SymbolType.INDICES: r"\b(Indices?|Index|Cash|Spot\s?Indices|Benchmarks)\b(?![^$]*(UKOIL|USOIL|WTI|BRENT))",
+    SymbolType.COMMODITIES: r"\b(Commodit(ies|y)|Metals?|Precious|Bullion|Agricultures?|Energies?|Oil|Crude|WTI|BRENT|UKOIL|USOIL|Gas|NATGAS)\b",
+    SymbolType.CRYPTO: r"\b(Cryptos?|Cryptocurrencies?|Digital\s?Assets?|DeFi|Altcoins)\b",
 }
 
 _COUNTRY_MAP_ = {
@@ -221,11 +224,6 @@ def check_mt5_connection(
     except Exception:
         raise_mt5_error(str(mt5.last_error()) + INIT_MSG)
     return init
-
-
-def shutdown_mt5():
-    """Close the connection to the MetaTrader 5 terminal."""
-    mt5.shutdown()
 
 
 class Broker(object):
@@ -351,6 +349,11 @@ class Account(object):
         """
         check_mt5_connection(**kwargs)
         self._check_brokers(**kwargs)
+        self._info = Mt5client.account_info()
+    
+    @property
+    def info(self) -> AccountInfo:
+        return self._info
 
     def _check_brokers(self, **kwargs):
         if kwargs.get("copy", False):
@@ -370,7 +373,7 @@ class Account(object):
 
     def shutdown(self):
         """Close the connection to the MetaTrader 5 terminal."""
-        shutdown_mt5()
+        Mt5client.shutdown()
 
     @property
     def broker(self) -> Broker:
@@ -384,34 +387,34 @@ class Account(object):
 
     @property
     def name(self) -> str:
-        return self.get_account_info().name
+        return self._info.name
 
     @property
     def number(self) -> int:
-        return self.get_account_info().login
+        return self._info.login
 
     @property
     def server(self) -> str:
         """The name of the trade server to which the client terminal is connected.
         (e.g., 'AdmiralsGroup-Demo')
         """
-        return self.get_account_info().server
+        return self._info.server
 
     @property
     def balance(self) -> float:
-        return self.get_account_info().balance
+        return self._info.balance
 
     @property
     def leverage(self) -> int:
-        return self.get_account_info().leverage
+        return self._info.leverage
 
     @property
     def equity(self) -> float:
-        return self.get_account_info().equity
+        return self._info.equity
 
     @property
     def currency(self) -> str:
-        return self.get_account_info().currency
+        return self._info.currency
 
     @property
     def language(self) -> str:
@@ -622,7 +625,7 @@ class Account(object):
         bc = info.currency_base
         pc = info.currency_profit
         mc = info.currency_margin
-        ac = self.get_account_info().currency
+        ac = self._info.currency
         return {"bc": bc, "mc": mc, "pc": pc, "ac": ac}
 
     def get_symbols(
