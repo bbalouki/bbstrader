@@ -19,6 +19,7 @@ Language: Cpp
 Standard: Latest
 
 IndentWidth: 4
+Cpp11BracedListStyle: true 
 AlignConsecutiveAssignments: true
 AlignConsecutiveDeclarations: true
 AllowShortBlocksOnASingleLine: false
@@ -36,4 +37,8 @@ BinPackArguments: false
 AllowAllParametersOfDeclarationOnNextLine: true
 AllowAllArgumentsOnNextLine: true
 
+AllowAllConstructorInitializersOnNextLine: true
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+
 PenaltyBreakBeforeFirstCallParameter: 1
+MaxEmptyLinesToKeep: 1
