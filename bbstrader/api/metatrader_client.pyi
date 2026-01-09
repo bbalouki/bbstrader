@@ -130,6 +130,14 @@ class MetaTraderClient:
     ) -> list[TradeDeal] | None: ...
     @overload
     def history_deals_get(
+        self, date_from: typing.SupportsInt, date_to: typing.SupportsInt
+    ) -> list[TradeDeal] | None: ...
+    @overload
+    def history_deals_get(
+        self, date_from: datetime.datetime, date_to: datetime.datetime
+    ) -> list[TradeDeal] | None: ...
+    @overload
+    def history_deals_get(
         self, ticket: typing.SupportsInt
     ) -> list[TradeDeal] | None: ...
     def history_deals_get_by_pos(
@@ -150,6 +158,14 @@ class MetaTraderClient:
     @overload
     def history_orders_get(
         self, date_from: datetime.datetime, date_to: datetime.datetime, group: str
+    ) -> list[TradeOrder] | None: ...
+    @overload
+    def history_orders_get(
+        self, date_from: typing.SupportsInt, date_to: typing.SupportsInt
+    ) -> list[TradeOrder] | None: ...
+    @overload
+    def history_orders_get(
+        self, date_from: datetime.datetime, date_to: datetime.datetime
     ) -> list[TradeOrder] | None: ...
     @overload
     def history_orders_get(self, ticket: typing.SupportsInt) -> TradeOrder | None: ...
@@ -258,11 +274,14 @@ class MetaTraderHandlers:
     check_order: collections.abc.Callable[[TradeRequest], OrderCheckResult | None]
     get_account_info: collections.abc.Callable[[], AccountInfo | None]
     get_book_info: collections.abc.Callable[[str], list[BookInfo] | None]
+    get_hist_deals_group: collections.abc.Callable[
+        [typing.SupportsInt, typing.SupportsInt, str], list[TradeDeal] | None
+    ]
     get_hist_deals_pos: collections.abc.Callable[
         [typing.SupportsInt], list[TradeDeal] | None
     ]
     get_hist_deals_range: collections.abc.Callable[
-        [typing.SupportsInt, typing.SupportsInt, str], list[TradeDeal] | None
+        [typing.SupportsInt, typing.SupportsInt], list[TradeDeal] | None
     ]
     get_hist_deals_ticket: collections.abc.Callable[
         [typing.SupportsInt], list[TradeDeal] | None
@@ -273,11 +292,14 @@ class MetaTraderHandlers:
     get_hist_order_ticket: collections.abc.Callable[
         [typing.SupportsInt], TradeOrder | None
     ]
+    get_hist_orders_group: collections.abc.Callable[
+        [typing.SupportsInt, typing.SupportsInt, str], list[TradeOrder] | None
+    ]
     get_hist_orders_pos: collections.abc.Callable[
         [typing.SupportsInt], list[TradeOrder] | None
     ]
     get_hist_orders_range: collections.abc.Callable[
-        [typing.SupportsInt, typing.SupportsInt, str], list[TradeOrder] | None
+        [typing.SupportsInt, typing.SupportsInt], list[TradeOrder] | None
     ]
     get_hist_orders_total: collections.abc.Callable[
         [typing.SupportsInt, typing.SupportsInt], int | None

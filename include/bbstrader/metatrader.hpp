@@ -198,8 +198,11 @@ using SendOrder = std::function<std::optional<OrderSentResult>(const TradeReques
 /// @brief Functional interfaces for retrieving historical trade data (Closed Orders and Deals).
 /// @{
 
+/// @brief Callback to retrieve historical orders within a specific time range.
+using GetHistoryOrdersByRange = std::function<OrdersData(int64_t, int64_t)>;
+
 /// @brief Callback to retrieve historical orders within a specific time range and filter.
-using GetHistoryOrdersByRange = std::function<OrdersData(int64_t, int64_t, str&)>;
+using GetHistoryOrdersByGroup = std::function<OrdersData(int64_t, int64_t, str&)>;
 
 /// @brief Callback to retrieve a specific historical order by its ticket ID.
 using GetHistoryOrderByTicket = std::function<std::optional<TradeOrder>(uint64_t)>;
@@ -211,7 +214,10 @@ using GetHistoryOrdersByPosId = std::function<OrdersData(uint64_t)>;
 using GetHistoryOrdersTotal = std::function<std::optional<int32_t>(int64_t, int64_t)>;
 
 /// @brief Callback to retrieve historical deals (executions) within a time range.
-using GetHistoryDealsByRange = std::function<DealsData(int64_t, int64_t, str&)>;
+using GetHistoryDealsByRange = std::function<DealsData(int64_t, int64_t)>;
+
+/// @brief Callback to retrieve historical deals (executions) within a time range buy asset.
+using GetHistoryDealsByGroup = std::function<DealsData(int64_t, int64_t, str&)>;
 
 /// @brief Callback to retrieve historical deals associated with a specific Order Ticket.
 using GetHistoryDealsByTicket = std::function<DealsData(uint64_t)>;
@@ -285,12 +291,14 @@ class MetaTraderClient {
 
         // History Orders
         GetHistoryOrdersByRange get_hist_orders_range;  ///< Get history orders by range handler
+        GetHistoryOrdersByGroup get_hist_orders_group;  ///< Get history orders by group handler
         GetHistoryOrderByTicket get_hist_order_ticket;  ///< Get history order by ticket handler
         GetHistoryOrdersByPosId get_hist_orders_pos;  ///< Get history orders by position ID handler
         GetHistoryOrdersTotal   get_hist_orders_total;  ///< Get history orders count handler
 
         // History Deals
         GetHistoryDealsByRange  get_hist_deals_range;   ///< Get history deals by range handler
+        GetHistoryDealsByGroup  get_hist_deals_group;   ///< Get history deals by group handler
         GetHistoryDealsByTicket get_hist_deals_ticket;  ///< Get history deal by ticket handler
         GetHistoryDealsByPosId  get_hist_deals_pos;    ///< Get history deals by position ID handler
         GetHistoryDealsTotal    get_hist_deals_total;  ///< Get history deals count handler
@@ -662,11 +670,11 @@ class MetaTraderClient {
     /// @brief Gets historical orders within a timestamp range.
     /// @param from Start timestamp.
     /// @param to End timestamp.
-    /// @param group Group name filter (optional, empty string for all).
+    /// @param group Group name filter
     /// @return Optional vector of TradeOrder.
     virtual auto history_orders_get(int64_t from, int64_t to, str& group) -> OrdersData {
-        return this_handlers.get_hist_orders_range
-                   ? this_handlers.get_hist_orders_range(from, to, group)
+        return this_handlers.get_hist_orders_group
+                   ? this_handlers.get_hist_orders_group(from, to, group)
                    : std::nullopt;
     }
 
@@ -675,6 +683,23 @@ class MetaTraderClient {
         auto from_ts = static_cast<int64_t>(std::chrono::system_clock::to_time_t(from));
         auto to_ts   = static_cast<int64_t>(std::chrono::system_clock::to_time_t(to));
         return history_orders_get(from_ts, to_ts, group);
+    }
+
+    /// @brief Gets historical orders within a timestamp range.
+    /// @param from Start timestamp.
+    /// @param to End timestamp.
+    /// @return Optional vector of TradeOrder.
+    virtual auto history_orders_get(int64_t from, int64_t to) -> OrdersData {
+        return this_handlers.get_hist_orders_range
+                   ? this_handlers.get_hist_orders_range(from, to)
+                   : std::nullopt;
+    }
+
+    /// @brief Gets historical orders within a DateTime range.
+    virtual auto history_orders_get(DateTime from, DateTime to) -> OrdersData {
+        auto from_ts = static_cast<int64_t>(std::chrono::system_clock::to_time_t(from));
+        auto to_ts   = static_cast<int64_t>(std::chrono::system_clock::to_time_t(to));
+        return history_orders_get(from_ts, to_ts);
     }
 
     /// @brief Gets a historical order by its ticket.
@@ -705,10 +730,23 @@ class MetaTraderClient {
     // History Deal Methods
 
     /// @brief Gets historical deals within a timestamp range.
+    /// @param from Start timestamp.
+    /// @param to End timestamp.
+    /// @param group Group name filter
     /// @return Optional vector of TradeDeal.
     virtual auto history_deals_get(int64_t from, int64_t to, str& group) -> DealsData {
+        return this_handlers.get_hist_deals_group
+                   ? this_handlers.get_hist_deals_group(from, to, group)
+                   : std::nullopt;
+    }
+
+    /// @brief Gets historical deals within a timestamp range.
+    /// @param from Start timestamp.
+    /// @param to End timestamp.
+    /// @return Optional vector of TradeDeal.
+    virtual auto history_deals_get(int64_t from, int64_t to) -> DealsData {
         return this_handlers.get_hist_deals_range
-                   ? this_handlers.get_hist_deals_range(from, to, group)
+                   ? this_handlers.get_hist_deals_range(from, to)
                    : std::nullopt;
     }
 
@@ -717,6 +755,13 @@ class MetaTraderClient {
         auto from_ts = static_cast<int64_t>(std::chrono::system_clock::to_time_t(from));
         auto to_ts   = static_cast<int64_t>(std::chrono::system_clock::to_time_t(to));
         return history_deals_get(from_ts, to_ts, group);
+    }
+
+    /// @brief Gets historical deals within a DateTime range.
+    virtual auto history_deals_get(DateTime from, DateTime to) -> DealsData {
+        auto from_ts = static_cast<int64_t>(std::chrono::system_clock::to_time_t(from));
+        auto to_ts   = static_cast<int64_t>(std::chrono::system_clock::to_time_t(to));
+        return history_deals_get(from_ts, to_ts);
     }
 
     /// @brief Gets a historical deal by its ticket.

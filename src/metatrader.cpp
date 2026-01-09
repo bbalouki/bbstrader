@@ -175,6 +175,9 @@ class PyMetaTraderClient : public MetaTraderClient {
     auto history_orders_get(int64_t from, int64_t to, str& group) -> OrdersData override {
         PYBIND11_OVERRIDE(OrdersData, MetaTraderClient, history_orders_get, from, to, group);
     }
+    auto history_orders_get(int64_t from, int64_t to) -> OrdersData override {
+        PYBIND11_OVERRIDE(OrdersData, MetaTraderClient, history_orders_get, from, to);
+    }
     auto history_orders_get(uint64_t ticket) -> std::optional<TradeOrder> override {
         PYBIND11_OVERRIDE(std::optional<TradeOrder>, MetaTraderClient, history_orders_get, ticket);
     }
@@ -187,6 +190,9 @@ class PyMetaTraderClient : public MetaTraderClient {
 
     auto history_deals_get(int64_t from, int64_t to, str& group) -> DealsData override {
         PYBIND11_OVERRIDE(DealsData, MetaTraderClient, history_deals_get, from, to, group);
+    }
+    auto history_deals_get(int64_t from, int64_t to) -> DealsData override {
+        PYBIND11_OVERRIDE(DealsData, MetaTraderClient, history_deals_get, from, to);
     }
     auto history_deals_get(uint64_t ticket) -> DealsData override {
         PYBIND11_OVERRIDE(DealsData, MetaTraderClient, history_deals_get, ticket);
@@ -632,10 +638,12 @@ PYBIND11_MODULE(metatrader_client, m) {
         .def_readwrite("calc_profit", &MT5Handlers::calc_profit)
         // History (Orders & Deals)
         .def_readwrite("get_hist_orders_range", &MT5Handlers::get_hist_orders_range)
+        .def_readwrite("get_hist_orders_group", &MT5Handlers::get_hist_orders_group)
         .def_readwrite("get_hist_order_ticket", &MT5Handlers::get_hist_order_ticket)
         .def_readwrite("get_hist_orders_pos", &MT5Handlers::get_hist_orders_pos)
         .def_readwrite("get_hist_orders_total", &MT5Handlers::get_hist_orders_total)
         .def_readwrite("get_hist_deals_range", &MT5Handlers::get_hist_deals_range)
+        .def_readwrite("get_hist_deals_group", &MT5Handlers::get_hist_deals_group)
         .def_readwrite("get_hist_deals_ticket", &MT5Handlers::get_hist_deals_ticket)
         .def_readwrite("get_hist_deals_pos", &MT5Handlers::get_hist_deals_pos)
         .def_readwrite("get_hist_deals_total", &MT5Handlers::get_hist_deals_total);
@@ -895,6 +903,20 @@ PYBIND11_MODULE(metatrader_client, m) {
         )
         .def(
             "history_orders_get",
+            py::overload_cast<int64_t, int64_t>(&MetaTraderClient::history_orders_get),
+            py::arg("date_from"),
+            py::arg("date_to"),
+            py::return_value_policy::move
+        )
+        .def(
+            "history_orders_get",
+            py::overload_cast<DateTime, DateTime>(&MetaTraderClient::history_orders_get),
+            py::arg("date_from"),
+            py::arg("date_to"),
+            py::return_value_policy::move
+        )
+        .def(
+            "history_orders_get",
             py::overload_cast<uint64_t>(&MetaTraderClient::history_orders_get),
             py::arg("ticket")
         )
@@ -930,6 +952,20 @@ PYBIND11_MODULE(metatrader_client, m) {
             py::arg("date_from"),
             py::arg("date_to"),
             py::arg("group"),
+            py::return_value_policy::move
+        )
+        .def(
+            "history_deals_get",
+            py::overload_cast<int64_t, int64_t>(&MetaTraderClient::history_deals_get),
+            py::arg("date_from"),
+            py::arg("date_to"),
+            py::return_value_policy::move
+        )
+        .def(
+            "history_deals_get",
+            py::overload_cast<DateTime, DateTime>(&MetaTraderClient::history_deals_get),
+            py::arg("date_from"),
+            py::arg("date_to"),
             py::return_value_policy::move
         )
         .def(
