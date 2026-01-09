@@ -249,58 +249,20 @@ class Broker(object):
     def __repr__(self):
         return f"{self.__class__.__name__}({self.name})"
 
-
-class MetaQuotes(Broker):
-    def __init__(self, **kwargs):
-        super().__init__(__BROKERS__["MQL"], **kwargs)
-
-
-class AdmiralMarktsGroup(Broker):
-    def __init__(self, **kwargs):
-        super().__init__(__BROKERS__["AMG"], **kwargs)
+    @property
+    def timezone(self) -> Optional[str]:
+        broker_code = next((code for code, name in __BROKERS__.items() if name == self.name), None)
+        if broker_code:
+            return BROKERS_TIMEZONES.get(broker_code)
+        return None
 
     @property
-    def timezone(self) -> str:
-        return BROKERS_TIMEZONES["AMG"]
-
-
-class JustGlobalMarkets(Broker):
-    def __init__(self, **kwargs):
-        super().__init__(__BROKERS__["JGM"], **kwargs)
+    def is_pepperstone(self) -> bool:
+        return self.name == "Pepperstone Group Limited"
 
     @property
-    def timezone(self) -> str:
-        return BROKERS_TIMEZONES["JGM"]
-
-
-class FTMO(Broker):
-    def __init__(self, **kwargs):
-        super().__init__(__BROKERS__["FTMO"], **kwargs)
-
-    @property
-    def timezone(self) -> str:
-        return BROKERS_TIMEZONES["FTMO"]
-
-
-class PepperstoneGroupLimited(Broker):
-    def __init__(self, **kwargs):
-        super().__init__(__BROKERS__["PGL"], **kwargs)
-
-    @property
-    def timezone(self) -> str:
-        return BROKERS_TIMEZONES["PGL"]
-
-
-class AMP(Broker): ...
-
-
-BROKERS: Dict[str, Broker] = {
-    "FTMO": FTMO(),
-    "MQL": MetaQuotes(),
-    "AMG": AdmiralMarktsGroup(),
-    "JGM": JustGlobalMarkets(),
-    "PGL": PepperstoneGroupLimited(),
-}
+    def is_admiral_markets(self) -> bool:
+        return self.name == "Admirals SC Ltd"
 
 
 class Account(object):
@@ -348,14 +310,7 @@ class Account(object):
         """
         check_mt5_connection(**kwargs)
         self._info = Mt5client.account_info()
-
-        company_name = self._info.company
-        broker_name = next((k for k, v in __BROKERS__.items() if v == company_name), None)
-
-        if broker_name and broker_name in BROKERS:
-            self._broker = BROKERS[broker_name]
-        else:
-            self._broker = Broker(name=company_name)
+        self._broker = Broker(name=self._info.company)
 
     @property
     def info(self) -> AccountInfo:
@@ -371,7 +326,7 @@ class Account(object):
 
     @property
     def timezone(self) -> Optional[str]:
-        return getattr(self._broker, 'timezone', None)
+        return self.broker.timezone
 
     @property
     def name(self) -> str:
@@ -749,7 +704,7 @@ class Account(object):
             for symbol_type, pattern in patterns.items():
                 if (
                     symbol_type in [SymbolType.COMMODITIES, SymbolType.INDICES]
-                    and isinstance(self._broker, PepperstoneGroupLimited)
+                    and self.broker.is_pepperstone
                     and info.name.endswith("-F")
                     and info.name in indices + commodity
                 ):
@@ -801,7 +756,7 @@ class Account(object):
             This mthods works primarly with Admirals Group AS products and Pepperstone Group Limited,
             For other brokers use `get_symbols()` or this method will use it by default.
         """
-        if not isinstance(self._broker, (AdmiralMarktsGroup, PepperstoneGroupLimited)):
+        if not (self.broker.is_admiral_markets or self.broker.is_pepperstone):
             return self.get_symbols(symbol_type=SymbolType.FOREX)
         else:
             fx_categories = {
@@ -855,7 +810,7 @@ class Account(object):
             For other brokers use `get_symbols()` or this method will use it by default.
         """
 
-        if not isinstance(self._broker, (AdmiralMarktsGroup, PepperstoneGroupLimited)):
+        if not (self.broker.is_admiral_markets or self.broker.is_pepperstone):
             return self.get_symbols(symbol_type=SymbolType.STOCKS)
         else:
             stocks, etfs = [], []
@@ -909,7 +864,7 @@ class Account(object):
             This mthods works primarly with Admirals Group AS products,
             For other brokers use `get_symbols()` or this method will use it by default.
         """
-        if not isinstance(self._broker, AdmiralMarktsGroup):
+        if not self.broker.is_admiral_markets:
             return self.get_symbols(symbol_type=SymbolType.STOCKS)
         else:
             stocks, etfs = [], []
@@ -942,7 +897,7 @@ class Account(object):
             For other brokers use `get_symbols()` or this method will use it by default.
         """
         category = category.lower()
-        if not isinstance(self._broker, AdmiralMarktsGroup):
+        if not self.broker.is_admiral_markets:
             return self.get_symbols(symbol_type=SymbolType.FUTURES)
         elif category in ["all", "index"]:
             categories = {
