@@ -1,12 +1,11 @@
 from datetime import datetime
 
-import MetaTrader5 as mt5
 import pytz
 
-from bbstrader.api import (
+from bbstrader.api.metatrader_client import (  # type: ignore
     AccountInfo,
     BookInfo,
-    Handlers,
+    MetaTraderHandlers,
     OrderCheckResult,
     OrderSentResult,
     SymbolInfo,
@@ -17,6 +16,11 @@ from bbstrader.api import (
     TradePosition,
     TradeRequest,
 )
+
+try:
+    import MetaTrader5 as mt5
+except ImportError:
+    import bbstrader.compat  # noqa: F401
 
 
 def _convert_obj(obj, obj_type):
@@ -49,18 +53,6 @@ def _convert_list(obj_list, obj_type):
     if obj_list is None:
         return None
     return [_convert_obj(obj, obj_type) for obj in obj_list]
-
-
-# def _convert_nparray(arr, nt_type):
-#     if arr is None:
-#         return None
-#     rates = []
-#     for rate in arr:
-#         rate_info = nt_type()
-#         for row in arr.dtype.names:
-#             setattr(rate_info, row, rate[row])
-#         rates.append(rate_info)
-#     return rates
 
 
 def _build_request(req: TradeRequest | dict) -> dict:
@@ -118,7 +110,7 @@ def get_mt5_handlers():
     Exhaustively maps all MetaTrader 5 Python functions to the C++ Handlers struct,
     converting return values to the appropriate types.
     """
-    h = Handlers()
+    h = MetaTraderHandlers()
 
     # 1. System & Session Management (Functions returning structs are wrapped)
     h.init_auto = lambda: mt5.initialize()
@@ -223,7 +215,7 @@ def get_mt5_handlers():
     h.get_hist_order_ticket = lambda ticket: _convert_obj(
         mt5.history_orders_get(ticket=ticket), TradeOrder
     )
-    h.get_hist_orders_pos = lambda position, count: _convert_list(
+    h.get_hist_orders_pos = lambda position: _convert_list(
         mt5.history_orders_get(position=position), TradeOrder
     )
     h.get_hist_orders_total = mt5.history_orders_total
@@ -233,9 +225,12 @@ def get_mt5_handlers():
     h.get_hist_deals_ticket = lambda ticket: _convert_obj(
         mt5.history_deals_get(ticket=ticket), TradeDeal
     )
-    h.get_hist_deals_pos = lambda position, count: _convert_list(
+    h.get_hist_deals_pos = lambda position: _convert_list(
         mt5.history_deals_get(position=position), TradeDeal
     )
     h.get_hist_deals_total = mt5.history_deals_total
 
     return h
+
+
+Mt5Handlers = get_mt5_handlers()
