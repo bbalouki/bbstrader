@@ -23,3 +23,8 @@ if(${PROJECT_NAME}_ENABLE_ADDRESS_SANITIZER)
 endif()
 
 add_subdirectory(src)
+
+if (${PROJECT_NAME}_BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
