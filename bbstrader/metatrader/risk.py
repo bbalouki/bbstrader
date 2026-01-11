@@ -545,7 +545,6 @@ class RiskManagement:
             }
 
     def validate_currency_risk(self):
-        # 1. Get Starting Points
         target_risk = self.get_currency_risk()
         sl_points = self._get_stop_loss()
         start_lot = self._get_lot()
@@ -558,11 +557,8 @@ class RiskManagement:
         ask = tick.ask
         sl_price = ask - (sl_points * self.symbol_info.point)
 
-        # 2. Calculate Safety Cap
         balance, equity = self.risk_level(balance_value=True)
         margin_free = self.account.get_account_info().margin_free
-
-        # Max $ allowed to lose based on risk %
         allowed_drawdown = margin_free * (self.max_risk / 100)
         min_equity = balance - allowed_drawdown
         max_safe_loss = equity - min_equity
@@ -572,74 +568,54 @@ class RiskManagement:
                 f"Equity ({equity}$) below safety threshold ({min_equity}$)."
             )
             return 0.0, sl_points
-
-        # 3. Min Volume Check
         min_vol = self.symbol_info.volume_min
         min_loss = client.order_calc_profit(
             mt5.ORDER_TYPE_BUY, self.symbol, min_vol, ask, sl_price
         )
-
         if min_loss is None or min_loss >= 0:
             logger.warning(
                 f"Invalid min loss calculation for {self.symbol}: {min_loss}"
             )
             return 0.0, sl_points
-
         min_loss = abs(min_loss)
-
         if min_loss > max_safe_loss:
             logger.error(
                 f"CRITICAL: Min vol loss ({min_loss:.2f}$) exceeds max safe loss ({max_safe_loss:.2f}$)."
             )
             return 0.0, sl_points
-
-        # 4. Determine Effective Risk
         effective_risk = min(target_risk, max_safe_loss)
-
-        # 5. Projected Loss for Starting Volume
         start_loss = client.order_calc_profit(
             mt5.ORDER_TYPE_BUY, self.symbol, start_lot, ask, sl_price
         )
-
         if start_loss is None or start_loss >= 0:
             base_vol, base_loss = min_vol, min_loss
         else:
             base_vol, base_loss = start_lot, abs(start_loss)
-
         if base_loss == 0:
             vol = min_vol
         else:
-            # 6. Scale Volume
             ratio = effective_risk / base_loss
             calc_vol = base_vol * ratio
 
-            # 7. Normalize
             step = self.symbol_info.volume_step
             vol = round(calc_vol / step) * step
             vol = self.account.broker.validate_lot_size(self.symbol, vol)
-
-        # 8. Final Verification
         final_loss = client.order_calc_profit(
             mt5.ORDER_TYPE_BUY, self.symbol, vol, ask, sl_price
         )
-
         if final_loss is None or final_loss >= 0:
             return 0.0, sl_points
-
         final_loss = abs(final_loss)
 
         if final_loss > max_safe_loss:
-            # Step down once if rounding pushed it over
             vol_down = max(min_vol, vol - step)
             loss_down = client.order_calc_profit(
                 mt5.ORDER_TYPE_BUY, self.symbol, vol_down, ask, sl_price
             )
-
             if loss_down is not None and abs(loss_down) <= max_safe_loss:
                 vol = vol_down
             else:
                 return 0.0, sl_points
-
         return (vol, round(sl_points)) if vol > 0 else (0.0, sl_points)
 
     def get_break_even(self, thresholds: list[tuple[int, float]] = None) -> int:

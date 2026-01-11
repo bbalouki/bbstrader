@@ -589,10 +589,10 @@ class Trade:
             tp (float): The take profit price
         """
         is_buy = action.startswith("B")
-        target_symbol = symbol or self.symbol
+        symbol = symbol or self.symbol
         expert_id = id if id is not None else self.expert_id
-        point = client.symbol_info(target_symbol).point
-        tick = client.symbol_info_tick(target_symbol)
+        point = client.symbol_info(symbol).point
+        tick = client.symbol_info_tick(symbol)
 
         req_price = None
         if "MKT" in action:
@@ -613,11 +613,12 @@ class Trade:
             mm_price = stoplimit
 
         order_type, _ = self._order_type()[action]
+        trade_action = (
+            Mt5.TRADE_ACTION_DEAL if "MKT" in action else Mt5.TRADE_ACTION_PENDING
+        )
         request = {
-            "action": Mt5.TRADE_ACTION_DEAL
-            if "MKT" in action
-            else Mt5.TRADE_ACTION_PENDING,
-            "symbol": target_symbol,
+            "action": trade_action,
+            "symbol": symbol,
             "volume": float(volume or self.rm.get_lot()),
             "type": order_type,
             "price": req_price,
@@ -671,32 +672,31 @@ class Trade:
         Args:
             comment (str): The comment for the closing position
         """
-        if self.copy_mode:
-            return True
+        def _check(txt: str = ""):
+            if (
+                self.positive_profit(id=self.expert_id)
+                or self.get_current_positions() is None
+            ):
+                self.close_positions(position_type="all")
+                LOGGER.info(txt)
+                self.statistics(save=True)
+
         if self.days_end():
+            LOGGER.warning(f"End of the trading Day, SYMBOL={self.symbol}")
             return False
         elif not self.trading_time():
-            LOGGER.info(f"Not Trading time, SYMBOL={self.symbol}")
+            LOGGER.warning(f"Not Trading time, SYMBOL={self.symbol}")
             return False
         elif not self.rm.is_risk_ok():
             LOGGER.warning(f"Account Risk not allowed, SYMBOL={self.symbol}")
-            self._check(comment)
+            _check(comment)
             return False
         elif self.is_max_trades_reached():
             LOGGER.warning(f"Maximum trades reached for Today, SYMBOL={self.symbol}")
             return False
         elif self.profit_target():
-            self._check(f"Profit target Reached !!! SYMBOL={self.symbol}")
+            _check(f"Profit target Reached !!! SYMBOL={self.symbol}")
         return True
-
-    def _check(self, txt: str = ""):
-        if (
-            self.positive_profit(id=self.expert_id)
-            or self.get_current_positions() is None
-        ):
-            self.close_positions(position_type="all")
-            LOGGER.info(txt)
-            self.statistics(save=True)
 
     def request_result(self, price: float, request: Dict[str, Any], type: Buys | Sells):
         """
@@ -1672,12 +1672,12 @@ class Trade:
     def days_end(self) -> bool:
         """Check if it is the end of the trading day."""
         fmt = "%H:%M"
-        now = datetime.now()
+        now = datetime.now().time()
         end = datetime.strptime(self.end, fmt).time()
         if self.broker_tz:
             now = self.account.broker.get_broker_time(self.current_time(), fmt).time()
-            now = self.account.broker.get_broker_time(self.end, fmt).time()
-        if now.time() >= end:
+            end = self.account.broker.get_broker_time(self.end, fmt).time()
+        if now >= end:
             return True
         return False
 
@@ -1759,85 +1759,41 @@ def create_trade_instance(
     Note:
         `daily_risk` and `max_risk`  can be used to manage the risk of each symbol
         based on the importance of the symbol in the portfolio or strategy.
-        See bbstrader.metatrader.trade.Trade for more details.
+        See bbstrader.metatrader.risk.RiskManagement for more details.
     """
-    if not isinstance(params.get("logger"), (Logger, type(log))):
-        loggr = log
-    else:
-        loggr = params.get("logger")
-    ids = params.get("expert_id", None)
-    trade_instances = {}
-    if not symbols:
-        raise ValueError("The 'symbols' list cannot be empty.")
-    if not params:
-        raise ValueError("The 'params' dictionary cannot be empty.")
+    if not symbols or not params:
+        raise ValueError("Symbols and params are required.")
 
-    if daily_risk is not None:
-        for symbol in symbols:
-            if symbol not in daily_risk:
-                raise ValueError(f"Missing daily risk weight for symbol '{symbol}'.")
-    if max_risk is not None:
-        for symbol in symbols:
-            if symbol not in max_risk:
-                raise ValueError(
-                    f"Missing maximum risk percentage for symbol '{symbol}'."
-                )
-    if pchange_sl is not None:
-        if isinstance(pchange_sl, dict):
-            for symbol in symbols:
-                if symbol not in pchange_sl:
-                    raise ValueError(
-                        f"Missing percentage change for symbol '{symbol}'."
-                    )
-    if isinstance(ids, dict):
-        for symbol in symbols:
-            if symbol not in ids:
-                raise ValueError(f"Missing expert ID for symbol '{symbol}'.")
+    logger = params.get("logger") if isinstance(params.get("logger"), Logger) else log
+    base_id = params.get("expert_id", EXPERT_ID)
 
-    for symbol in symbols:
+    def get_val(source, symbol, default=None):
+        if isinstance(source, dict):
+            if symbol not in source:
+                raise ValueError(f"Missing key '{symbol}' in configuration.")
+            return source[symbol]
+        return source if source is not None else default
+
+    trades = {}
+    for sym in symbols:
         try:
-            params["symbol"] = symbol
-            params["expert_id"] = (
-                ids[symbol]
-                if ids is not None and isinstance(ids, dict)
-                else ids
-                if ids is not None and isinstance(ids, (int, float))
-                else params["expert_id"]
-                if "expert_id" in params
-                else EXPERT_ID
-            )
-            params["pchange_sl"] = (
-                pchange_sl[symbol]
-                if pchange_sl is not None and isinstance(pchange_sl, dict)
-                else pchange_sl
-                if pchange_sl is not None and isinstance(pchange_sl, (int, float))
-                else params["pchange_sl"]
-                if "pchange_sl" in params
-                else None
-            )
-            params["daily_risk"] = (
-                daily_risk[symbol]
-                if daily_risk is not None
-                else params["daily_risk"]
-                if "daily_risk" in params
-                else None
-            )
-            params["max_risk"] = (
-                max_risk[symbol]
-                if max_risk is not None
-                else params["max_risk"]
-                if "max_risk" in params
-                else 10.0
-            )
-            trade_instances[symbol] = Trade(**params)
-        except Exception as e:
-            loggr.error(f"Creating Trade instance, SYMBOL={symbol} {e}")
+            conf = {
+                **params,
+                "symbol": sym,
+                "expert_id": get_val(base_id, sym),
+                "daily_risk": get_val(daily_risk, sym, params.get("daily_risk")),
+                "max_risk": get_val(max_risk, sym, params.get("max_risk", 10.0)),
+                "pchange_sl": get_val(pchange_sl, sym, params.get("pchange_sl")),
+            }
+            trades[sym] = Trade(**conf)
 
-    if len(trade_instances) != len(symbols):
-        for symbol in symbols:
-            if symbol not in trade_instances:
-                loggr.error(f"Failed to create Trade instance for SYMBOL={symbol}")
-    loggr.info(
-        f"Trade instances created successfully for {len(trade_instances)} symbols."
-    )
-    return trade_instances
+        except Exception as e:
+            logger.error(f"Failed trade init: SYMBOL={sym} | ERR={e}")
+
+    # Final Audit
+    if len(trades) < len(symbols):
+        missing = set(symbols) - set(trades.keys())
+        logger.warning(f"Partial success. Missing symbols: {missing}")
+
+    logger.info(f"Initialized {len(trades)} trade instances.")
+    return trades
