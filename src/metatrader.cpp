@@ -650,7 +650,6 @@ PYBIND11_MODULE(metatrader_client, m) {
 
     // 8. Main Client Class
     py::class_<MetaTraderClient, PyMetaTraderClient>(m, "MetaTraderClient")
-        .def(py::init<>())
         .def(py::init<MetaTraderClient::Handlers>(), py::arg("handlers"))
 
         // System

@@ -305,7 +305,9 @@ class MetaTraderClient {
     };
 
     /// @brief Default constructor.
-    MetaTraderClient() = default;
+    MetaTraderClient()                                   = delete;
+    MetaTraderClient(const MetaTraderClient&)            = delete;
+    MetaTraderClient& operator=(const MetaTraderClient&) = delete;
 
     /// @brief Virtual destructor.
     virtual ~MetaTraderClient() = default;
@@ -690,9 +692,8 @@ class MetaTraderClient {
     /// @param to End timestamp.
     /// @return Optional vector of TradeOrder.
     virtual auto history_orders_get(int64_t from, int64_t to) -> OrdersData {
-        return this_handlers.get_hist_orders_range
-                   ? this_handlers.get_hist_orders_range(from, to)
-                   : std::nullopt;
+        return this_handlers.get_hist_orders_range ? this_handlers.get_hist_orders_range(from, to)
+                                                   : std::nullopt;
     }
 
     /// @brief Gets historical orders within a DateTime range.
@@ -745,9 +746,8 @@ class MetaTraderClient {
     /// @param to End timestamp.
     /// @return Optional vector of TradeDeal.
     virtual auto history_deals_get(int64_t from, int64_t to) -> DealsData {
-        return this_handlers.get_hist_deals_range
-                   ? this_handlers.get_hist_deals_range(from, to)
-                   : std::nullopt;
+        return this_handlers.get_hist_deals_range ? this_handlers.get_hist_deals_range(from, to)
+                                                  : std::nullopt;
     }
 
     /// @brief Gets historical deals within a DateTime range.

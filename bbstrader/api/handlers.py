@@ -209,7 +209,7 @@ def get_mt5_handlers():
 
     # 6. Trade History (Orders & Deals)
     h.get_hist_orders_group = lambda date_from, date_to, group: _convert_list(
-        mt5.history_orders_get(get_time(date_from), get_time(date_to), group),
+        mt5.history_orders_get(get_time(date_from), get_time(date_to), group=group),
         TradeOrder,
     )
     h.get_hist_orders_range = lambda date_from, date_to: _convert_list(
@@ -224,7 +224,8 @@ def get_mt5_handlers():
     )
     h.get_hist_orders_total = mt5.history_orders_total
     h.get_hist_deals_group = lambda date_from, date_to, group: _convert_list(
-        mt5.history_deals_get(get_time(date_from), get_time(date_to), group), TradeDeal
+        mt5.history_deals_get(get_time(date_from), get_time(date_to), group=group),
+        TradeDeal,
     )
     h.get_hist_deals_range = lambda date_from, date_to: _convert_list(
         mt5.history_deals_get(get_time(date_from), get_time(date_to)), TradeDeal
