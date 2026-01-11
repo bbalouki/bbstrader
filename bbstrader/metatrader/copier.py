@@ -10,10 +10,12 @@ from typing import Dict, List, Literal, Tuple
 
 from loguru import logger as log
 
+from bbstrader.api.metatrader_client import TradeOrder, TradePosition # type: ignore
 from bbstrader.config import BBSTRADER_DIR
-from bbstrader.metatrader.account import Account, check_mt5_connection
+from bbstrader.metatrader.account import Account
+from bbstrader.metatrader.broker import check_mt5_connection
 from bbstrader.metatrader.trade import FILLING_TYPE
-from bbstrader.metatrader.utils import TradeOrder, TradePosition, trade_retcode_message
+from bbstrader.metatrader.utils import trade_retcode_message
 
 try:
     import MetaTrader5 as Mt5
@@ -72,9 +74,8 @@ RETURN_RETCODE = [
     Mt5.TRADE_RETCODE_INVALID_VOLUME,
     Mt5.TRADE_RETCODE_INVALID_PRICE,
     Mt5.TRADE_RETCODE_INVALID_STOPS,
-    Mt5.TRADE_RETCODE_NO_CHANGES
+    Mt5.TRADE_RETCODE_NO_CHANGES,
 ]
-
 
 
 class OrderAction(Enum):
@@ -113,10 +114,14 @@ def dynamic_lot(source_lot, source_eqty: float, dest_eqty: float):
     except ZeroDivisionError:
         raise ValueError("Source or destination account equity is zero")
 
+
 def specific_lot(symbol, value) -> float:
     if not isinstance(value, dict):
-        raise ValueError("Specific lot size must be provided as a dictionary mapping symbols to lot sizes")
+        raise ValueError(
+            "Specific lot size must be provided as a dictionary mapping symbols to lot sizes"
+        )
     return value.get(symbol, 0.01)
+
 
 def fixed_lot(lot, symbol, destination) -> float:
     def _volume_step(value):
@@ -202,12 +207,11 @@ def get_symbols_from_string(symbols_string: str) -> List[str] | Dict[str, str]:
         symbols = all (copy all symbols)
         symbols = * (copy all symbols) """)
 
+
 def get_lots_from_string(lots_string: str) -> Dict[str, float]:
     if not lots_string:
         raise ValueError("Input Error", "Lots string cannot be empty.")
-    string = (
-        lots_string.strip().replace("\n", "").replace(" ", "").replace('"""', "")
-    )
+    string = lots_string.strip().replace("\n", "").replace(" ", "").replace('"""', "")
     if ":" in string and "," in string:
         if string.endswith(","):
             string = string[:-1]
@@ -224,9 +228,10 @@ def get_lots_from_string(lots_string: str) -> Dict[str, float]:
         lots = EURUSD:0.1, GBPUSD:0.2, USDJPY:0.15 (dictionary) 
         """)
 
+
 def get_copy_symbols(destination: dict, source: dict) -> List[str] | Dict[str, str]:
     symbols = destination.get("symbols", "all")
-    if symbols == "all" or symbols == "*" or isinstance(symbols, list):
+    if symbols == "all" or symbols == "*":
         src_account = Account(**source)
         src_symbols = src_account.get_symbols()
         dest_account = Account(**destination)
@@ -391,7 +396,6 @@ class TradeCopier(object):
         self.log_queue = log_queue
         self._add_logger(custom_logger)
         self._validate_source()
-        self._add_copy()
         self.shutdown_event = (
             shutdown_event if shutdown_event is not None else mp.Event()
         )
@@ -407,11 +411,6 @@ class TradeCopier(object):
         if custom_logger:
             global logger
             logger = custom_logger
-
-    def _add_copy(self):
-        self.source["copy"] = self.source.get("copy", True)
-        for destination in self.destinations:
-            destination["copy"] = destination.get("copy", True)
 
     def log_message(
         self, message, type: Literal["info", "error", "debug", "warning"] = "info"
@@ -543,7 +542,7 @@ class TradeCopier(object):
                 if new_result.retcode == Mt5.TRADE_RETCODE_DONE:
                     break
         return new_result
-    
+
     def handle_retcode(self, retcode) -> int:
         if retcode in STOP_RETCODES:
             msg = trade_retcode_message(retcode)
@@ -641,7 +640,7 @@ class TradeCopier(object):
             )
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
             if self.handle_retcode(result.retcode) == 1:
-                    return
+                return
             self.log_message(
                 f"Error modifying {ORDER_TYPE[source_order.type][1]} Order #{ticket} on @{destination.get('login')}::{symbol},"
                 f"SOURCE=@{self.source.get('login')}::{source_order.symbol},  {trade_retcode_message(result.retcode)}",
@@ -665,7 +664,7 @@ class TradeCopier(object):
             )
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
             if self.handle_retcode(result.retcode) == 1:
-                    return
+                return
             self.log_message(
                 f"Error closing {ORDER_TYPE[order.type][1]} Order #{order.ticket} on @{destination.get('login')}::{order.symbol}, "
                 f"SOURCE=@{self.source.get('login')}::{src_symbol}, {trade_retcode_message(result.retcode)}",
@@ -697,7 +696,7 @@ class TradeCopier(object):
             )
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
             if self.handle_retcode(result.retcode) == 1:
-                    return
+                return
             self.log_message(
                 f"Error modifying {ORDER_TYPE[source_pos.type][1]} Position #{ticket} on @{destination.get('login')}::{symbol}, "
                 f"SOURCE=@{self.source.get('login')}::{source_pos.symbol}, {trade_retcode_message(result.retcode)}",
@@ -733,7 +732,7 @@ class TradeCopier(object):
             )
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
             if self.handle_retcode(result.retcode) == 1:
-                    return
+                return
             self.log_message(
                 f"Error closing {ORDER_TYPE[position.type][1]} Position #{position.ticket} "
                 f"on @{destination.get('login')}::{position.symbol}, "
@@ -782,8 +781,6 @@ class TradeCopier(object):
         return source_orders, dest_orders
 
     def _copy_what(self, destination):
-        if not destination.get("copy", False):
-            raise ValueError("Destination account not set to copy mode")
         return destination.get("copy_what", "all")
 
     def _isvalide_magic(self, magic):
@@ -1368,6 +1365,7 @@ def _parse_symbols(section):
     else:
         symbols = get_symbols_from_string(symbols)
         section["symbols"] = symbols
+
 
 def _parse_lots(section):
     lots = section.get("value")

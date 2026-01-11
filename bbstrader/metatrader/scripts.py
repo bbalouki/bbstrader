@@ -2,7 +2,7 @@ import argparse
 import multiprocessing
 import sys
 
-from bbstrader.apps._copier import main as RunCopyApp
+from bbstrader.metatrader._copier import main as RunCopyApp
 from bbstrader.metatrader.copier import RunCopier, config_copier, copier_worker_process
 
 
