@@ -27,6 +27,10 @@ target_link_libraries(
     bbstrader::bbstrader
 )
 
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(metatrader_client_test PRIVATE -Wno-attributes)
+endif()
+
 include(GoogleTest)
 gtest_discover_tests(
     metatrader_client_test

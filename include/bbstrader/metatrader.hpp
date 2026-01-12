@@ -115,10 +115,6 @@ using GetBookInfo = std::function<BookData(str&)>;
 // Rates & Ticks Handlers
 
 /// @brief Callback to get rates starting from a specific date.
-/// @param symbol Symbol name.
-/// @param timeframe Timeframe enumeration.
-/// @param start_time Timestamp (seconds).
-/// @param count Number of bars.
 using GetRatesByDate = std::function<RateInfoType(str&, int32_t, int64_t, int32_t)>;
 
 /// @brief Callback to get rates starting from a specific index position.
@@ -177,10 +173,6 @@ using GetTotalPositions = std::function<std::optional<int32_t>()>;
 // Trading Handlers
 
 /// @brief Callback to calculate margin.
-/// @param action Order type.
-/// @param symbol Symbol name.
-/// @param volume Volume.
-/// @param price Price.
 using CalculateMargin = std::function<std::optional<double>(int32_t, str&, double, double)>;
 
 /// @brief Callback to calculate profit.
