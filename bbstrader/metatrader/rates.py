@@ -113,7 +113,7 @@ class Rates(object):
         self.start_pos = start_pos
         self.count = count
         self.__account = Account(**kwargs)
-        self.__data = self.get_rates_from_pos()
+        self.__data = self.get_rates_from_pos
 
     def _validate_time_frame(self, time_frame: str) -> int:
         """Validates and returns the MT5 timeframe code."""
@@ -305,23 +305,23 @@ class Rates(object):
 
     @property
     def open(self):
-        return self.__data["Open"]
+        return self.__data()["Open"]
 
     @property
     def high(self):
-        return self.__data["High"]
+        return self.__data()["High"]
 
     @property
     def low(self):
-        return self.__data["Low"]
+        return self.__data()["Low"]
 
     @property
     def close(self):
-        return self.__data["Close"]
+        return self.__data()["Close"]
 
     @property
     def adjclose(self):
-        return self.__data["Adj Close"]
+        return self.__data()["Adj Close"]
 
     @property
     def returns(self):
@@ -336,14 +336,14 @@ class Rates(object):
         It calculates fractional change (also known as `per unit change or relative change`)
         and `not percentage change`. If you need the percentage change, multiply these values by 100.
         """
-        data = self.__data.copy()
+        data = self.__data()
         data["Returns"] = data["Adj Close"].pct_change()
         data = data.dropna()
         return data["Returns"]
 
     @property
     def volume(self):
-        return self.__data["Volume"]
+        return self.__data()["Volume"]
 
     def get_historical_data(
         self,
