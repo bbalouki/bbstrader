@@ -18,6 +18,7 @@ from bbstrader.metatrader.utils import TIMEFRAMES, RateInfo, SymbolType, raise_m
 
 __all__ = ["Account"]
 
+
 class Account(object):
     """
     The `Account` class is utilized to retrieve information about
@@ -59,19 +60,15 @@ class Account(object):
         check_mt5_connection(**kwargs)
         self._info = client.account_info()
         terminal_info = self.get_terminal_info()
-        if broker is None:
-            company = terminal_info.company if terminal_info else "Unknown"
-            self._broker = Broker(company)
-        else:
-            self._broker = broker
+        self._broker = (
+            broker
+            if broker is not None
+            else Broker(terminal_info.company if terminal_info else "Unknown")
+        )
 
     @property
     def info(self) -> AccountInfo:
         return self._info
-
-    def shutdown(self):
-        """Close the connection to the MetaTrader 5 terminal."""
-        client.shutdown()
 
     @property
     def broker(self) -> Broker:
@@ -111,6 +108,10 @@ class Account(object):
     @property
     def currency(self) -> str:
         return self._info.currency
+
+    def shutdown(self):
+        """Close the connection to the MetaTrader 5 terminal."""
+        client.shutdown()
 
     def get_account_info(
         self,

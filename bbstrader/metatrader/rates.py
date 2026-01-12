@@ -109,11 +109,53 @@ class Rates(object):
             ValueError: If the provided timeframe is invalid.
         """
         self.symbol = symbol
-        self.time_frame = self._validate_time_frame(timeframe)
         self.start_pos = start_pos
         self.count = count
+        self.time_frame = self._validate_time_frame(timeframe)
         self.__account = Account(**kwargs)
         self.__data = self.get_rates_from_pos
+
+    @property
+    def open(self):
+        return self.__data()["Open"]
+
+    @property
+    def high(self):
+        return self.__data()["High"]
+
+    @property
+    def low(self):
+        return self.__data()["Low"]
+
+    @property
+    def close(self):
+        return self.__data()["Close"]
+
+    @property
+    def adjclose(self):
+        return self.__data()["Adj Close"]
+
+    @property
+    def returns(self):
+        """
+        Fractional change between the current and a prior element.
+
+        Computes the fractional change from the immediately previous row by default.
+        This is useful in comparing the fraction of change in a time series of elements.
+
+        Note
+        ----
+        It calculates fractional change (also known as `per unit change or relative change`)
+        and `not percentage change`. If you need the percentage change, multiply these values by 100.
+        """
+        data = self.__data()
+        data["Returns"] = data["Adj Close"].pct_change()
+        data = data.dropna()
+        return data["Returns"]
+
+    @property
+    def volume(self):
+        return self.__data()["Volume"]
 
     def _validate_time_frame(self, time_frame: str) -> int:
         """Validates and returns the MT5 timeframe code."""
@@ -302,48 +344,6 @@ class Rates(object):
         if filter:
             return self._filter_data(df, fill_na=fill_na)
         return df
-
-    @property
-    def open(self):
-        return self.__data()["Open"]
-
-    @property
-    def high(self):
-        return self.__data()["High"]
-
-    @property
-    def low(self):
-        return self.__data()["Low"]
-
-    @property
-    def close(self):
-        return self.__data()["Close"]
-
-    @property
-    def adjclose(self):
-        return self.__data()["Adj Close"]
-
-    @property
-    def returns(self):
-        """
-        Fractional change between the current and a prior element.
-
-        Computes the fractional change from the immediately previous row by default.
-        This is useful in comparing the fraction of change in a time series of elements.
-
-        Note
-        ----
-        It calculates fractional change (also known as `per unit change or relative change`)
-        and `not percentage change`. If you need the percentage change, multiply these values by 100.
-        """
-        data = self.__data()
-        data["Returns"] = data["Adj Close"].pct_change()
-        data = data.dropna()
-        return data["Returns"]
-
-    @property
-    def volume(self):
-        return self.__data()["Volume"]
 
     def get_historical_data(
         self,
