@@ -10,7 +10,7 @@ from typing import Dict, List, Literal, Tuple
 
 from loguru import logger as log
 
-from bbstrader.api.metatrader_client import TradeOrder, TradePosition # type: ignore
+from bbstrader.api.metatrader_client import TradeOrder, TradePosition  # type: ignore
 from bbstrader.config import BBSTRADER_DIR
 from bbstrader.metatrader.account import Account
 from bbstrader.metatrader.broker import check_mt5_connection
@@ -1371,7 +1371,7 @@ def _parse_lots(section):
     lots = section.get("value")
     if not lots:
         raise ValueError("Lot size value must be specified for the selected mode")
-    lots = get_lots_from_string(lots)
+    lots = get_lots_from_string(lots) if isinstance(lots, str) else lots
     section["value"] = lots
 
 
