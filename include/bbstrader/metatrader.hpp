@@ -520,6 +520,11 @@ class MetaTraderClient {
     }
 
     /// @brief Copies ticks starting from a specific timestamp.
+    /// @param s Symbol name.
+    /// @param from Start timestamp.
+    /// @param count Number of ticks.
+    /// @param flags Tick flags.
+    /// @return Numpy array of TickInfo.
     virtual auto copy_ticks_from(str& s, int64_t from, int32_t count, int32_t flags)
         -> TickInfoType {
         return this_handlers.get_ticks_by_date
@@ -528,6 +533,11 @@ class MetaTraderClient {
     }
 
     /// @brief Copies ticks within a specific DateTime range.
+    /// @param s Symbol name.
+    /// @param from Start DateTime.
+    /// @param to End DateTime.
+    /// @param flags Tick flags.
+    /// @return Numpy array of TickInfo.
     virtual auto copy_ticks_range(str& s, DateTime from, DateTime to, int32_t flags)
         -> TickInfoType {
         auto from_ts = static_cast<int64_t>(std::chrono::system_clock::to_time_t(from));
@@ -536,6 +546,11 @@ class MetaTraderClient {
     }
 
     /// @brief Copies ticks within a specific timestamp range.
+    /// @param s Symbol name.
+    /// @param from Start timestamp.
+    /// @param to End timestamp.
+    /// @param flags Tick flags.
+    /// @return Numpy array of TickInfo.
     virtual auto copy_ticks_range(str& s, int64_t from, int64_t to, int32_t flags) -> TickInfoType {
         return this_handlers.get_ticks_by_range
                    ? this_handlers.get_ticks_by_range(s, from, to, flags)
@@ -551,24 +566,31 @@ class MetaTraderClient {
     }
 
     /// @brief Gets active orders for a specific symbol.
+    /// @param symbol Symbol name.
+    /// @return Optional vector of TradeOrder.
     virtual auto orders_get(str& symbol) -> OrdersData {
         return this_handlers.get_orders_by_symbol ? this_handlers.get_orders_by_symbol(symbol)
                                                   : std::nullopt;
     }
 
     /// @brief Gets active orders for a specific symbol group.
+    /// @param group Group name pattern.
+    /// @return Optional vector of TradeOrder.
     virtual auto orders_get_by_group(str& group) -> OrdersData {
         return this_handlers.get_orders_by_group ? this_handlers.get_orders_by_group(group)
                                                  : std::nullopt;
     }
 
     /// @brief Gets a specific order by its ticket number.
+    /// @param ticket The ticket number of the order.
+    /// @return An optional containing the TradeOrder if found, otherwise std::nullopt.
     virtual auto order_get_by_ticket(uint64_t ticket) -> std::optional<TradeOrder> {
         return this_handlers.get_order_by_ticket ? this_handlers.get_order_by_ticket(ticket)
                                                  : std::nullopt;
     }
 
     /// @brief Gets total number of active orders.
+    /// @return The total number of active orders, or 0 if the handler is not available.
     virtual auto orders_total() -> std::optional<int32_t> {
         return this_handlers.get_total_orders ? this_handlers.get_total_orders() : 0;
     }
@@ -582,24 +604,31 @@ class MetaTraderClient {
     }
 
     /// @brief Gets open positions for a specific symbol.
+    /// @param symbol Symbol name.
+    /// @return Optional vector of TradePosition.
     virtual auto positions_get(str& symbol) -> PositionsData {
         return this_handlers.get_positions_symbol ? this_handlers.get_positions_symbol(symbol)
                                                   : std::nullopt;
     }
 
     /// @brief Gets open positions for a specific group.
+    /// @param group Group name pattern.
+    /// @return Optional vector of TradePosition.
     virtual auto positions_get_by_group(str& group) -> PositionsData {
         return this_handlers.get_positions_group ? this_handlers.get_positions_group(group)
                                                  : std::nullopt;
     }
 
     /// @brief Gets a specific position by its ticket.
+    /// @param ticket The ticket number of the position.
+    /// @return An optional containing the TradePosition if found, otherwise std::nullopt.
     virtual auto position_get_by_ticket(uint64_t ticket) -> std::optional<TradePosition> {
         return this_handlers.get_position_ticket ? this_handlers.get_position_ticket(ticket)
                                                  : std::nullopt;
     }
 
     /// @brief Gets total number of open positions.
+    /// @return The total number of open positions, or 0 if the handler is not available.
     virtual auto positions_total() -> std::optional<int32_t> {
         return this_handlers.get_total_positions ? this_handlers.get_total_positions() : 0;
     }
@@ -673,6 +702,10 @@ class MetaTraderClient {
     }
 
     /// @brief Gets historical orders within a DateTime range.
+    /// @param from Start DateTime.
+    /// @param to End DateTime.
+    /// @param group Group name filter.
+    /// @return Optional vector of TradeOrder.
     virtual auto history_orders_get(DateTime from, DateTime to, str& group) -> OrdersData {
         auto from_ts = static_cast<int64_t>(std::chrono::system_clock::to_time_t(from));
         auto to_ts   = static_cast<int64_t>(std::chrono::system_clock::to_time_t(to));
@@ -689,6 +722,9 @@ class MetaTraderClient {
     }
 
     /// @brief Gets historical orders within a DateTime range.
+    /// @param from Start DateTime.
+    /// @param to End DateTime.
+    /// @return Optional vector of TradeOrder.
     virtual auto history_orders_get(DateTime from, DateTime to) -> OrdersData {
         auto from_ts = static_cast<int64_t>(std::chrono::system_clock::to_time_t(from));
         auto to_ts   = static_cast<int64_t>(std::chrono::system_clock::to_time_t(to));
@@ -696,24 +732,34 @@ class MetaTraderClient {
     }
 
     /// @brief Gets a historical order by its ticket.
+    /// @param ticket The ticket number of the order.
+    /// @return An optional containing the TradeOrder if found, otherwise std::nullopt.
     virtual auto history_orders_get(uint64_t ticket) -> std::optional<TradeOrder> {
         return this_handlers.get_hist_order_ticket ? this_handlers.get_hist_order_ticket(ticket)
                                                    : std::nullopt;
     }
 
     /// @brief Gets historical orders associated with a position ID.
+    /// @param pos_id The position ID.
+    /// @return Optional vector of TradeOrder.
     virtual auto history_orders_get_by_pos(uint64_t pos_id) -> OrdersData {
         return this_handlers.get_hist_orders_pos ? this_handlers.get_hist_orders_pos(pos_id)
                                                  : std::nullopt;
     }
 
     /// @brief Gets the count of historical orders in a timestamp range.
+    /// @param from Start timestamp.
+    /// @param to End timestamp.
+    /// @return The total number of historical orders, or 0 if the handler is not available.
     virtual auto history_orders_total(int64_t from, int64_t to) -> std::optional<int32_t> {
         return this_handlers.get_hist_orders_total ? this_handlers.get_hist_orders_total(from, to)
                                                    : 0;
     }
 
     /// @brief Gets the count of historical orders in a DateTime range.
+    /// @param from Start DateTime.
+    /// @param to End DateTime.
+    /// @return The total number of historical orders, or 0 if the handler is not available.
     virtual auto history_orders_total(DateTime from, DateTime to) -> std::optional<int32_t> {
         auto from_ts = static_cast<int64_t>(std::chrono::system_clock::to_time_t(from));
         auto to_ts   = static_cast<int64_t>(std::chrono::system_clock::to_time_t(to));
@@ -743,6 +789,10 @@ class MetaTraderClient {
     }
 
     /// @brief Gets historical deals within a DateTime range.
+    /// @param from Start DateTime.
+    /// @param to End DateTime.
+    /// @param group Group name filter.
+    /// @return Optional vector of TradeDeal.
     virtual auto history_deals_get(DateTime from, DateTime to, str& group) -> DealsData {
         auto from_ts = static_cast<int64_t>(std::chrono::system_clock::to_time_t(from));
         auto to_ts   = static_cast<int64_t>(std::chrono::system_clock::to_time_t(to));
@@ -750,6 +800,9 @@ class MetaTraderClient {
     }
 
     /// @brief Gets historical deals within a DateTime range.
+    /// @param from Start DateTime.
+    /// @param to End DateTime.
+    /// @return Optional vector of TradeDeal.
     virtual auto history_deals_get(DateTime from, DateTime to) -> DealsData {
         auto from_ts = static_cast<int64_t>(std::chrono::system_clock::to_time_t(from));
         auto to_ts   = static_cast<int64_t>(std::chrono::system_clock::to_time_t(to));
@@ -757,24 +810,34 @@ class MetaTraderClient {
     }
 
     /// @brief Gets a historical deal by its ticket.
+    /// @param ticket The ticket number of the deal.
+    /// @return An optional vector of TradeDeal objects.
     virtual auto history_deals_get(uint64_t ticket) -> DealsData {
         return this_handlers.get_hist_deals_ticket ? this_handlers.get_hist_deals_ticket(ticket)
                                                    : std::nullopt;
     }
 
     /// @brief Gets historical deals associated with a position ID.
+    /// @param pos_id The position ID.
+    /// @return Optional vector of TradeDeal.
     virtual auto history_deals_get_by_pos(uint64_t pos_id) -> DealsData {
         return this_handlers.get_hist_deals_pos ? this_handlers.get_hist_deals_pos(pos_id)
                                                 : std::nullopt;
     }
 
     /// @brief Gets the count of historical deals in a timestamp range.
+    /// @param from Start timestamp.
+    /// @param to End timestamp.
+    /// @return The total number of historical deals, or 0 if the handler is not available.
     virtual auto history_deals_total(int64_t from, int64_t to) -> std::optional<int32_t> {
         return this_handlers.get_hist_deals_total ? this_handlers.get_hist_deals_total(from, to)
                                                   : 0;
     }
 
     /// @brief Gets the count of historical deals in a DateTime range.
+    /// @param from Start DateTime.
+    /// @param to End DateTime.
+    /// @return The total number of historical deals, or 0 if the handler is not available.
     virtual auto history_deals_total(DateTime from, DateTime to) -> std::optional<int32_t> {
         auto from_ts = static_cast<int64_t>(std::chrono::system_clock::to_time_t(from));
         auto to_ts   = static_cast<int64_t>(std::chrono::system_clock::to_time_t(to));
