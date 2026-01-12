@@ -11,7 +11,6 @@ dependencies = [
     "alphalens-reloaded>=0.4.6",
     "beautifulsoup4>=4.13.5",
     "colorama>=0.4.6",
-    "CurrencyConverter>=0.18.9",
     "dash>=3.2.0",
     "eodhd>=1.0.32",
     "exchange_calendars>=4.11.1",
