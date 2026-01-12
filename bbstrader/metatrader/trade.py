@@ -1,4 +1,5 @@
 import os
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
@@ -261,8 +262,8 @@ class Trade:
         ending_time: str = "23:30",
         time_frame: str = "D1",
         broker_tz=False,
-        verbose: Optional[bool] = None,
-        console_log: Optional[bool] = False,
+        verbose: bool = False,
+        console_log: bool = False,
         logger: Logger | str = "bbstrader.log",
         **kwargs,
     ):
@@ -340,6 +341,42 @@ class Trade:
     @property
     def logger(self):
         return LOGGER
+
+    @property
+    def orders(self):
+        """Return all opened order's tickets"""
+        current_orders = self.get_current_orders() or []
+        opened_orders = set(current_orders + self.opened_orders)
+        return list(opened_orders) if len(opened_orders) != 0 else None
+
+    @property
+    def positions(self):
+        """Return all opened position's tickets"""
+        current_positions = self.get_current_positions() or []
+        opened_positions = set(current_positions + self.opened_positions)
+        return list(opened_positions) if len(opened_positions) != 0 else None
+
+    @property
+    def buypos(self):
+        """Return all buy  opened position's tickets"""
+        buy_positions = self.get_current_buys() or []
+        buy_positions = set(buy_positions + self.buy_positions)
+        return list(buy_positions) if len(buy_positions) != 0 else None
+
+    @property
+    def sellpos(self):
+        """Return all sell  opened position's tickets"""
+        sell_positions = self.get_current_sells() or []
+        sell_positions = set(sell_positions + self.sell_positions)
+        return list(sell_positions) if len(sell_positions) != 0 else None
+
+    @property
+    def bepos(self):
+        """Return All positon's tickets
+        for which a break even has been set"""
+        if len(self.break_even_status) != 0:
+            return self.break_even_status
+        return None
 
     def _get_logger(self, loger: Any, consol_log: bool):
         """Get the logger object"""
@@ -672,6 +709,7 @@ class Trade:
         Args:
             comment (str): The comment for the closing position
         """
+
         def _check(txt: str = ""):
             if (
                 self.positive_profit(id=self.expert_id)
@@ -795,42 +833,6 @@ class Trade:
                 f"Unable to Open Position, RETCODE={result.retcode}: {msg}{addtionnal}"
             )
             return False
-
-    @property
-    def orders(self):
-        """Return all opened order's tickets"""
-        current_orders = self.get_current_orders() or []
-        opened_orders = set(current_orders + self.opened_orders)
-        return list(opened_orders) if len(opened_orders) != 0 else None
-
-    @property
-    def positions(self):
-        """Return all opened position's tickets"""
-        current_positions = self.get_current_positions() or []
-        opened_positions = set(current_positions + self.opened_positions)
-        return list(opened_positions) if len(opened_positions) != 0 else None
-
-    @property
-    def buypos(self):
-        """Return all buy  opened position's tickets"""
-        buy_positions = self.get_current_buys() or []
-        buy_positions = set(buy_positions + self.buy_positions)
-        return list(buy_positions) if len(buy_positions) != 0 else None
-
-    @property
-    def sellpos(self):
-        """Return all sell  opened position's tickets"""
-        sell_positions = self.get_current_sells() or []
-        sell_positions = set(sell_positions + self.sell_positions)
-        return list(sell_positions) if len(sell_positions) != 0 else None
-
-    @property
-    def bepos(self):
-        """Return All positon's tickets
-        for which a break even has been set"""
-        if len(self.break_even_status) != 0:
-            return self.break_even_status
-        return None
 
     def get_filtered_tickets(
         self, id: Optional[int] = None, filter_type: Optional[str] = None, th=None
@@ -1477,21 +1479,34 @@ class Trade:
         """
         if order_type == "all":
             order_type = "open"
-        if tickets is not None and len(tickets) > 0:
-            for ticket in tickets.copy():
-                if close_func(ticket, id=id, comment=comment):
-                    tickets.remove(ticket)
-            if tickets is not None and len(tickets) == 0:
-                LOGGER.info(
-                    f"ALL {order_type.upper()} {tikets_type.upper()} closed, SYMBOL={self.symbol}."
-                )
-            else:
-                LOGGER.info(
-                    f"{len(tickets)} {order_type.upper()} {tikets_type.upper()} not closed, SYMBOL={self.symbol}"
-                )
-        else:
+
+        if not tickets:
             LOGGER.info(
                 f"No {order_type.upper()} {tikets_type.upper()} to close, SYMBOL={self.symbol}."
+            )
+            return
+        failed_tickets = []
+        with ThreadPoolExecutor(max_workers=min(len(tickets), 20)) as executor:
+            future_to_ticket = {
+                executor.submit(close_func, ticket, id=id, comment=comment): ticket
+                for ticket in tickets
+            }
+            for future in as_completed(future_to_ticket):
+                ticket = future_to_ticket[future]
+                try:
+                    success = future.result()
+                    if not success:
+                        failed_tickets.append(ticket)
+                except Exception as exc:
+                    LOGGER.error(f"Ticket {ticket} generated an exception: {exc}")
+                    failed_tickets.append(ticket)
+        if not failed_tickets:
+            LOGGER.info(
+                f"ALL {order_type.upper()} {tikets_type.upper()} closed, SYMBOL={self.symbol}."
+            )
+        else:
+            LOGGER.info(
+                f"{len(failed_tickets)}/{len(tickets)} {order_type.upper()} {tikets_type.upper()} NOT closed, SYMBOL={self.symbol}"
             )
 
     def close_orders(
