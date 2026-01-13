@@ -279,9 +279,9 @@ def test_strategy(
     Executes a backtest of the specified strategy
 
     Args:
-        strategy : The strategy to use in test mode. Default is `sma`.
+        strategy : The strategy to use in test mode. Default is `sistbo`.
             - `sistbo` Execute `StockIndexSTBOTrading`, for more detail see this class documentation.
-        quantity : The quantity of assets to be used in the test backtest. Default is 1000.
+        quantity : The quantity of assets to be used in the test backtest. Default is 100.
 
     """
     if strategy != "sistbo":

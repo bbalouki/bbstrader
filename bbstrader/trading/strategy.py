@@ -187,7 +187,6 @@ class LiveStrategy(BaseStrategy):
             position : The position type (1: short, 0: long).
             max_trades : The maximum number of trades allowed per symbol.
             one_true : If True, return True if there is at least one open position.
-            account : The `bbstrader.metatrader.Account` object for the strategy.
 
         Returns:
             bool : True if there are open positions, False otherwise
@@ -217,7 +216,6 @@ class LiveStrategy(BaseStrategy):
             symbol : The symbol for the trade.
             strategy_id : The unique identifier for the strategy.
             position : The position type (1: short, 0: long).
-            account : The `bbstrader.metatrader.Account` object for the strategy.
 
         Returns:
             prices : numpy array of buy or sell prices for open positions if any or an empty array.
