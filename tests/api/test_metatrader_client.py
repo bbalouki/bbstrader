@@ -4,15 +4,15 @@ import unittest
 
 import MetaTrader5 as mt5
 
-from bbstrader.api.handlers import handlers
-from bbstrader.api.metatrader_client import MetaTraderClient # type: ignore
+from bbstrader.api.handlers import Mt5Handlers
+from bbstrader.api.metatrader_client import MetaTraderClient  # type: ignore
 
-# CONFIGURATION 
-LOGIN = 42835272
-PASSWORD = "1Yjp0#fkkC02Y$"
-SERVER = "AdmiralsSC-Demo"
-PATH = r"C:/MT5/AMG/AMG1/terminal64.exe"
-SYMBOL = "GBPUSD-T"
+# CONFIGURATION
+LOGIN: int = 12345
+PASSWORD: str = ""
+SERVER: str = ""
+PATH: str = ""
+SYMBOL: str = ""
 
 
 class Handlers:
@@ -25,7 +25,7 @@ class TestMetaTraderClientAllMethods(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Initialize the client once before all tests."""
-        cls.client = MetaTraderClient(handlers)
+        cls.client = MetaTraderClient(Mt5Handlers)
         if not cls.client.initialize(
             path=PATH,
             login=LOGIN,

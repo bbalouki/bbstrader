@@ -10,11 +10,11 @@ from typing import Callable, Dict, List, Literal, Optional
 import pandas as pd
 from loguru import logger as log
 
-from bbstrader.btengine.strategy import MT5Strategy, Strategy
 from bbstrader.config import BBSTRADER_DIR
+from bbstrader.core.strategy import Strategy, TradeAction
 from bbstrader.metatrader.account import check_mt5_connection
 from bbstrader.metatrader.trade import Trade
-from bbstrader.core.strategy import TradeAction, TradingMode
+from bbstrader.trading.strategy import LiveStrategy
 from bbstrader.trading.utils import send_message
 
 try:
@@ -179,7 +179,7 @@ class Mt5ExecutionEngine:
         self,
         symbol_list: List[str],
         trades_instances: Dict[str, Trade],
-        strategy_cls: Strategy | MT5Strategy,
+        strategy_cls: Strategy | LiveStrategy,
         /,
         mm: bool = True,
         auto_trade: bool = True,
@@ -358,12 +358,10 @@ class Mt5ExecutionEngine:
             expert_ids = [expert_ids]
         return expert_ids
 
-    def _init_strategy(self, **kwargs) -> MT5Strategy:
+    def _init_strategy(self, **kwargs) -> LiveStrategy:
         try:
             check_mt5_connection(**kwargs)
-            strategy = self.strategy_cls(
-                symbol_list=self.symbols, mode=TradingMode.LIVE, **kwargs
-            )
+            strategy = self.strategy_cls(symbol_list=self.symbols, **kwargs)
         except Exception as e:
             self._print_exc(
                 f"Initializing strategy, STRATEGY={self.STRATEGY}, ACCOUNT={self.ACCOUNT}",
