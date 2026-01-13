@@ -12,8 +12,13 @@ from bbstrader.api.metatrader_client import TradeOrder  # type: ignore
 from bbstrader.btengine.data import DataHandler
 from bbstrader.btengine.event import Events, FillEvent, SignalEvent
 from bbstrader.config import BBSTRADER_DIR
-from bbstrader.metatrader import Account, Rates, TradeSignal, TradingMode
-from bbstrader.metatrader.trade import TradeAction, generate_signal
+from bbstrader.core.strategy import (
+    TradeAction,
+    TradeSignal,
+    TradingMode,
+    generate_signal,
+)
+from bbstrader.metatrader import Account, Rates
 from bbstrader.models.optimization import optimized_weights
 
 __all__ = ["Strategy", "MT5Strategy"]
