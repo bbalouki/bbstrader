@@ -1,5 +1,5 @@
-
 from datetime import datetime
+from enum import IntEnum
 from queue import Queue
 from typing import Any, Callable, Dict, List, Optional, Union
 
@@ -29,6 +29,17 @@ logger.add(
 __all__ = [
     "LiveStrategy",
 ]
+
+
+class SignalType(IntEnum):
+    BUY = 0
+    SELL = 1
+    EXIT_LONG = 2
+    EXIT_SHORT = 3
+    EXIT_ALL_POSITIONS = 4
+    EXIT_ALL_ORDERS = 5
+    EXIT_STOP = 6
+    EXIT_LIMIT = 7
 
 
 class LiveStrategy(BaseStrategy):
@@ -140,33 +151,32 @@ class LiveStrategy(BaseStrategy):
         This generates only common signals. For more complex signals, use
         ``generate_signal`` directly.
         """
-        signal_id = getattr(self, "id", None) or getattr(self, "ID", None)
+        signal_id = getattr(self, "id", getattr(self, "ID", None))
         if signal_id is None:
             raise ValueError("Strategy ID not set")
 
-        match signal:
-            case 0:
-                return generate_signal(signal_id, symbol, TradeAction.BUY, sl=sl, tp=tp)
-            case 1:
-                return generate_signal(
-                    signal_id, symbol, TradeAction.SELL, sl=sl, tp=tp
-                )
-            case 2:
-                return generate_signal(signal_id, symbol, TradeAction.EXIT_LONG)
-            case 3:
-                return generate_signal(signal_id, symbol, TradeAction.EXIT_SHORT)
-            case 4:
-                return generate_signal(
-                    signal_id, symbol, TradeAction.EXIT_ALL_POSITIONS
-                )
-            case 5:
-                return generate_signal(signal_id, symbol, TradeAction.EXIT_ALL_ORDERS)
-            case 6:
-                return generate_signal(signal_id, symbol, TradeAction.EXIT_STOP)
-            case 7:
-                return generate_signal(signal_id, symbol, TradeAction.EXIT_LIMIT)
-            case _:
-                raise ValueError(f"Invalid signal value: {signal}")
+        action_map = {
+            SignalType.BUY: TradeAction.BUY,
+            SignalType.SELL: TradeAction.SELL,
+            SignalType.EXIT_LONG: TradeAction.EXIT_LONG,
+            SignalType.EXIT_SHORT: TradeAction.EXIT_SHORT,
+            SignalType.EXIT_ALL_POSITIONS: TradeAction.EXIT_ALL_POSITIONS,
+            SignalType.EXIT_ALL_ORDERS: TradeAction.EXIT_ALL_ORDERS,
+            SignalType.EXIT_STOP: TradeAction.EXIT_STOP,
+            SignalType.EXIT_LIMIT: TradeAction.EXIT_LIMIT,
+        }
+
+        try:
+            action = action_map[SignalType(signal)]
+        except (ValueError, KeyError):
+            raise ValueError(f"Invalid signal value: {signal}")
+        kwargs = (
+            {"sl": sl, "tp": tp}
+            if action in (TradeAction.BUY, TradeAction.SELL)
+            else {}
+        )
+
+        return generate_signal(signal_id, symbol, action, **kwargs)
 
     def ispositions(
         self,
