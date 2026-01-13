@@ -19,11 +19,11 @@ class Mock(MagicMock):
         return MagicMock()
 
 # List the mock modules to avoid import errors
-MOCK_MODULES = ['MetaTrader5', 'talib', 'posix']
+MOCK_MODULES = ['MetaTrader5']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 project = 'bbstrader'
-copyright = '2023 - 2025, Bertin Balouki SIMYELI'
+copyright = '2023 - 2026, Bertin Balouki SIMYELI'
 author = 'Bertin Balouki SIMYELI'
 
 try:
