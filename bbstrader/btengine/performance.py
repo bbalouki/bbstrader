@@ -89,7 +89,8 @@ def create_sharpe_ratio(returns: pd.Series, periods: int = 252) -> float:
     Returns:
         S (float): Sharpe ratio
     """
-    return qs.stats.sharpe(returns, periods=periods)
+    sharpe = qs.stats.sharpe(returns, periods=periods)
+    return sharpe if isinstance(sharpe, float) else sharpe.iloc[-1]
 
 
 # Define a function to calculate the Sortino Ratio

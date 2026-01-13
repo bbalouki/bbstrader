@@ -118,7 +118,20 @@ class Portfolio:
         self.strategy_name = kwargs.get("strategy_name", "")
         self.print_stats = kwargs.get("print_stats", True)
         timeframe = kwargs.get("time_frame", "D1")
-        self.tf = TIMEFRAMES[timeframe]
+        if timeframe not in TIMEFRAMES:
+            raise ValueError("Timeframe not supported")
+        if timeframe == "D1":
+            self.tf = 252
+        else:
+            if "m" in timeframe:
+                minutes = int(timeframe.replace("m", ""))
+                bars_per_day = self.trading_hours * (60 / minutes)
+            elif "h" in timeframe:
+                hours = int(timeframe.replace("h", ""))
+                bars_per_day = self.trading_hours / hours
+            else:
+                bars_per_day = 1  # Should not be reached given the check
+            self.tf = int(252 * bars_per_day)
 
         self.all_positions: List[Dict[str, Any]] = self.construct_all_positions()
         self.current_positions: Dict[str, Any] = dict(

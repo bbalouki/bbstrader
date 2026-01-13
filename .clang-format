@@ -20,6 +20,7 @@ Standard: Latest
 
 IndentWidth: 4
 Cpp11BracedListStyle: true 
+SpaceBeforeCpp11BracedList: true
 AlignConsecutiveAssignments: true
 AlignConsecutiveDeclarations: true
 AllowShortBlocksOnASingleLine: false

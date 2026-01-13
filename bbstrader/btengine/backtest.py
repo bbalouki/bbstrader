@@ -10,17 +10,17 @@ from bbstrader.btengine.data import DataHandler
 from bbstrader.btengine.event import Events
 from bbstrader.btengine.execution import ExecutionHandler, SimExecutionHandler
 from bbstrader.btengine.portfolio import Portfolio
-from bbstrader.btengine.strategy import Strategy
+from bbstrader.core.strategy import Strategy
 
-__all__ = ["Backtest", "BacktestEngine", "run_backtest"]
+__all__ = ["BacktestEngine", "run_backtest"]
 
 
-class Backtest:
+class BacktestEngine:
     """
-    The `Backtest()` object encapsulates the event-handling logic and essentially
+    The `BacktestEngine()` object encapsulates the event-handling logic and essentially
     ties together all of the other classes.
 
-    The Backtest object is designed to carry out a nested while-loop event-driven system
+    The BacktestEngine object is designed to carry out a nested while-loop event-driven system
     in order to handle the events placed on the `Event` Queue object.
     The outer while-loop is known as the "heartbeat loop" and decides the temporal resolution of
     the backtesting system. In a live environment this value will be a positive number,
@@ -37,7 +37,7 @@ class Backtest:
     component depending upon the event type. Thus the Event Queue is continually being
     populated and depopulated with events. This is what it means for a system to be event-driven.
 
-    The initialisation of the Backtest object requires the full `symbol list` of traded symbols,
+    The initialisation of the BacktestEngine object requires the full `symbol list` of traded symbols,
     the `initial capital`, the `heartbeat` time in milliseconds, the `start datetime` stamp
     of the backtest as well as the `DataHandler`, `ExecutionHandler`, `Strategy` objects
     and additionnal `kwargs` based on the `ExecutionHandler`, the `DataHandler`, and the `Strategy` used.
@@ -52,12 +52,6 @@ class Backtest:
     the new positions.
 
     """
-
-    pass
-
-
-class BacktestEngine(Backtest):
-    __doc__ = Backtest.__doc__
 
     def __init__(
         self,

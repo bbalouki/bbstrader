@@ -8,16 +8,16 @@
 [![CodeFactor](https://www.codefactor.io/repository/github/bbalouki/bbstrader/badge)](https://www.codefactor.io/repository/github/bbalouki/bbstrader)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-grey?logo=Linkedin&logoColor=white)](https://www.linkedin.com/in/bertin-balouki-s-15b17a1a6)
 
-### 🚀 **[Get Premium Data Packs]([bertin@bbs-trading.com])** | 💼 **[Hire Me for Custom Strategies](mailto:[bertin@bbs-trading.com])** | ☕ **[Support the Dev](https://paypal.me/bertinbalouki?country.x=SN&locale.x=en_US)**
+### **[Get Premium Data Packs]([bertin@bbs-trading.com])** | **[Need Custom Strategies](mailto:[bertin@bbs-trading.com])** | ☕ **[Support the Dev](https://paypal.me/bertinbalouki?country.x=SN&locale.x=en_US)**
 
-## ⚡ Why bbstrader?
+## Why bbstrader?
 
 `bbstrader` is not just another Python wrapper. It is an **institutional-grade** trading system designed for **speed and accuracy**.
 
 - **Financial Rigor:** Built by a developer with a background in **Finance & Accounting**, ensuring that PnL calculations, fees, and margin logic are mathematically precise.
 - **Proven Scale:** Trusted by **51,000+** users for backtesting and live execution.
 
-## 💼 Professional Services & Consulting
+## Professional Services & Consulting
 
 Do you need to move faster? I offer specialized services for traders and funds:
 
@@ -90,7 +90,7 @@ Specialized for advanced analysis: Cointegration testing, volatility modeling, a
 
 ### Prerequisites
 
-- **Python**: Python 3.8+ is required.
+- **Python**: Python 3.12+ is required.
 - **MetaTrader 5 (MT5)**: Required for live execution (Windows).
 - **Brokers Supported**: [Admirals](https://one.justmarkets.link/a/tufvj0xugm/registration/trader), [JustMarkets](https://one.justmarkets.link/a/tufvj0xugm/registration/trader), [FTMO](https://trader.ftmo.com/?affiliates=JGmeuQqepAZLMcdOEQRp).
 

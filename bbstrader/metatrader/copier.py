@@ -1,4 +1,5 @@
 import concurrent.futures as cf
+import configparser
 import multiprocessing as mp
 import threading
 import time
@@ -6,7 +7,7 @@ from datetime import datetime
 from enum import Enum
 from multiprocessing.synchronize import Event
 from pathlib import Path
-from typing import Dict, List, Literal, Tuple
+from typing import Any, Dict, List, Literal, Optional, Tuple, Union
 
 from loguru import logger as log
 
@@ -1357,6 +1358,57 @@ def RunMultipleCopier(
         process.join()
 
 
+def auto_convert(value: str) -> Union[bool, None, int, float, str]:
+    """Convert string values to appropriate data types"""
+    if value.lower() in {"true", "false"}:  # Boolean
+        return value.lower() == "true"
+    elif value.lower() in {"none", "null"}:  # None
+        return None
+    elif value.isdigit():
+        return int(value)
+    try:
+        return float(value)
+    except ValueError:
+        return value
+
+
+def dict_from_ini(
+    file_path: str, sections: Optional[Union[str, List[str]]] = None
+) -> Dict[str, Any]:
+    """Reads an INI file and converts it to a dictionary with proper data types.
+    Args:
+        file_path: Path to the INI file to read.
+        sections: Optional list of sections to read from the INI file.
+    Returns:
+        A dictionary containing the INI file contents with proper data types.
+    """
+    try:
+        config = configparser.ConfigParser(interpolation=None)
+        config.read(file_path)
+    except Exception:
+        raise
+    ini_dict: Dict[str, Any] = {}
+    for section in config.sections():
+        ini_dict[section] = {
+            key: auto_convert(value) for key, value in config.items(section)
+        }
+
+    if isinstance(sections, str):
+        try:
+            return ini_dict[sections]
+        except KeyError:
+            raise KeyError(f"{sections} not found in the {file_path} file")
+    if isinstance(sections, list):
+        sect_dict: Dict[str, Any] = {}
+        for section in sections:
+            try:
+                sect_dict[section] = ini_dict[section]
+            except KeyError:
+                raise KeyError(f"{section} not found in the {file_path} file")
+        return sect_dict
+    return ini_dict
+
+
 def _parse_symbols(section):
     symbols: str = section.get("symbols")
     symbols = symbols.strip().replace("\n", " ").replace('"""', "")
@@ -1398,7 +1450,6 @@ def config_copier(
         source, destinations = config_copier(config_file, "SOURCE", ["DEST1", "DEST2"])
         ```
     """
-    from bbstrader.core.utils import dict_from_ini
 
     if not inifile:
         inifile = Path().home() / ".bbstrader" / "copier" / "copier.ini"

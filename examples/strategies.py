@@ -1,11 +1,11 @@
 """
-Strategies module for trading strategies backtesting and execution.
+Examples for trading strategies' backtesting and execution.
 
 # NOTE
-These strategies inherit from the Strategy class, not from MT5Strategy, because we chose to demonstrate the modular approach to building and backtesting strategies using the bbstrader framework.
+These strategies inherit from the Strategy class, because we chose to demonstrate the modular approach to building and backtesting strategies using the bbstrader framework.
 
 If these strategies need to be sent to the Mt5ExecutionEngine,
-they must return signals as a list of bbstrader.metatrader.trade.TradingSignal objects.
+they must return signals as a list of bbstrader.core.strategy.TradingSignal objects.
 
 Later, we will implement the Execution Engine for the Interactive Brokers TWS platform.
 
@@ -20,19 +20,22 @@ from datetime import datetime
 from queue import Queue
 from typing import Dict, List, Literal, Optional, Union
 
+from loguru import logger
+
 from bbstrader.btengine.backtest import BacktestEngine
 from bbstrader.btengine.data import DataHandler, MT5DataHandler, YFDataHandler
 from bbstrader.btengine.event import Events, SignalEvent
 from bbstrader.btengine.execution import MT5ExecutionHandler, SimExecutionHandler
-from bbstrader.btengine.strategy import Strategy
-from bbstrader.core.strategy import TradingMode
-from bbstrader.metatrader.account import Account
+from bbstrader.config import BBSTRADER_DIR
+from bbstrader.core.strategy import Strategy, TradingMode
+from bbstrader.metatrader import Account
 
-__all__ = [
-    "StockIndexSTBOTrading",
-    "test_strategy",
-    "get_quantities",
-]
+logger.add(
+    f"{BBSTRADER_DIR}/logs/strategy.log",
+    enqueue=True,
+    level="INFO",
+    format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {name} | {message}",
+)
 
 
 def get_quantities(quantities, symbol_list):
