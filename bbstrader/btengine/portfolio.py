@@ -23,6 +23,7 @@ from bbstrader.btengine.performance import (
     plot_returns_and_dd,
     show_qs_stats,
 )
+from bbstrader.metatrader.utils import TIMEFRAMES
 
 __all__ = [
     "Portfolio",
@@ -111,20 +112,13 @@ class Portfolio:
         self.initial_capital = initial_capital
         self._leverage = kwargs.get("leverage", 1)
 
-        self.timeframe = kwargs.get("time_frame", "D1")
         self.trading_hours = kwargs.get("session_duration", 23)
         self.benchmark = kwargs.get("benchmark", "SPY")
         self.output_dir = kwargs.get("output_dir", None)
         self.strategy_name = kwargs.get("strategy_name", "")
         self.print_stats = kwargs.get("print_stats", True)
-        if self.timeframe not in self._tf_mapping():
-            raise ValueError(
-                f"Timeframe not supported,"
-                f"please choose one of the following: "
-                f"{', '.join(list(self._tf_mapping().keys()))}"
-            )
-        else:
-            self.tf = self._tf_mapping()[self.timeframe]
+        timeframe = kwargs.get("time_frame", "D1")
+        self.tf = TIMEFRAMES[timeframe]
 
         self.all_positions: List[Dict[str, Any]] = self.construct_all_positions()
         self.current_positions: Dict[str, Any] = dict(
@@ -133,38 +127,6 @@ class Portfolio:
         self.all_holdings: List[Dict[str, Any]] = self.construct_all_holdings()
         self.current_holdings: Dict[str, Any] = self.construct_current_holdings()
         self.equity_curve: Optional[pd.DataFrame] = None
-
-    def _tf_mapping(self) -> Dict[str, int]:
-        """
-        Returns a dictionary mapping the time frames
-        to the number of bars in a year.
-        """
-        th = self.trading_hours
-        time_frame_mapping = {}
-        for minutes in [
-            1,
-            2,
-            3,
-            4,
-            5,
-            6,
-            10,
-            12,
-            15,
-            20,
-            30,
-            60,
-            120,
-            180,
-            240,
-            360,
-            480,
-            720,
-        ]:
-            key = f"{minutes // 60}h" if minutes >= 60 else f"{minutes}m"
-            time_frame_mapping[key] = int(252 * (60 / minutes) * th)
-        time_frame_mapping["D1"] = 252
-        return time_frame_mapping
 
     def construct_all_positions(self) -> List[Dict[str, Any]]:
         """

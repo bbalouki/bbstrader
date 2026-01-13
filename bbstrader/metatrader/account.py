@@ -535,7 +535,11 @@ class Account(object):
         else:
             positions = client.positions_get()
 
-        if positions is None or len(positions) == 0:
+        if positions is None:
+            return None
+        if isinstance(positions, TradePosition):
+            return [positions]
+        if len(positions) == 0:
             return None
 
         return positions

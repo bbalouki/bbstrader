@@ -871,50 +871,50 @@ class Trade:
 
         filtered_tickets = []
 
-        if items is not None:
-            for item in items:
-                if item.magic == Id:
-                    if filter_type == "buys" and item.type != 0:
-                        continue
-                    if filter_type == "sells" and item.type != 1:
-                        continue
-                    if filter_type == "losings" and item.profit > 0:
-                        continue
-                    if filter_type == "profitables" and not self.win_trade(item, th=th):
-                        continue
-                    if (
-                        filter_type == "buy_stops"
-                        and item.type != self._order_type()["BSTP"][0]
-                    ):
-                        continue
-                    if (
-                        filter_type == "sell_stops"
-                        and item.type != self._order_type()["SSTP"][0]
-                    ):
-                        continue
-                    if (
-                        filter_type == "buy_limits"
-                        and item.type != self._order_type()["BLMT"][0]
-                    ):
-                        continue
-                    if (
-                        filter_type == "sell_limits"
-                        and item.type != self._order_type()["SLMT"][0]
-                    ):
-                        continue
-                    if (
-                        filter_type == "buy_stop_limits"
-                        and item.type != self._order_type()["BSTPLMT"][0]
-                    ):
-                        continue
-                    if (
-                        filter_type == "sell_stop_limits"
-                        and item.type != self._order_type()["SSTPLMT"][0]
-                    ):
-                        continue
-                    filtered_tickets.append(item.ticket)
-            return filtered_tickets if filtered_tickets else None
-        return None
+        if items is None:
+            return []
+        for item in items:
+            if item.magic == Id:
+                if filter_type == "buys" and item.type != 0:
+                    continue
+                if filter_type == "sells" and item.type != 1:
+                    continue
+                if filter_type == "losings" and item.profit > 0:
+                    continue
+                if filter_type == "profitables" and not self.win_trade(item, th=th):
+                    continue
+                if (
+                    filter_type == "buy_stops"
+                    and item.type != self._order_type()["BSTP"][0]
+                ):
+                    continue
+                if (
+                    filter_type == "sell_stops"
+                    and item.type != self._order_type()["SSTP"][0]
+                ):
+                    continue
+                if (
+                    filter_type == "buy_limits"
+                    and item.type != self._order_type()["BLMT"][0]
+                ):
+                    continue
+                if (
+                    filter_type == "sell_limits"
+                    and item.type != self._order_type()["SLMT"][0]
+                ):
+                    continue
+                if (
+                    filter_type == "buy_stop_limits"
+                    and item.type != self._order_type()["BSTPLMT"][0]
+                ):
+                    continue
+                if (
+                    filter_type == "sell_stop_limits"
+                    and item.type != self._order_type()["SSTPLMT"][0]
+                ):
+                    continue
+                filtered_tickets.append(item.ticket)
+        return filtered_tickets
 
     def get_current_orders(self, id: Optional[int] = None) -> List[int] | None:
         return self.get_filtered_tickets(id=id, filter_type="orders")

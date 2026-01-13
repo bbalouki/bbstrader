@@ -1,4 +1,3 @@
-import string
 from abc import ABCMeta, abstractmethod
 from datetime import datetime
 from queue import Queue
@@ -9,20 +8,11 @@ import pandas as pd
 import pytz
 from loguru import logger
 
+from bbstrader.api.metatrader_client import TradeOrder  # type: ignore
 from bbstrader.btengine.data import DataHandler
 from bbstrader.btengine.event import Events, FillEvent, SignalEvent
 from bbstrader.config import BBSTRADER_DIR
-from bbstrader.metatrader import (
-    Account,
-    AdmiralMarktsGroup,
-    MetaQuotes,
-    PepperstoneGroupLimited,
-    Rates,
-    SymbolType,
-    TradeOrder,
-    TradeSignal,
-    TradingMode,
-)
+from bbstrader.metatrader import Account, Rates, TradeSignal, TradingMode
 from bbstrader.metatrader.trade import TradeAction, generate_signal
 from bbstrader.models.optimization import optimized_weights
 
@@ -272,7 +262,9 @@ class MT5Strategy(Strategy):
         """
         raise NotImplementedError("Should implement calculate_signals()")
 
-    def signal(self, signal: int, symbol: str, sl: float = None, tp: float = None) -> TradeSignal:
+    def signal(
+        self, signal: int, symbol: str, sl: float = None, tp: float = None
+    ) -> TradeSignal:
         """
         Generate a ``TradeSignal`` object based on the signal value.
 
@@ -313,7 +305,9 @@ class MT5Strategy(Strategy):
             case 0:
                 return generate_signal(signal_id, symbol, TradeAction.BUY, sl=sl, tp=tp)
             case 1:
-                return generate_signal(signal_id, symbol, TradeAction.SELL, sl=sl, tp=tp)
+                return generate_signal(
+                    signal_id, symbol, TradeAction.SELL, sl=sl, tp=tp
+                )
             case 2:
                 return generate_signal(signal_id, symbol, TradeAction.EXIT_LONG)
             case 3:
@@ -1165,59 +1159,6 @@ class MT5Strategy(Strategy):
 
         dt_to = dt_ts.tz_convert(pytz.timezone(to_tz))
         return dt_to
-
-    @staticmethod
-    def get_mt5_equivalent(
-        symbols: List[str],
-        symbol_type: Union[str, SymbolType] = SymbolType.STOCKS,
-        **kwargs: Any,
-    ) -> List[str]:
-        """
-        Get the MetaTrader 5 equivalent symbols for the symbols in the list.
-        This method is used to get the symbols that are available on the MetaTrader 5 platform.
-
-        Args:
-            symbols : The list of symbols to get the MetaTrader 5 equivalent symbols for.
-            symbol_type : The type of symbols to get (See `bbstrader.metatrader.utils.SymbolType`).
-            **kwargs : Additional keyword arguments for the `bbstrader.metatrader.Account` object.
-
-        Returns:
-            mt5_equivalent : The MetaTrader 5 equivalent symbols for the symbols in the list.
-        """
-
-        account = Account(**kwargs)
-        mt5_symbols = account.get_symbols(symbol_type=symbol_type)
-        mt5_equivalent: List[str] = []
-
-        def _get_admiral_symbols() -> None:
-            for s in mt5_symbols:
-                _s = s[1:] if s[0] in string.punctuation else s
-                for symbol in symbols:
-                    if (
-                        _s.split(".")[0] == symbol
-                        or _s.split("_")[0] == symbol
-                        or _s.split("-")[0] == symbol
-                    ):
-                        mt5_equivalent.append(s)
-
-        def _get_pepperstone_symbols() -> None:
-            for s in mt5_symbols:
-                for symbol in symbols:
-                    if s.split(".")[0] == symbol:
-                        mt5_equivalent.append(s)
-
-        if account.broker == MetaQuotes():
-            if "Admiral" in account.server:
-                _get_admiral_symbols()
-            elif "Pepperstone" in account.server:
-                _get_pepperstone_symbols()
-
-        elif account.broker == AdmiralMarktsGroup():
-            _get_admiral_symbols()
-        elif account.broker == PepperstoneGroupLimited():
-            _get_pepperstone_symbols()
-
-        return mt5_equivalent
 
 
 class TWSStrategy(Strategy):

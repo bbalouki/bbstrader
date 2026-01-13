@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Tuple, Union
 
 import numpy as np
 from loguru import logger
@@ -108,7 +108,7 @@ class RiskManagement:
         """
 
         assert max_risk > 0
-        assert daily_risk < 0 if daily_risk is not None else ...
+        assert daily_risk > 0 if daily_risk is not None else ...
         daily_risk = round(daily_risk, 5) if daily_risk is not None else None
         assert all(isinstance(v, int) and v > 0 for v in [sl, tp] if v is not None)
         assert isinstance(be, (int, float)) and be > 0 if be else ...
@@ -182,7 +182,7 @@ class RiskManagement:
         the starting of the session and the end of the session"""
         return self.get_minutes() // 60
 
-    def risk_level(self, balance_value=False):
+    def risk_level(self, balance_value=False) -> float | Tuple[float, float]:
         """
         Calculates the risk level of a trade
 
@@ -430,7 +430,13 @@ class RiskManagement:
             logger.error(
                 f"The Tick Values for {self.symbol} is 0.0. Check broker conditions for {self.symbol}."
             )
-            return
+            return {
+                "currency_risk": 0.0,
+                "trade_loss": 0.0,
+                "trade_profit": 0.0,
+                "volume": 0,
+                "lot": 0.01,
+            }
 
         if trade_risk > 0:
             currency_risk = round(self.var_loss_value(), 5)
