@@ -1045,7 +1045,7 @@ class Trade:
         """
 
         if not mm:
-            return
+            return False
 
         Id = id if id is not None else self.expert_id
         positions = self.account.get_positions(symbol=self.symbol)
@@ -1058,7 +1058,7 @@ class Trade:
             trail_after_points = self._get_trail_after_points(trail_after_points)
 
         if not positions:
-            return
+            return False
 
         for position in positions:
             if position.magic == Id:
@@ -1131,7 +1131,8 @@ class Trade:
                         )
                         if new_price > position.sl:
                             new_price = position.sl
-                    self.set_break_even(position, be, price=new_price, level=new_level)
+                    return self.set_break_even(position, be, price=new_price, level=new_level)
+        return False
 
     def set_break_even(
         self,
@@ -1159,7 +1160,7 @@ class Trade:
         is_buy = position.type == 0
         direction = 1 if is_buy else -1
         if not position.profit > 0:
-            return
+            return False
         calc_be_level = position.price_open + (direction * be * symbol_info.point)
         calc_be_price = position.price_open + (
             direction * (fees_points + symbol_info.spread) * symbol_info.point
@@ -1181,9 +1182,10 @@ class Trade:
                 "sl": round(be_price, symbol_info.digits),
                 "tp": position.tp,
             }
-            self.break_even_request(
+            return self.break_even_request(
                 position.ticket, round(be_price, symbol_info.digits), request
             )
+        return False
 
     def break_even_request(self, tiket, price, request):
         """
@@ -1230,6 +1232,8 @@ class Trade:
             info = f"Stop loss set to Break-even, Position: #{tiket}, Symbol: {self.symbol}, Price: @{round(price, 5)}"
             LOGGER.info(info)
             self.break_even_status.append(tiket)
+            return True
+        return False
 
     def win_trade(self, position: TradePosition, th: Optional[int] = None) -> bool:
         """
@@ -1369,7 +1373,7 @@ class Trade:
             LOGGER.error(
                 f"Order #{ticket} not found, SYMBOL={self.symbol}, PRICE={round(price, 5) if price else 'N/A'}"
             )
-            return
+            return False
         order = orders[0]
         request = {
             "action": Mt5.TRADE_ACTION_MODIFY,
@@ -1386,11 +1390,13 @@ class Trade:
                 f"Order #{ticket} modified, SYMBOL={self.symbol}, PRICE={round(request['price'], 5)},"
                 f"SL={round(request['sl'], 5)}, TP={round(request['tp'], 5)}, STOP_LIMIT={round(request['stoplimit'], 5)}"
             )
+            return True
         else:
             msg = trade_retcode_message(result.retcode)
             LOGGER.error(
                 f"Unable to modify Order #{ticket}, RETCODE={result.retcode}: {msg}, SYMBOL={self.symbol}"
             )
+            return False
 
     def close_order(
         self, ticket: int, id: Optional[int] = None, comment: Optional[str] = None
@@ -1456,6 +1462,7 @@ class Trade:
                     "type_filling": Mt5.ORDER_FILLING_FOK,
                 }
                 return self.close_request(request, type="position")
+        return False
 
     def bulk_close(
         self,
