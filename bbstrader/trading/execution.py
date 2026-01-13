@@ -13,7 +13,8 @@ from loguru import logger as log
 from bbstrader.btengine.strategy import MT5Strategy, Strategy
 from bbstrader.config import BBSTRADER_DIR
 from bbstrader.metatrader.account import check_mt5_connection
-from bbstrader.metatrader.trade import Trade, TradeAction, TradingMode
+from bbstrader.metatrader.trade import Trade
+from bbstrader.core.strategy import TradeAction, TradingMode
 from bbstrader.trading.utils import send_message
 
 try:
