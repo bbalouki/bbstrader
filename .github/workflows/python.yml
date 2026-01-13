@@ -1,0 +1,78 @@
+name: Build and Publish
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.16.5
+        env:
+          # 1. PYTHON VERSIONS
+          # Only build for Python 3.12+ as requested
+          CIBW_BUILD: "cp312-* cp313-*"
+
+          # 2. LINUX SYSTEM DEPENDENCIES (The tricky part)
+          # We are inside a CentOS-based Docker container here, not Ubuntu.
+          # We use 'yum' to install OpenBLAS headers needed for compilation.
+          CIBW_BEFORE_ALL_LINUX: "yum install -y openblas-devel"
+
+          # 3. MACOS SYSTEM DEPENDENCIES
+          # On Mac, we run on the host, so we use Homebrew.
+          CIBW_BEFORE_ALL_MACOS: "brew install openblas"
+
+          # 4. PYTHON BUILD & TEST DEPENDENCIES
+          # cibuildwheel automatically installs the wheel it just built.
+          # We list the EXTRA packages needed to run the tests here.
+          # Note: We do NOT use 'pip install -e .' because we want to test the actual compiled wheel.
+          CIBW_TEST_REQUIRES: "pytest pytest-mock spacy"
+
+          # 5. TEST COMMANDS
+          # This runs AFTER the wheel is installed but BEFORE the build finishes.
+          # We download the spacy model here, then run pytest.
+          # We use '{project}/tests' to point to your test folder.
+          CIBW_TEST_COMMAND: "python -m spacy download en_core_web_sm && pytest {project}/tests -k 'not test_metatrader_client'"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
+          path: ./wheelhouse/*.whl
+
+  build_sdist:
+    name: Build Source Distribution
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build SDist
+        run: pipx run build --sdist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cibw-sdist
+          path: dist/*.tar.gz
+
+  publish:
+    needs: [build_wheels, build_sdist]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: cibw-*
+          path: dist
+          merge-multiple: true
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.BBSTRADER_PYPI_API_TOKEN }}
