@@ -9,10 +9,10 @@ they must return signals as a list of bbstrader.metatrader.trade.TradingSignal o
 
 Later, we will implement the Execution Engine for the Interactive Brokers TWS platform.
 
-DISCLAIMER: 
+DISCLAIMER:
 This module is for educational purposes only and should not be
-considered as financial advice. Always consult with a qualified financial advisor before making any investment decisions. 
-The authors and contributors of this module are not responsible for any financial losses or damages incurred as a result of using 
+considered as financial advice. Always consult with a qualified financial advisor before making any investment decisions.
+The authors and contributors of this module are not responsible for any financial losses or damages incurred as a result of using
 this module or the information contained herein.
 """
 
@@ -25,10 +25,8 @@ from bbstrader.btengine.data import DataHandler, MT5DataHandler, YFDataHandler
 from bbstrader.btengine.event import Events, SignalEvent
 from bbstrader.btengine.execution import MT5ExecutionHandler, SimExecutionHandler
 from bbstrader.btengine.strategy import Strategy
+from bbstrader.core.strategy import TradingMode
 from bbstrader.metatrader.account import Account
-
-from bbstrader.metatrader.trade import TradingMode
-
 
 __all__ = [
     "StockIndexSTBOTrading",
@@ -42,7 +40,6 @@ def get_quantities(quantities, symbol_list):
         return quantities
     elif isinstance(quantities, int):
         return {symbol: quantities for symbol in symbol_list}
-
 
 
 class StockIndexSTBOTrading(Strategy):
@@ -289,4 +286,3 @@ def test_strategy(
             "Only 'sistbo' strategy is available for testing at the moment."
         )
     _run_sistbo_backtest(quantity=quantity)
-
