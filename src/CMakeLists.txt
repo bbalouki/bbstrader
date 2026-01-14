@@ -76,15 +76,14 @@ if(NOT SKBUILD)
     install(
         TARGETS bbstrader
         EXPORT BbstraderTargets
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        # ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        # LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        # RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     )
 
-    install(
-        TARGETS warnings
-        EXPORT BbstraderTargets
-    )
+    if(TARGET warnings)
+        install(TARGETS warnings EXPORT BbstraderTargets)
+    endif()
 
     # Step 4: Specify Header Destinations
     install(
