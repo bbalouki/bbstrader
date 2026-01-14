@@ -23,7 +23,7 @@ endif()
 if (NOT ANDROID)
     target_link_libraries(
         bbstrader
-        PRIVATE warnings::strict
+        INTERFACE warnings::strict
     )
 endif()
 
@@ -71,9 +71,7 @@ if(BUILD_PYTHON_BINDINGS)
     endif()
 
     # INSTALLATION INSTRUCTIONS FOR PYTHON
-    # if(BUILD_PYTHON_BINDINGS AND NOT VCPKG_TOOLCHAIN)
     install(TARGETS metatrader_client DESTINATION bbstrader/api)
-    # endif()
 
 endif()
 
@@ -87,10 +85,10 @@ if(NOT SKBUILD)
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     )
 
-    install(
-        TARGETS warnings
-        EXPORT BbstraderTargets
-    )
+    # install(
+    #     TARGETS warnings
+    #     EXPORT BbstraderTargets
+    # )
 
     # Step 4: Specify Header Destinations
     install(
