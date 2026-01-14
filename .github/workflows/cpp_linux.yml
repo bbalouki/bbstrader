@@ -48,6 +48,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-${{ matrix.build_type }}-cmake-
 
+      - name: Install system package
+        shell: bash
+        run: sudo apt install autoconf autoconf-archive automake libtool
+        
       - name: Configure CMake
         shell: bash
         run: |

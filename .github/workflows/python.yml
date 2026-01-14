@@ -15,6 +15,7 @@ jobs:
     name: Build wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false # Stop cancelling other jobs if one fails
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
 
@@ -24,27 +25,27 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.16.5
         env:
-          # 1. PYTHON VERSIONS
-          # Only build for Python 3.12+
+          # 1. CONFIGURATION 
           CIBW_BUILD: "cp312-* cp313-*"
+          # Skip 32-bit builds (prevents Windows nuget hangs & compilation errors)
+          CIBW_ARCHS: "auto64"
 
-          # 2. LINUX SYSTEM DEPENDENCIES
-          # We are inside a CentOS-based Docker container here, not Ubuntu.
-          # We use 'yum' to install OpenBLAS headers needed for compilation.
-          CIBW_BEFORE_ALL_LINUX: "yum install -y openblas-devel"
+          # 2. LINUX
+          CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
 
-          # 3. MACOS SYSTEM DEPENDENCIES
-          # On Mac, we run on the host, so we use Homebrew.
-          CIBW_BEFORE_ALL_MACOS: "brew install openblas"
+          # Install deps (pkg-config helps find libraries)
+          CIBW_BEFORE_ALL_LINUX: "yum install -y openblas-devel pkgconf-pkg-config"
 
-          # 4. PYTHON BUILD & TEST DEPENDENCIES
-          # cibuildwheel automatically installs the wheel it just built.
-          # We list the EXTRA packages needed to run the tests here.
+          # 3. MACOS 
+          CIBW_BEFORE_ALL_MACOS: "brew install openblas pkg-config"
+          # Help the compiler find OpenBLAS on Mac
+          CIBW_ENVIRONMENT_MACOS: >
+            PKG_CONFIG_PATH="/usr/local/opt/openblas/lib/pkgconfig:/opt/homebrew/opt/openblas/lib/pkgconfig"
+            LDFLAGS="-L/usr/local/opt/openblas/lib -L/opt/homebrew/opt/openblas/lib"
+            CPPFLAGS="-I/usr/local/opt/openblas/include -I/opt/homebrew/opt/openblas/include"
+
+          # 4. TESTING
           CIBW_TEST_REQUIRES: "pytest pytest-mock spacy"
-
-          # 5. TEST COMMANDS
-          # This runs AFTER the wheel is installed but BEFORE the build finishes.
-          # We download the spacy model here, then run pytest.
           CIBW_TEST_COMMAND: "pip install -e . && python -m spacy download en_core_web_sm && pytest {project}/tests -k 'not test_metatrader_client'"
 
       - uses: actions/upload-artifact@v4
@@ -67,6 +68,7 @@ jobs:
   publish:
     needs: [build_wheels, build_sdist]
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     steps:
       - uses: actions/download-artifact@v4
         with:
