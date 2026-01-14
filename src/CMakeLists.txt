@@ -3,19 +3,21 @@ cmake_minimum_required(VERSION 3.20)
 include(GNUInstallDirs)
 
 # 1. Core C++ Library 
-add_library(bbstrader INTERFACE)
+add_library(bbstrader 
+    bbstrader.cpp
+)
 add_library(bbstrader::bbstrader ALIAS bbstrader)
 configure_visibility(bbstrader)
 
 target_include_directories(
-    bbstrader INTERFACE
+    bbstrader PUBLIC
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
 if(MSVC)
-    target_compile_options(bbstrader INTERFACE /bigobj)
+    target_compile_options(bbstrader PRIVATE /bigobj)
 endif()
 
 if (NOT ANDROID)
@@ -46,14 +48,14 @@ if(BUILD_PYTHON_BINDINGS)
         FetchContent_MakeAvailable(pybind11)
     endif()
 
-    target_link_libraries(bbstrader INTERFACE pybind11::headers)
+    target_link_libraries(bbstrader PRIVATE pybind11::headers)
     pybind11_add_module(metatrader_client MODULE metatrader.cpp)
     target_include_directories(
         metatrader_client PRIVATE
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
     )
-    target_link_libraries(metatrader_client INTERFACE bbstrader)
+    target_link_libraries(metatrader_client PRIVATE bbstrader)
     target_link_libraries(metatrader_client PRIVATE pybind11::module)
 
     configure_visibility(metatrader_client)
@@ -80,9 +82,9 @@ if(NOT SKBUILD)
     install(
         TARGETS bbstrader
         EXPORT BbstraderTargets
-        # ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        # LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        # RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     )
 
     # install(
