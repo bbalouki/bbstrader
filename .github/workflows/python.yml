@@ -21,10 +21,10 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.19.0
+        uses: pypa/cibuildwheel@v2.16.5
         env:
           # 1. CONFIGURATION
-          CIBW_BUILD: "cp312-*"
+          CIBW_BUILD: "cp312-* cp313-*"
           # Skip 32-bit builds (prevents Windows nuget hangs & compilation errors)
           CIBW_ARCHS: "auto64"
 
@@ -32,16 +32,22 @@ jobs:
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
 
           # Install deps (pkg-config helps find libraries)
-          CIBW_BEFORE_ALL_LINUX: "apt-get update && apt-get install -y libopenblas-dev pkg-config"
+          CIBW_BEFORE_ALL_LINUX: "yum install -y openblas-devel pkgconf-pkg-config"
 
           # 3. MACOS
           CIBW_BEFORE_ALL_MACOS: "brew install openblas pkg-config"
           # Help the compiler find OpenBLAS on Mac
-          CIBW_ENVIRONMENT_MACOS: 'LDFLAGS="-L$(brew --prefix openblas)/lib" CPPFLAGS="-I$(brew --prefix openblas)/include"'
+          CIBW_ENVIRONMENT_MACOS: >
+            PKG_CONFIG_PATH="/usr/local/opt/openblas/lib/pkgconfig:/opt/homebrew/opt/openblas/lib/pkgconfig"
+            LDFLAGS="-L/usr/local/opt/openblas/lib -L/opt/homebrew/opt/openblas/lib"
+            CPPFLAGS="-I/usr/local/opt/openblas/include -I/opt/homebrew/opt/openblas/include"
 
           # 4. TESTING
+          CIBW_BEFORE_TEST_LINUX: "python -c \"import sys; from unittest.mock import MagicMock; sys.modules['MetaTrader5'] = MagicMock(); sys.modules['bbstrader.api.metatrader_client'] = MagicMock()\""
+          CIBW_BEFORE_TEST_MACOS: "python -c \"import sys; from unittest.mock import MagicMock; sys.modules['MetaTrader5'] = MagicMock(); sys.modules['bbstrader.api.metatrader_client'] = MagicMock()\""
           CIBW_TEST_REQUIRES: "pytest pytest-mock spacy"
           CIBW_TEST_COMMAND: "python -m spacy download en_core_web_sm && pytest {project}/tests -k 'not test_metatrader_client'"
+          CIBW_TEST_COMMAND_WINDOWS: "python -m spacy download en_core_web_sm && pytest {project}/tests -k \"not test_metatrader_client\""
 
       - uses: actions/upload-artifact@v4
         with:
