@@ -9,7 +9,13 @@ from bbstrader.metatrader.broker import Broker
 @pytest.fixture
 def mock_mt5_client():
     """Fixture to mock the bbstrader.api.Mt5client."""
-    with patch("bbstrader.metatrader.account.client") as mock_client:
+    with (
+        patch(
+            "bbstrader.metatrader.account.check_mt5_connection"
+        ) as mock_check_connection,
+        patch("bbstrader.metatrader.account.client") as mock_client,
+    ):
+        mock_check_connection.return_value = True
         mock_account_info = MagicMock()
         mock_account_info.name = "Test User"
         mock_account_info.login = 12345

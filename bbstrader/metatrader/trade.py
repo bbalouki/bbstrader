@@ -419,7 +419,7 @@ class Trade:
             ["Net Profit", f"{net_profit} {currency}"],
             ["Risk per Trade", f"{trade_risk} {currency}"],
             ["Expected Profit per Trade", f"{self.rm.expected_profit()} {currency}"],
-            ["Risk Reward Ratio", self.rr],
+            ["Risk Reward Ratio", self.rm.rr],
             ["Win Rate", f"{win_rate}%"],
             ["Sharpe Ratio", self.sharpe()],
             ["Trade Profitability", additional_stats["profitability"]],
@@ -1513,16 +1513,17 @@ class Trade:
             else:
                 stats["win_trades"] += 1
 
-        stats["average_fee"] = stats["total_fees"] / stats["deals"]
-        stats["win_rate"] = round((stats["win_trades"] / stats["deals"]) * 100, 2)
+        if stats["deals"] > 0:
+            stats["average_fee"] = stats["total_fees"] / stats["deals"]
+            stats["win_rate"] = round((stats["win_trades"] / stats["deals"]) * 100, 2)
         return stats
 
     def get_average_fees(self) -> float:
         positions = self.account.get_trades_history(to_df=False)
-        if positions is None:
+        if not positions:
             return 0.0
         fees = sum([p.swap + p.fee + p.commission for p in positions])
-        return fees / len(positions)
+        return fees / len(positions) if len(positions) > 0 else 0.0
 
     def _calculate_historical_stats(self) -> Dict[str, Any]:
         history = self.account.get_trades_history()

@@ -24,3 +24,4 @@ scripts.sh
 *.pyd
 .so
 test_setup.py
+packaging/

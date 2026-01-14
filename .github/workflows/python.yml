@@ -2,8 +2,13 @@ name: Build and Publish
 
 on:
   push:
+    branches:
+      - main
     tags:
       - "v*"
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build_wheels:
@@ -20,10 +25,10 @@ jobs:
         uses: pypa/cibuildwheel@v2.16.5
         env:
           # 1. PYTHON VERSIONS
-          # Only build for Python 3.12+ as requested
+          # Only build for Python 3.12+
           CIBW_BUILD: "cp312-* cp313-*"
 
-          # 2. LINUX SYSTEM DEPENDENCIES (The tricky part)
+          # 2. LINUX SYSTEM DEPENDENCIES
           # We are inside a CentOS-based Docker container here, not Ubuntu.
           # We use 'yum' to install OpenBLAS headers needed for compilation.
           CIBW_BEFORE_ALL_LINUX: "yum install -y openblas-devel"
@@ -35,14 +40,12 @@ jobs:
           # 4. PYTHON BUILD & TEST DEPENDENCIES
           # cibuildwheel automatically installs the wheel it just built.
           # We list the EXTRA packages needed to run the tests here.
-          # Note: We do NOT use 'pip install -e .' because we want to test the actual compiled wheel.
           CIBW_TEST_REQUIRES: "pytest pytest-mock spacy"
 
           # 5. TEST COMMANDS
           # This runs AFTER the wheel is installed but BEFORE the build finishes.
           # We download the spacy model here, then run pytest.
-          # We use '{project}/tests' to point to your test folder.
-          CIBW_TEST_COMMAND: "python -m spacy download en_core_web_sm && pytest {project}/tests -k 'not test_metatrader_client'"
+          CIBW_TEST_COMMAND: "pip install -e . && python -m spacy download en_core_web_sm && pytest {project}/tests -k 'not test_metatrader_client'"
 
       - uses: actions/upload-artifact@v4
         with:

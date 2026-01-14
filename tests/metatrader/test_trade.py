@@ -1,3 +1,4 @@
+import pandas as pd
 import pytest
 from unittest.mock import MagicMock, patch
 
@@ -7,7 +8,13 @@ from bbstrader.metatrader.trade import Trade, EXPERT_ID
 @pytest.fixture
 def mock_account_trade():
     """Fixture to mock the Account class for trade tests."""
-    with patch("bbstrader.metatrader.trade.Account") as mock_account_class:
+    with (
+        patch(
+            "bbstrader.metatrader.trade.check_mt5_connection"
+        ) as mock_check_connection,
+        patch("bbstrader.metatrader.trade.Account") as mock_account_class,
+    ):
+        mock_check_connection.return_value = True
         yield mock_account_class.return_value
 
 
@@ -74,7 +81,18 @@ def test_statistics(
     with patch.object(
         trade,
         "get_stats",
-        return_value=({}, {"total_profit": 100, "profitability": "Yes"}),
+        return_value=(
+            {
+                "deals": 0,
+                "profit": 0.0,
+                "win_trades": 0,
+                "loss_trades": 0,
+                "total_fees": 0.0,
+                "average_fee": 0.0,
+                "win_rate": 0.0,
+            },
+            {"total_profit": 100, "profitability": "Yes"},
+        ),
     ):
         with patch.object(trade, "sharpe", return_value=1.5):
             trade.statistics(save=False)
@@ -99,7 +117,12 @@ def test_sharpe(
 ):
     """Test the sharpe method."""
     trade = Trade("EURUSD")
-    mock_account_trade.get_trades_history.return_value = MagicMock()
+
+    mock_df = pd.DataFrame(
+        {"profit": [100, -50], "commission": [-5, -5], "fee": [0, 0], "swap": [0, 0]}
+    )
+    mock_account_trade.get_trades_history.return_value = mock_df
+    mock_qs.stats.sharpe.return_value = 1.5
 
     sharpe = trade.sharpe()
 
@@ -116,10 +139,16 @@ def test_break_even(mock_account_trade, mock_risk_management, mock_mt5_client_tr
     mock_account_trade.get_positions.return_value = [mock_position]
     mock_risk_management.get_break_even.return_value = 10
 
-    with patch.object(trade, "_convert_profit_to_points", return_value=20.0):
-        with patch.object(trade, "set_break_even") as mock_set_be:
-            trade.break_even()
-            mock_set_be.assert_called()
+    # Configure the symbol_info mock with the necessary attributes
+    mock_symbol_info = MagicMock()
+    mock_symbol_info.point = 0.00001
+    mock_symbol_info.trade_tick_size = 0.00001
+    mock_symbol_info.trade_tick_value = 1.0
+    mock_mt5_client_trade.symbol_info.return_value = mock_symbol_info
+
+    with patch.object(trade, "set_break_even") as mock_set_be:
+        trade.break_even()
+        mock_set_be.assert_called()
 
 
 def test_set_break_even(
@@ -161,9 +190,14 @@ def test_get_current_orders_filtered(
     mock_order = MagicMock(magic=trade.expert_id, ticket=1, type=2)  # Buy Stop
     mock_account_trade.get_orders.return_value = [mock_order]
 
-    orders = trade.get_current_buy_stops()
-
-    assert orders == [1]
+    with patch.object(
+        trade, "get_filtered_tickets", return_value=[1]
+    ) as mock_get_filtered:
+        orders = trade.get_current_buy_stops(id=trade.expert_id)
+        mock_get_filtered.assert_called_once_with(
+            id=trade.expert_id, filter_type="buy_stops"
+        )
+        assert orders == [1]
 
 
 def test_close_position(
