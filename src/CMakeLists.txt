@@ -20,12 +20,12 @@ if(MSVC)
     target_compile_options(bbstrader PRIVATE /bigobj)
 endif()
 
-# if (NOT ANDROID)
-#     target_link_libraries(
-#         bbstrader
-#         INTERFACE warnings::strict
-#     )
-# endif()
+if (NOT ANDROID)
+    target_link_libraries(
+        bbstrader
+        PRIVATE warnings::strict
+    )
+endif()
 
 
 # 2. Python Bindings
@@ -63,12 +63,12 @@ if(BUILD_PYTHON_BINDINGS)
     if(MSVC)
         target_compile_options(metatrader_client PRIVATE /bigobj)
     endif()
-    # if (NOT ANDROID)
-    #     target_link_libraries(
-    #         metatrader_client
-    #         PRIVATE warnings::strict
-    #     )
-    # endif()
+    if (NOT ANDROID)
+        target_link_libraries(
+            metatrader_client
+            PRIVATE warnings::strict
+        )
+    endif()
 
     # INSTALLATION INSTRUCTIONS FOR PYTHON
     install(TARGETS metatrader_client DESTINATION bbstrader/api)
@@ -85,14 +85,14 @@ if(NOT SKBUILD)
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     )
 
-    # install(
-    #     TARGETS warnings
-    #     EXPORT BbstraderTargets
-    # )
+    install(
+        TARGETS warnings
+        EXPORT BbstraderTargets
+    )
 
     # Step 4: Specify Header Destinations
     install(
-        DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
+        DIRECTORY ${PROJECT_SOURCE_DIR}/include
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/bbstrader
     )
 
