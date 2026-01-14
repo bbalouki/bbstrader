@@ -76,7 +76,7 @@ if(BUILD_PYTHON_BINDINGS)
 endif()
 
 if(NOT SKBUILD)
-    # Step 3: Specify Output Destinations
+    # 3: Output Destinations
     install(
         TARGETS bbstrader
         EXPORT BbstraderTargets
@@ -90,13 +90,13 @@ if(NOT SKBUILD)
         EXPORT BbstraderTargets
     )
 
-    # Step 4: Specify Header Destinations
+    # 4: Header Destinations
     install(
         DIRECTORY ${PROJECT_SOURCE_DIR}/include
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/bbstrader
     )
 
-    # Step 5: Export the Target Information
+    # 5: Target Information
     install(
         EXPORT BbstraderTargets
         FILE BbstraderTargets.cmake 
@@ -104,7 +104,7 @@ if(NOT SKBUILD)
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/bbstrader
     )
 
-    # Step 6: Creat the Main Package Configuration File
+    # 6: Main Package Configuration File
     include(CMakePackageConfigHelpers)
     configure_package_config_file(
         "${CMAKE_CURRENT_SOURCE_DIR}/cmake/BbstraderConfig.cmake.in"
@@ -112,14 +112,14 @@ if(NOT SKBUILD)
         INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/bbstrader"
     )
 
-    # Step 7: Creat a Package Version File
+    # 7: Package Version File
     write_basic_package_version_file(
         "BbstraderConfigVersion.cmake"
         VERSION ${PROJECT_VERSION}
         COMPATIBILITY AnyNewerVersion
     )
 
-    # Step 8: Install the Generated Package Files
+    # 8: Generated Package Files
     install(
         FILES 
         "${CMAKE_CURRENT_BINARY_DIR}/BbstraderConfig.cmake"
