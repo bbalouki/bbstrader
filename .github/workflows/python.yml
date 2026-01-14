@@ -32,8 +32,9 @@ jobs:
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
 
           # Install deps (pkg-config helps find libraries)
-          CIBW_BEFORE_ALL_MANYLINUX_X86_64: "yum install -y openblas-devel pkgconf-pkg-config"
-          CIBW_BEFORE_ALL_MUSLLINUX_X86_64: "apk add --no-cache openblas-dev pkgconfig"
+          CIBW_BEFORE_ALL_MANYLINUX_X86_64: "yum install -y openblas-devel pkgconf-pkg-config gcc-toolset-11"
+          CIBW_BEFORE_ALL_MUSLLINUX_X86_64: "apk add --no-cache openblas-dev pkgconfig g++"
+          CIBW_ENVIRONMENT_LINUX: 'PATH="/opt/rh/gcc-toolset-11/root/usr/bin:$PATH"'
 
           # 3. MACOS 
           CIBW_BEFORE_ALL_MACOS: "brew install openblas pkg-config"
