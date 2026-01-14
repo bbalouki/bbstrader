@@ -10,10 +10,11 @@ from typing import Callable, Dict, List, Literal, Optional
 import pandas as pd
 from loguru import logger as log
 
-from bbstrader.btengine.strategy import MT5Strategy, Strategy
 from bbstrader.config import BBSTRADER_DIR
+from bbstrader.core.strategy import Strategy, TradeAction
 from bbstrader.metatrader.account import check_mt5_connection
-from bbstrader.metatrader.trade import Trade, TradeAction, TradingMode
+from bbstrader.metatrader.trade import Trade
+from bbstrader.trading.strategy import LiveStrategy
 from bbstrader.trading.utils import send_message
 
 try:
@@ -22,7 +23,7 @@ except ImportError:
     import bbstrader.compat  # noqa: F401
 
 
-__all__ = ["Mt5ExecutionEngine", "RunMt5Engine", "RunMt5Engines", "TWSExecutionEngine"]
+__all__ = ["Mt5ExecutionEngine", "RunMt5Engine", "RunMt5Engines"]
 
 _TF_MAPPING = {
     "1m": 1,
@@ -178,7 +179,7 @@ class Mt5ExecutionEngine:
         self,
         symbol_list: List[str],
         trades_instances: Dict[str, Trade],
-        strategy_cls: Strategy | MT5Strategy,
+        strategy_cls: Strategy | LiveStrategy,
         /,
         mm: bool = True,
         auto_trade: bool = True,
@@ -357,12 +358,10 @@ class Mt5ExecutionEngine:
             expert_ids = [expert_ids]
         return expert_ids
 
-    def _init_strategy(self, **kwargs) -> MT5Strategy:
+    def _init_strategy(self, **kwargs) -> LiveStrategy:
         try:
             check_mt5_connection(**kwargs)
-            strategy = self.strategy_cls(
-                symbol_list=self.symbols, mode=TradingMode.LIVE, **kwargs
-            )
+            strategy = self.strategy_cls(symbol_list=self.symbols, **kwargs)
         except Exception as e:
             self._print_exc(
                 f"Initializing strategy, STRATEGY={self.STRATEGY}, ACCOUNT={self.ACCOUNT}",
@@ -374,7 +373,7 @@ class Mt5ExecutionEngine:
         )
         return strategy
 
-    def _get_signal_info(self, signal, symbol, price, stoplimit):
+    def _get_signal_info(self, signal, symbol, price, stoplimit, sl, tp):
         account = self.strategy.account
         symbol_info = account.get_symbol_info(symbol)
 
@@ -398,6 +397,8 @@ class Mt5ExecutionEngine:
             "DESCRIPTION={description}\n"
             "PRICE={price}\n"
             "STOPLIMIT={stoplimit}\n"
+            "STOP_LOSS={sl}\n"
+            "TAKE_PROFIT={tp}\n"
             "STRATEGY={strategy}\n"
             "TIMEFRAME={timeframe}\n"
             "BROKER={broker}\n"
@@ -408,6 +409,8 @@ class Mt5ExecutionEngine:
             description=symbol_info.description if symbol_info else "N/A",
             price=price if price else "MARKET",
             stoplimit=stoplimit,
+            sl=sl if sl else "AUTO",
+            tp=tp if tp else "AUTO",
             broker=account.broker.name,
             timestamp=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         )
@@ -544,9 +547,7 @@ class Mt5ExecutionEngine:
         self.strategy.perform_period_end_checks()
         if self.period_end_action == "break" and closing:
             sys.exit(0)
-        elif (
-            self.period_end_action == "sleep" and today not in WEEK_ENDS
-        ):
+        elif self.period_end_action == "sleep" and today not in WEEK_ENDS:
             self._sleep_over_night(sessionmsg)
         elif self.period_end_action == "sleep" and today in WEEK_ENDS:
             self._sleep_over_weekend(sessionmsg)
@@ -668,7 +669,18 @@ class Mt5ExecutionEngine:
         return True
 
     def _open_buy(
-        self, signal, symbol, id, trade: Trade, price, stoplimit, sigmsg, msg, comment
+        self,
+        signal,
+        symbol,
+        id,
+        trade: Trade,
+        price,
+        stoplimit,
+        sl,
+        tp,
+        sigmsg,
+        msg,
+        comment,
     ):
         if not self._auto_trade(sigmsg, symbol):
             return
@@ -678,6 +690,8 @@ class Mt5ExecutionEngine:
                 action=signal,
                 price=price,
                 stoplimit=stoplimit,
+                sl=sl,
+                tp=tp,
                 id=id,
                 mm=self.mm,
                 trail=self.trail,
@@ -685,7 +699,18 @@ class Mt5ExecutionEngine:
             )
 
     def _open_sell(
-        self, signal, symbol, id, trade: Trade, price, stoplimit, sigmsg, msg, comment
+        self,
+        signal,
+        symbol,
+        id,
+        trade: Trade,
+        price,
+        stoplimit,
+        sl,
+        tp,
+        sigmsg,
+        msg,
+        comment,
     ):
         if not self._auto_trade(sigmsg, symbol):
             return
@@ -695,6 +720,8 @@ class Mt5ExecutionEngine:
                 action=signal,
                 price=price,
                 stoplimit=stoplimit,
+                sl=sl,
+                tp=tp,
                 id=id,
                 mm=self.mm,
                 trail=self.trail,
@@ -726,6 +753,8 @@ class Mt5ExecutionEngine:
         trade,
         price,
         stoplimit,
+        sl,
+        tp,
         buys,
         sells,
         sigmsg,
@@ -744,6 +773,8 @@ class Mt5ExecutionEngine:
                         trade,
                         price,
                         stoplimit,
+                        sl,
+                        tp,
                         sigmsg,
                         msg,
                         comment,
@@ -753,7 +784,17 @@ class Mt5ExecutionEngine:
                     self._check(buys[symbol], sells[symbol], symbol)
             else:
                 self._open_buy(
-                    signal, symbol, id, trade, price, stoplimit, sigmsg, msg, comment
+                    signal,
+                    symbol,
+                    id,
+                    trade,
+                    price,
+                    stoplimit,
+                    sl,
+                    tp,
+                    sigmsg,
+                    msg,
+                    comment,
                 )
         else:
             logger.info(riskmsg)
@@ -766,6 +807,8 @@ class Mt5ExecutionEngine:
         trade,
         price,
         stoplimit,
+        sl,
+        tp,
         buys,
         sells,
         sigmsg,
@@ -784,6 +827,8 @@ class Mt5ExecutionEngine:
                         trade,
                         price,
                         stoplimit,
+                        sl,
+                        tp,
                         sigmsg,
                         msg,
                         comment,
@@ -793,7 +838,17 @@ class Mt5ExecutionEngine:
                     self._check(buys[symbol], sells[symbol], symbol)
             else:
                 self._open_sell(
-                    signal, symbol, id, trade, price, stoplimit, sigmsg, msg, comment
+                    signal,
+                    symbol,
+                    id,
+                    trade,
+                    price,
+                    stoplimit,
+                    sl,
+                    tp,
+                    sigmsg,
+                    msg,
+                    comment,
                 )
         else:
             logger.info(riskmsg)
@@ -806,6 +861,8 @@ class Mt5ExecutionEngine:
         trade,
         price,
         stoplimit,
+        sl,
+        tp,
         buys,
         sells,
         comment,
@@ -823,7 +880,7 @@ class Mt5ExecutionEngine:
             )
             return
         info, sigmsg, msg, tfmsg, riskmsg = self._get_signal_info(
-            signal, symbol, price, stoplimit
+            signal, symbol, price, stoplimit, sl, tp
         )
 
         if signal not in EXIT_SIGNAL_ACTIONS:
@@ -839,7 +896,7 @@ class Mt5ExecutionEngine:
             signal_handler = self._handle_buy_signal
         elif signal in SELLS:
             signal_handler = self._handle_sell_signal
-        
+
         if signal_handler is not None:
             signal_handler(
                 signal,
@@ -848,6 +905,8 @@ class Mt5ExecutionEngine:
                 trade,
                 price,
                 stoplimit,
+                sl,
+                tp,
                 buys,
                 sells,
                 sigmsg,
@@ -897,6 +956,8 @@ class Mt5ExecutionEngine:
                         trade,
                         signal.price,
                         signal.stoplimit,
+                        signal.sl,
+                        signal.tp,
                         buys,
                         sells,
                         signal.comment or self.comment,
@@ -1096,6 +1157,3 @@ def RunMt5Engines(accounts: Dict[str, Dict], start_delay: float = 1.0):
     for process, account_id in processes.items():
         process.join()
         log.info(f"Process for {account_id} joined")
-
-
-class TWSExecutionEngine: ...

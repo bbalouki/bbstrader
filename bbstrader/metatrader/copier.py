@@ -1,4 +1,5 @@
 import concurrent.futures as cf
+import configparser
 import multiprocessing as mp
 import threading
 import time
@@ -6,14 +7,16 @@ from datetime import datetime
 from enum import Enum
 from multiprocessing.synchronize import Event
 from pathlib import Path
-from typing import Dict, List, Literal, Tuple
+from typing import Any, Dict, List, Literal, Optional, Tuple, Union
 
 from loguru import logger as log
 
+from bbstrader.api.metatrader_client import TradeOrder, TradePosition  # type: ignore
 from bbstrader.config import BBSTRADER_DIR
-from bbstrader.metatrader.account import Account, check_mt5_connection
+from bbstrader.metatrader.account import Account
+from bbstrader.metatrader.broker import check_mt5_connection
 from bbstrader.metatrader.trade import FILLING_TYPE
-from bbstrader.metatrader.utils import TradeOrder, TradePosition, trade_retcode_message
+from bbstrader.metatrader.utils import trade_retcode_message
 
 try:
     import MetaTrader5 as Mt5
@@ -72,9 +75,8 @@ RETURN_RETCODE = [
     Mt5.TRADE_RETCODE_INVALID_VOLUME,
     Mt5.TRADE_RETCODE_INVALID_PRICE,
     Mt5.TRADE_RETCODE_INVALID_STOPS,
-    Mt5.TRADE_RETCODE_NO_CHANGES
+    Mt5.TRADE_RETCODE_NO_CHANGES,
 ]
-
 
 
 class OrderAction(Enum):
@@ -113,10 +115,14 @@ def dynamic_lot(source_lot, source_eqty: float, dest_eqty: float):
     except ZeroDivisionError:
         raise ValueError("Source or destination account equity is zero")
 
+
 def specific_lot(symbol, value) -> float:
     if not isinstance(value, dict):
-        raise ValueError("Specific lot size must be provided as a dictionary mapping symbols to lot sizes")
+        raise ValueError(
+            "Specific lot size must be provided as a dictionary mapping symbols to lot sizes"
+        )
     return value.get(symbol, 0.01)
+
 
 def fixed_lot(lot, symbol, destination) -> float:
     def _volume_step(value):
@@ -202,12 +208,11 @@ def get_symbols_from_string(symbols_string: str) -> List[str] | Dict[str, str]:
         symbols = all (copy all symbols)
         symbols = * (copy all symbols) """)
 
+
 def get_lots_from_string(lots_string: str) -> Dict[str, float]:
     if not lots_string:
         raise ValueError("Input Error", "Lots string cannot be empty.")
-    string = (
-        lots_string.strip().replace("\n", "").replace(" ", "").replace('"""', "")
-    )
+    string = lots_string.strip().replace("\n", "").replace(" ", "").replace('"""', "")
     if ":" in string and "," in string:
         if string.endswith(","):
             string = string[:-1]
@@ -224,9 +229,10 @@ def get_lots_from_string(lots_string: str) -> Dict[str, float]:
         lots = EURUSD:0.1, GBPUSD:0.2, USDJPY:0.15 (dictionary) 
         """)
 
+
 def get_copy_symbols(destination: dict, source: dict) -> List[str] | Dict[str, str]:
     symbols = destination.get("symbols", "all")
-    if symbols == "all" or symbols == "*" or isinstance(symbols, list):
+    if symbols == "all" or symbols == "*":
         src_account = Account(**source)
         src_symbols = src_account.get_symbols()
         dest_account = Account(**destination)
@@ -391,7 +397,6 @@ class TradeCopier(object):
         self.log_queue = log_queue
         self._add_logger(custom_logger)
         self._validate_source()
-        self._add_copy()
         self.shutdown_event = (
             shutdown_event if shutdown_event is not None else mp.Event()
         )
@@ -407,11 +412,6 @@ class TradeCopier(object):
         if custom_logger:
             global logger
             logger = custom_logger
-
-    def _add_copy(self):
-        self.source["copy"] = self.source.get("copy", True)
-        for destination in self.destinations:
-            destination["copy"] = destination.get("copy", True)
 
     def log_message(
         self, message, type: Literal["info", "error", "debug", "warning"] = "info"
@@ -543,7 +543,7 @@ class TradeCopier(object):
                 if new_result.retcode == Mt5.TRADE_RETCODE_DONE:
                     break
         return new_result
-    
+
     def handle_retcode(self, retcode) -> int:
         if retcode in STOP_RETCODES:
             msg = trade_retcode_message(retcode)
@@ -641,7 +641,7 @@ class TradeCopier(object):
             )
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
             if self.handle_retcode(result.retcode) == 1:
-                    return
+                return
             self.log_message(
                 f"Error modifying {ORDER_TYPE[source_order.type][1]} Order #{ticket} on @{destination.get('login')}::{symbol},"
                 f"SOURCE=@{self.source.get('login')}::{source_order.symbol},  {trade_retcode_message(result.retcode)}",
@@ -665,7 +665,7 @@ class TradeCopier(object):
             )
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
             if self.handle_retcode(result.retcode) == 1:
-                    return
+                return
             self.log_message(
                 f"Error closing {ORDER_TYPE[order.type][1]} Order #{order.ticket} on @{destination.get('login')}::{order.symbol}, "
                 f"SOURCE=@{self.source.get('login')}::{src_symbol}, {trade_retcode_message(result.retcode)}",
@@ -697,7 +697,7 @@ class TradeCopier(object):
             )
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
             if self.handle_retcode(result.retcode) == 1:
-                    return
+                return
             self.log_message(
                 f"Error modifying {ORDER_TYPE[source_pos.type][1]} Position #{ticket} on @{destination.get('login')}::{symbol}, "
                 f"SOURCE=@{self.source.get('login')}::{source_pos.symbol}, {trade_retcode_message(result.retcode)}",
@@ -733,7 +733,7 @@ class TradeCopier(object):
             )
         if result.retcode != Mt5.TRADE_RETCODE_DONE:
             if self.handle_retcode(result.retcode) == 1:
-                    return
+                return
             self.log_message(
                 f"Error closing {ORDER_TYPE[position.type][1]} Position #{position.ticket} "
                 f"on @{destination.get('login')}::{position.symbol}, "
@@ -782,8 +782,6 @@ class TradeCopier(object):
         return source_orders, dest_orders
 
     def _copy_what(self, destination):
-        if not destination.get("copy", False):
-            raise ValueError("Destination account not set to copy mode")
         return destination.get("copy_what", "all")
 
     def _isvalide_magic(self, magic):
@@ -1360,6 +1358,57 @@ def RunMultipleCopier(
         process.join()
 
 
+def auto_convert(value: str) -> Union[bool, None, int, float, str]:
+    """Convert string values to appropriate data types"""
+    if value.lower() in {"true", "false"}:  # Boolean
+        return value.lower() == "true"
+    elif value.lower() in {"none", "null"}:  # None
+        return None
+    elif value.isdigit():
+        return int(value)
+    try:
+        return float(value)
+    except ValueError:
+        return value
+
+
+def dict_from_ini(
+    file_path: str, sections: Optional[Union[str, List[str]]] = None
+) -> Dict[str, Any]:
+    """Reads an INI file and converts it to a dictionary with proper data types.
+    Args:
+        file_path: Path to the INI file to read.
+        sections: Optional list of sections to read from the INI file.
+    Returns:
+        A dictionary containing the INI file contents with proper data types.
+    """
+    try:
+        config = configparser.ConfigParser(interpolation=None)
+        config.read(file_path)
+    except Exception:
+        raise
+    ini_dict: Dict[str, Any] = {}
+    for section in config.sections():
+        ini_dict[section] = {
+            key: auto_convert(value) for key, value in config.items(section)
+        }
+
+    if isinstance(sections, str):
+        try:
+            return ini_dict[sections]
+        except KeyError:
+            raise KeyError(f"{sections} not found in the {file_path} file")
+    if isinstance(sections, list):
+        sect_dict: Dict[str, Any] = {}
+        for section in sections:
+            try:
+                sect_dict[section] = ini_dict[section]
+            except KeyError:
+                raise KeyError(f"{section} not found in the {file_path} file")
+        return sect_dict
+    return ini_dict
+
+
 def _parse_symbols(section):
     symbols: str = section.get("symbols")
     symbols = symbols.strip().replace("\n", " ").replace('"""', "")
@@ -1369,11 +1418,12 @@ def _parse_symbols(section):
         symbols = get_symbols_from_string(symbols)
         section["symbols"] = symbols
 
+
 def _parse_lots(section):
     lots = section.get("value")
     if not lots:
         raise ValueError("Lot size value must be specified for the selected mode")
-    lots = get_lots_from_string(lots)
+    lots = get_lots_from_string(lots) if isinstance(lots, str) else lots
     section["value"] = lots
 
 
@@ -1400,7 +1450,6 @@ def config_copier(
         source, destinations = config_copier(config_file, "SOURCE", ["DEST1", "DEST2"])
         ```
     """
-    from bbstrader.core.utils import dict_from_ini
 
     if not inifile:
         inifile = Path().home() / ".bbstrader" / "copier" / "copier.ini"

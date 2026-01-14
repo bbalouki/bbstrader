@@ -1,0 +1,86 @@
+name: Build and Publish
+
+on:
+  push:
+    tags:
+      - "v*"
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.16.5
+        env:
+          # 1. CONFIGURATION 
+          CIBW_BUILD: "cp312-* cp313-*"
+          # Skip 32-bit builds
+          CIBW_ARCHS: "auto64"
+
+          # 2. LINUX
+          CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
+          CIBW_MUSLLINUX_X86_64_IMAGE: musllinux_1_2 
+
+          # Install deps
+          CIBW_BEFORE_ALL_MANYLINUX_X86_64: "yum install -y openblas-devel pkgconf-pkg-config gcc-toolset-11"
+          CIBW_BEFORE_ALL_MUSLLINUX_X86_64: "apk add --no-cache openblas-dev pkgconfig g++"
+          CIBW_ENVIRONMENT_LINUX: 'PATH="/opt/rh/gcc-toolset-11/root/usr/bin:$PATH"'
+
+          # 3. MACOS 
+          CIBW_BEFORE_ALL_MACOS: "brew install openblas pkg-config"
+          # Help the compiler find OpenBLAS on Mac
+          CIBW_ENVIRONMENT_MACOS: >
+            PKG_CONFIG_PATH="/usr/local/opt/openblas/lib/pkgconfig:/opt/homebrew/opt/openblas/lib/pkgconfig"
+            LDFLAGS="-L/usr/local/opt/openblas/lib -L/opt/homebrew/opt/openblas/lib"
+            CPPFLAGS="-I/usr/local/opt/openblas/include -I/opt/homebrew/opt/openblas/include"
+
+          # 4. TESTING
+          CIBW_TEST_REQUIRES: "pytest pytest-mock spacy"
+          CIBW_TEST_REQUIRES_WINDOWS: "pytest pytest-mock spacy MetaTrader5"
+          CIBW_TEST_COMMAND: "pip install -e {project} && python -m spacy download en_core_web_sm && pytest {project}/tests -k 'not test_metatrader_client'"
+          CIBW_TEST_COMMAND_WINDOWS: "pip install -e {project} && python -m spacy download en_core_web_sm && pytest {project}/tests -k \"not test_metatrader_client\""
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
+          path: ./wheelhouse/*.whl
+
+  build_sdist:
+    name: Build Source Distribution
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build SDist
+        run: pipx run build --sdist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cibw-sdist
+          path: dist/*.tar.gz
+
+  publish:
+    needs: [build_wheels, build_sdist]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: cibw-*
+          path: dist
+          merge-multiple: true
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.BBSTRADER_PYPI_API_TOKEN }}

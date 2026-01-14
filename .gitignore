@@ -18,3 +18,10 @@ notes.txt
 *.exe
 *.iss
 cmd.ps1
+.vscode
+CMakePresets.json
+scripts.sh
+*.pyd
+.so
+test_setup.py
+packaging/

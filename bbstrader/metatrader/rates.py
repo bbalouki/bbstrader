@@ -3,11 +3,10 @@ from typing import Optional, Union
 
 import pandas as pd
 from exchange_calendars import get_calendar, get_calendar_names
-from pandas.tseries.holiday import USFederalHolidayCalendar
-from pandas.tseries.offsets import CustomBusinessDay
 
-from bbstrader.metatrader.account import AMG_EXCHANGES, Account, check_mt5_connection
-from bbstrader.metatrader.utils import TIMEFRAMES, TimeFrame, raise_mt5_error, SymbolType
+from bbstrader.metatrader.account import Account
+from bbstrader.metatrader.broker import EXCHANGES
+from bbstrader.metatrader.utils import TIMEFRAMES, SymbolType, raise_mt5_error
 
 try:
     import MetaTrader5 as Mt5
@@ -24,6 +23,7 @@ __all__ = [
 
 MAX_BARS = 10_000_000
 
+
 IDX_CALENDARS = {
     "CAD": "XTSE",
     "AUD": "XASX",
@@ -38,21 +38,15 @@ IDX_CALENDARS = {
     "JPY": "us_futures",
 }
 
-COMD_CALENDARS = {
-    "Energies": "us_futures",
-    "Metals": "us_futures",
-    "Agricultures": "CBOT",
-    "Bonds": {"USD": "CBOT", "EUR": "EUREX"},
-}
 
 CALENDARS = {
     SymbolType.FOREX: "us_futures",
-    SymbolType.STOCKS: AMG_EXCHANGES,
-    SymbolType.ETFs: AMG_EXCHANGES,
+    SymbolType.STOCKS: EXCHANGES,
+    SymbolType.ETFs: EXCHANGES,
     SymbolType.INDICES: IDX_CALENDARS,
-    SymbolType.COMMODITIES: COMD_CALENDARS,
+    SymbolType.COMMODITIES: "us_futures",
     SymbolType.CRYPTO: "24/7",
-    SymbolType.FUTURES: None,
+    SymbolType.FUTURES: "us_futures",
 }
 
 SESSION_TIMEFRAMES = [
@@ -70,10 +64,12 @@ class Rates(object):
     This class encapsulates interactions with the MetaTrader 5 (MT5) terminal
     to fetch historical price data for a given symbol and timeframe. It offers
     flexibility in retrieving data either by specifying a starting position
-    and count of bars or by providing a specific date range.
+    and count of bars or by providing a specific date range .
 
     Notes:
-        1. Befor using this class, ensure that the `Max bars in chart` in you terminal
+        All data is rerturn as pandas.DataFrame
+
+        1. Befor using this class, ensure that the `Max bars in chart` in your terminal
         is set to a value that is greater than the number of bars you want to retrieve
         or just set it to Unlimited.
         In your MT5 terminal, go to `Tools` -> `Options` -> `Charts` -> `Max bars in chart`.
@@ -81,7 +77,7 @@ class Rates(object):
         2. The `open, high, low, close, adjclose, returns,
         volume` properties returns data in  Broker's timezone by default.
 
-        See `bbstrader.metatrader.account.check_mt5_connection()` for more details on how to connect to MT5 terminal.
+        See `bbstrader.metatrader.broker.check_mt5_connection()` for more details on how to connect to MT5 terminal.
 
     Example:
         >>> rates = Rates("EURUSD", "1h")
@@ -95,10 +91,9 @@ class Rates(object):
     def __init__(
         self,
         symbol: str,
-        timeframe: TimeFrame = "D1",
-        start_pos: Union[int, str] = 0,
+        timeframe: str = "D1",
+        start_pos: int = 0,
         count: Optional[int] = MAX_BARS,
-        session_duration: Optional[float] = None,
         **kwargs,
     ):
         """
@@ -107,86 +102,60 @@ class Rates(object):
         Args:
             symbol (str): Financial instrument symbol (e.g., "EURUSD").
             timeframe (str): Timeframe string (e.g., "D1", "1h", "5m").
-            start_pos (int, | str): Starting index (int)  or date (str) for data retrieval.
+            start_pos (int): Starting index (int) for data retrieval.
             count (int, optional): Number of bars to retrieve default is
                 the maximum bars availble in the MT5 terminal.
-            session_duration (float): Number of trading hours per day.
-
         Raises:
             ValueError: If the provided timeframe is invalid.
-
-        Notes:
-            If `start_pos` is an str, it must be in 'YYYY-MM-DD' format.
-            For `session_duration` check your broker symbols details
         """
         self.symbol = symbol
-        self.time_frame = self._validate_time_frame(timeframe)
-        self.sd = session_duration
-        self.start_pos = self._get_start_pos(start_pos, timeframe)
+        self.start_pos = start_pos
         self.count = count
-        self.__initializ_mt5(**kwargs)
+        self.time_frame = self._validate_time_frame(timeframe)
         self.__account = Account(**kwargs)
-        self.__data = self.get_rates_from_pos()
+        self.__data = self.get_rates_from_pos
 
-    def __initializ_mt5(self, **kwargs):
-        check_mt5_connection(**kwargs)
+    @property
+    def open(self):
+        return self.__data()["Open"]
 
-    def _get_start_pos(self, index, time_frame):
-        if isinstance(index, int):
-            start_pos = index
-        elif isinstance(index, str):
-            assert self.sd is not None, ValueError(
-                "Please provide the session_duration in hour"
-            )
-            start_pos = self._get_pos_index(index, time_frame, self.sd)
-        return start_pos
+    @property
+    def high(self):
+        return self.__data()["High"]
 
-    def _get_pos_index(self, start_date, time_frame, sd):
-        # Create a custom business day calendar
-        us_business_day = CustomBusinessDay(calendar=USFederalHolidayCalendar())
+    @property
+    def low(self):
+        return self.__data()["Low"]
 
-        start_date = pd.to_datetime(start_date)
-        end_date = pd.to_datetime(datetime.now())
+    @property
+    def close(self):
+        return self.__data()["Close"]
 
-        # Generate a range of business days
-        trading_days = pd.date_range(
-            start=start_date, end=end_date, freq=us_business_day
-        )
+    @property
+    def adjclose(self):
+        return self.__data()["Adj Close"]
 
-        # Calculate the number of trading days
-        trading_days = len(trading_days)
-        td = trading_days
-        time_frame_mapping = {}
-        for minutes in [
-            1,
-            2,
-            3,
-            4,
-            5,
-            6,
-            10,
-            12,
-            15,
-            20,
-            30,
-            60,
-            120,
-            180,
-            240,
-            360,
-            480,
-            720,
-        ]:
-            key = f"{minutes // 60}h" if minutes >= 60 else f"{minutes}m"
-            time_frame_mapping[key] = int(td * (60 / minutes) * sd)
-        time_frame_mapping["D1"] = int(td)
+    @property
+    def returns(self):
+        """
+        Fractional change between the current and a prior element.
 
-        if time_frame not in time_frame_mapping:
-            pv = list(time_frame_mapping.keys())
-            raise ValueError(f"Unsupported time frame, Possible Values are {pv}")
+        Computes the fractional change from the immediately previous row by default.
+        This is useful in comparing the fraction of change in a time series of elements.
 
-        index = time_frame_mapping.get(time_frame, 0) - 1
-        return max(index, 0)
+        Note
+        ----
+        It calculates fractional change (also known as `per unit change or relative change`)
+        and `not percentage change`. If you need the percentage change, multiply these values by 100.
+        """
+        data = self.__data()
+        data["Returns"] = data["Adj Close"].pct_change()
+        data = data.dropna()
+        return data["Returns"]
+
+    @property
+    def volume(self):
+        return self.__data()["Volume"]
 
     def _validate_time_frame(self, time_frame: str) -> int:
         """Validates and returns the MT5 timeframe code."""
@@ -229,16 +198,22 @@ class Rates(object):
         self, df: pd.DataFrame, lower_colnames=False, utc=False
     ) -> pd.DataFrame:
         """Formats the raw MT5 data into a standardized DataFrame."""
+
         df = df.copy()
+
         df = df[["time", "open", "high", "low", "close", "tick_volume"]]
         df.columns = ["Date", "Open", "High", "Low", "Close", "Volume"]
+
         df["Adj Close"] = df["Close"]
         df = df[["Date", "Open", "High", "Low", "Close", "Adj Close", "Volume"]]
+
         df["Date"] = pd.to_datetime(df["Date"], unit="s", utc=utc)
         df.set_index("Date", inplace=True)
+
         if lower_colnames:
             df.columns = df.columns.str.lower().str.replace(" ", "_")
             df.index.name = df.index.name.lower().replace(" ", "_")
+
         return df
 
     def _filter_data(
@@ -247,7 +222,6 @@ class Rates(object):
         df = df.copy()
         symbol_type = self.__account.get_symbol_type(self.symbol)
         currencies = self.__account.get_currency_rates(self.symbol)
-        s_info = self.__account.get_symbol_info(self.symbol)
         if symbol_type in CALENDARS:
             if symbol_type == SymbolType.STOCKS or symbol_type == SymbolType.ETFs:
                 for exchange in CALENDARS[symbol_type]:
@@ -262,28 +236,6 @@ class Rates(object):
                 calendar = get_calendar(
                     CALENDARS[symbol_type][currencies["mc"]], side="right"
                 )
-            elif symbol_type == SymbolType.COMMODITIES:
-                for commodity in CALENDARS[symbol_type]:
-                    if commodity in s_info.path:
-                        calendar = get_calendar(
-                            CALENDARS[symbol_type][commodity], side="right"
-                        )
-            elif symbol_type == SymbolType.FUTURES:
-                if "Index" in s_info.path:
-                    calendar = get_calendar(
-                        CALENDARS[SymbolType.INDICES][currencies["mc"]], side="right"
-                    )
-                else:
-                    for commodity, cal in COMD_CALENDARS.items():
-                        if self.symbol in self.__account.get_future_symbols(
-                            category=commodity
-                        ):
-                            if commodity == "Bonds":
-                                calendar = get_calendar(
-                                    cal[currencies["mc"]], side="right"
-                                )
-                            else:
-                                calendar = get_calendar(cal, side="right")
             else:
                 calendar = get_calendar(CALENDARS[symbol_type], side="right")
             date_from = date_from or df.index[0]
@@ -392,48 +344,6 @@ class Rates(object):
         if filter:
             return self._filter_data(df, fill_na=fill_na)
         return df
-
-    @property
-    def open(self):
-        return self.__data["Open"]
-
-    @property
-    def high(self):
-        return self.__data["High"]
-
-    @property
-    def low(self):
-        return self.__data["Low"]
-
-    @property
-    def close(self):
-        return self.__data["Close"]
-
-    @property
-    def adjclose(self):
-        return self.__data["Adj Close"]
-
-    @property
-    def returns(self):
-        """
-        Fractional change between the current and a prior element.
-
-        Computes the fractional change from the immediately previous row by default.
-        This is useful in comparing the fraction of change in a time series of elements.
-
-        Note
-        ----
-        It calculates fractional change (also known as `per unit change or relative change`)
-        and `not percentage change`. If you need the percentage change, multiply these values by 100.
-        """
-        data = self.__data.copy()
-        data["Returns"] = data["Adj Close"].pct_change()
-        data = data.dropna()
-        return data["Returns"]
-
-    @property
-    def volume(self):
-        return self.__data["Volume"]
 
     def get_historical_data(
         self,

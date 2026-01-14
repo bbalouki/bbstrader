@@ -23,6 +23,7 @@ from bbstrader.btengine.performance import (
     plot_returns_and_dd,
     show_qs_stats,
 )
+from bbstrader.metatrader.utils import TIMEFRAMES
 
 __all__ = [
     "Portfolio",
@@ -111,20 +112,26 @@ class Portfolio:
         self.initial_capital = initial_capital
         self._leverage = kwargs.get("leverage", 1)
 
-        self.timeframe = kwargs.get("time_frame", "D1")
         self.trading_hours = kwargs.get("session_duration", 23)
         self.benchmark = kwargs.get("benchmark", "SPY")
         self.output_dir = kwargs.get("output_dir", None)
         self.strategy_name = kwargs.get("strategy_name", "")
         self.print_stats = kwargs.get("print_stats", True)
-        if self.timeframe not in self._tf_mapping():
-            raise ValueError(
-                f"Timeframe not supported,"
-                f"please choose one of the following: "
-                f"{', '.join(list(self._tf_mapping().keys()))}"
-            )
+        timeframe = kwargs.get("time_frame", "D1")
+        if timeframe not in TIMEFRAMES:
+            raise ValueError("Timeframe not supported")
+        if timeframe == "D1":
+            self.tf = 252
         else:
-            self.tf = self._tf_mapping()[self.timeframe]
+            if "m" in timeframe:
+                minutes = int(timeframe.replace("m", ""))
+                bars_per_day = self.trading_hours * (60 / minutes)
+            elif "h" in timeframe:
+                hours = int(timeframe.replace("h", ""))
+                bars_per_day = self.trading_hours / hours
+            else:
+                bars_per_day = 1  # Should not be reached given the check
+            self.tf = int(252 * bars_per_day)
 
         self.all_positions: List[Dict[str, Any]] = self.construct_all_positions()
         self.current_positions: Dict[str, Any] = dict(
@@ -133,38 +140,6 @@ class Portfolio:
         self.all_holdings: List[Dict[str, Any]] = self.construct_all_holdings()
         self.current_holdings: Dict[str, Any] = self.construct_current_holdings()
         self.equity_curve: Optional[pd.DataFrame] = None
-
-    def _tf_mapping(self) -> Dict[str, int]:
-        """
-        Returns a dictionary mapping the time frames
-        to the number of bars in a year.
-        """
-        th = self.trading_hours
-        time_frame_mapping = {}
-        for minutes in [
-            1,
-            2,
-            3,
-            4,
-            5,
-            6,
-            10,
-            12,
-            15,
-            20,
-            30,
-            60,
-            120,
-            180,
-            240,
-            360,
-            480,
-            720,
-        ]:
-            key = f"{minutes // 60}h" if minutes >= 60 else f"{minutes}m"
-            time_frame_mapping[key] = int(252 * (60 / minutes) * th)
-        time_frame_mapping["D1"] = 252
-        return time_frame_mapping
 
     def construct_all_positions(self) -> List[Dict[str, Any]]:
         """

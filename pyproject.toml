@@ -1,18 +1,46 @@
 [build-system]
-requires = ["setuptools>=64.0"]
-build-backend = "setuptools.build_meta"
+requires = ["scikit-build-core>=0.8", "pybind11>=3.0.1"]
+build-backend = "scikit_build_core.build"
 
 [project]
 name = "bbstrader"
-version = "0.4.0"
+dynamic = ["version"]
+description = "Simplified Investment & Trading Toolkit"
+readme = "README.md"
+dependencies = [
+    "beautifulsoup4>=4.13.5",
+    "colorama>=0.4.6",
+    "dash>=3.2.0",
+    "eodhd>=1.0.32",
+    "exchange_calendars>=4.11.1",
+    "financetoolkit>=2.0.4",
+    "ipython>=9.5.0",
+    "nltk>=3.9.1",
+    "notify_py>=0.3.43",
+    "numpy>=2.2.6",
+    "praw>=7.8.1",
+    "pybind11>=3.0.1",
+    "pyfiglet>=1.0.4",
+    "pyportfolioopt>=1.5.6",
+    "python-dotenv>=1.1.1",
+    "python-telegram-bot>=22.3",
+    "PyYAML>=6.0.2",
+    "QuantStats>=0.0.77",
+    "seaborn>=0.13.2",
+    "spacy>=3.8.7",
+    "sumy>=0.11.0",
+    "tabulate>=0.9.0",
+    "textblob>=0.19.0",
+    "tweepy>=4.16.0",
+    "vaderSentiment>=3.3.2",
+    "yfinance>=0.2.65",
+]
 authors = [
     { name = "Bertin Balouki SIMYELI", email = "bertin@bbs-trading.com" },
 ]
 maintainers = [
     { name = "Bertin Balouki SIMYELI", email = "bertin@bbs-trading.com" },
 ]
-description = "Simplified Investment & Trading Toolkit"
-readme = "README.md"
 license = "MIT"
 requires-python = ">=3.12"
 keywords = [
@@ -24,14 +52,12 @@ keywords = [
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
-    "Intended Audience :: Financial and Insurance Industry",
     "Topic :: Office/Business :: Financial :: Investment",
     "Programming Language :: Python :: 3.12",
     "Operating System :: Microsoft :: Windows",
     "Operating System :: POSIX :: Linux",
     "Operating System :: MacOS",
 ]
-dynamic = ["dependencies"]
 
 [project.urls]
 "Homepage" = "https://github.com/bbalouki/bbstrader"
@@ -45,7 +71,16 @@ bbstrader = "bbstrader.__main__:main"
 [project.optional-dependencies]
 MT5 = ["MetaTrader5"]
 
-[tool.setuptools.packages.find]
+# Scikit-Build-Core Configuration
+[tool.scikit-build]
+cmake.version = ">=3.20"
+cmake.define = { "BUILD_PYTHON_BINDINGS" = "ON", "CMAKE_VS_GLOBALS" = "IgnoreWarnIntDirInTempDetected=true" }
+wheel.packages = ["bbstrader"]
 
-[tool.setuptools.dynamic]
-dependencies = { file = ["requirements.txt"] }
+[tool.scikit-build.metadata.version]
+provider = "scikit_build_core.metadata.regex"
+input = "VERSION.txt"
+regex = '(?P<value>\d+\.\d+\.\d+)'
+
+[tool.scikit-build.sdist]
+include = ["bbstrader/assets/*"]

@@ -292,8 +292,3 @@ class MT5ExecutionHandler(ExecutionHandler):
                 f"PRICE @{round(log_price, 5)} EXCHANGE={fill_event.exchange}",
                 custom_time=fill_event.timeindex,
             )
-
-
-class IBExecutionHandler(ExecutionHandler):
-    def execute_order(self, event: OrderEvent) -> None:
-        raise NotImplementedError("Should implement execute_order()")

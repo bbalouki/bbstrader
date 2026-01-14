@@ -1,8 +1,15 @@
 {
-    "[python]": {
+  "[python]": {
     "editor.defaultFormatter": "charliermarsh.ruff",
     "editor.formatOnSave": true
   },
   "python.terminal.activateEnvInCurrentTerminal": true,
-  "python.analysis.autoImportCompletions": false
+  "python.analysis.autoImportCompletions": false,
+  "files.insertFinalNewline": true,
+  "notebook.insertFinalNewline": true,
+  "C_Cpp.default.cppStandard": "c++20",
+  "cmake.configureOnOpen": false,
+  "cmake.configureOnEdit": false,
+  "cmake.automaticReconfigure": false,
+  "terminal.integrated.defaultProfile.windows": "PowerShell"
 }

@@ -1,439 +1,289 @@
-import unittest
-from datetime import datetime
+import pandas as pd
+import pytest
 from unittest.mock import MagicMock, patch
 
-from bbstrader.metatrader.trade import (
-    Trade,
-    TradeAction,
-    TradeSignal,
-    TradingMode,
-    create_trade_instance,
-    generate_signal,
-)
-from bbstrader.metatrader.utils import (
-    AccountInfo,
-    SymbolInfo,
-    TickInfo,
-    TradeOrder,
-    TradePosition,
-)
+from bbstrader.metatrader.trade import Trade, EXPERT_ID
 
 
-class TestTrade(unittest.TestCase):
-    def setUp(self):
-        """Set up the test environment."""
-        self.mt5_patcher = patch("bbstrader.metatrader.trade.Mt5")
-        self.mock_mt5 = self.mt5_patcher.start()
-        self.addCleanup(self.mt5_patcher.stop)
-
-        self.logger_patcher = patch("bbstrader.metatrader.trade.log")
-        self.mock_logger = self.logger_patcher.start()
-        self.addCleanup(self.logger_patcher.stop)
-
+@pytest.fixture
+def mock_account_trade():
+    """Fixture to mock the Account class for trade tests."""
+    with (
         patch(
-            "bbstrader.metatrader.risk.RiskManagement.__init__", return_value=None
-        ).start()
-        self.addCleanup(patch.stopall)
-
-        patch("bbstrader.metatrader.trade.check_mt5_connection").start()
-        patch("bbstrader.metatrader.trade.Trade.select_symbol").start()
-        patch("bbstrader.metatrader.trade.Trade.prepare_symbol").start()
-
-        self.account_info = AccountInfo(
-            login=12345,
-            balance=10000.0,
-            equity=10000.0,
-            currency="USD",
-            name="Test Account",
-            server="Test Server",
-            leverage=100,
-            trade_mode=0,
-            limit_orders=0,
-            margin_so_mode=0,
-            trade_allowed=True,
-            trade_expert=True,
-            margin_mode=0,
-            currency_digits=2,
-            fifo_close=False,
-            credit=0.0,
-            profit=0.0,
-            margin=0.0,
-            margin_free=10000.0,
-            margin_level=0.0,
-            margin_so_call=0.0,
-            margin_so_so=0.0,
-            margin_initial=0.0,
-            margin_maintenance=0.0,
-            assets=0.0,
-            liabilities=0.0,
-            commission_blocked=0.0,
-            company="MetaQuotes",
-        )
-        self.symbol_info = SymbolInfo(
-            name="EURUSD",
-            visible=True,
-            point=0.00001,
-            digits=5,
-            spread=10,
-            trade_tick_value=1.0,
-            trade_tick_size=0.00001,
-            trade_contract_size=100000,
-            volume_min=0.01,
-            volume_max=100.0,
-            volume_step=0.01,
-            bid=1.10000,
-            ask=1.10010,
-            time=datetime.now(),
-            custom=False,
-            chart_mode=0,
-            select=True,
-            session_deals=0,
-            session_buy_orders=0,
-            session_sell_orders=0,
-            volume=0,
-            volumehigh=0,
-            volumelow=0,
-            bidhigh=0,
-            bidlow=0,
-            askhigh=0,
-            asklow=0,
-            last=0,
-            lasthigh=0,
-            lastlow=0,
-            volume_real=0,
-            volumehigh_real=0,
-            volumelow_real=0,
-            option_strike=0,
-            trade_tick_value_profit=1.0,
-            trade_tick_value_loss=1.0,
-            trade_stops_level=0,
-            trade_freeze_level=0,
-            trade_exemode=0,
-            swap_mode=0,
-            swap_rollover3days=0,
-            margin_hedged_use_leg=False,
-            expiration_mode=0,
-            filling_mode=0,
-            order_mode=0,
-            order_gtc_mode=0,
-            option_mode=0,
-            option_right=0,
-            margin_initial=0,
-            margin_maintenance=0,
-            session_volume=0,
-            session_turnover=0,
-            session_interest=0,
-            session_buy_orders_volume=0,
-            session_sell_orders_volume=0,
-            session_open=0,
-            session_close=0,
-            session_aw=0,
-            session_price_settlement=0,
-            session_price_limit_min=0,
-            session_price_limit_max=0,
-            margin_hedged=0,
-            price_change=0,
-            price_volatility=0,
-            price_theoretical=0,
-            price_greeks_delta=0,
-            price_greeks_theta=0,
-            price_greeks_gamma=0,
-            price_greeks_vega=0,
-            price_greeks_rho=0,
-            price_greeks_omega=0,
-            price_sensitivity=0,
-            basis="",
-            category="",
-            currency_base="EUR",
-            currency_profit="USD",
-            currency_margin="EUR",
-            bank="",
-            description="Euro vs US Dollar",
-            exchange="",
-            formula="",
-            isin="",
-            page="",
-            path="Forex\\Majors\\EURUSD",
-            start_time=0,
-            expiration_time=0,
-            spread_float=True,
-            ticks_bookdepth=0,
-            trade_calc_mode=0,
-            trade_mode=0,
-            trade_accrued_interest=0.0,
-            trade_face_value=0.0,
-            trade_liquidity_rate=0.0,
-            volume_limit=0.0,
-            swap_long=0.0,
-            swap_short=0.0,
-        )
-        self.tick_info = TickInfo(
-            time=datetime.now(),
-            bid=1.10000,
-            ask=1.10010,
-            last=1.10005,
-            volume=100,
-            time_msc=int(datetime.now().timestamp() * 1000),
-            flags=6,
-            volume_real=100.0,
-        )
-
-        self.trade = Trade(symbol="EURUSD", expert_id=98181105, verbose=False)
-
-        # Manually set attributes from the patched RiskManagement parent class
-        self.trade.symbol_info = self.symbol_info
-        self.trade.account_leverage = True
-        self.trade.be = 10
-        self.trade.max_risk = 5.0
-        self.trade.rr = 2.0
-        self.trade.copy_mode = False
-
-        # Patch instance methods to return mock data
-        patch.object(
-            self.trade, "get_account_info", return_value=self.account_info
-        ).start()
-        patch.object(
-            self.trade, "get_symbol_info", return_value=self.symbol_info
-        ).start()
-        patch.object(self.trade, "get_tick_info", return_value=self.tick_info).start()
-        patch.object(self.trade, "get_lot", return_value=0.1).start()
-        patch.object(self.trade, "get_stop_loss", return_value=200).start()
-        patch.object(self.trade, "get_take_profit", return_value=300).start()
-        patch.object(
-            self.trade,
-            "send_order",
-            return_value=MagicMock(retcode=self.mock_mt5.TRADE_RETCODE_DONE, order=123),
-        ).start()
-        # This patch is crucial to prevent the UnboundLocalError in close_request
-        patch.object(self.trade, "check_order", return_value=True).start()
-
-    def tearDown(self):
-        """This method is no longer needed as addCleanup handles stopping patches."""
-        pass
-
-    def test_trade_signal_initialization(self):
-        """Test TradeSignal dataclass initialization and validation."""
-        signal = TradeSignal(id=1, symbol="EURUSD", action=TradeAction.BUY, price=1.2)
-        self.assertEqual(signal.id, 1)
-        self.assertEqual(signal.action, TradeAction.BUY)
-
-        with self.assertRaises(TypeError):
-            TradeSignal(id=1, symbol="EURUSD", action="BUY", price=1.2)
-
-        with self.assertRaises(ValueError):
-            TradeSignal(id=1, symbol="EURUSD", action=TradeAction.BUY, stoplimit=1.2)
-
-    def test_generate_signal(self):
-        """Test the generate_signal factory function."""
-        signal = generate_signal(
-            id=1, symbol="EURUSD", action=TradeAction.SELL, price=1.3
-        )
-        self.assertIsInstance(signal, TradeSignal)
-        self.assertEqual(signal.price, 1.3)
-
-    def test_trading_mode_enum(self):
-        """Test the TradingMode enum."""
-        self.assertTrue(TradingMode.BACKTEST.isbacktest())
-        self.assertFalse(TradingMode.LIVE.isbacktest())
-        self.assertTrue(TradingMode.LIVE.islive())
-        self.assertFalse(TradingMode.BACKTEST.islive())
-
-    @patch("bbstrader.metatrader.trade.tabulate")
-    @patch("builtins.print")
-    def test_summary(self, mock_print, mock_tabulate):
-        """Test the summary method."""
-        self.trade.summary()
-        mock_tabulate.assert_called_once()
-        mock_print.assert_called()
-
-    @patch("bbstrader.metatrader.trade.tabulate")
-    @patch("builtins.print")
-    def test_risk_management_summary(self, mock_print, mock_tabulate):
-        """Test the risk_managment method."""
-        with (
-            patch.object(
-                self.trade, "get_stats", return_value=({}, {"total_profit": 100})
-            ),
-            patch.object(
-                self.trade,
-                "currency_risk",
-                return_value={"trade_loss": 10, "trade_profit": 20},
-            ),
-            patch.object(self.trade, "get_currency_rates", return_value={"mc": "EUR"}),
-            patch.object(self.trade, "is_risk_ok", return_value=True),
-            patch.object(self.trade, "risk_level", return_value=1.0),
-            patch.object(self.trade, "get_leverage", return_value="1:100"),
-            patch.object(self.trade, "volume", return_value=0.1),
-            patch.object(self.trade, "get_currency_risk", return_value=100),
-            patch.object(self.trade, "expected_profit", return_value=200),
-            patch.object(self.trade, "get_break_even", return_value=50),
-            patch.object(self.trade, "get_deviation", return_value=20),
-            patch.object(self.trade, "get_minutes", return_value=60),
-            patch.object(self.trade, "max_trade", return_value=10),
-        ):
-            self.trade.risk_managment()
-            mock_tabulate.assert_called_once()
-            mock_print.assert_called()
-
-    @patch("pandas.DataFrame.to_csv")
-    @patch("os.makedirs")
-    def test_statistics(self, mock_makedirs, mock_to_csv):
-        """Test the statistics method."""
-        stats1 = {
-            "deals": 1,
-            "profit": 100,
-            "win_trades": 1,
-            "loss_trades": 0,
-            "total_fees": -10,
-            "average_fee": -10,
-            "win_rate": 100,
-        }
-        stats2 = {"total_profit": 90, "profitability": "Yes"}
-        with (
-            patch.object(self.trade, "get_stats", return_value=(stats1, stats2)),
-            patch.object(self.trade, "sharpe", return_value=1.5),
-            patch.object(self.trade, "get_currency_risk", return_value=100),
-            patch.object(self.trade, "expected_profit", return_value=200),
-        ):
-            self.trade.statistics(save=True, dir="test_stats")
-            mock_makedirs.assert_called_with("test_stats", exist_ok=True)
-            mock_to_csv.assert_called_once()
-
-    def test_open_buy_position(self):
-        """Test opening a buy position."""
-        with patch.object(self.trade, "check", return_value=True):
-            result = self.trade.open_buy_position(action="BMKT")
-            self.assertTrue(result)
-            self.trade.send_order.assert_called()
-
-    def test_open_sell_position(self):
-        """Test opening a sell position."""
-        with patch.object(self.trade, "check", return_value=True):
-            result = self.trade.open_sell_position(action="SMKT")
-            self.assertTrue(result)
-            self.trade.send_order.assert_called()
-
-    def test_open_position(self):
-        """Test the generic open_position method."""
-        with patch.object(self.trade, "open_buy_position") as mock_buy:
-            self.trade.open_position(action="BMKT")
-            mock_buy.assert_called_once()
-
-        with patch.object(self.trade, "open_sell_position") as mock_sell:
-            self.trade.open_position(action="SMKT")
-            mock_sell.assert_called_once()
-
-        with self.assertRaises(ValueError):
-            self.trade.open_position(action="INVALID_ACTION")
-
-    def test_close_position(self):
-        """Test closing a position."""
-        position = self._get_mock_position(ticket=123)
-        with patch.object(self.trade, "get_positions", return_value=[position]):
-            result = self.trade.close_position(ticket=123)
-            self.assertTrue(result)
-            self.trade.send_order.assert_called()
-
-    def test_close_order(self):
-        """Test closing an order."""
-        with patch.object(
-            self.trade, "close_request", return_value=True
-        ) as mock_close_request:
-            result = self.trade.close_order(ticket=456)
-            self.assertTrue(result)
-            mock_close_request.assert_called_once()
-
-    def test_modify_order(self):
-        """Test modifying an order."""
-        order = self._get_mock_order(ticket=789)
-        with (
-            patch.object(self.trade, "get_orders", return_value=[order]),
-            patch.object(self.trade, "check_order", return_value=True),
-        ):
-            self.trade.modify_order(ticket=789, price=1.15)
-            self.trade.send_order.assert_called()
-            call_args = self.trade.send_order.call_args[0][0]
-            self.assertEqual(call_args["price"], 1.15)
-
-    def test_create_trade_instance(self):
-        """Test the create_trade_instance factory function."""
-        with patch("bbstrader.metatrader.trade.Trade") as mock_trade:
-            params = {"expert_id": 123}
-            symbols = ["EURUSD", "GBPUSD"]
-            instances = create_trade_instance(symbols, params)
-            self.assertEqual(len(instances), 2)
-            self.assertIn("EURUSD", instances)
-            self.assertIn("GBPUSD", instances)
-            self.assertEqual(mock_trade.call_count, 2)
-
-    def _get_mock_position(
-        self,
-        ticket=1,
-        symbol="EURUSD",
-        volume=0.1,
-        price_open=1.1,
-        type=0,
-        magic=98181105,
-        profit=0.0,
+            "bbstrader.metatrader.trade.check_mt5_connection"
+        ) as mock_check_connection,
+        patch("bbstrader.metatrader.trade.Account") as mock_account_class,
     ):
-        return TradePosition(
-            ticket=ticket,
-            time=int(datetime.now().timestamp()),
-            time_msc=0,
-            time_update=0,
-            time_update_msc=0,
-            type=type,
-            magic=magic,
-            identifier=0,
-            reason=0,
-            volume=volume,
-            price_open=price_open,
-            sl=0,
-            tp=0,
-            price_current=price_open + 0.001,
-            swap=0,
-            profit=profit,
-            symbol=symbol,
-            comment="test",
-            external_id="",
-        )
+        mock_check_connection.return_value = True
+        yield mock_account_class.return_value
 
-    def _get_mock_order(
-        self,
-        ticket=1,
-        symbol="EURUSD",
-        price_open=1.1,
-        volume_initial=0.1,
-        type=0,
-        magic=98181105,
+
+@pytest.fixture
+def mock_risk_management():
+    """Fixture to mock the RiskManagement class for trade tests."""
+    with patch("bbstrader.metatrader.trade.RiskManagement") as mock_rm_class:
+        mock_rm_instance = mock_rm_class.return_value
+        mock_rm_instance.get_lot.return_value = 0.1
+        mock_rm_instance.get_stop_loss.return_value = 100
+        mock_rm_instance.get_take_profit.return_value = 200
+        mock_rm_instance.get_deviation.return_value = 5
+        mock_rm_instance.is_risk_ok.return_value = True
+        yield mock_rm_instance
+
+
+@pytest.fixture
+def mock_mt5_client_trade():
+    """Fixture to mock the bbstrader.api.Mt5client for trade tests."""
+    with (
+        patch("bbstrader.metatrader.trade.client") as mock_client,
+        patch("bbstrader.metatrader.trade.Mt5") as mock_mt5,
     ):
-        return TradeOrder(
-            ticket=ticket,
-            time_setup=int(datetime.now().timestamp()),
-            time_setup_msc=0,
-            time_done=0,
-            time_done_msc=0,
-            time_expiration=0,
-            type=type,
-            type_time=0,
-            type_filling=0,
-            state=0,
-            magic=magic,
-            position_id=0,
-            position_by_id=0,
-            reason=0,
-            volume_initial=volume_initial,
-            volume_current=0.1,
-            price_open=price_open,
-            sl=0,
-            tp=0,
-            price_current=price_open,
-            price_stoplimit=0,
-            symbol=symbol,
-            comment="test",
-            external_id="",
+        mock_mt5.TRADE_RETCODE_DONE = 10009
+
+        mock_symbol_info = MagicMock()
+        mock_symbol_info.point = 0.00001
+        mock_client.symbol_info.return_value = mock_symbol_info
+
+        mock_tick = MagicMock(bid=1.1, ask=1.1002)
+        mock_client.symbol_info_tick.return_value = mock_tick
+
+        mock_order_result = MagicMock(retcode=10009)  # TRADE_RETCODE_DONE
+        mock_client.order_send.return_value = mock_order_result
+        yield mock_client
+
+
+def test_trade_initialization(
+    mock_account_trade, mock_risk_management, mock_mt5_client_trade
+):
+    """Test the initialization of the Trade class."""
+    trade = Trade("EURUSD")
+    assert trade.symbol == "EURUSD"
+
+
+def test_open_buy_position(
+    mock_account_trade, mock_risk_management, mock_mt5_client_trade
+):
+    """Test open_buy_position."""
+    trade = Trade("EURUSD")
+    with patch.object(trade, "trading_time", return_value=True):
+        with patch.object(trade, "is_max_trades_reached", return_value=False):
+            result = trade.open_buy_position()
+            assert result is True
+            mock_mt5_client_trade.order_send.assert_called()
+
+
+@patch("bbstrader.metatrader.trade.tabulate")
+def test_statistics(
+    mock_tabulate, mock_account_trade, mock_risk_management, mock_mt5_client_trade
+):
+    """Test the statistics method."""
+    trade = Trade("EURUSD", verbose=True)  # verbose to ensure it runs
+    with patch.object(
+        trade,
+        "get_stats",
+        return_value=(
+            {
+                "deals": 0,
+                "profit": 0.0,
+                "win_trades": 0,
+                "loss_trades": 0,
+                "total_fees": 0.0,
+                "average_fee": 0.0,
+                "win_rate": 0.0,
+            },
+            {"total_profit": 100, "profitability": "Yes"},
+        ),
+    ):
+        with patch.object(trade, "sharpe", return_value=1.5):
+            trade.statistics(save=False)
+            mock_tabulate.assert_called()
+
+
+def test_get_stats(mock_account_trade, mock_risk_management, mock_mt5_client_trade):
+    """Test the get_stats method."""
+    trade = Trade("EURUSD")
+    mock_account_trade.get_today_deals.return_value = []
+    mock_account_trade.get_trades_history.return_value = None
+
+    session_stats, historical_stats = trade.get_stats()
+
+    assert isinstance(session_stats, dict)
+    assert isinstance(historical_stats, dict)
+
+
+@patch("bbstrader.metatrader.trade.qs")
+def test_sharpe(
+    mock_qs, mock_account_trade, mock_risk_management, mock_mt5_client_trade
+):
+    """Test the sharpe method."""
+    trade = Trade("EURUSD")
+
+    mock_df = pd.DataFrame(
+        {"profit": [100, -50], "commission": [-5, -5], "fee": [0, 0], "swap": [0, 0]}
+    )
+    mock_account_trade.get_trades_history.return_value = mock_df
+    mock_qs.stats.sharpe.return_value = 1.5
+
+    sharpe = trade.sharpe()
+
+    mock_qs.stats.sharpe.assert_called()
+    assert isinstance(sharpe, float)
+
+
+def test_break_even(mock_account_trade, mock_risk_management, mock_mt5_client_trade):
+    """Test the break_even method."""
+    trade = Trade("EURUSD")
+    mock_position = MagicMock(
+        magic=trade.expert_id, ticket=1, profit=100.0, volume=0.1, price_open=1.1
+    )
+    mock_account_trade.get_positions.return_value = [mock_position]
+    mock_risk_management.get_break_even.return_value = 10
+
+    # Configure the symbol_info mock with the necessary attributes
+    mock_symbol_info = MagicMock()
+    mock_symbol_info.point = 0.00001
+    mock_symbol_info.trade_tick_size = 0.00001
+    mock_symbol_info.trade_tick_value = 1.0
+    mock_mt5_client_trade.symbol_info.return_value = mock_symbol_info
+
+    with patch.object(trade, "set_break_even") as mock_set_be:
+        trade.break_even()
+        mock_set_be.assert_called()
+
+
+def test_set_break_even(
+    mock_account_trade, mock_risk_management, mock_mt5_client_trade
+):
+    """Test the set_break_even method."""
+    trade = Trade("EURUSD")
+    mock_position = MagicMock(
+        profit=100.0,
+        price_open=1.1,
+        type=0,  # Buy
+    )
+
+    with patch.object(
+        trade, "break_even_request", return_value=True
+    ) as mock_be_request:
+        result = trade.set_break_even(mock_position, 10)
+        assert result is True
+        mock_be_request.assert_called()
+
+
+def test_get_current_positions(
+    mock_account_trade, mock_risk_management, mock_mt5_client_trade
+):
+    """Test get_current_positions."""
+    trade = Trade("EURUSD")
+    mock_account_trade.get_positions.return_value = [
+        MagicMock(magic=trade.expert_id, ticket=1)
+    ]
+    positions = trade.get_current_positions()
+    assert positions == [1]
+
+
+def test_get_current_orders_filtered(
+    mock_account_trade, mock_risk_management, mock_mt5_client_trade
+):
+    """Test get_current_orders with a filter."""
+    trade = Trade("EURUSD")
+    mock_order = MagicMock(magic=trade.expert_id, ticket=1, type=2)  # Buy Stop
+    mock_account_trade.get_orders.return_value = [mock_order]
+
+    with patch.object(
+        trade, "get_filtered_tickets", return_value=[1]
+    ) as mock_get_filtered:
+        orders = trade.get_current_buy_stops(id=trade.expert_id)
+        mock_get_filtered.assert_called_once_with(
+            id=trade.expert_id, filter_type="buy_stops"
         )
+        assert orders == [1]
 
 
-if __name__ == "__main__":
-    unittest.main()
+def test_close_position(
+    mock_account_trade, mock_risk_management, mock_mt5_client_trade
+):
+    """Test close_position."""
+    mock_position = MagicMock(
+        ticket=1, magic=EXPERT_ID, volume=0.1, type=0
+    )  # Buy position
+    mock_account_trade.get_positions.return_value = [mock_position]
+
+    trade = Trade("EURUSD")
+    result = trade.close_position(ticket=1)
+
+    assert result is True
+    mock_mt5_client_trade.order_send.assert_called()
+
+
+def test_close_order(mock_account_trade, mock_risk_management, mock_mt5_client_trade):
+    """Test close_order."""
+    trade = Trade("EURUSD")
+    result = trade.close_order(ticket=123)
+
+    assert result is True
+    mock_mt5_client_trade.order_send.assert_called()
+
+
+def test_close_positions(
+    mock_account_trade, mock_risk_management, mock_mt5_client_trade
+):
+    """Test close_positions."""
+    trade = Trade("EURUSD")
+    with patch.object(
+        trade, "get_current_positions", return_value=[1, 2]
+    ) as mock_get_positions:
+        with patch.object(trade, "bulk_close") as mock_bulk_close:
+            trade.close_positions("all")
+            mock_get_positions.assert_called_once_with(id=trade.expert_id)
+            mock_bulk_close.assert_called_once_with(
+                [1, 2],
+                "positions",
+                trade.close_position,
+                "all",
+                id=trade.expert_id,
+                comment=None,
+            )
+
+
+def test_close_orders(mock_account_trade, mock_risk_management, mock_mt5_client_trade):
+    """Test close_orders."""
+    trade = Trade("EURUSD")
+    with patch.object(
+        trade, "get_current_orders", return_value=[1, 2]
+    ) as mock_get_orders:
+        with patch.object(trade, "bulk_close") as mock_bulk_close:
+            trade.close_orders("all")
+            mock_get_orders.assert_called_once_with(id=trade.expert_id)
+            mock_bulk_close.assert_called_once_with(
+                [1, 2],
+                "orders",
+                trade.close_order,
+                "all",
+                id=trade.expert_id,
+                comment=None,
+            )
+
+
+def test_open_sell_position(
+    mock_account_trade, mock_risk_management, mock_mt5_client_trade
+):
+    """Test open_sell_position."""
+    trade = Trade("EURUSD")
+    with patch.object(trade, "trading_time", return_value=True):
+        with patch.object(trade, "is_max_trades_reached", return_value=False):
+            result = trade.open_sell_position()
+            assert result is True
+            mock_mt5_client_trade.order_send.assert_called()
+
+
+def test_open_position_pending(
+    mock_account_trade, mock_risk_management, mock_mt5_client_trade
+):
+    """Test open_position for a pending order."""
+    trade = Trade("EURUSD")
+    with patch.object(trade, "trading_time", return_value=True):
+        with patch.object(trade, "is_max_trades_reached", return_value=False):
+            result = trade.open_position(action="BLMT", price=1.0)
+            assert result is True
+            mock_mt5_client_trade.order_send.assert_called()

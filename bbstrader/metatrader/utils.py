@@ -1,4 +1,3 @@
-from datetime import datetime
 from enum import Enum
 from typing import NamedTuple, Optional
 
@@ -12,28 +11,16 @@ except ImportError:
 
 __all__ = [
     "TIMEFRAMES",
+    "RateInfo",
+    "RateDtype",
     "TimeFrame",
-    "TerminalInfo",
-    "AccountInfo",
-    "SymbolInfo",
     "SymbolType",
-    "TickInfo",
-    "TradeRequest",
-    "OrderCheckResult",
-    "OrderSentResult",
-    "TradeOrder",
-    "TradePosition",
-    "TradeDeal",
     "InvalidBroker",
     "GenericFail",
     "InvalidParams",
     "HistoryNotFound",
     "InvalidVersion",
     "AuthFailed",
-    "RateInfo",
-    "RateDtype",
-    "TickDtype",
-    "TickFlag",
     "UnsupportedMethod",
     "AutoTradingDisabled",
     "InternalFailSend",
@@ -104,176 +91,6 @@ class TimeFrame(Enum):
         return self.name
 
 
-class TerminalInfo(NamedTuple):
-    """
-    Represents general information about the trading terminal.
-    See https://www.mql5.com/en/docs/constants/environment_state/terminalstatus
-    """
-
-    community_account: bool
-    community_connection: bool
-    connected: bool
-    dlls_allowed: bool
-    trade_allowed: bool
-    tradeapi_disabled: bool
-    email_enabled: bool
-    ftp_enabled: bool
-    notifications_enabled: bool
-    mqid: bool
-    build: int
-    maxbars: int
-    codepage: int
-    ping_last: int
-    community_balance: float
-    retransmission: float
-    company: str
-    name: str
-    language: str
-    path: str
-    data_path: str
-    commondata_path: str
-
-
-class AccountInfo(NamedTuple):
-    """
-    Represents information about a trading account.
-    See https://www.mql5.com/en/docs/constants/environment_state/accountinformation
-    """
-
-    login: int
-    trade_mode: int
-    leverage: int
-    limit_orders: int
-    margin_so_mode: int
-    trade_allowed: bool
-    trade_expert: bool
-    margin_mode: int
-    currency_digits: int
-    fifo_close: bool
-    balance: float
-    credit: float
-    profit: float
-    equity: float
-    margin: float
-    margin_free: float
-    margin_level: float
-    margin_so_call: float
-    margin_so_so: float
-    margin_initial: float
-    margin_maintenance: float
-    assets: float
-    liabilities: float
-    commission_blocked: float
-    name: str
-    server: str
-    currency: str
-    company: str
-
-
-class SymbolInfo(NamedTuple):
-    """
-    Represents detailed information about a financial instrument.
-    See https://www.mql5.com/en/docs/constants/environment_state/marketinfoconstants
-    """
-
-    custom: bool
-    chart_mode: int
-    select: bool
-    visible: bool
-    session_deals: int
-    session_buy_orders: int
-    session_sell_orders: int
-    volume: int
-    volumehigh: int
-    volumelow: int
-    time: datetime
-    digits: int
-    spread: int
-    spread_float: bool
-    ticks_bookdepth: int
-    trade_calc_mode: int
-    trade_mode: int
-    start_time: int
-    expiration_time: int
-    trade_stops_level: int
-    trade_freeze_level: int
-    trade_exemode: int
-    swap_mode: int
-    swap_rollover3days: int
-    margin_hedged_use_leg: bool
-    expiration_mode: int
-    filling_mode: int
-    order_mode: int
-    order_gtc_mode: int
-    option_mode: int
-    option_right: int
-    bid: float
-    bidhigh: float
-    bidlow: float
-    ask: float
-    askhigh: float
-    asklow: float
-    last: float
-    lasthigh: float
-    lastlow: float
-    volume_real: float
-    volumehigh_real: float
-    volumelow_real: float
-    option_strike: float
-    point: float
-    trade_tick_value: float
-    trade_tick_value_profit: float
-    trade_tick_value_loss: float
-    trade_tick_size: float
-    trade_contract_size: float
-    trade_accrued_interest: float
-    trade_face_value: float
-    trade_liquidity_rate: float
-    volume_min: float
-    volume_max: float
-    volume_step: float
-    volume_limit: float
-    swap_long: float
-    swap_short: float
-    margin_initial: float
-    margin_maintenance: float
-    session_volume: float
-    session_turnover: float
-    session_interest: float
-    session_buy_orders_volume: float
-    session_sell_orders_volume: float
-    session_open: float
-    session_close: float
-    session_aw: float
-    session_price_settlement: float
-    session_price_limit_min: float
-    session_price_limit_max: float
-    margin_hedged: float
-    price_change: float
-    price_volatility: float
-    price_theoretical: float
-    price_greeks_delta: float
-    price_greeks_theta: float
-    price_greeks_gamma: float
-    price_greeks_vega: float
-    price_greeks_rho: float
-    price_greeks_omega: float
-    price_sensitivity: float
-    basis: str
-    category: str
-    currency_base: str
-    currency_profit: str
-    currency_margin: str
-    bank: str
-    description: str
-    exchange: str
-    formula: str
-    isin: str
-    name: str
-    page: str
-    path: str
-
-
 class SymbolType(Enum):
     """
     Represents the type of a symbol.
@@ -289,49 +106,6 @@ class SymbolType(Enum):
     COMMODITIES = "COMMODITIES"  # Commodities
     OPTIONS = "OPTIONS"  # Options contracts
     unknown = "UNKNOWN"  # Unknown or unsupported type
-
-
-TickDtype = np.dtype(
-    [
-        ("time", "<i8"),
-        ("bid", "<f8"),
-        ("ask", "<f8"),
-        ("last", "<f8"),
-        ("volume", "<u8"),
-        ("time_msc", "<i8"),
-        ("flags", "<u4"),
-        ("volume_real", "<f8"),
-    ]
-)
-
-TickFlag = {
-    "all": MT5.COPY_TICKS_ALL,
-    "info": MT5.COPY_TICKS_INFO,
-    "trade": MT5.COPY_TICKS_TRADE,
-}
-
-
-class TickInfo(NamedTuple):
-    """
-    Represents the last tick for the specified financial instrument.
-    * time:     Time of the last prices update
-    * bid:      Current Bid price
-    * ask:      Current Ask price
-    * last:     Price of the last deal (Last)
-    * volume:   Volume for the current Last price
-    * time_msc: Time of a price last update in milliseconds
-    * flags:    Tick flags
-    * volume_real:  Volume for the current Last price with greater accuracy
-    """
-
-    time: datetime
-    bid: float
-    ask: float
-    last: float
-    volume: int
-    time_msc: int
-    flags: int
-    volume_real: float
 
 
 RateDtype = np.dtype(
@@ -370,169 +144,6 @@ class RateInfo(NamedTuple):
     tick_volume: float
     spread: int
     real_volume: float
-
-
-class BookInfo(NamedTuple):
-    """
-    Represents the structure of a book.
-    * type: Type of the order (buy/sell)
-    * price: Price of the order
-    * volume: Volume of the order in lots
-    * volume_dbl: Volume with greater accuracy
-
-    """
-
-    type: int
-    price: float
-    volume: float
-    volume_dbl: float
-
-
-class TradeRequest(NamedTuple):
-    """
-    Represents a Trade Request Structure
-    See https://www.mql5.com/en/docs/constants/structures/mqltraderequest
-    """
-
-    action: int
-    magic: int
-    order: int
-    symbol: str
-    volume: float
-    price: float
-    stoplimit: float
-    sl: float
-    tp: float
-    deviation: int
-    type: int
-    type_filling: int
-    type_time: int
-    expiration: int
-    comment: str
-    position: int
-    position_by: int
-
-
-class OrderCheckResult(NamedTuple):
-    """
-    The Structure of Results of a Trade Request Check
-    See https://www.mql5.com/en/docs/constants/structures/mqltradecheckresult
-    """
-
-    retcode: int
-    balance: float
-    equity: float
-    profit: float
-    margin: float
-    margin_free: float
-    margin_level: float
-    comment: str
-    request: TradeRequest
-
-
-class OrderSentResult(NamedTuple):
-    """
-    The Structure of a Trade Request Result
-    See https://www.mql5.com/en/docs/constants/structures/mqltraderesult
-    """
-
-    retcode: int
-    deal: int
-    order: int
-    volume: float
-    price: float
-    bid: float
-    ask: float
-    comment: str
-    request_id: int
-    retcode_external: int
-    request: TradeRequest
-
-
-class TradeOrder(NamedTuple):
-    """
-    Represents a trade order.
-    See https://www.mql5.com/en/docs/constants/tradingconstants/orderproperties
-    """
-
-    ticket: int
-    time_setup: int
-    time_setup_msc: int
-    time_done: int
-    time_done_msc: int
-    time_expiration: int
-    type: int
-    type_time: int
-    type_filling: int
-    state: int
-    magic: int
-    position_id: int
-    position_by_id: int
-    reason: int
-    volume_initial: float
-    volume_current: float
-    price_open: float
-    sl: float  # Stop Loss
-    tp: float  # Take Profit
-    price_current: float
-    price_stoplimit: float
-    symbol: str
-    comment: str
-    external_id: str
-
-
-class TradePosition(NamedTuple):
-    """
-    Represents a trade position with attributes like ticket, open/close prices,
-    volume, profit, and other trading details.
-    See https://www.mql5.com/en/docs/constants/tradingconstants/positionproperties
-    """
-
-    ticket: int
-    time: int
-    time_msc: int
-    time_update: int
-    time_update_msc: int
-    type: int
-    magic: int
-    identifier: int
-    reason: int
-    volume: float
-    price_open: float
-    sl: float  # Stop Loss
-    tp: float  # Take Profit
-    price_current: float
-    swap: float
-    profit: float
-    symbol: str
-    comment: str
-    external_id: str
-
-
-class TradeDeal(NamedTuple):
-    """
-    Represents a trade deal execution.
-    See https://www.mql5.com/en/docs/constants/tradingconstants/dealproperties
-    """
-
-    ticket: int
-    order: int
-    time: int
-    time_msc: int
-    type: int
-    entry: int
-    magic: int
-    position_id: int
-    reason: int
-    volume: float
-    price: float
-    commission: float
-    swap: float
-    profit: float
-    fee: float
-    symbol: str
-    comment: str
-    external_id: str
 
 
 class InvalidBroker(Exception):
@@ -776,3 +387,16 @@ def trade_retcode_message(code, display=False, add_msg=""):
     if display:
         print(message + add_msg)
     return message
+
+
+_ADMIRAL_MARKETS_URL_ = "https://one.justmarkets.link/a/tufvj0xugm/registration/trader"
+_JUST_MARKETS_URL_ = "https://one.justmarkets.link/a/tufvj0xugm/registration/trader"
+_FTMO_URL_ = "https://trader.ftmo.com/?affiliates=JGmeuQqepAZLMcdOEQRp"
+
+INIT_MSG = (
+    f"\n* Check your internet connection\n"
+    f"* Make sure MT5 is installed and active\n"
+    f"* Looking for a boker? See [{_ADMIRAL_MARKETS_URL_}] "
+    f"or [{_JUST_MARKETS_URL_}]\n"
+    f"* Looking for a prop firm? See [{_FTMO_URL_}]\n"
+)

@@ -1,0 +1,13 @@
+# High Level Settings
+PROJECT_NAME     = "@PROJECT_NAME@"
+PROJECT_NUMBER   = "@PROJECT_VERSION@"
+OUTPUT_DIRECTORY = "@CMAKE_CURRENT_BINARY_DIR@/docs"
+
+# Which files should be documented?
+INPUT     = "@PROJECT_SOURCE_DIR@/include/bbstrader"
+RECURSIVE = YES
+
+# Styling
+HTML_COLORSTYLE     = TOGGLE
+HTML_COLORSTYLE_SAT = 80
+SHOW_INCLUDE_FILES  = NO

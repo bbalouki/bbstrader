@@ -8,4 +8,4 @@ strategies and customize the trading process.
 
 """
 from bbstrader.trading.execution import *  # noqa: F403
-from bbstrader.trading.strategies import *  # noqa: F403
+from bbstrader.trading.strategy import *  # noqa: F403
