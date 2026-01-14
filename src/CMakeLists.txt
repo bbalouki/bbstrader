@@ -2,22 +2,6 @@ cmake_minimum_required(VERSION 3.20)
 
 include(GNUInstallDirs)
 
-# Find Dependencies
-find_package(Python COMPONENTS Interpreter Development)
-find_package(pybind11 CONFIG QUIET)
-
-if(NOT pybind11_FOUND)
-    include(FetchContent)
-    set(FETCHCONTENT_BASE_DIR "${CMAKE_SOURCE_DIR}/.cache/_deps")
-    include(FetchContent)
-    FetchContent_Declare(
-        pybind11
-        GIT_REPOSITORY https://github.com/pybind/pybind11.git
-        GIT_TAG        "v${PYBIND11_VERSION}"
-    )
-    FetchContent_MakeAvailable(pybind11)
-endif()
-
 # 1. Core C++ Library 
 add_library(bbstrader INTERFACE)
 add_library(bbstrader::bbstrader ALIAS bbstrader)
@@ -37,15 +21,32 @@ endif()
 if (NOT ANDROID)
     target_link_libraries(
         bbstrader
-        INTERFACE warnings::strict
+        PRIVATE warnings::strict
     )
 endif()
-target_link_libraries(bbstrader INTERFACE pybind11::headers)
+
 
 # 2. Python Bindings
 option(BUILD_PYTHON_BINDINGS "Build Python bindings" OFF)
 
 if(BUILD_PYTHON_BINDINGS)
+    # Find Dependencies
+    find_package(Python COMPONENTS Interpreter Development)
+    find_package(pybind11 CONFIG QUIET)
+
+    if(NOT pybind11_FOUND)
+        include(FetchContent)
+        set(FETCHCONTENT_BASE_DIR "${CMAKE_SOURCE_DIR}/.cache/_deps")
+        include(FetchContent)
+        FetchContent_Declare(
+            pybind11
+            GIT_REPOSITORY https://github.com/pybind/pybind11.git
+            GIT_TAG        "v${PYBIND11_VERSION}"
+        )
+        FetchContent_MakeAvailable(pybind11)
+    endif()
+
+    target_link_libraries(bbstrader INTERFACE pybind11::headers)
     pybind11_add_module(metatrader_client MODULE metatrader.cpp)
     target_include_directories(
         metatrader_client PRIVATE
@@ -68,7 +69,10 @@ if(BUILD_PYTHON_BINDINGS)
     endif()
 
     # INSTALLATION INSTRUCTIONS FOR PYTHON
+    # if(BUILD_PYTHON_BINDINGS AND NOT VCPKG_TOOLCHAIN)
     install(TARGETS metatrader_client DESTINATION bbstrader/api)
+    # endif()
+
 endif()
 
 if(NOT SKBUILD)
@@ -76,15 +80,15 @@ if(NOT SKBUILD)
     install(
         TARGETS bbstrader
         EXPORT BbstraderTargets
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        # ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        # LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        # RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     )
 
-    install(
-        TARGETS warnings
-        EXPORT BbstraderTargets
-    )
+    # install(
+    #     TARGETS warnings
+    #     EXPORT BbstraderTargets
+    # )
 
     # Step 4: Specify Header Destinations
     install(
