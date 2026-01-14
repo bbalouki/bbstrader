@@ -2,7 +2,11 @@ import datetime
 import time
 import unittest
 
-import MetaTrader5 as mt5
+
+try:
+    import MetaTrader5 as mt5
+except ImportError:
+    import bbstrader.compat  # noqa: F401
 
 from bbstrader.api.handlers import Mt5Handlers
 from bbstrader.api.metatrader_client import MetaTraderClient  # type: ignore
