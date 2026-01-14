@@ -32,7 +32,8 @@ jobs:
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
 
           # Install deps (pkg-config helps find libraries)
-          CIBW_BEFORE_ALL_LINUX: "yum install -y openblas-devel pkgconf-pkg-config"
+          CIBW_BEFORE_ALL_MANYLINUX_X86_64: "yum install -y openblas-devel pkgconf-pkg-config"
+          CIBW_BEFORE_ALL_MUSLLINUX_X86_64: "apk add --no-cache openblas-dev pkgconfig"
 
           # 3. MACOS
           CIBW_BEFORE_ALL_MACOS: "brew install openblas pkg-config"
@@ -43,9 +44,8 @@ jobs:
             CPPFLAGS="-I/usr/local/opt/openblas/include -I/opt/homebrew/opt/openblas/include"
 
           # 4. TESTING
-          CIBW_BEFORE_TEST_LINUX: "python -c \"import sys; from unittest.mock import MagicMock; sys.modules['MetaTrader5'] = MagicMock()\""
-          CIBW_BEFORE_TEST_MACOS: "python -c \"import sys; from unittest.mock import MagicMock; sys.modules['MetaTrader5'] = MagicMock()\""
           CIBW_TEST_REQUIRES: "pytest pytest-mock spacy"
+          CIBW_TEST_REQUIRES_WINDOWS: "pytest pytest-mock spacy MetaTrader5"
           CIBW_TEST_COMMAND: "pip install -e {project} && python -m spacy download en_core_web_sm && pytest {project}/tests -k 'not test_metatrader_client'"
           CIBW_TEST_COMMAND_WINDOWS: "pip install -e {project} && python -m spacy download en_core_web_sm && pytest {project}/tests -k \"not test_metatrader_client\""
 
