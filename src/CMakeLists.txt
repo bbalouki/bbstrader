@@ -87,10 +87,10 @@ if(NOT SKBUILD)
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     )
 
-    # install(
-    #     TARGETS warnings
-    #     EXPORT BbstraderTargets
-    # )
+    install(
+        TARGETS warnings
+        EXPORT BbstraderTargets
+    )
 
     # Step 4: Specify Header Destinations
     install(
