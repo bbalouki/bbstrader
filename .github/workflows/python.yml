@@ -2,8 +2,8 @@ name: Build and Publish
 
 on:
   push:
-    # tags:
-    #   - "v*"
+    tags:
+      - "v*"
   pull_request:
     branches:
       - main
@@ -43,12 +43,12 @@ jobs:
             CPPFLAGS="-I/usr/local/opt/openblas/include -I/opt/homebrew/opt/openblas/include"
 
           # 4. TESTING
-          CIBW_BEFORE_TEST_LINUX: "python -c \"import sys; from unittest.mock import MagicMock; sys.modules['MetaTrader5'] = MagicMock(); sys.modules['bbstrader.api.metatrader_client'] = MagicMock()\""
-          CIBW_BEFORE_TEST_MACOS: "python -c \"import sys; from unittest.mock import MagicMock; sys.modules['MetaTrader5'] = MagicMock(); sys.modules['bbstrader.api.metatrader_client'] = MagicMock()\""
-          CIBW_BEFORE_TEST_WINDOWS: "python -c \"import sys; from unittest.mock import MagicMock; sys.modules['MetaTrader5'] = MagicMock(); sys.modules['bbstrader.api.metatrader_client'] = MagicMock()\""
+          CIBW_BEFORE_TEST_LINUX: "python -c \"import sys; from unittest.mock import MagicMock; sys.modules['MetaTrader5'] = MagicMock()\""
+          CIBW_BEFORE_TEST_MACOS: "python -c \"import sys; from unittest.mock import MagicMock; sys.modules['MetaTrader5'] = MagicMock()\""
+          CIBW_BEFORE_TEST_WINDOWS: "python -c \"import sys; from unittest.mock import MagicMock; sys.modules['MetaTrader5'] = MagicMock()\""
           CIBW_TEST_REQUIRES: "pytest pytest-mock spacy"
-          CIBW_TEST_COMMAND: "python -m spacy download en_core_web_sm && pytest {project}/tests -k 'not test_metatrader_client'"
-          CIBW_TEST_COMMAND_WINDOWS: "python -m spacy download en_core_web_sm && pytest {project}/tests -k \"not test_metatrader_client\""
+          CIBW_TEST_COMMAND: "pip install -e {project} && python -m spacy download en_core_web_sm && pytest {project}/tests -k 'not test_metatrader_client'"
+          CIBW_TEST_COMMAND_WINDOWS: "pip install -e {project} && python -m spacy download en_core_web_sm && pytest {project}/tests -k \"not test_metatrader_client\""
 
       - uses: actions/upload-artifact@v4
         with:
