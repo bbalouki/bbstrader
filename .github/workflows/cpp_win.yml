@@ -52,7 +52,7 @@ jobs:
         shell: bash
         run: |
           cmake -S . -B $BUILD_DIR \
-            -DITCH_BUILD_TESTS=ON \
+            -DBBSTRADER_BUILD_TESTS=ON \
             -DBBSTRADER_CXX_STANDARD=${{ matrix.cpp_standard }} \
             -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
             -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake \

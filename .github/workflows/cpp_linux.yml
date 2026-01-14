@@ -51,13 +51,13 @@ jobs:
       - name: Install system package
         shell: bash
         run: sudo apt install autoconf autoconf-archive automake libtool
-        
+
       - name: Configure CMake
         shell: bash
         run: |
           cmake -S . -B $BUILD_DIR \
-            -DITCH_BUILD_TESTS=ON \
-            -DITCH_CXX_STANDARD=${{ matrix.cpp_standard }} \
+            -DBBSTRADER_BUILD_TESTS=ON \
+            -DBBSTRADER_CXX_STANDARD=${{ matrix.cpp_standard }} \
             -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
             -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake \
             -DVCPKG_TARGET_TRIPLET=x64-linux
