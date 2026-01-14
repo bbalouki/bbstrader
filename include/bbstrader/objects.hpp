@@ -330,10 +330,10 @@ struct TerminalInfo {
     bool        ftp_enabled;            ///< True if FTP publishing is enabled
     bool        notifications_enabled;  ///< True if smartphone notifications are enabled
     bool        mqid;                   ///< MetaQuotes ID availability
-    int         build;                  ///< Terminal build number
-    int         maxbars;                ///< Max bars on chart
-    int         codepage;               ///< Codepage number
-    int         ping_last;              ///< Last ping value in microseconds
+    int32_t     build;                  ///< Terminal build number
+    int32_t     maxbars;                ///< Max bars on chart
+    int32_t     codepage;               ///< Codepage number
+    int32_t     ping_last;              ///< Last ping value in microseconds
     double      community_balance;      ///< MQL5 community balance
     double      retransmission;         ///< Retransmission percentage
     std::string company;                ///< Broker company name
@@ -349,12 +349,12 @@ struct AccountInfo {
     int64_t     login;               ///< Account login number
     int32_t     trade_mode;          ///< Account trade mode (Demo, Real, Contest)
     int64_t     leverage;            ///< Account leverage
-    int         limit_orders;        ///< Max allowed pending orders
+    int32_t     limit_orders;        ///< Max allowed pending orders
     int32_t     margin_so_mode;      ///< Margin stop-out mode
     bool        trade_allowed;       ///< True if trading allowed for account
     bool        trade_expert;        ///< True if EAs are allowed to trade
     int32_t     margin_mode;         ///< Margin calculation mode (Hedging/Netting)
-    int         currency_digits;     ///< Digits of account currency
+    int32_t     currency_digits;     ///< Digits of account currency
     bool        fifo_close;          ///< True if FIFO closing is required
     double      balance;             ///< Account balance
     double      credit;              ///< Account credit
@@ -389,26 +389,26 @@ struct SymbolInfo {
     int64_t     volumehigh;                  ///< Max volume of the day
     int64_t     volumelow;                   ///< Min volume of the day
     int64_t     time;                        ///< Time of the last quote
-    int         digits;                      ///< Digits after decimal point
-    int         spread;                      ///< Spread value in points
+    int32_t     digits;                      ///< Digits after decimal point
+    int32_t     spread;                      ///< Spread value in points
     bool        spread_float;                ///< Is spread floating
-    int         ticks_bookdepth;             ///< Maximal depth of Depth of Market
+    int32_t     ticks_bookdepth;             ///< Maximal depth of Depth of Market
     int32_t     trade_calc_mode;             ///< Calculation mode
     int32_t     trade_mode;                  ///< Trade mode
     int64_t     start_time;                  ///< Symbol trading start date
     int64_t     expiration_time;             ///< Symbol expiration date
-    int         trade_stops_level;           ///< Minimal indention in points for stops
-    int         trade_freeze_level;          ///< Distance to freeze trade operations
+    int32_t     trade_stops_level;           ///< Minimal indention in points for stops
+    int32_t     trade_freeze_level;          ///< Distance to freeze trade operations
     int32_t     trade_exemode;               ///< Trade execution mode
     int32_t     swap_mode;                   ///< Swap calculation mode
-    int         swap_rollover3days;          ///< Day of triple swap
+    int32_t     swap_rollover3days;          ///< Day of triple swap
     bool        margin_hedged_use_leg;       ///< Calculation of hedged margin using larger leg
     int32_t     expiration_mode;             ///< Flags of allowed order expiration modes
     int32_t     filling_mode;                ///< Flags of allowed order filling modes
     int32_t     order_mode;                  ///< Flags of allowed order types
     int32_t     order_gtc_mode;              ///< Expiration of Stop Loss and Take Profit
     int32_t     option_mode;                 ///< Option type
-    int         option_right;                ///< Option right (Call/Put)
+    int32_t     option_right;                ///< Option right (Call/Put)
     double      bid;                         ///< Current Bid price
     double      bidhigh;                     ///< Max Bid of the day
     double      bidlow;                      ///< Min Bid of the day
@@ -534,7 +534,7 @@ struct TradeRequest {
 
 /// @brief Results of an order check (validation) operation.
 struct OrderCheckResult {
-    uint32_t     retcode;       ///< Reply code
+    int32_t      retcode;       ///< Reply code
     double       balance;       ///< Balance after the execution of the deal
     double       equity;        ///< Equity after the execution of the deal
     double       profit;        ///< Floating profit
@@ -547,7 +547,7 @@ struct OrderCheckResult {
 
 /// @brief Results of a sent order.
 struct OrderSentResult {
-    uint32_t     retcode;           ///< Operation return code
+    int32_t      retcode;           ///< Operation return code
     int64_t      deal;              ///< Deal ticket, if it is performed
     int64_t      order;             ///< Order ticket, if it is placed
     double       volume;            ///< Deal volume, confirmed by broker
@@ -555,8 +555,8 @@ struct OrderSentResult {
     double       bid;               ///< Current Bid price
     double       ask;               ///< Current Ask price
     std::string  comment;           ///< Broker comment or description of return code
-    uint32_t     request_id;        ///< Request ID set by the terminal during the dispatch
-    int          retcode_external;  ///< Return code of an external trading system
+    int32_t      request_id;        ///< Request ID set by the terminal during the dispatch
+    int32_t      retcode_external;  ///< Return code of an external trading system
     TradeRequest request;           ///< The original request
 };
 
