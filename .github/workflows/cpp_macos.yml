@@ -1,7 +1,7 @@
 name: macOS
 
 on:
-  push:
+  # push:
     # branches:
     #   - main
     # tags:
