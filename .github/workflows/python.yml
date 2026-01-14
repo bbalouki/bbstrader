@@ -30,6 +30,7 @@ jobs:
 
           # 2. LINUX
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
+          CIBW_MUSLLINUX_X86_64_IMAGE: musllinux_1_2 
 
           # Install deps (pkg-config helps find libraries)
           CIBW_BEFORE_ALL_MANYLINUX_X86_64: "yum install -y openblas-devel pkgconf-pkg-config gcc-toolset-11"
