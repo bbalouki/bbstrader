@@ -1,9 +1,9 @@
 name: Build and Publish
 
 on:
-  # push:
-  #   tags:
-  #     - "v*"
+  push:
+    tags:
+      - "v*"
   pull_request:
     branches:
       - main
@@ -79,8 +79,8 @@ jobs:
           path: dist
           merge-multiple: true
 
-      # - name: Publish to PyPI
-      #   uses: pypa/gh-action-pypi-publish@release/v1
-      #   with:
-      #     user: __token__
-      #     password: ${{ secrets.BBSTRADER_PYPI_API_TOKEN }}
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.BBSTRADER_PYPI_API_TOKEN }}
