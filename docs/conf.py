@@ -10,47 +10,48 @@ import sys
 from unittest.mock import MagicMock
 from importlib.metadata import version, PackageNotFoundError
 
-os.system('pip install ..')
-sys.path.insert(0, os.path.abspath('../bbstrader'))
+os.system("pip install ..")
+sys.path.insert(0, os.path.abspath("../bbstrader"))
+
 
 class Mock(MagicMock):
     @classmethod
     def __getattr__(cls, name):
         return MagicMock()
 
+
 # List the mock modules to avoid import errors
-MOCK_MODULES = ['MetaTrader5']
+MOCK_MODULES = ["MetaTrader5"]
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
-project = 'bbstrader'
-copyright = '2023 - 2026, Bertin Balouki SIMYELI'
-author = 'Bertin Balouki SIMYELI'
+project = "bbstrader"
+copyright = "2023 - 2026, Bertin Balouki SIMYELI"
+author = "Bertin Balouki SIMYELI"
 
 try:
     release = version("bbstrader")
 except PackageNotFoundError:
     release = "unknown"
-version = ".".join(release.split('.')[:2])
+version = ".".join(release.split(".")[:2])
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.napoleon',
-    'sphinx.ext.viewcode',
-    'sphinx.ext.todo',
+    "sphinx.ext.autodoc",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.viewcode",
+    "sphinx.ext.todo",
 ]
 
 
-templates_path = ['_templates']
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
-
+templates_path = ["_templates"]
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = 'sphinx_rtd_theme'
-html_static_path = ['_static']
+html_theme = "sphinx_rtd_theme"
+html_static_path = ["_static"]

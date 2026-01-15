@@ -122,7 +122,7 @@ class Mt5ExecutionEngine:
 
     >>> from bbstrader.metatrader import create_trade_instance
     >>> from bbstrader.trading.execution import Mt5ExecutionEngine
-    >>> from bbstrader.trading.strategies import StockIndexSTBOTrading
+    >>> from examples.strategies import StockIndexSTBOTrading
     >>> from bbstrader.config import config_logger
     >>>
     >>> if __name__ == '__main__':

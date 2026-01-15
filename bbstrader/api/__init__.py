@@ -1,3 +1,36 @@
+"""
+Overview
+========
+
+The API Module provides a high-level client for interacting with the MetaTrader 5 platform.
+It serves as the primary interface for connecting to, retrieving data from, and sending commands
+to a MetaTrader 5 terminal from a Python application. The module is designed to simplify
+interactions and provide convenient data handling.
+
+Features
+========
+
+- **High-Level MT5 Client**: A simplified client (`Mt5client`) for easy access to MetaTrader 5 functionalities.
+- **Dynamic Object Representation**: Automatically patches MetaTrader 5 data objects for better string representation, making debugging easier.
+- **DataFrame Conversion**: Includes a utility function (`trade_object_to_df`) to quickly convert lists of MT5 trade objects (like deals, orders, positions) into pandas DataFrames for analysis.
+- **Handler-Based Architecture**: Uses a handler class (`Mt5Handlers`) to manage the underlying MetaTrader 5 API calls, promoting modularity.
+
+Components
+==========
+
+- **Mt5client**: The main client instance used to interact with the MetaTrader 5 terminal.
+- **Mt5Handlers**: A class that encapsulates the direct calls to the MetaTrader 5 API.
+- **Helper Functions**:
+  - `trade_object_to_df`: Converts lists of trade-related objects to pandas DataFrames.
+  - Dynamic patching of `__str__` and `__repr__` for improved object inspection.
+
+Notes
+=====
+
+This module requires a running MetaTrader 5 terminal and the `MetaTrader5` Python package to be installed.
+The connection is managed by the `Mt5client`.
+"""
+
 from operator import attrgetter
 
 import pandas as pd

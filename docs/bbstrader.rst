@@ -1,7 +1,6 @@
 bbstrader package
 =================
 
-
 Module contents
 ---------------
 
@@ -10,16 +9,16 @@ Module contents
    :show-inheritance:
    :undoc-members:
 
+
 Subpackages
 -----------
 
 .. toctree::
    :maxdepth: 4
 
-   bbstrader.apps
+   bbstrader.api
    bbstrader.btengine
    bbstrader.core
-   bbstrader.ibkr
    bbstrader.metatrader
    bbstrader.models
    bbstrader.trading
@@ -43,10 +42,10 @@ bbstrader.config module
    :show-inheritance:
    :undoc-members:
 
-bbstrader.tseries module
+bbstrader.scripts module
 ------------------------
 
-.. automodule:: bbstrader.tseries
+.. automodule:: bbstrader.scripts
    :members:
    :show-inheritance:
    :undoc-members:

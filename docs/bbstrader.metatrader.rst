@@ -21,10 +21,10 @@ bbstrader.metatrader.account module
    :show-inheritance:
    :undoc-members:
 
-bbstrader.metatrader.analysis module
-------------------------------------
+bbstrader.metatrader.broker module
+----------------------------------
 
-.. automodule:: bbstrader.metatrader.analysis
+.. automodule:: bbstrader.metatrader.broker
    :members:
    :show-inheritance:
    :undoc-members:
@@ -49,14 +49,6 @@ bbstrader.metatrader.risk module
 --------------------------------
 
 .. automodule:: bbstrader.metatrader.risk
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
-bbstrader.metatrader.scripts module
------------------------------------
-
-.. automodule:: bbstrader.metatrader.scripts
    :members:
    :show-inheritance:
    :undoc-members:

@@ -8,26 +8,10 @@ Module contents
    :members:
    :show-inheritance:
    :undoc-members:
-   
+
 
 Submodules
 ----------
-
-bbstrader.models.factors module
--------------------------------
-
-.. automodule:: bbstrader.models.factors
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
-bbstrader.models.ml module
---------------------------
-
-.. automodule:: bbstrader.models.ml
-   :members:
-   :show-inheritance:
-   :undoc-members:
 
 bbstrader.models.nlp module
 ---------------------------
@@ -44,21 +28,4 @@ bbstrader.models.optimization module
    :members:
    :show-inheritance:
    :undoc-members:
-
-bbstrader.models.portfolio module
----------------------------------
-
-.. automodule:: bbstrader.models.portfolio
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
-bbstrader.models.risk module
-----------------------------
-
-.. automodule:: bbstrader.models.risk
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
 
