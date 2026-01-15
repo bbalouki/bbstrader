@@ -21,18 +21,10 @@ bbstrader.core.data module
    :show-inheritance:
    :undoc-members:
 
-bbstrader.core.scripts module
------------------------------
+bbstrader.core.strategy module
+------------------------------
 
-.. automodule:: bbstrader.core.scripts
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
-bbstrader.core.utils module
----------------------------
-
-.. automodule:: bbstrader.core.utils
+.. automodule:: bbstrader.core.strategy
    :members:
    :show-inheritance:
    :undoc-members:

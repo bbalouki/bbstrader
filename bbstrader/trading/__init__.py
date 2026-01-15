@@ -1,11 +1,33 @@
 """
-Trading strategies execution module
+Overview
+========
 
-This module is responsible for executing trading strategies. 
-It provides a framework for executing trading strategies and managing the trading process. 
-The module is designed to be flexible and extensible, allowing users to define their own trading 
-strategies and customize the trading process.
+The Trading Module is responsible for the execution of trading strategies. It provides a
+structured framework for implementing and managing trading strategies, from signal generation
+to order execution. This module is designed to be flexible and extensible, allowing for the
+customization of trading logic and integration with various execution handlers.
 
+Features
+========
+
+- **Strategy Execution Framework**: Defines a clear structure for creating and executing trading strategies.
+- **Signal Generation**: Supports the generation of trading signals based on market data and strategy logic.
+- **Order Management**: Manages the creation and execution of orders based on generated signals.
+- **Extensibility**: Allows for the implementation of custom strategies and execution handlers.
+
+Components
+==========
+
+- **Execution**: Handles the execution of trades, with a base class for creating custom execution handlers.
+- **Strategy**: Defines the core logic of the trading strategy, including signal generation and order creation.
+- **Utils**: Provides utility functions to support the trading process.
+
+Notes
+=====
+
+This module can be used in both backtesting and live trading environments by swapping out the
+execution handler.
 """
+
 from bbstrader.trading.execution import *  # noqa: F403
 from bbstrader.trading.strategy import *  # noqa: F403

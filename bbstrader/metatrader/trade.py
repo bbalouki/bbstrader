@@ -552,16 +552,19 @@ class Trade:
         return False
 
     def open_buy_position(self, **kwargs):
-        """Open A buy postion or Order
+        """
+        Open a buy position or order.
 
-        See Trade.open_position for the **kwargs
+        See Trade.open_position for the ``kwargs`` parameters.
         """
         return self.open_position(action=kwargs.pop("action", "BMKT"), **kwargs)
 
-    def open_sell_position(self, **kwargs):
-        """Open A Sell postion or Order
 
-        See Trade.open_position for the **kwargs
+    def open_sell_position(self, **kwargs):
+        """
+        Open a sell position or order.
+
+        See Trade.open_position for the ``kwargs`` parameters.
         """
         return self.open_position(action=kwargs.pop("action", "SMKT"), **kwargs)
 

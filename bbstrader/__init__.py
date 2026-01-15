@@ -1,5 +1,5 @@
 """
-Simplified Investment & Trading Toolkit
+Simplified Investment & Trading Toolkit with Python & C++
 
 """
 

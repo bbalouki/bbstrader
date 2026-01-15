@@ -1,6 +1,7 @@
 bbstrader.trading package
 =========================
 
+
 Module contents
 ---------------
 
@@ -21,18 +22,10 @@ bbstrader.trading.execution module
    :show-inheritance:
    :undoc-members:
 
-bbstrader.trading.scripts module
---------------------------------
+bbstrader.trading.strategy module
+---------------------------------
 
-.. automodule:: bbstrader.trading.scripts
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
-bbstrader.trading.strategies module
------------------------------------
-
-.. automodule:: bbstrader.trading.strategies
+.. automodule:: bbstrader.trading.strategy
    :members:
    :show-inheritance:
    :undoc-members:
@@ -44,4 +37,3 @@ bbstrader.trading.utils module
    :members:
    :show-inheritance:
    :undoc-members:
-
