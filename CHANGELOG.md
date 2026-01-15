@@ -1,5 +1,11 @@
 # Changes
 
+# 2.1.0
+- Add descriptions to `__init__.py` files for `metatrader`, `trading`, `core`, `models`, and `api` modules.
+
+# 2.0.0
+- Major release with significant updates and new features.
+
 # 0.3.5
 - Minor bug fix, updates and upgrade to python 3.12
 
