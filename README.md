@@ -1,71 +1,63 @@
-# `bbstrader`: High-Performance Trading with C++ and Python
+# `bbstrader`: High-Performance Algorithmic Trading with C++ and Python
 
 [![Documentation Status](https://readthedocs.org/projects/bbstrader/badge/?version=latest)](https://bbstrader.readthedocs.io/en/latest/?badge=latest)
 [![PYPI Version](https://img.shields.io/pypi/v/bbstrader)](https://pypi.org/project/bbstrader/)
 [![PyPi status](https://img.shields.io/pypi/status/bbstrader.svg?maxAge=60)](https://pypi.python.org/pypi/bbstrader)
 [![Supported Python Versions](https://img.shields.io/pypi/pyversions/bbstrader)](https://pypi.org/project/bbstrader/)
 [![PyPI Downloads](https://static.pepy.tech/badge/bbstrader)](https://pepy.tech/projects/bbstrader)
-[![CodeFactor](https://www.codefactor.io/repository/github/bbalouki/bbstrader/badge)](https://www.codefactor.io/repository/github/bbalouki/bbstrader)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-grey?logo=Linkedin&logoColor=white)](https://www.linkedin.com/in/bertin-balouki-s-15b17a1a6)
 
-### **[Get Premium Data Packs]([bertin@bbs-trading.com])** | **[Need Custom Strategies](mailto:[bertin@bbs-trading.com])** | ☕ **[Support the Dev](https://paypal.me/bertinbalouki?country.x=SN&locale.x=en_US)**
+Welcome to `bbstrader`, an institutional-grade, high-performance algorithmic trading toolkit. This library is architected for serious traders and quants who require the raw speed of C++ for execution and the rich, expressive power of Python for analysis and orchestration.
 
-## Overview
+`bbstrader` is not a simple wrapper. It is a sophisticated, dual-language ecosystem that provides a decisive edge in the competitive financial markets. Whether you are a C++ developer seeking seamless integration with MetaTrader 5, or a Python quant hitting performance bottlenecks, `bbstrader` is the definitive solution.
 
-`bbstrader` is not just another trading library. It is an institutional-grade, high-performance toolkit designed to give you a decisive edge in the financial markets. Built on a unique C++/Python architecture, it empowers you to execute complex strategies with the speed of compiled C++ and the flexibility of Python.
+## The `bbstrader` Edge: Uniting C++ Speed with Python Flexibility
 
-Whether you're a Python quant looking for more speed, or a C++ developer who needs access to the MetaTrader 5 ecosystem, `bbstrader` is your bridge to professional-grade algorithmic trading.
+Modern algorithmic trading demands both speed and intelligence. `bbstrader` is built on the philosophy that you shouldn't have to choose between them.
 
-## The `bbstrader` Philosophy: Best of Both Worlds
+### Overcoming the MQL5 Bottleneck
+MetaTrader 5 is a world-class trading platform, but its native MQL5 language presents significant limitations for complex, high-frequency strategies:
+- **Performance Ceilings:** As an interpreted language, MQL5 struggles with the computationally intensive logic required for advanced statistical models, machine learning, and rapid-fire order execution.
+- **Ecosystem Constraints:** MQL5 lacks access to the vast, mature ecosystems of libraries for numerical computation, data science, and AI that C++ and Python offer.
+- **Architectural Rigidity:** Implementing sophisticated, multi-threaded, or event-driven architectures in MQL5 is often a complex and error-prone endeavor.
 
-The markets are unforgiving. To succeed, you need speed, precision, and flexibility. This is why `bbstrader` was built to seamlessly blend the raw power of C++ with the expressive simplicity of Python.
+`bbstrader` eradicates these barriers. By moving your core strategy logic to C++, you can unlock the full potential of your trading ideas, executing them with the microsecond-level precision demanded by institutional trading.
 
-### Why C++ for Trading? The MQL5 Bottleneck
+### A Symphony of Languages
+`bbstrader` creates a powerful symbiosis between C++ and Python:
+- **C++ for the Core:** Implement your performance-critical strategy logic, signal generation, and risk management in compiled C++ for maximum speed and control.
+- **Python for the Command:** Use Python's unparalleled data science stack (NumPy, pandas, SciPy, scikit-learn) to research, backtest, and orchestrate your C++ strategies.
 
-MetaTrader 5 is a fantastic platform, but its native MQL5 language has limitations:
-- **Execution Speed:** As an interpreted language, MQL5 can be too slow for strategies that require rapid calculations or reactions to market events.
-- **Limited Libraries:** You don't have access to the vast ecosystem of numerical, statistical, and machine learning libraries available in other languages.
-- **Complexity:** Implementing sophisticated mathematical models in MQL5 is often cumbersome and error-prone.
+## Architectural Deep Dive: The C++/Python Bridge
+The power of `bbstrader` lies in its innovative C++/Python bridge, which allows for seamless, bidirectional communication between the two languages.
 
-`bbstrader` shatters these limitations by allowing you to write your performance-critical logic in C++, the language of choice for high-frequency trading and institutional systems.
+At the core of this architecture is the C++ `MetaTraderClient`, a powerful class that mirrors the official MetaTrader 5 Python API. The magic lies in how it's connected:
 
-### The Power of Python
+1.  **Dependency Injection of Handlers:** The Python `MetaTrader5` library functions are passed into the C++ `MetaTraderClient` as `std::function` handlers. This means the C++ code isn't just calling Python; it's treating Python functions as native, callable objects.
+2.  **High-Speed C++ Execution:** Your C++ strategy can execute complex, computationally intensive logic at native speeds. When it needs to interact with the market, it simply invokes one of the injected Python handlers.
+3.  **The Data Flow:** The result is a clean, efficient, and powerful execution loop:
+    `Python (Orchestration & Analysis) -> C++ (High-Speed Signal Generation) -> Python (MT5 Communication) -> C++ (Receives Market Data)`
 
-Python is the undisputed king of data science and quantitative analysis for a reason. With `bbstrader`, you can leverage Python's world-class libraries (like NumPy, pandas, and scikit-learn) to:
-- **Rapidly Prototype & Backtest:** Develop and test your ideas with ease.
-- **Orchestrate Your Strategies:** Use Python as the "brain" of your trading operation, making high-level decisions.
-- **Analyze Your Results:** Dive deep into your trading performance with powerful data analysis tools.
-
-## The C++/Python Bridge: How It Works
-
-`bbstrader` provides a C++ `MetaTraderClient` that mirrors the official MetaTrader 5 Python API. The magic is in how they connect:
-
-1.  **Python Handles:** The Python `MetaTrader5` library functions are passed into the C++ client as "handlers".
-2.  **C++ Execution:** Your C++ strategy code calls these handlers to interact with the MT5 terminal (e.g., to get market data or send an order).
-3.  **The Flow:** Your Python code calls a function in your C++ strategy. The C++ code then executes its high-speed logic, and when it needs to talk to the market, it calls the Python handler it was given.
-
-This creates a powerful feedback loop: **Python (Orchestration) -> C++ (High-Speed Logic) -> Python (MT5 Communication) -> C++ (Result)**
+This architecture provides the best of both worlds: the raw power of C++ for your core logic, and the flexibility and rich library support of Python for everything else.
 
 ## Installation
+`bbstrader` is designed for both Python and C++ developers. Follow the instructions that best suit your needs.
 
-### For the Python Developer
-Get started in seconds with `pip`. We recommend using a virtual environment.
-
+### For the Python Quant
+Get started in minutes using `pip`. We strongly recommend using a virtual environment.
 ```bash
 # Create and activate a virtual environment
 python -m venv venv
-source venv/bin/activate  # Linux/Mac
-venv\Scripts\activate     # Windows
+source venv/bin/activate  # on Linux/macOS
+venv\Scripts\activate     # on Windows
 
 # Install bbstrader with MetaTrader 5 support
 pip install bbstrader[MT5]
 ```
 
 ### For the C++ Developer
-If you want to build your own C++ strategies, you can use `vcpkg` to install the `bbstrader` library.
-
+To develop your own C++ strategies, you can use `vcpkg` to install the `bbstrader` library and its dependencies.
 ```bash
-# Install vcpkg (if you haven't already)
+# If you don't have vcpkg, clone and bootstrap it
 git clone https://github.com/microsoft/vcpkg
 ./vcpkg/bootstrap-vcpkg.sh
 
@@ -73,12 +65,10 @@ git clone https://github.com/microsoft/vcpkg
 ./vcpkg/vcpkg install bbstrader
 ```
 
-## Usage Examples
+## Usage Patterns & Sophisticated Examples
 
-Here are a few patterns to illustrate the power of `bbstrader`'s hybrid architecture.
-
-### Pattern 1: C++ Core, Python Shell (High-Performance)
-In this pattern, your core strategy logic lives in C++. Python is used to instantiate the strategy and feed it data. This is ideal for speed-sensitive strategies.
+### Pattern 1: C++ Core, Python Orchestrator (Maximum Performance)
+This is the recommended pattern for latency-sensitive strategies. Your core logic is written in C++ and exposed to Python via bindings. Python is then used to instantiate and manage your strategy.
 
 **C++ Side (`MovingAverageStrategy.hpp`):**
 ```cpp
@@ -90,100 +80,82 @@ class MovingAverageStrategy : public MT5::MetaTraderClient {
 public:
     using MetaTraderClient::MetaTraderClient; // Inherit constructors
 
-    // This is where your custom C++ logic lives
     void on_tick(const std::string& symbol) {
-        // 1. Get the latest rates (C++ logic calling mapped Python function)
         auto rates_opt = copy_rates_from_pos(symbol, 1, 0, 20); // M1 timeframe, 20 bars
 
         if (!rates_opt || rates_opt->size() < 20) return;
 
         const auto& rates = *rates_opt;
 
-        // 2. Calculate SMA in C++ (Fast!)
         double sum = std::accumulate(rates.begin(), rates.end(), 0.0,
                                      [](double a, const MT5::RateInfo& b) { return a + b.close; });
         double sma = sum / rates.size();
         double current_price = rates.back().close;
 
-        // 3. Execution Logic
         if (current_price > sma) {
-            std::cout << "Price above SMA. Sending Buy Order for " << symbol << std::endl;
-            // order_send(...) would be called here
+            std::cout << "Price is above SMA. Sending Buy Order for " << symbol << std::endl;
+            // In a real strategy, you would call order_send(...) here
         }
     }
 };
 ```
+*This C++ class would then be exposed to Python using `pybind11`.*
 
 **Python Side (`main.py`):**
 ```python
 from bbstrader.api import Mt5Handlers
 import MetaTrader5 as mt5
 import time
+from my_strategies import MovingAverageStrategy # Assuming you've compiled your C++ code
 
-# You would need to compile the C++ code and create Python bindings.
-# This is a simplified example.
-# Let's assume you have a compiled module called `my_strategies`
-from my_strategies import MovingAverageStrategy
-
-# Create the strategy instance, injecting the Python MT5 handlers
+# 1. Instantiate the C++ strategy, injecting the Python MT5 handlers
 strategy = MovingAverageStrategy(Mt5Handlers)
 
-# Main Loop
-while True:
-    strategy.on_tick("EURUSD")
-    time.sleep(1) # Check every second
+# 2. Main execution loop
+if strategy.initialize():
+    while True:
+        strategy.on_tick("EURUSD")
+        time.sleep(1)
 ```
 
-### Pattern 2: Python-driven with C++ Acceleration
-In this pattern, your strategy is primarily written in Python, but you can call the C++ `MetaTraderClient` for direct, high-performance access to the MT5 API.
+### Pattern 2: Python-Driven with C++ Acceleration
+For strategies where Python's flexibility is paramount, you can write your main logic in Python and still leverage the C++ `MetaTraderClient` for high-performance data retrieval and other API interactions.
 
 ```python
 import bbstrader
 import MetaTrader5 as mt5
 
-# 1. Create a Python class that inherits from the C++ Client
+# 1. Inherit from the C++ MetaTraderClient in Python
 class MyStrategyClient(bbstrader.api.MetaTraderClient):
     def __init__(self, handlers):
-        # Initialize the C++ base class
         super().__init__(handlers)
 
-# 2. Define the Handlers (The bridge)
-h = bbstrader.api.Handlers
+# 2. Instantiate your client
+client = MyStrategyClient(bbstrader.api.Mt5Handlers)
 
-# 3. Use the Client
-client = MyStrategyClient(h)
+# 3. Interact with the MT5 terminal via the C++ bridge
 if client.initialize():
-    # This call goes: Python -> C++ Logic -> Python MT5 Lib -> C++ Result
     rates = client.copy_rates_from_pos("EURUSD", mt5.TIMEFRAME_M1, 0, 100)
-    print(f"Retrieved {len(rates)} rates via C++ Bridge")
+    print(f"Retrieved {len(rates)} rates via the C++ bridge.")
 ```
 
 ## Core Components
-
-- **Backtesting Engine (`btengine`):** An event-driven backtester to rigorously test your strategies with historical data.
-- **MetaTrader5 Module (`metatrader`):** The C++/Python bridge that facilitates direct, high-speed interaction with the MT5 platform.
-- **Models Module (`models`):** A framework for financial modeling, including statistical models and risk management tools.
-- **Time Series Module (`tseries`):** Specialized tools for advanced time series analysis.
+`bbstrader` is a modular library, with each component designed to handle a specific aspect of the trading workflow.
+- **`btengine`**: A powerful, event-driven backtesting engine for rigorously testing your strategies.
+- **`metatrader`**: The C++/Python bridge that enables high-speed, direct communication with the MT5 terminal.
+- **`models`**: A framework for financial modeling, including advanced statistical and machine learning models.
+- **`tseries`**: Specialized tools for advanced time series analysis, including cointegration, volatility modeling, and more.
+- **`trading`**: A high-level interface for managing live trading logic, coordinating signals, risk, and execution.
 
 ## Documentation
-
-For comprehensive information, including detailed API references and mathematical explanations, please visit our official documentation:
-[**View the Full Documentation**](https://bbstrader.readthedocs.io/en/latest/)
+For a deep dive into the API, advanced tutorials, and more, please visit our full documentation:
+[**View the Full Documentation on ReadTheDocs**](https://bbstrader.readthedocs.io/en/latest/)
 
 ## Contributing
-
-We welcome contributions! Whether you are a developer or a trader:
-
-1.  Fork the repository.
-2.  Create a feature branch.
-3.  Submit a Pull Request.
-
-_Note: If you find a security vulnerability, please email the maintainer directly._
+`bbstrader` is an open-source project, and we welcome contributions from the community. Whether you're interested in adding new features, improving the documentation, or fixing bugs, we encourage you to get involved. Please see our `CONTRIBUTING.md` file for more details.
 
 ## Disclaimer
-
-Trading financial instruments involves a high level of risk. The developers of `bbstrader` are not responsible for any financial losses incurred from the use of this software.
+Trading financial instruments involves a high level of risk. The developers of `bbstrader` are not responsible for any financial losses incurred through the use of this software. Always trade responsibly.
 
 ## License
-
-`bbstrader` is open source and available under the MIT License.
+`bbstrader` is licensed under the MIT License.
