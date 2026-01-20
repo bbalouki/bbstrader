@@ -2,6 +2,7 @@ from datetime import datetime
 from enum import IntEnum
 from queue import Queue
 from typing import Any, Callable, Dict, List, Optional, Union
+from abc import abstractmethod
 
 import numpy as np
 import pandas as pd
@@ -177,6 +178,9 @@ class LiveStrategy(BaseStrategy):
         )
 
         return generate_signal(signal_id, symbol, action, **kwargs)
+    
+    @abstractmethod
+    def calculate_signals(self, *args: Any, **kwargs: Any) -> List[TradeSignal]: ...
 
     def ispositions(
         self,

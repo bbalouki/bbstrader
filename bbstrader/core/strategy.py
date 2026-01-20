@@ -181,7 +181,7 @@ class Strategy(metaclass=ABCMeta):
     """
 
     @abstractmethod
-    def calculate_signals(self, *args: Any, **kwargs: Any) -> List[TradeSignal]:
+    def calculate_signals(self, *args: Any, **kwargs: Any) -> List[TradeSignal] | None:
         raise NotImplementedError("Should implement calculate_signals()")
 
     def check_pending_orders(self, *args: Any, **kwargs: Any) -> None: ...
@@ -243,17 +243,16 @@ class BaseStrategy(Strategy):
         """Returns the available cash (virtual or real)."""
         raise NotImplementedError
 
-    def calculate_signals(self, *args: Any, **kwargs: Any) -> List[TradeSignal]:
+    def calculate_signals(self, *args: Any, **kwargs: Any) -> List[TradeSignal] | None:
         """
         Provides the mechanisms to calculate signals for the strategy.
-        This methods should return a list of signals for the strategy.
+        This methods should return a list of signals for the strategy For Live mode and None For Backtest mode.
 
         Each signal must be a ``TradeSignal`` object with the following attributes:
-        - ``action``: The order to execute on the symbol (LONG, SHORT, EXIT, etc.), see `bbstrader.core.utils.TradeAction`.
-        - ``price``: The price at which to execute the action, used for pending orders.
-        - ``stoplimit``: The stop-limit price for STOP-LIMIT orders, used for pending stop limit orders.
         - ``id``: The unique identifier for the strategy or order.
-        - ``comment``: An optional comment or description related to the trade signal.
+        - ``action``: The order to execute on the symbol (LONG, SHORT, EXIT, etc.), see `bbstrader.core.utils.TradeAction`.
+        - ``symbol``: The trading symbol (e.g., stock ticker, forex pair, crypto asset).
+        - See ``bbstrader.core.strategy.TradeSignal`` for other optionnal arguments.
         """
         raise NotImplementedError("Should implement calculate_signals()")
 
