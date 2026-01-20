@@ -25,3 +25,4 @@ scripts.sh
 .so
 test_setup.py
 packaging/
+*.spec
