@@ -172,16 +172,9 @@ class MT5ExecutionHandler(ExecutionHandler):
             lot = quantity / contract_size
         if symbol_type == SymbolType.FOREX:
             lot = float(quantity * price / contract_size)
-        return self._check_lot(symbol, lot)
+        return self.__account.broker.validate_lot_size(symbol, lot)
 
-    def _check_lot(self, symbol: str, lot: float) -> float:
-        symbol_info = self.__account.get_symbol_info(symbol)
-        if lot < symbol_info.volume_min:
-            return float(symbol_info.volume_min)
-        elif lot > symbol_info.volume_max:
-            return float(symbol_info.volume_max)
-        return round(lot, 2)
-
+    
     def _estimate_total_fees(
         self,
         symbol: str,
