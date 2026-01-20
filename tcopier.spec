@@ -8,14 +8,22 @@ block_cipher = None
 datas_sm = collect_data_files('en_core_web_sm')
 hiddenimports_sm = collect_submodules('en_core_web_sm')
 hiddenimports_bbs = collect_submodules("bbstrader")
+binaries_bbs = collect_dynamic_libs("bbstrader")
 binaries_sm = collect_dynamic_libs('en_core_web_sm')
+
+explicit_hidden_imports = [
+    'bbstrader.api.metatrader_client', 
+    'MetaTrader5'
+]
+
+
 
 a = Analysis(
     ['bbstrader/metatrader/_copier.py'],
     pathex=[],
-    binaries=binaries_sm,
+    binaries=binaries_sm + binaries_bbs,
     datas=[('bbstrader/assets', 'assets')] + datas_sm,
-    hiddenimports=hiddenimports_sm + hiddenimports_bbs,
+    hiddenimports=hiddenimports_sm + hiddenimports_bbs + explicit_hidden_imports,
     hookspath=['hooks'],
     hooksconfig={},
     runtime_hooks=[],
@@ -41,7 +49,7 @@ exe = EXE(
     upx=True,
     upx_exclude=[],
     runtime_tmpdir=None,
-    console=False, # Corresponds to --windowed
+    console=False, # --windowed
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
