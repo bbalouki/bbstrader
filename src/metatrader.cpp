@@ -917,7 +917,8 @@ PYBIND11_MODULE(metatrader_client, m) {
         .def(
             "history_orders_get",
             py::overload_cast<uint64_t>(&MetaTraderClient::history_orders_get),
-            py::arg("ticket")
+            py::arg("ticket"),
+            py::return_value_policy::move
         )
         .def(
             "history_orders_get_by_pos",
@@ -970,7 +971,8 @@ PYBIND11_MODULE(metatrader_client, m) {
         .def(
             "history_deals_get",
             py::overload_cast<uint64_t>(&MetaTraderClient::history_deals_get),
-            py::arg("ticket")
+            py::arg("ticket"),
+            py::return_value_policy::move
         )
         .def(
             "history_deals_get_by_pos",
