@@ -5,7 +5,7 @@ build-backend = "scikit_build_core.build"
 [project]
 name = "bbstrader"
 dynamic = ["version"]
-description = "Simplified Investment & Trading Toolkit"
+description = "Simplified Investment & Trading Toolkit with Python & C++"
 readme = "README.md"
 dependencies = [
     "beautifulsoup4>=4.13.5",
@@ -27,7 +27,7 @@ dependencies = [
     "PyYAML>=6.0.2",
     "QuantStats>=0.0.77",
     "seaborn>=0.13.2",
-    "spacy>=3.8.7",
+    "spacy>=3.8.11",
     "sumy>=0.11.0",
     "tabulate>=0.9.0",
     "textblob>=0.19.0",

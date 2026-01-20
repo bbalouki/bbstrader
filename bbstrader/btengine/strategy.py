@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from datetime import datetime
 from queue import Queue
 from typing import Any, Callable, Dict, List, Optional, Union
@@ -7,7 +8,7 @@ import pandas as pd
 from loguru import logger
 
 from bbstrader.btengine.data import DataHandler
-from bbstrader.btengine.event import Events, FillEvent, SignalEvent
+from bbstrader.btengine.event import Events, FillEvent, MarketEvent, SignalEvent
 from bbstrader.config import BBSTRADER_DIR
 from bbstrader.core.strategy import BaseStrategy, TradingMode
 
@@ -160,6 +161,9 @@ class BacktestStrategy(BaseStrategy):
         if all(len(values) >= window for values in asset_values.values()):
             return {a: v[-window:] for a, v in asset_values.items()}
         return None
+
+    @abstractmethod
+    def calculate_signals(self, event: MarketEvent) -> None: ...
 
     def _send_order(
         self,

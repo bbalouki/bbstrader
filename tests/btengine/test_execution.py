@@ -133,6 +133,7 @@ class TestMT5ExecutionHandler(unittest.TestCase):
         self.mock_account_instance.get_symbol_info.return_value = SymbolInfo(
             100000, 0.01, 1000
         )
+        self.mock_account_instance.broker.validate_lot_size.return_value = 0.1
 
         order_event = OrderEvent(symbol, "MKT", qty, "BUY", price, "LONG")
         self.handler.execute_order(order_event)
@@ -153,6 +154,7 @@ class TestMT5ExecutionHandler(unittest.TestCase):
         self.mock_account_instance.get_symbol_info.return_value = SymbolInfo(
             100, 0.01, 1000
         )
+        self.mock_account_instance.broker.validate_lot_size.return_value = 0.1
 
         order_event = OrderEvent(symbol, "MKT", qty, "BUY", price, "LONG")
         self.handler.execute_order(order_event)
@@ -168,6 +170,7 @@ class TestMT5ExecutionHandler(unittest.TestCase):
 
         self.mock_account_instance.get_symbol_type.return_value = SymbolType.INDICES
         self.mock_account_instance.get_symbol_info.return_value = SymbolInfo(1, 0.1, 50)
+        self.mock_account_instance.broker.validate_lot_size.return_value = 10
 
         order_event = OrderEvent(symbol, "MKT", qty, "BUY", price, "LONG")
         self.handler.execute_order(order_event)
@@ -185,6 +188,7 @@ class TestMT5ExecutionHandler(unittest.TestCase):
         self.mock_account_instance.get_symbol_info.return_value = SymbolInfo(
             100000, 0.01, 1000
         )
+        self.mock_account_instance.broker.validate_lot_size.return_value = 0.01
 
         order_event = OrderEvent(symbol, "MKT", qty, "BUY", price, "LONG")
         self.handler.execute_order(order_event)

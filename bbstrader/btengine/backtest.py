@@ -115,7 +115,7 @@ class BacktestEngine:
             self.events, self.symbol_list, **self.kwargs
         )
         self.strategy: Strategy = self.strategy_cls(
-            bars=self.data_handler, events=self.events, **self.kwargs
+            self.events, self.symbol_list, self.data_handler, **self.kwargs
         )
         self.portfolio: Portfolio = Portfolio(
             self.data_handler,
@@ -282,10 +282,10 @@ def run_backtest(
             - Monthly returns saved as a PNG image.
 
     Example:
-        >>> from bbstrader.trading.strategies import StockIndexSTBOTrading
-        >>> from bbstrader.metatrader.utils import config_logger
-        >>> from bbstrader.datahandlers import MT5DataHandler
-        >>> from bbstrader.execution import MT5ExecutionHandler
+        >>> from examples.strategies import StockIndexSTBOTrading
+        >>> from bbstrader.config import config_logger
+        >>> from bbstrader.btengine.data import MT5DataHandler
+        >>> from bbstrader.btengine.execution import MT5ExecutionHandler
         >>> from datetime import datetime
         >>>
         >>> logger = config_logger('index_trade.log', console_log=True)
