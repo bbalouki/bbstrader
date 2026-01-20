@@ -344,7 +344,7 @@ class Mt5ExecutionEngine:
         max_trades = {
             symbol: mtrades[symbol]
             if mtrades is not None and isinstance(mtrades, dict) and symbol in mtrades
-            else self.trades_instances[symbol].max_trade()
+            else self.trades_instances[symbol].rm.max_trade()
             for symbol in self.symbols
         }
         return max_trades
@@ -361,7 +361,7 @@ class Mt5ExecutionEngine:
     def _init_strategy(self, **kwargs) -> LiveStrategy:
         try:
             check_mt5_connection(**kwargs)
-            strategy = self.strategy_cls(symbol_list=self.symbols, **kwargs)
+            strategy = self.strategy_cls(self.symbols, **kwargs)
         except Exception as e:
             self._print_exc(
                 f"Initializing strategy, STRATEGY={self.STRATEGY}, ACCOUNT={self.ACCOUNT}",
@@ -407,10 +407,10 @@ class Mt5ExecutionEngine:
             **common_data,
             symbol_type=account.get_symbol_type(symbol).value,
             description=symbol_info.description if symbol_info else "N/A",
-            price=price if price else "MARKET",
-            stoplimit=stoplimit,
-            sl=sl if sl else "AUTO",
-            tp=tp if tp else "AUTO",
+            price=round(price, 5) if price else "MARKET",
+            stoplimit=round(stoplimit, 5) if stoplimit else None,
+            sl=round(sl, 5) if sl else "AUTO",
+            tp=round(tp, 5) if tp else "AUTO",
             broker=account.broker.name,
             timestamp=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         )
