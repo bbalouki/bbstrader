@@ -23,7 +23,7 @@ class Handlers:
     pass
 
 
-class TestMetaTraderClientAllMethods(unittest.TestCase):
+class TestMetaTraderClient(unittest.TestCase):
     client: MetaTraderClient = None
 
     @classmethod
