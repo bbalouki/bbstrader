@@ -24,7 +24,7 @@ jobs:
         uses: pypa/cibuildwheel@v2.16.5
         env:
           # 1. CONFIGURATION 
-          CIBW_BUILD: "cp312-*"
+          CIBW_BUILD: "cp312-* cp313-*"
           # Skip 32-bit builds
           CIBW_ARCHS: "auto64"
 

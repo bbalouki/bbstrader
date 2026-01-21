@@ -1,9 +1,12 @@
 name: build
 
 on:
-  pull_request:
-    branches:
-      - main
+  push:
+    tags:
+      - "v*"
+  # pull_request:
+  #   branches:
+  #     - main
 
 jobs:
   build-and-test:
