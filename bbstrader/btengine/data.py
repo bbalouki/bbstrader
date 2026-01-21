@@ -702,9 +702,7 @@ class FMPDataHandler(BaseCSVDataHandler):
         if data.empty or len(data) == 0:
             raise ValueError("No data found.")
         if period[0].isnumeric():
-            data = data.drop(
-                columns=["Return", "Volatility", "Cumulative Return"], axis=1
-            )
+            data = data.drop(columns=["Return", "Volatility", "Cumulative Return"])
         else:
             data = data.drop(
                 columns=[
@@ -714,8 +712,7 @@ class FMPDataHandler(BaseCSVDataHandler):
                     "Excess Return",
                     "Excess Volatility",
                     "Cumulative Return",
-                ],
-                axis=1,
+                ]
             )
         data = data.reset_index()
         if "Adj Close" not in data.columns:

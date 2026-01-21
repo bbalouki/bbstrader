@@ -349,9 +349,13 @@ class Portfolio:
         sharpe_ratio = create_sharpe_ratio(returns, periods=self.tf)
         sortino_ratio = create_sortino_ratio(returns, periods=self.tf)
         drawdown, _, _ = create_drawdowns(pnl)
+        drawdown = drawdown.fillna(0.0)
         max_dd = qs.stats.max_drawdown(returns)
         dd_details = qs.stats.drawdown_details(drawdown)
-        dd_duration = dd_details["days"].max()
+        if dd_details.empty:
+            dd_duration = 0
+        else:
+            dd_duration = dd_details["days"].max()
         self.equity_curve["Drawdown"] = drawdown
 
         stats = [

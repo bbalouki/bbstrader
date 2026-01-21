@@ -277,8 +277,6 @@ def test_output_summary_stats(
     p.equity_curve["Returns"] = p.equity_curve["Returns"].fillna(0.0)
     p.equity_curve["Equity Curve"] = p.equity_curve["Equity Curve"].fillna(1.0)
 
-    p.equity_curve["Drawdown"] = 0.0
-
     # Call the method under test
     stats = p.output_summary_stats()
 

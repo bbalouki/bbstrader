@@ -4,7 +4,6 @@ from PyInstaller.utils.hooks import collect_data_files, collect_submodules, coll
 
 block_cipher = None
 
-# Collect files for en_core_web_sm
 datas_sm = collect_data_files('en_core_web_sm')
 hiddenimports_sm = collect_submodules('en_core_web_sm')
 hiddenimports_bbs = collect_submodules("bbstrader")
@@ -15,8 +14,6 @@ explicit_hidden_imports = [
     'bbstrader.api.metatrader_client', 
     'MetaTrader5'
 ]
-
-
 
 a = Analysis(
     ['bbstrader/metatrader/_copier.py'],
