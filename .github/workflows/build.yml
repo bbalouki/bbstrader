@@ -52,7 +52,7 @@ jobs:
       - name: Install system packages (macOS)
         if: runner.os == 'macOS'
         shell: bash
-        run: brew install autoconf autoconf-archive automake libtoo
+        run: brew install autoconf autoconf-archive automake libtool
       
       - name: Set VCPKG Triplet
         shell: bash
