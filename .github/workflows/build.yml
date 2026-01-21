@@ -44,9 +44,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-${{ matrix.build_type }}-cmake-
 
-      - name: Install system package
+      - name: Install system packages (Linux)
+        if: runner.os == 'Linux'
         shell: bash
         run: sudo apt install autoconf autoconf-archive automake libtool
+
+      - name: Install system packages (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: brew install autoconf autoconf-archive automake libtoo
       
       - name: Set VCPKG Triplet
         shell: bash
