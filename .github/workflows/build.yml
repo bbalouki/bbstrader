@@ -1,4 +1,4 @@
-name: Linux
+name: build
 
 on:
   pull_request:
@@ -7,12 +7,13 @@ on:
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
         build_type: [Release, Debug]
         cpp_standard: [20, 23]
+    runs-on: ${{ matrix.os }}
     env:
       VCPKG_ROOT: ${{ github.workspace }}/vcpkg
       BUILD_DIR: ${{ github.workspace }}/build
@@ -46,6 +47,21 @@ jobs:
       - name: Install system package
         shell: bash
         run: sudo apt install autoconf autoconf-archive automake libtool
+      
+      - name: Set VCPKG Triplet
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            echo "VCPKG_TARGET_TRIPLET=x64-windows" >> $GITHUB_ENV
+          elif [ "$RUNNER_OS" == "Linux" ]; then
+            echo "VCPKG_TARGET_TRIPLET=x64-linux" >> $GITHUB_ENV
+          else
+            if [ "$(uname -m)" == "arm64" ]; then
+              echo "VCPKG_TARGET_TRIPLET=arm64-osx" >> $GITHUB_ENV
+            else
+              echo "VCPKG_TARGET_TRIPLET=x64-osx" >> $GITHUB_ENV
+            fi
+          fi
 
       - name: Configure CMake
         shell: bash
@@ -55,7 +71,7 @@ jobs:
             -DBBSTRADER_CXX_STANDARD=${{ matrix.cpp_standard }} \
             -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
             -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake \
-            -DVCPKG_TARGET_TRIPLET=x64-linux
+            -DVCPKG_TARGET_TRIPLET=$VCPKG_TARGET_TRIPLET
 
       - name: Build
         shell: bash
