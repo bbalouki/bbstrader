@@ -1,6 +1,6 @@
 [Setup]
 AppName=TradeCopier
-AppVersion=2.0.3
+AppVersion=2.0.4
 AppPublisher=bbstrading
 DefaultDirName={pf}\TradeCopier
 DefaultGroupName=TradeCopier
