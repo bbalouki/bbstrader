@@ -128,6 +128,8 @@ jobs:
     needs: [build_installer, publish]
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
 
     steps:
       - name: Download artifacts
