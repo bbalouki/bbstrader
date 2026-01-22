@@ -91,16 +91,17 @@ jobs:
           $version = "${{ github.ref_name }}".Substring(1)
           (Get-Content tcopier.iss) -replace '__VERSION__', $version | Set-Content tcopier.iss
 
-      - name: Compile installer with Inno Setup
-        uses: crazy-max/ghaction-inno-setup@v3
-        with:
-          script: tcopier.iss
+      - name: Install Inno Setup
+        uses: Minionguyj/inno-setup-action@v2.2.2
+
+      - name: Compile installer
+        run: iscc tcopier.iss
           
       - name: Upload installer artifact
         uses: actions/upload-artifact@v4
         with:
           name: installer
-          path: TradeCopier.exe
+          path: "**/TradeCopier.exe"
   
   
   publish:
