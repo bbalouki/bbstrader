@@ -91,8 +91,10 @@ jobs:
           $version = "${{ github.ref_name }}".Substring(1)
           (Get-Content tcopier.iss) -replace '__VERSION__', $version | Set-Content tcopier.iss
 
-      - name: Install Inno Setup
-        uses: Minionguyj/inno-setup-action@v2.2.2
+      - name: Install Inno Setup (via Chocolatey)
+        run: |
+          choco install innosetup --no-progress
+          echo "C:\Program Files (x86)\Inno Setup 6" >> $env:GITHUB_PATH
 
       - name: Compile installer
         run: iscc tcopier.iss
