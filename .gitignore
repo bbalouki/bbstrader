@@ -16,7 +16,6 @@ notes.txt
 *.h5
 *ipynb_checkpoints/
 *.exe
-*.iss
 cmd.ps1
 .vscode
 CMakePresets.json

@@ -68,6 +68,41 @@ jobs:
           name: cibw-sdist
           path: dist/*.tar.gz
 
+  build_installer:
+    name: Build Windows Installer
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install pyinstaller
+          pip install .[MT5]
+
+      - name: Build executable
+        run: pyinstaller tcopier.spec
+
+      - name: Replace version in Inno Setup script
+        run: |
+          $version = "${{ github.ref_name }}".Substring(1)
+          (Get-Content tcopier.iss) -replace '__VERSION__', $version | Set-Content tcopier.iss
+
+      - name: Compile installer with Inno Setup
+        uses: crazy-max/ghaction-inno-setup@v3
+        with:
+          script: tcopier.iss
+          
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: installer
+          path: TradeCopier.exe
+  
+  
   publish:
     needs: [build_wheels, build_sdist]
     runs-on: ubuntu-latest
@@ -84,3 +119,21 @@ jobs:
         with:
           user: __token__
           password: ${{ secrets.BBSTRADER_PYPI_API_TOKEN }}
+
+  release:
+    name: Create GitHub Release
+    needs: [build_installer, publish]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
