@@ -11,7 +11,7 @@ binaries_bbs = collect_dynamic_libs("bbstrader")
 binaries_sm = collect_dynamic_libs('en_core_web_sm')
 
 explicit_hidden_imports = [
-    'bbstrader.api.metatrader_client', 
+    'bbstrader.api.client', 
     'MetaTrader5'
 ]
 

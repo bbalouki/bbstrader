@@ -238,7 +238,7 @@ auto register_tick_info() -> void {
     );
 }
 
-PYBIND11_MODULE(metatrader_client, m) {
+PYBIND11_MODULE(client, m) {
     m.doc() = "High-performance MetaTrader 5 C++/Python Bridge";
     register_rate_info();
     register_tick_info();

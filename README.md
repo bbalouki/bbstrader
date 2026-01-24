@@ -66,7 +66,7 @@ With thousands of downloads, `bbstrader` is trusted by traders worldwide. It's n
 
 ## **The `bbstrader` Edge: Uniting C++ Speed with Python Flexibility**
 
-bbstrader's hybrid design is its secret weapon. At the heart is a bidirectional C++/Python bridge via `metatrader_client` module:
+bbstrader's hybrid design is its secret weapon. At the heart is a bidirectional C++/Python bridge via `client` module:
 
 1. **C++ for Speed**: Core classes like `MetaTraderClient` handle high-performance tasks. Inject Python handlers for MT5 interactions, enabling native-speed signal generation and risk checks.
 2. **Python for Smarts**: Orchestrate everything with modules like `trading` and `btengine`.
@@ -209,7 +209,7 @@ This pattern is ideal for strategies that benefit from Python's rich ecosystem f
 ```python
 import MetaTrader5 as mt5
 from bbstrader.api import Mt5Handlers
-from bbstrader.api.metatrader_client import MetaTraderClient
+from bbstrader.api.client import MetaTraderClient
 
 # 1. Inherit from the C++ MetaTraderClient in Python
 class MyStrategyClient(MetaTraderClient):

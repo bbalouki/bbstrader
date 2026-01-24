@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 from loguru import logger
 
-from bbstrader.api.metatrader_client import TradeOrder  # type: ignore
+from bbstrader.api.client import TradeOrder  # type: ignore
 from bbstrader.btengine.event import FillEvent, SignalEvent
 from bbstrader.config import BBSTRADER_DIR
 from bbstrader.core.strategy import (
@@ -18,7 +18,8 @@ from bbstrader.core.strategy import (
     TradingMode,
     generate_signal,
 )
-from bbstrader.metatrader import Account, Rates
+from bbstrader.metatrader.account import Account
+from bbstrader.metatrader.rates import Rates
 
 logger.add(
     f"{BBSTRADER_DIR}/logs/strategy.log",

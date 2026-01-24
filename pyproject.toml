@@ -34,6 +34,7 @@ dependencies = [
     "tweepy>=4.16.0",
     "vaderSentiment>=3.3.2",
     "yfinance>=0.2.65",
+    "en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl",
 ]
 authors = [
     { name = "Bertin Balouki SIMYELI", email = "bertin@bbs-trading.com" },
@@ -76,7 +77,7 @@ MT5 = ["MetaTrader5"]
 [tool.scikit-build]
 cmake.version = ">=3.20"
 cmake.define = { "BUILD_PYTHON_BINDINGS" = "ON", "CMAKE_VS_GLOBALS" = "IgnoreWarnIntDirInTempDetected=true" }
-wheel.packages = ["bbstrader"]
+wheel.packages = ["src/bbstrader"]
 
 [tool.scikit-build.metadata.version]
 provider = "scikit_build_core.metadata.regex"
@@ -84,4 +85,4 @@ input = "VERSION.txt"
 regex = '(?P<value>\d+\.\d+\.\d+)'
 
 [tool.scikit-build.sdist]
-include = ["bbstrader/assets/*"]
+include = ["src/bbstrader/assets/*"]
