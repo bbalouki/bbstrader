@@ -71,7 +71,7 @@ if(BUILD_PYTHON_BINDINGS)
     endif()
 
     # INSTALLATION INSTRUCTIONS FOR PYTHON
-    install(TARGETS client DESTINATION src/bbstrader/api)
+    install(TARGETS client DESTINATION bbstrader/api)
 
 endif()
 
