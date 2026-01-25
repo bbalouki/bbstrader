@@ -7,18 +7,20 @@ from datetime import datetime
 from typing import Dict, List, Tuple
 
 import dash
-import en_core_web_sm
 import matplotlib.pyplot as plt
 import nltk
 import pandas as pd
 import plotly.express as px
-from bbstrader.core.data import FinancialNews
+import spacy
 from dash import dcc, html
 from dash.dependencies import Input, Output
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
+from spacy.cli import download
 from textblob import TextBlob
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+
+from bbstrader.core.data import FinancialNews
 
 __all__ = [
     "TopicModeler",
@@ -349,13 +351,11 @@ class TopicModeler(object):
         nltk.download("stopwords", quiet=True)
 
         try:
-            self.nlp = en_core_web_sm.load()
-            self.nlp.disable_pipes("ner")
+            self.nlp = spacy.load("en_core_web_sm", disable=["ner"])
         except OSError:
-            raise OSError(
-                "SpaCy model 'en_core_web_sm' not found. "
-                "Please install it using 'python -m spacy download en_core_web_sm'."
-            )
+            print("Downloading 'en_core_web_sm' model for spaCy...")
+            download("en_core_web_sm")
+            self.nlp = spacy.load("en_core_web_sm", disable=["ner"])
 
     def preprocess_texts(self, texts: list[str]):
         def clean_doc(Doc):
@@ -403,20 +403,19 @@ class SentimentAnalyzer(object):
 
         """
         nltk.download("punkt", quiet=True)
-        nltk.download('punkt_tab', quiet=True)
+        nltk.download("punkt_tab", quiet=True)
         nltk.download("stopwords", quiet=True)
 
         self.analyzer = SentimentIntensityAnalyzer()
         self._stopwords = set(stopwords.words("english"))
 
         try:
-            self.nlp = en_core_web_sm.load()
-            self.nlp.disable_pipes("ner")
+            self.nlp = spacy.load("en_core_web_sm", disable=["ner"])
         except OSError:
-            raise OSError(
-                "SpaCy model 'en_core_web_sm' not found. "
-                "Please install it using 'python -m spacy download en_core_web_sm'."
-            )
+            print("Downloading 'en_core_web_sm' model for spaCy...")
+            download("en_core_web_sm")
+            self.nlp = spacy.load("en_core_web_sm", disable=["ner"])
+
         self.news = FinancialNews()
 
     def preprocess_text(self, text: str):
@@ -929,4 +928,5 @@ class SentimentAnalyzer(object):
 
             return bar_chart, scatter_chart
 
+        app.run()
         app.run()

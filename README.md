@@ -300,7 +300,7 @@ git clone https://github.com/microsoft/vcpkg
 | :----------------- | :-------------------------------------------------------------------------------------------------------------------- |
 | **Run Backtest**   | `python -m bbstrader --run backtest --strategy SMAStrategy --account MY_ACCOUNT --config backtest.json`               |
 | **Live Execution** | `python -m bbstrader --run execution --strategy KalmanFilter --account MY_ACCOUNT --config execution.json --parallel` |
-| **Copy Trades**    | `python -m bbstrader --run copier --source 123456 --targets 789012 --risk_multiplier 2.0`                             |
+| **Copy Trades**    | `python -m bbstrader --run copier --source "S1" --destination "D1"`                             |
 | **Get Help**       | `python -m bbstrader --help`                                                                                          |
 
 **Config Example** (`~/.bbstrader/execution/execution.json`):
