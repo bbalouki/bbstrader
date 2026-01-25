@@ -16,10 +16,10 @@ explicit_hidden_imports = [
 ]
 
 a = Analysis(
-    ['bbstrader/metatrader/_copier.py'],
+    ['src/bbstrader/metatrader/_copier.py'],
     pathex=[],
     binaries=binaries_sm + binaries_bbs,
-    datas=[('bbstrader/assets', 'assets')] + datas_sm,
+    datas=[('src/bbstrader/assets', 'assets')] + datas_sm,
     hiddenimports=hiddenimports_sm + hiddenimports_bbs + explicit_hidden_imports,
     hookspath=['hooks'],
     hooksconfig={},
@@ -52,5 +52,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon='bbstrader/assets/bbstrader.ico',
+    icon='src/bbstrader/assets/bbstrader.ico',
 )
