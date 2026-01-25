@@ -9,7 +9,7 @@ except ImportError:
     import bbstrader.compat  # noqa: F401
 
 from bbstrader.api.handlers import Mt5Handlers
-from bbstrader.api.metatrader_client import MetaTraderClient  # type: ignore
+from bbstrader.api.client import MetaTraderClient  # type: ignore
 
 # CONFIGURATION
 LOGIN: int = 12345

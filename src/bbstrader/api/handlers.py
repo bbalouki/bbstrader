@@ -2,7 +2,7 @@ from datetime import datetime
 
 import pytz
 
-from bbstrader.api.metatrader_client import (  # type: ignore
+from bbstrader.api.client import (  # type: ignore
     AccountInfo,
     BookInfo,
     MetaTraderHandlers,

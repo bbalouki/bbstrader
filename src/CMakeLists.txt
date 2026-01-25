@@ -4,7 +4,7 @@ include(GNUInstallDirs)
 
 # 1. Core C++ Library 
 add_library(bbstrader 
-    bbstrader.cpp
+    cpp/bbstrader.cpp
 )
 add_library(bbstrader::bbstrader ALIAS bbstrader)
 configure_visibility(bbstrader)
@@ -49,29 +49,29 @@ if(BUILD_PYTHON_BINDINGS)
     endif()
 
     target_link_libraries(bbstrader PRIVATE pybind11::headers)
-    pybind11_add_module(metatrader_client MODULE metatrader.cpp)
+    pybind11_add_module(client MODULE cpp/metatrader.cpp)
     target_include_directories(
-        metatrader_client PRIVATE
+        client PRIVATE
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
     )
-    target_link_libraries(metatrader_client PRIVATE bbstrader)
-    target_link_libraries(metatrader_client PRIVATE pybind11::module)
+    target_link_libraries(client PRIVATE bbstrader)
+    target_link_libraries(client PRIVATE pybind11::module)
 
-    configure_visibility(metatrader_client)
+    configure_visibility(client)
 
     if(MSVC)
-        target_compile_options(metatrader_client PRIVATE /bigobj)
+        target_compile_options(client PRIVATE /bigobj)
     endif()
     if (NOT ANDROID)
         target_link_libraries(
-            metatrader_client
+            client
             PRIVATE warnings::strict
         )
     endif()
 
     # INSTALLATION INSTRUCTIONS FOR PYTHON
-    install(TARGETS metatrader_client DESTINATION bbstrader/api)
+    install(TARGETS client DESTINATION bbstrader/api)
 
 endif()
 

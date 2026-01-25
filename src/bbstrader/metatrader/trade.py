@@ -11,7 +11,7 @@ from loguru import logger as log
 from tabulate import tabulate
 
 from bbstrader.api import Mt5client as client
-from bbstrader.api.metatrader_client import TradePosition  # type: ignore
+from bbstrader.api.client import TradePosition  # type: ignore
 from bbstrader.config import BBSTRADER_DIR, config_logger
 from bbstrader.metatrader.account import Account
 from bbstrader.metatrader.broker import check_mt5_connection

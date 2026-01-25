@@ -9,11 +9,11 @@ OutputBaseFilename=TradeCopier
 Compression=lzma
 SolidCompression=yes
 LicenseFile=LICENSE
-SetupIconFile=bbstrader\assets\bbstrader.ico
+SetupIconFile=src\bbstrader\assets\bbstrader.ico
 
 [Files]
 Source: "dist\tcopier.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "bbstrader\assets\bbstrader.ico"; DestDir: "{app}"; Flags: ignoreversion
+Source: "src\bbstrader\assets\bbstrader.ico"; DestDir: "{app}"; Flags: ignoreversion
 [Icons]
 Name: "{group}\TradeCopier"; Filename: "{app}\tcopier.exe"; IconFilename: "{app}\bbstrader.ico"
 Name: "{group}\Uninstall tradecopier"; Filename: "{uninstallexe}"

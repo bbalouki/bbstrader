@@ -1,13 +1,14 @@
 # Simplified Investment & Trading Toolkit with Python & C++
 
-[![Documentation Status](https://readthedocs.org/projects/bbstrader/badge/?version=latest)](https://bbstrader.readthedocs.io/en/latest/?badge=latest)
-[![PYPI Version](https://img.shields.io/pypi/v/bbstrader)](https://pypi.org/project/bbstrader/)
-[![PyPi status](https://img.shields.io/pypi/status/bbstrader.svg?maxAge=60)](https://pypi.python.org/pypi/bbstrader)
-[![Supported Python Versions](https://img.shields.io/pypi/pyversions/bbstrader)](https://pypi.org/project/bbstrader/)
 [![Build](https://github.com/bbalouki/bbstrader/actions/workflows/build.yml/badge.svg)](https://github.com/bbalouki/bbstrader/actions/workflows/build.yml)
+[![Documentation Status](https://readthedocs.org/projects/bbstrader/badge/?version=latest)](https://bbstrader.readthedocs.io/en/latest/?badge=latest)
+[![PyPi status](https://img.shields.io/pypi/status/bbstrader.svg?maxAge=60)](https://pypi.python.org/pypi/bbstrader)
 ![Linux](https://img.shields.io/badge/Linux-FCC624?logo=linux&logoColor=black)
 ![macOS](https://img.shields.io/badge/macOS-000000?logo=apple&logoColor=white)
 ![Windows](https://img.shields.io/badge/Windows-0078D6?logo=windows&logoColor=white)
+[![PYPI Version](https://img.shields.io/pypi/v/bbstrader)](https://pypi.org/project/bbstrader/)
+[![Supported Python Versions](https://img.shields.io/pypi/pyversions/bbstrader)](https://pypi.org/project/bbstrader/)
+![vcpkg version](https://img.shields.io/vcpkg/v/bbstrader)
 [![C++20](https://img.shields.io/badge/C++-20-blue.svg)](https://isocpp.org/std/the-standard)
 [![CMake](https://img.shields.io/badge/CMake-3.20+-blue.svg)](https://cmake.org/)
 [![PyPI Downloads](https://static.pepy.tech/badge/bbstrader)](https://pepy.tech/projects/bbstrader)
@@ -66,7 +67,7 @@ With thousands of downloads, `bbstrader` is trusted by traders worldwide. It's n
 
 ## **The `bbstrader` Edge: Uniting C++ Speed with Python Flexibility**
 
-bbstrader's hybrid design is its secret weapon. At the heart is a bidirectional C++/Python bridge via `metatrader_client` module:
+bbstrader's hybrid design is its secret weapon. At the heart is a bidirectional C++/Python bridge via `client` module:
 
 1. **C++ for Speed**: Core classes like `MetaTraderClient` handle high-performance tasks. Inject Python handlers for MT5 interactions, enabling native-speed signal generation and risk checks.
 2. **Python for Smarts**: Orchestrate everything with modules like `trading` and `btengine`.
@@ -209,7 +210,7 @@ This pattern is ideal for strategies that benefit from Python's rich ecosystem f
 ```python
 import MetaTrader5 as mt5
 from bbstrader.api import Mt5Handlers
-from bbstrader.api.metatrader_client import MetaTraderClient
+from bbstrader.api.client import MetaTraderClient
 
 # 1. Inherit from the C++ MetaTraderClient in Python
 class MyStrategyClient(MetaTraderClient):

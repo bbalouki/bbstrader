@@ -36,7 +36,7 @@ from operator import attrgetter
 import pandas as pd
 
 from bbstrader.api.handlers import Mt5Handlers
-from bbstrader.api.metatrader_client import *  # type: ignore # noqa: F403
+from bbstrader.api.client import *  # type: ignore # noqa: F403
 
 # ruff: noqa: F405
 classes_to_patch = [

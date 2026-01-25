@@ -11,7 +11,7 @@ from typing import Any, Dict, List, Literal, Optional, Tuple, Union
 
 from loguru import logger as log
 
-from bbstrader.api.metatrader_client import TradeOrder, TradePosition  # type: ignore
+from bbstrader.api.client import TradeOrder, TradePosition  # type: ignore
 from bbstrader.config import BBSTRADER_DIR
 from bbstrader.metatrader.account import Account
 from bbstrader.metatrader.broker import check_mt5_connection
