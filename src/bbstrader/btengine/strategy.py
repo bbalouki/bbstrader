@@ -147,8 +147,8 @@ class BacktestStrategy(BaseStrategy):
         value_type: str = "returns",
         array: bool = True,
         **kwargs,
-    ) -> Optional[Dict[str, Union[np.ndarray, pd.Series]]]:
-        asset_values: Dict[str, Union[np.ndarray, pd.Series]] = {}
+    ) -> Optional[Dict[str, Union[np.typing.NDArray, pd.Series]]]:
+        asset_values = {}
         for asset in symbol_list:
             if array:
                 values = self.data.get_latest_bars_values(asset, value_type, N=window)
