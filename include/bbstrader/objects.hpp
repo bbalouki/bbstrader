@@ -555,7 +555,7 @@ struct OrderSentResult {
     double       bid;               ///< Current Bid price
     double       ask;               ///< Current Ask price
     std::string  comment;           ///< Broker comment or description of return code
-    int32_t      request_id;        ///< Request ID set by the terminal during the dispatch
+    int64_t      request_id;        ///< Request ID set by the terminal during the dispatch
     int32_t      retcode_external;  ///< Return code of an external trading system
     TradeRequest request;           ///< The original request
 };

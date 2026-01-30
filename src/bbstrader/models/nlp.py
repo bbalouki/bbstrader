@@ -1,19 +1,14 @@
 import contextlib
 import os
 import re
-import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime
 from typing import Dict, List, Tuple
 
-import dash
 import matplotlib.pyplot as plt
 import nltk
 import pandas as pd
 import plotly.express as px
 import spacy
-from dash import dcc, html
-from dash.dependencies import Input, Output
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from spacy.cli import download
@@ -766,167 +761,4 @@ class SentimentAnalyzer(object):
         top_n=20,
         **kwargs,
     ):
-        """
-        Creates and runs a real-time sentiment analysis dashboard for financial assets.
-
-        The dashboard visualizes sentiment scores for given tickers using interactive
-        bar and scatter plots. It fetches new sentiment data at specified intervals.
-
-        Parameters
-        ----------
-        tickers : list of str or list of tuple
-            A list of financial asset tickers to analyze.
-            * If using tuples, the first element is the ticker and the second is the asset type.
-            * If using a single string, the asset type must be specified or defaults to "stock".
-        asset_type : str, optional
-            The type of financial asset ("stock", "forex", "crypto"). Default is "stock".
-        lexicon : dict, optional
-            A custom sentiment lexicon. Default is None.
-        interval : int, optional
-            The refresh interval (in milliseconds) for sentiment data updates. Default is 100000.
-        top_n : int, optional
-            The number of top and bottom assets to display in the sentiment bar chart. Default is 20.
-        **kwargs : dict
-            Additional arguments required for fetching sentiment data. Must include:
-            * client_id (str): Reddit API client ID.
-            * client_secret (str): Reddit API client secret.
-            * user_agent (str): User agent for Reddit API.
-            * fmp_api (str): Financial Modeling Prep (FMP) API key.
-
-        Returns
-        -------
-        None
-            Starts a real-time interactive dashboard. Does not return any value.
-
-        Example
-        -------
-        .. code-block:: python
-
-            sa = SentimentAnalyzer()
-            sa.display_sentiment_dashboard(
-                tickers=["AAPL", "TSLA", "GOOGL"],
-                asset_type="stock",
-                lexicon=my_lexicon,
-                display=True,
-                interval=5000,
-                top_n=10,
-                client_id="your_reddit_id",
-                client_secret="your_reddit_secret",
-                user_agent="your_user_agent",
-                fmp_api="your_fmp_api_key",
-            )
-
-        Notes
-        -----
-        * Sentiment analysis is performed using financial news and social media discussions.
-        * The dashboard updates in real-time at the specified interval.
-        * The dashboard will keep running unless manually stopped (Ctrl+C).
-        """
-        app = dash.Dash(__name__)
-
-        sentiment_history = {ticker: [] for ticker in tickers}
-
-        # Dash Layout
-        app.layout = html.Div(
-            children=[
-                html.H1("📊 Real-Time Sentiment Dashboard"),
-                dcc.Graph(id="top-sentiment-bar"),
-                dcc.Graph(id="sentiment-interactive"),
-                dcc.Interval(id="interval-component", interval=interval, n_intervals=0),
-            ]
-        )
-
-        # Update Sentiment Data
-        @app.callback(
-            [
-                Output("top-sentiment-bar", "figure"),
-                Output("sentiment-interactive", "figure"),
-            ],
-            [Input("interval-component", "n_intervals")],
-        )
-        def update_dashboard(n):
-            start_time = time.time()
-            sentiment_data = self.get_sentiment_for_tickers(
-                tickers,
-                lexicon=lexicon,
-                asset_type=asset_type,
-                top_news=top_n,
-                **kwargs,
-            )
-            elapsed_time = time.time() - start_time
-            print(f"Sentiment Fetch Time: {elapsed_time:.2f} seconds")
-            timestamp = datetime.now().strftime("%H:%M:%S")
-            for stock, score in sentiment_data.items():
-                sentiment_history[stock].append(
-                    {"timestamp": timestamp, "score": score}
-                )
-            data = []
-            for stock, scores in sentiment_history.items():
-                for entry in scores:
-                    data.append(
-                        {
-                            "Ticker": stock,
-                            "Time": entry["timestamp"],
-                            "Sentiment Score": entry["score"],
-                        }
-                    )
-            df = pd.DataFrame(data)
-
-            # Top Sentiment Bar Chart
-            latest_timestamp = df["Time"].max()
-            latest_sentiments = (
-                df[df["Time"] == latest_timestamp]
-                if not df.empty
-                else pd.DataFrame(columns=["Ticker", "Sentiment Score"])
-            )
-
-            if latest_sentiments.empty:
-                bar_chart = px.bar(title="No Sentiment Data Available")
-            else:
-                # Get top N and bottom N stocks
-                bottom_stocks, top_stocks = self.get_topn_sentiments(
-                    sentiment_data, topn=top_n
-                )
-                top_bottom_stocks = bottom_stocks + top_stocks
-
-                stocks = [x[0] for x in top_bottom_stocks]
-                scores = [x[1] for x in top_bottom_stocks]
-
-                df_plot = pd.DataFrame({"Ticker": stocks, "Sentiment Score": scores})
-                # Horizontal bar chart
-                bar_chart = px.bar(
-                    df_plot,
-                    x="Sentiment Score",
-                    y="Ticker",
-                    title=f"Top {top_n} Positive & Negative Sentiment Stocks",
-                    color="Sentiment Score",
-                    color_continuous_scale=["red", "yellow", "green"],
-                    orientation="h",
-                )
-                bar_chart.add_vline(
-                    x=0, line_width=2, line_dash="dash", line_color="black"
-                )
-                bar_chart.update_layout(
-                    xaxis_title="Sentiment Score",
-                    yaxis_title="Stock Ticker",
-                    yaxis=dict(autorange="reversed"),
-                    width=1500,
-                    height=600,
-                )
-
-            # Sentiment Interactive Scatter Plot
-            scatter_chart = px.scatter(
-                latest_sentiments,
-                x=latest_sentiments.index,
-                y="Sentiment Score",
-                hover_data=["Ticker"],
-                color="Sentiment Score",
-                color_continuous_scale=["red", "yellow", "green"],
-                title="Stock Sentiment Analysis - Interactive Scatter Plot",
-            )
-            scatter_chart.update_layout(width=1500, height=600)
-
-            return bar_chart, scatter_chart
-
-        app.run()
-        app.run()
+        DeprecationWarning("display_sentiment_dashboard is depreceted")

@@ -10,7 +10,6 @@ readme = "README.md"
 dependencies = [
     "beautifulsoup4>=4.13.5",
     "colorama>=0.4.6",
-    "dash>=3.2.0",
     "eodhd>=1.0.32",
     "exchange_calendars>=4.11.1",
     "financetoolkit>=2.0.4",

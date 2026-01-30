@@ -1,15 +1,13 @@
+from abc import abstractmethod
 from datetime import datetime
 from enum import IntEnum
-from queue import Queue
 from typing import Any, Callable, Dict, List, Optional, Union
-from abc import abstractmethod
 
 import numpy as np
 import pandas as pd
 from loguru import logger
 
 from bbstrader.api.client import TradeOrder  # type: ignore
-from bbstrader.btengine.event import FillEvent, SignalEvent
 from bbstrader.config import BBSTRADER_DIR
 from bbstrader.core.strategy import (
     BaseStrategy,
@@ -50,8 +48,6 @@ class LiveStrategy(BaseStrategy):
     Relies on the `Account` class for state (orders, positions, cash)
     and `Rates` for data.
     """
-
-    events: "Queue[Union[SignalEvent, FillEvent]]"
 
     def __init__(
         self,
@@ -179,7 +175,7 @@ class LiveStrategy(BaseStrategy):
         )
 
         return generate_signal(signal_id, symbol, action, **kwargs)
-    
+
     @abstractmethod
     def calculate_signals(self, *args: Any, **kwargs: Any) -> List[TradeSignal]: ...
 
@@ -282,7 +278,7 @@ class LiveStrategy(BaseStrategy):
         return orders
 
     def exit_positions(
-        self, position: int, prices: np.ndarray, asset: str, th: float = 0.01
+        self, position: int, prices: np.typing.NDArray, asset: str, th: float = 0.01
     ) -> bool:
         """Logic to determine if positions should be exited based on threshold."""
         if len(prices) == 0:

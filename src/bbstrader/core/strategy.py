@@ -273,19 +273,16 @@ class BaseStrategy(Strategy):
         value_type: str = "returns",
         array: bool = True,
         **kwargs,
-    ) -> Optional[Dict[str, Union[np.ndarray, pd.Series]]]:
+    ) -> Optional[Dict[str, Union[np.typing.NDArray, pd.Series]]]:
         """
         Get the historical OHLCV value or returns or custum value
         based on the DataHandker of the assets in the symbol list.
 
         Args:
-            bars : DataHandler for market data handling, required for backtest mode.
             symbol_list : List of ticker symbols for the pairs trading strategy.
+            window : The lookback period for resquesting the data.
             value_type : The type of value to get (e.g., returns, open, high, low, close, adjclose, volume).
             array : If True, return the values as numpy arrays, otherwise as pandas Series.
-            mode : Mode of operation for the strategy.
-            window : The lookback period for resquesting the data.
-            tf : The time frame for the strategy.
             error : The error handling method for the function.
 
         Returns:

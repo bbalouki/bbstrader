@@ -626,6 +626,7 @@ class Trade:
         except Exception as e:
             msg = trade_retcode_message(result.retcode) if result else "N/A"
             LOGGER.error(f"Trade Order Request, {msg}{addtionnal}, {e}")
+            return
         if result and result.retcode != Mt5.TRADE_RETCODE_DONE:
             if result.retcode == Mt5.TRADE_RETCODE_INVALID_FILL:  # 10030
                 for fill in FILLING_TYPE:
@@ -633,29 +634,31 @@ class Trade:
                     result = client.order_send(request)
                     if result and result.retcode == Mt5.TRADE_RETCODE_DONE:
                         break
-            elif result.retcode == Mt5.TRADE_RETCODE_INVALID_VOLUME:  # 10014
+            elif result and result.retcode == Mt5.TRADE_RETCODE_INVALID_VOLUME:  # 10014
                 new_volume = int(request["volume"])
                 if new_volume >= 1:
                     request["volume"] = new_volume
                     result = client.order_send(request)
-            elif result.retcode not in self._retcodes:
+            elif result and result.retcode not in self._retcodes:
                 self._retcodes.append(result.retcode)
-                msg = trade_retcode_message(result.retcode)
+                msg = trade_retcode_message(result.retcode) if result else "N/A"
+                retcode = result.retcode if result else None
                 LOGGER.error(
-                    f"Trade Order Request, RETCODE={result.retcode}: {msg}{addtionnal}"
+                    f"Trade Order Request, RETCODE={retcode}: {msg}{addtionnal}"
                 )
-            elif result.retcode in [
+            elif result and result.retcode in [
                 Mt5.TRADE_RETCODE_CONNECTION,
                 Mt5.TRADE_RETCODE_TIMEOUT,
             ]:
                 tries = 0
-                while result.retcode != Mt5.TRADE_RETCODE_DONE and tries < 5:
+                while result and result.retcode != Mt5.TRADE_RETCODE_DONE and tries < 5:
                     try:
                         client.order_check(request)
                         result = client.order_send(request)
                     except Exception as e:
                         msg = trade_retcode_message(result.retcode) if result else "N/A"
                         LOGGER.error(f"Trade Order Request, {msg}{addtionnal}, {e}")
+                        return
                     if result and result.retcode == Mt5.TRADE_RETCODE_DONE:
                         break
                     tries += 1
@@ -697,8 +700,9 @@ class Trade:
             return True
         else:
             msg = trade_retcode_message(result.retcode) if result else "N/A"
+            retcode = result.retcode if result else None
             LOGGER.error(
-                f"Unable to Open Position, RETCODE={result.retcode}: {msg}{addtionnal}"
+                f"Unable to Open Position, RETCODE={retcode}: {msg}{addtionnal}"
             )
             return False
 
@@ -1074,6 +1078,7 @@ class Trade:
         except Exception as e:
             msg = trade_retcode_message(result.retcode) if result else "N/A"
             LOGGER.error(f"Break-Even Order Request, {msg}{addtionnal}, Error: {e}")
+            return
         if result and result.retcode != Mt5.TRADE_RETCODE_DONE:
             msg = trade_retcode_message(result.retcode)
             if result.retcode != Mt5.TRADE_RETCODE_NO_CHANGES:
@@ -1081,7 +1086,7 @@ class Trade:
                     f"Break-Even Order Request, Position: #{tiket}, RETCODE={result.retcode}: {msg}{addtionnal}"
                 )
             tries = 0
-            while result.retcode != Mt5.TRADE_RETCODE_DONE and tries < 10:
+            while result and result.retcode != Mt5.TRADE_RETCODE_DONE and tries < 10:
                 if result.retcode == Mt5.TRADE_RETCODE_NO_CHANGES:
                     break
                 else:
@@ -1093,6 +1098,7 @@ class Trade:
                         LOGGER.error(
                             f"Break-Even Order Request, {msg}{addtionnal}, Error: {e}"
                         )
+                        return
                     if result and result.retcode == Mt5.TRADE_RETCODE_DONE:
                         break
                 tries += 1
@@ -1177,15 +1183,16 @@ class Trade:
             LOGGER.error(
                 f"Closing {type.capitalize()} Request, RETCODE={msg}{addtionnal}, Error: {e}"
             )
+            return
 
         if result and result.retcode != Mt5.TRADE_RETCODE_DONE:
             if result.retcode == Mt5.TRADE_RETCODE_INVALID_FILL:  # 10030
                 for fill in FILLING_TYPE:
                     request["type_filling"] = fill
                     result = client.order_send(request)
-                    if result.retcode == Mt5.TRADE_RETCODE_DONE:
+                    if result and result.retcode == Mt5.TRADE_RETCODE_DONE:
                         break
-            elif result.retcode not in self._retcodes:
+            elif result and  result.retcode not in self._retcodes:
                 self._retcodes.append(result.retcode)
                 msg = trade_retcode_message(result.retcode)
                 LOGGER.error(
@@ -1194,7 +1201,7 @@ class Trade:
                 )
             else:
                 tries = 0
-                while result.retcode != Mt5.TRADE_RETCODE_DONE and tries < 5:
+                while result and result.retcode != Mt5.TRADE_RETCODE_DONE and tries < 5:
                     try:
                         client.order_check(request)
                         result = client.order_send(request)
@@ -1203,6 +1210,7 @@ class Trade:
                         LOGGER.error(
                             f"Closing {type.capitalize()} Request, {msg}{addtionnal}, Error: {e}"
                         )
+                        return
                     if result and result.retcode == Mt5.TRADE_RETCODE_DONE:
                         break
                     tries += 1
@@ -1253,18 +1261,26 @@ class Trade:
             "tp": tp or order.tp,
             "stoplimit": stoplimit or order.price_stoplimit,
         }
-        client.order_check(request)
-        result = client.order_send(request)
-        if result.retcode == Mt5.TRADE_RETCODE_DONE:
+        try:
+            client.order_check(request)
+            result = client.order_send(request)
+        except Exception as e:
+            msg = trade_retcode_message(result.retcode) if result else "N/A"
+            LOGGER.error(
+                f"Unable to modify Order #{ticket}, RETCODE={msg}, Error: {e}"
+            )
+            return
+        if result and result.retcode == Mt5.TRADE_RETCODE_DONE:
             LOGGER.info(
                 f"Order #{ticket} modified, SYMBOL={self.symbol}, PRICE={round(request['price'], 5)},"
                 f"SL={round(request['sl'], 5)}, TP={round(request['tp'], 5)}, STOP_LIMIT={round(request['stoplimit'], 5)}"
             )
             return True
         else:
-            msg = trade_retcode_message(result.retcode)
+            msg = trade_retcode_message(result.retcode) if result else "N/A"
+            retcode = result.retcode if result else None
             LOGGER.error(
-                f"Unable to modify Order #{ticket}, RETCODE={result.retcode}: {msg}, SYMBOL={self.symbol}"
+                f"Unable to modify Order #{ticket}, RETCODE={retcode}: {msg}, SYMBOL={self.symbol}"
             )
             return False
 

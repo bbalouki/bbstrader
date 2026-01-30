@@ -1,5 +1,5 @@
 /// @file metatrader.hpp
-/// @brief Declares the public API for the bbstrader library.
+/// @brief Declares the public API for the Metatrader5 in the bbstrader library.
 /// This is the primary file that you should \#include if
 /// you want to use the library.
 

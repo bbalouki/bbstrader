@@ -44,9 +44,9 @@ from bbstrader.trading.strategy import LiveStrategy
 from bbstrader.trading.utils import send_telegram_message
 
 EXECUTION_PATH = os.path.expanduser("~/.bbstrader/execution/execution.py")
-CONFIG_PATH = os.path.expanduser("~/.bbstrader/execution/execution.json")
+EXEC_CONFIG_PATH = os.path.expanduser("~/.bbstrader/execution/execution.json")
 BACKTEST_PATH = os.path.expanduser("~/.bbstrader/backtest/backtest.py")
-CONFIG_PATH = os.path.expanduser("~/.bbstrader/backtest/backtest.json")
+BT_CONFIG_PATH = os.path.expanduser("~/.bbstrader/backtest/backtest.json")
 
 
 DATA_HANDLER_MAP: Dict[str, Type[DataHandler]] = {
@@ -191,7 +191,11 @@ def backtest(unknown: List[str]) -> None:
         "-s", "--strategy", type=str, required=True, help="Strategy class name to run"
     )
     parser.add_argument(
-        "-c", "--config", type=str, default=CONFIG_PATH, help="Configuration file path"
+        "-c",
+        "--config",
+        type=str,
+        default=BT_CONFIG_PATH,
+        help="Configuration file path",
     )
     parser.add_argument(
         "-p",
@@ -359,7 +363,7 @@ def execute_strategy(unknown):
     parser.add_argument("-s", "--strategy", type=str, required=True)
     parser.add_argument("-a", "--account", type=str, nargs="*", default=[])
     parser.add_argument("-p", "--path", type=str, default=EXECUTION_PATH)
-    parser.add_argument("-c", "--config", type=str, default=CONFIG_PATH)
+    parser.add_argument("-c", "--config", type=str, default=EXEC_CONFIG_PATH)
     parser.add_argument("-l", "--parallel", action="store_true")
     parser.add_argument(
         "-t", "--terminal", type=str, default="MT5", choices=["MT5", "TWS"]
