@@ -247,6 +247,8 @@ class RiskManagement:
         minutes = self.get_minutes()
         tf_int = self._convert_time_frame(self.timeframe)
         interval = round((minutes / tf_int) * 252)
+        if self.timeframe in ("1m", "3m"):
+            interval = int(interval / 100)
         rates = client.copy_rates_from_pos(
             self.symbol, TIMEFRAMES[self.timeframe], 0, interval
         )
