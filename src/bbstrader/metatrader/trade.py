@@ -626,7 +626,7 @@ class Trade:
         except Exception as e:
             msg = trade_retcode_message(result.retcode) if result else "N/A"
             LOGGER.error(f"Trade Order Request, {msg}{addtionnal}, {e}")
-            return
+            return False
         if result and result.retcode != Mt5.TRADE_RETCODE_DONE:
             if result.retcode == Mt5.TRADE_RETCODE_INVALID_FILL:  # 10030
                 for fill in FILLING_TYPE:
@@ -658,7 +658,7 @@ class Trade:
                     except Exception as e:
                         msg = trade_retcode_message(result.retcode) if result else "N/A"
                         LOGGER.error(f"Trade Order Request, {msg}{addtionnal}, {e}")
-                        return
+                        return False
                     if result and result.retcode == Mt5.TRADE_RETCODE_DONE:
                         break
                     tries += 1
@@ -1078,7 +1078,7 @@ class Trade:
         except Exception as e:
             msg = trade_retcode_message(result.retcode) if result else "N/A"
             LOGGER.error(f"Break-Even Order Request, {msg}{addtionnal}, Error: {e}")
-            return
+            return False
         if result and result.retcode != Mt5.TRADE_RETCODE_DONE:
             msg = trade_retcode_message(result.retcode)
             if result.retcode != Mt5.TRADE_RETCODE_NO_CHANGES:
@@ -1098,7 +1098,7 @@ class Trade:
                         LOGGER.error(
                             f"Break-Even Order Request, {msg}{addtionnal}, Error: {e}"
                         )
-                        return
+                        return False
                     if result and result.retcode == Mt5.TRADE_RETCODE_DONE:
                         break
                 tries += 1
@@ -1183,7 +1183,7 @@ class Trade:
             LOGGER.error(
                 f"Closing {type.capitalize()} Request, RETCODE={msg}{addtionnal}, Error: {e}"
             )
-            return
+            return False
 
         if result and result.retcode != Mt5.TRADE_RETCODE_DONE:
             if result.retcode == Mt5.TRADE_RETCODE_INVALID_FILL:  # 10030
@@ -1210,7 +1210,7 @@ class Trade:
                         LOGGER.error(
                             f"Closing {type.capitalize()} Request, {msg}{addtionnal}, Error: {e}"
                         )
-                        return
+                        return False
                     if result and result.retcode == Mt5.TRADE_RETCODE_DONE:
                         break
                     tries += 1
@@ -1269,7 +1269,7 @@ class Trade:
             LOGGER.error(
                 f"Unable to modify Order #{ticket}, RETCODE={msg}, Error: {e}"
             )
-            return
+            return False
         if result and result.retcode == Mt5.TRADE_RETCODE_DONE:
             LOGGER.info(
                 f"Order #{ticket} modified, SYMBOL={self.symbol}, PRICE={round(request['price'], 5)},"
@@ -1374,9 +1374,6 @@ class Trade:
             order_type = "open"
 
         if not tickets:
-            LOGGER.info(
-                f"No {order_type.upper()} {tikets_type.upper()} to close, SYMBOL={self.symbol}."
-            )
             return
         failed_tickets = []
         with ThreadPoolExecutor(max_workers=min(len(tickets), 20)) as executor:
@@ -1481,15 +1478,10 @@ class Trade:
 
         :return: bool
         """
-        negative_deals = 0
         max_trades = self.rm.max_trade()
         today_deals = self.get_today_deals(group=self.symbol)
-        for deal in today_deals:
-            if deal.profit < 0:
-                negative_deals += 1
-        if negative_deals >= max_trades:
-            return True
-        return False
+        negative_deals = [deal for deal in today_deals if deal.profit < 0]
+        return len(negative_deals) >= max_trades
 
     def get_stats(self) -> Tuple[Dict[str, Any], Dict[str, Any]]:
         """Retrieves aggregated session and historical trading performance."""

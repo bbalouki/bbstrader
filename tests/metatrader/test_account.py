@@ -14,6 +14,7 @@ def mock_mt5_client():
             "bbstrader.metatrader.account.check_mt5_connection"
         ) as mock_check_connection,
         patch("bbstrader.metatrader.account.client") as mock_client,
+        patch("bbstrader.metatrader.broker.client") as mock_broker_client,
     ):
         mock_check_connection.return_value = True
         mock_account_info = MagicMock()
@@ -29,6 +30,16 @@ def mock_mt5_client():
         mock_terminal_info = MagicMock()
         mock_terminal_info.company = "Test Broker"
         mock_client.terminal_info.return_value = mock_terminal_info
+
+        mock_symbol = MagicMock()
+        mock_symbol.name = "EURUSD"
+        mock_client.symbols_get.return_value = [mock_symbol]
+        mock_broker_client.symbols_get.return_value = [mock_symbol]
+
+        mock_tick = MagicMock()
+        mock_tick.time = 0
+        mock_client.symbol_info_tick.return_value = mock_tick
+        mock_broker_client.symbol_info_tick.return_value = mock_tick
 
         yield mock_client
 
