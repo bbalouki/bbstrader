@@ -416,7 +416,6 @@ class TradeCopier(object):
     def log_message(
         self, message, type: Literal["info", "error", "debug", "warning"] = "info"
     ):
-        logger.trace
         if self.log_queue:
             try:
                 now = datetime.now()
@@ -904,7 +903,7 @@ class TradeCopier(object):
 
         if not orders_actions:
             return
-        with cf.ThreadPoolExecutor(max_workers=max_workers) as executor:
+        with cf.ProcessPoolExecutor(max_workers=max_workers) as executor:
             list(executor.map(self._execute_order_action, orders_actions))
 
     def _get_new_positions(
@@ -1031,7 +1030,7 @@ class TradeCopier(object):
 
         if not positions_actions:
             return
-        with cf.ThreadPoolExecutor(max_workers=max_workers) as executor:
+        with cf.ProcessPoolExecutor(max_workers=max_workers) as executor:
             list(executor.map(self._execute_position_action, positions_actions))
 
     def copy_orders(self, destination: dict):

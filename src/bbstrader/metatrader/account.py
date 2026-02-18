@@ -621,7 +621,11 @@ class Account(object):
         drop_cols: List[str],
         time_cols: List[str],
     ) -> Any:
-        date_to = date_to or datetime.now()
+        from zoneinfo import ZoneInfo
+
+        tz = self.broker.get_terminal_timezone()
+        date_to = date_to or datetime.now(tz=ZoneInfo(tz))
+        date_from = date_from.astimezone(tz=ZoneInfo(tz))
 
         filters = [group, ticket, position]
         if sum(f is not None for f in filters) > 1:
@@ -734,7 +738,6 @@ class Account(object):
             >>> account = Account()
             >>> history = account.get_trades_history(from_date, to_date)
         """
-
         return self._fetch_history(
             fetch_type="deals",
             drop_cols=["time_msc", "external_id"],
@@ -853,7 +856,13 @@ class Account(object):
         Returns:
             List[TradeDeal]: List of today deals
         """
-        history = self.get_trades_history(group=group, to_df=False) or []
+
+        from datetime import timedelta
+
+        from_date = datetime.now() - timedelta(days=3)
+        history = (
+            self.get_trades_history(date_from=from_date, group=group, to_df=False) or []
+        )
         positions_ids = set([deal.position_id for deal in history if deal.magic == id])
         today_deals = []
         for position in positions_ids:
