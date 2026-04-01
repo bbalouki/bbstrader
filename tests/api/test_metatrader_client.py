@@ -6,7 +6,7 @@ import unittest
 try:
     import MetaTrader5 as mt5
 except ImportError:
-        import bbstrader.compat  # noqa: F401
+    import bbstrader.compat  # noqa: F401
     import MetaTrader5 as mt5
 
 from bbstrader.api.handlers import Mt5Handlers
