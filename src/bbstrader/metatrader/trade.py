@@ -22,6 +22,7 @@ try:
     import MetaTrader5 as Mt5
 except ImportError:
     import bbstrader.compat  # noqa: F401
+    import MetaTrader5 as Mt5
 
 __all__ = [
     "Trade",

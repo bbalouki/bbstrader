@@ -17,6 +17,7 @@ dependencies = [
     "nltk>=3.9.1",
     "notify_py>=0.3.43",
     "numpy>=2.2.6",
+    "plotly>=5.24.1"
     "praw>=7.8.1",
     "pybind11>=3.0.1",
     "pyfiglet>=1.0.4",

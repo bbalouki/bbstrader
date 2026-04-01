@@ -11,6 +11,7 @@ try:
     import MetaTrader5 as mt5
 except ImportError:
     import bbstrader.compat  # noqa: F401
+    import MetaTrader5 as mt5
 
 COUNTRIES_STOCKS = {
     "USA": r"\b(US|USA)\b",
