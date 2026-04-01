@@ -3,30 +3,36 @@ import warnings
 from pypfopt import expected_returns, risk_models
 from pypfopt.efficient_frontier import EfficientFrontier
 from pypfopt.hierarchical_portfolio import HRPOpt
+from pypfopt.black_litterman import BlackLittermanModel
 
 __all__ = [
     "markowitz_weights",
     "hierarchical_risk_parity",
+    "black_litterman_weights",
     "equal_weighted",
     "optimized_weights",
 ]
 
 
-def markowitz_weights(prices=None, rfr=0.0, freq=252):
+def markowitz_weights(prices=None, rfr=0.0, freq=252, min_vol=False):
     """
-    Calculates optimal portfolio weights using Markowitz's mean-variance optimization (Max Sharpe Ratio) with multiple solvers.
+    Calculates optimal portfolio weights using Markowitz's mean-variance optimization (Max Sharpe Ratio or Min Volatility) with multiple solvers.
 
     Parameters
     ----------
     prices : pd.DataFrame, optional
         Price data for assets, where rows represent time periods and columns represent assets.
+    rfr : float, optional
+        Risk-free rate (default is 0.0).
     freq : int, optional
         Frequency of the data, such as 252 for daily returns in a year (default is 252).
+    min_vol : bool, optional
+        If True, optimizes for minimum volatility instead of maximum Sharpe ratio (default is False).
 
     Returns
     -------
     dict
-        Dictionary containing the optimal asset weights for maximizing the Sharpe ratio, normalized to sum to 1.
+        Dictionary containing the optimal asset weights for maximizing the Sharpe ratio or minimizing volatility, normalized to sum to 1.
 
     Notes
     -----
@@ -53,10 +59,15 @@ def markowitz_weights(prices=None, rfr=0.0, freq=252):
             solver=solver,
         )
         try:
-            ef.max_sharpe(risk_free_rate=rfr)
+            if min_vol:
+                ef.min_volatility()
+            else:
+                ef.max_sharpe(risk_free_rate=rfr)
             return ef.clean_weights()
         except Exception as e:
             print(f"Solver {solver} failed with error: {e}")
+    # Default to equal weighted if all solvers fail
+    return equal_weighted(prices=prices)
 
 
 def hierarchical_risk_parity(prices=None, returns=None, freq=252):
@@ -140,7 +151,66 @@ def equal_weighted(prices=None, returns=None, round_digits=5):
     return {col: round(1 / n, round_digits) for col in columns}
 
 
-def optimized_weights(prices=None, returns=None, rfr=0.0, freq=252, method="equal"):
+def black_litterman_weights(
+    prices=None,
+    rfr=0.0,
+    freq=252,
+    views=None,
+    view_confidences=None,
+    pi=None,
+    market_caps=None,
+):
+    """
+    Computes portfolio weights using the Black-Litterman model.
+
+    Parameters
+    ----------
+    prices : pd.DataFrame
+        Price data for assets.
+    rfr : float, optional
+        Risk-free rate (default is 0.0).
+    freq : int, optional
+        Frequency of the data (default is 252).
+    views : dict, optional
+        Investor's views on asset returns.
+    view_confidences : list or np.array, optional
+        Confidence levels for each view.
+    pi : pd.Series, optional
+        Market-implied prior returns.
+    market_caps : pd.Series, optional
+        Market capitalization of assets.
+
+    Returns
+    -------
+    dict
+        Optimal asset weights based on the Black-Litterman model.
+    """
+    cov_matrix = risk_models.sample_cov(prices, frequency=freq)
+    if pi is None:
+        if market_caps is not None:
+            # If market caps are provided, we can use them to compute the prior
+            # This requires a benchmark, which we don't have here easily.
+            # For simplicity, we use the mean historical return if pi is not provided.
+            pi = expected_returns.mean_historical_return(prices, frequency=freq)
+        else:
+            pi = expected_returns.mean_historical_return(prices, frequency=freq)
+
+    bl = BlackLittermanModel(
+        cov_matrix,
+        pi=pi,
+        absolute_views=views,
+        omega=None,
+        view_confidences=view_confidences,
+    )
+    ret_bl = bl.bl_returns()
+    ef = EfficientFrontier(ret_bl, cov_matrix)
+    ef.max_sharpe(risk_free_rate=rfr)
+    return ef.clean_weights()
+
+
+def optimized_weights(
+    prices=None, returns=None, rfr=0.0, freq=252, method="equal", **kwargs
+):
     """
     Selects an optimization method to calculate portfolio weights based on user preference.
 
@@ -174,8 +244,12 @@ def optimized_weights(prices=None, returns=None, rfr=0.0, freq=252, method="equa
     """
     if method == "markowitz":
         return markowitz_weights(prices=prices, rfr=rfr, freq=freq)
+    elif method == "min_vol":
+        return markowitz_weights(prices=prices, rfr=rfr, freq=freq, min_vol=True)
     elif method == "hrp":
         return hierarchical_risk_parity(prices=prices, returns=returns, freq=freq)
+    elif method == "black_litterman":
+        return black_litterman_weights(prices=prices, rfr=rfr, freq=freq, **kwargs)
     elif method == "equal":
         return equal_weighted(prices=prices, returns=returns)
     else:
