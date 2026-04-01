@@ -21,6 +21,7 @@ try:
     import MetaTrader5 as MT5
 except ImportError:
     import bbstrader.compat  # noqa: F401
+    import MetaTrader5 as MT5
 
 
 __all__ = ["Mt5ExecutionEngine", "RunMt5Engine", "RunMt5Engines"]

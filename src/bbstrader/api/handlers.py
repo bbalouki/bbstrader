@@ -21,6 +21,7 @@ try:
     import MetaTrader5 as mt5
 except ImportError:
     import bbstrader.compat  # noqa: F401
+    import MetaTrader5 as mt5
 
 
 def _convert_obj(obj, obj_type):

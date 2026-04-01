@@ -14,6 +14,7 @@ try:
     import MetaTrader5 as mt5
 except ImportError:
     import bbstrader.compat  # noqa: F401
+    import MetaTrader5 as mt5
 
 logger.add(
     f"{BBSTRADER_DIR}/logs/trade.log",

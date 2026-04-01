@@ -17,6 +17,10 @@ __all__ = [
     "plot_performance",
     "create_sharpe_ratio",
     "create_sortino_ratio",
+    "create_omega_ratio",
+    "create_calmar_ratio",
+    "create_tail_ratio",
+    "calculate_risk_metrics",
     "plot_returns_and_dd",
     "plot_monthly_yearly_returns",
     "show_qs_stats",
@@ -111,6 +115,72 @@ def create_sortino_ratio(returns: pd.Series, periods: int = 252) -> float:
     return qs.stats.sortino(returns, periods=periods)
 
 
+def create_omega_ratio(
+    returns: pd.Series, periods: int = 252, rf: float = 0.0
+) -> float:
+    """
+    Create the Omega ratio for the strategy.
+
+    Args:
+        returns : A pandas Series representing period percentage returns.
+        periods (int): Daily (252), Hourly (252*6.5), Minutely(252*6.5*60) etc.
+        rf (float): Risk-free rate.
+
+    Returns:
+        float: Omega ratio
+    """
+    return qs.stats.omega(returns, rf=rf)
+
+
+def create_calmar_ratio(returns: pd.Series, periods: int = 252) -> float:
+    """
+    Create the Calmar ratio for the strategy.
+
+    Args:
+        returns : A pandas Series representing period percentage returns.
+        periods (int): Daily (252), Hourly (252*6.5), Minutely(252*6.5*60) etc.
+
+    Returns:
+        float: Calmar ratio
+    """
+    return qs.stats.calmar(returns)
+
+
+def create_tail_ratio(returns: pd.Series) -> float:
+    """
+    Create the Tail ratio for the strategy.
+
+    Args:
+        returns : A pandas Series representing period percentage returns.
+
+    Returns:
+        float: Tail ratio
+    """
+    return qs.stats.tail_ratio(returns)
+
+
+def calculate_risk_metrics(
+    returns: pd.Series, benchmark_returns: pd.Series, periods: int = 252
+) -> Dict[str, float]:
+    """
+    Calculate Alpha, Beta and Volatility for the strategy.
+
+    Args:
+        returns : A pandas Series representing period percentage returns.
+        benchmark_returns : A pandas Series representing benchmark period percentage returns.
+        periods (int): Daily (252), Hourly (252*6.5), Minutely(252*6.5*60) etc.
+
+    Returns:
+        Dict[str, float]: Alpha, Beta, Volatility
+    """
+    g_beta = qs.stats.greeks(returns, benchmark_returns)
+    alpha = g_beta["alpha"]
+    beta = g_beta["beta"]
+    volatility = qs.stats.volatility(returns, periods=periods)
+
+    return {"alpha": alpha, "beta": beta, "volatility": volatility}
+
+
 def create_drawdowns(pnl: pd.Series) -> Tuple[pd.Series, float, float]:
     """
     Calculate the largest peak-to-trough drawdown of the PnL curve
@@ -125,6 +195,8 @@ def create_drawdowns(pnl: pd.Series) -> Tuple[pd.Series, float, float]:
     """
     # Calculate the cumulative returns curve
     # and set up the High Water Mark
+    if pnl.empty:
+        return pd.Series(dtype=float), 0.0, 0.0
     hwm = pd.Series(index=pnl.index)
     hwm.iloc[0] = 0
 
@@ -139,7 +211,9 @@ def create_drawdowns(pnl: pd.Series) -> Tuple[pd.Series, float, float]:
         drawdown.iloc[t] = hwm.iloc[t] - pnl.iloc[t]
         duration.iloc[t] = 0 if drawdown.iloc[t] == 0 else duration.iloc[t - 1] + 1
 
-    return drawdown, drawdown.max(), duration.max()
+    max_drawdown = drawdown.max() if not drawdown.empty else 0.0
+    max_duration = duration.max() if not duration.empty else 0.0
+    return drawdown, max_drawdown, max_duration
 
 
 def plot_performance(df: pd.DataFrame, title: str) -> None:
