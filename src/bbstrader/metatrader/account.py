@@ -897,7 +897,9 @@ class Account:
         history = (
             self.get_trades_history(date_from=from_date, group=group, to_df=False) or []
         )
-        positions_ids = {deal.position_id for deal in history if deal.magic == strategy_id}
+        positions_ids = {
+            deal.position_id for deal in history if deal.magic == strategy_id
+        }
         today_deals = []
         for position in positions_ids:
             deals = self.get_trades_history(position=position, to_df=False) or []

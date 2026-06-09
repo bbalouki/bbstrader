@@ -112,8 +112,8 @@ def get_mt5_handlers():
     # 1. System & Session Management (Functions returning structs are wrapped)
     h.init_auto = lambda: mt5.initialize()
     h.init_path = lambda path: mt5.initialize(path)
-    h.init_full = (
-        lambda path, login, password, server, timeout, portable: mt5.initialize(
+    h.init_full = lambda path, login, password, server, timeout, portable: (
+        mt5.initialize(
             path=path,
             login=login,
             password=password,
@@ -146,28 +146,20 @@ def get_mt5_handlers():
     )
 
     # 3. Market Data (Rates & Ticks)
-    h.get_rates_by_date = (
-        lambda symbol, timeframe, date_from, count: mt5.copy_rates_from(
-            symbol, timeframe, get_time(date_from), count
-        )
+    h.get_rates_by_date = lambda symbol, timeframe, date_from, count: (
+        mt5.copy_rates_from(symbol, timeframe, get_time(date_from), count)
     )
-    h.get_rates_by_pos = (
-        lambda symbol, timeframe, start_pos, count: mt5.copy_rates_from_pos(
-            symbol, timeframe, start_pos, count
-        )
+    h.get_rates_by_pos = lambda symbol, timeframe, start_pos, count: (
+        mt5.copy_rates_from_pos(symbol, timeframe, start_pos, count)
     )
-    h.get_rates_by_range = (
-        lambda symbol, timeframe, date_from, date_to: mt5.copy_rates_range(
-            symbol, timeframe, get_time(date_from), get_time(date_to)
-        )
+    h.get_rates_by_range = lambda symbol, timeframe, date_from, date_to: (
+        mt5.copy_rates_range(symbol, timeframe, get_time(date_from), get_time(date_to))
     )
     h.get_ticks_by_date = lambda symbol, date_from, count, flags: mt5.copy_ticks_from(
         symbol, get_time(date_from), count, flags
     )
-    h.get_ticks_by_range = (
-        lambda symbol, date_from, date_to, flags: mt5.copy_ticks_range(
-            symbol, get_time(date_from), get_time(date_to), flags
-        )
+    h.get_ticks_by_range = lambda symbol, date_from, date_to, flags: (
+        mt5.copy_ticks_range(symbol, get_time(date_from), get_time(date_to), flags)
     )
 
     h.get_tick_info = lambda symbol: _convert_obj(

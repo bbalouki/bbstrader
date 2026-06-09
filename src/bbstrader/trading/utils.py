@@ -66,4 +66,3 @@ def send_message(
         if token is None or chat_id is None:
             raise ValueError("Token and chat_id must be provided")
         asyncio.run(send_telegram_message(token, chat_id, text=message))
-

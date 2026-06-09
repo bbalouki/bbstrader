@@ -2,9 +2,9 @@
 Overview
 ========
 
-This Backtesting Module provides a comprehensive suite of tools to test trading strategies in an event-driven system. 
-It simulates the execution of trades in historical market conditions to evaluate the performance of trading strategies 
-before applying them in live trading environments. Designed with modularity and extensibility in mind, it caters to 
+This Backtesting Module provides a comprehensive suite of tools to test trading strategies in an event-driven system.
+It simulates the execution of trades in historical market conditions to evaluate the performance of trading strategies
+before applying them in live trading environments. Designed with modularity and extensibility in mind, it caters to
 both novices and experts in algorithmic trading.
 
 Features
@@ -45,6 +45,7 @@ Notes
 
 See `bbstrader.btengine.backtest.run_backtest` for more details on the backtesting process and its parameters.
 """
+
 from bbstrader.btengine.backtest import *  # noqa: F403
 from bbstrader.btengine.data import *  # noqa: F403
 from bbstrader.btengine.event import *  # noqa: F403

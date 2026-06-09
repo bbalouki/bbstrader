@@ -174,7 +174,6 @@ class MT5ExecutionHandler(ExecutionHandler):
             lot = float(quantity * price / contract_size)
         return self.__account.broker.validate_lot_size(symbol, lot)
 
-    
     def _estimate_total_fees(
         self,
         symbol: str,

@@ -1358,7 +1358,7 @@ def RunMultipleCopier(
         process.join()
 
 
-def auto_convert(value: str) -> bool | None | int | float |str:
+def auto_convert(value: str) -> bool | None | int | float | str:
     """Convert string values to appropriate data types"""
     if value.lower() in {"true", "false"}:  # Boolean
         return value.lower() == "true"

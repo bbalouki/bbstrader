@@ -332,6 +332,7 @@ def retry_on_disconnect(max_retries: int = 3, delay: float = 1.0) -> Callable[[_
     Catches ``InternalFailConnect`` and ``InternalFailTimeout``, waits
     ``delay * 2**attempt`` seconds between tries, then re-raises on the last attempt.
     """
+
     def decorator(func: _F) -> _F:
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
@@ -341,8 +342,10 @@ def retry_on_disconnect(max_retries: int = 3, delay: float = 1.0) -> Callable[[_
                 except (InternalFailConnect, InternalFailTimeout):
                     if attempt == max_retries - 1:
                         raise
-                    time.sleep(delay * (2 ** attempt))
+                    time.sleep(delay * (2**attempt))
+
         return wrapper  # type: ignore[return-value]
+
     return decorator  # type: ignore[return-value]
 
 

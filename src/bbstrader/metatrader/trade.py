@@ -561,7 +561,6 @@ class Trade:
         """
         return self.open_position(action=kwargs.pop("action", "BMKT"), **kwargs)
 
-
     def open_sell_position(self, **kwargs):
         """
         Open a sell position or order.
@@ -808,9 +807,7 @@ class Trade:
     def get_current_buy_stop_limits(self, id: int | None = None) -> list[int] | None:
         return self.get_filtered_tickets(id=id, filter_type="buy_stop_limits")
 
-    def get_current_sell_stop_limits(
-        self, id: int | None = None
-    ) -> list[int] | None:
+    def get_current_sell_stop_limits(self, id: int | None = None) -> list[int] | None:
         return self.get_filtered_tickets(id=id, filter_type="sell_stop_limits")
 
     def get_current_positions(self, id: int | None = None) -> list[int] | None:
@@ -1268,9 +1265,7 @@ class Trade:
             result = client.order_send(request)
         except Exception as e:
             msg = trade_retcode_message(result.retcode) if result else "N/A"
-            LOGGER.error(
-                f"Unable to modify Order #{ticket}, RETCODE={msg}, Error: {e}"
-            )
+            LOGGER.error(f"Unable to modify Order #{ticket}, RETCODE={msg}, Error: {e}")
             return False
         if result and result.retcode == Mt5.TRADE_RETCODE_DONE:
             LOGGER.info(
