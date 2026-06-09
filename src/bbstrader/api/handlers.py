@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 
 import pytz
 
@@ -24,7 +25,7 @@ except ImportError:
     import MetaTrader5 as mt5
 
 
-def _convert_obj(obj, obj_type):
+def _convert_obj(obj: Any, obj_type: type) -> Any:
     """Converts a single MT5 object to the target C++ class instance."""
     if obj is None:
         return None
@@ -50,7 +51,8 @@ def _convert_obj(obj, obj_type):
         raise TypeError(f"Expected MT5 namedtuple, got {type(obj)}")
 
 
-def _convert_list(obj_list, obj_type):
+def _convert_list(obj_list: Any, obj_type: type) -> list | None:
+    """Converts a list of MT5 objects to a list of C++ class instances."""
     if obj_list is None:
         return None
     return [_convert_obj(obj, obj_type) for obj in obj_list]
@@ -60,7 +62,6 @@ def _build_request(req: TradeRequest | dict) -> dict:
     if isinstance(req, dict):
         return req
 
-    request = {}
     attrs = [
         "action",
         "magic",
@@ -80,12 +81,7 @@ def _build_request(req: TradeRequest | dict) -> dict:
         "position",
         "position_by",
     ]
-    enum_types = {"action", "type", "type_time", "type_filling"}
-    for attr in attrs:
-        val = getattr(req, attr)
-        if attr in enum_types or (val != 0 and val != ""):
-            request[attr] = val
-    return request
+    return {attr: getattr(req, attr) for attr in attrs}
 
 
 def check_order(request: TradeRequest) -> OrderCheckResult:
@@ -96,14 +92,14 @@ def send_order(request: TradeRequest) -> OrderSentResult:
     return mt5.order_send(_build_request(request))
 
 
-def get_time(ts):
+def get_time(ts: datetime | int) -> datetime:
     timezone = pytz.timezone("UTC")
     if isinstance(ts, datetime):
         return ts
     elif isinstance(ts, int):
         return datetime.fromtimestamp(ts, tz=timezone)
     else:
-        raise ValueError(f"Invalide Time format {type(ts)} must be and int or datetime")
+        raise ValueError(f"Invalid time format {type(ts)}: must be an int or datetime")
 
 
 def get_mt5_handlers():
