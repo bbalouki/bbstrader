@@ -1,5 +1,6 @@
-from datetime import datetime
-from typing import Any, Dict, List, Optional, Union
+from datetime import datetime, timedelta
+from typing import Any
+from zoneinfo import ZoneInfo
 
 import pandas as pd
 
@@ -11,6 +12,7 @@ from bbstrader.api import (
     TradeDeal,
     TradeOrder,
     TradePosition,
+    trade_object_to_df,
 )
 from bbstrader.api import Mt5client as client
 from bbstrader.metatrader.broker import Broker, check_mt5_connection
@@ -18,8 +20,10 @@ from bbstrader.metatrader.utils import TIMEFRAMES, RateInfo, SymbolType, raise_m
 
 __all__ = ["Account"]
 
+_DEFAULT_TIMEOUT = 60_000
 
-class Account(object):
+
+class Account:
     """
     The `Account` class is utilized to retrieve information about
     the current trading account or a specific account.
@@ -49,7 +53,7 @@ class Account(object):
         >>> trade_history = account.get_trade_history(from_date, to_date)
     """
 
-    def __init__(self, broker: Optional[Broker] = None, **kwargs):
+    def __init__(self, broker: Broker | None = None, **kwargs):
         """
         Initialize the Account class.
 
@@ -59,6 +63,7 @@ class Account(object):
         """
         check_mt5_connection(**kwargs)
         self._info = client.account_info()
+        self._symbol_cache: dict[str, SymbolInfo] = {}
         terminal_info = self.get_terminal_info()
         self._broker = (
             broker
@@ -75,7 +80,7 @@ class Account(object):
         return self._broker
 
     @property
-    def timezone(self) -> Optional[str]:
+    def timezone(self) -> str | None:
         return self.broker.get_terminal_timezone()
 
     @property
@@ -113,14 +118,40 @@ class Account(object):
         """Close the connection to the MetaTrader 5 terminal."""
         client.shutdown()
 
+    def __enter__(self) -> "Account":
+        return self
+
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
+        self.shutdown()
+
+    def __repr__(self) -> str:
+        return (
+            f"Account(number={self.number!r}, server={self.server!r}, "
+            f"balance={self.balance})"
+        )
+
+    def __str__(self) -> str:
+        return (
+            f"Account #{self.number} on {self.server} "
+            f"| Balance: {self.balance} {self.currency}"
+        )
+
+    def refresh(self) -> None:
+        """Reload account info from the MT5 terminal to reflect current balance/equity."""
+        self._info = client.account_info()
+
+    def clear_symbol_cache(self) -> None:
+        """Invalidate the cached symbol info, forcing fresh lookups on next call."""
+        self._symbol_cache.clear()
+
     def get_account_info(
         self,
-        account: Optional[int] = None,
-        password: Optional[str] = None,
-        server: Optional[str] = None,
-        timeout: Optional[int] = 60_000,
-        path: Optional[str] = None,
-    ) -> Union[AccountInfo, None]:
+        account: int | None = None,
+        password: str | None = None,
+        server: str | None = None,
+        timeout: int | None = _DEFAULT_TIMEOUT,
+        path: str | None = None,
+    ) -> AccountInfo | None:
         """
         Get info on the current trading account or a specific account .
 
@@ -166,12 +197,12 @@ class Account(object):
                 info = client.account_info()
                 return info
             except Exception as e:
-                raise_mt5_error(e)
+                raise_mt5_error(str(e))
         else:
             try:
                 return client.account_info()
             except Exception as e:
-                raise_mt5_error(e)
+                raise_mt5_error(str(e))
 
     def get_terminal_info(self) -> TerminalInfo | None:
         """
@@ -189,7 +220,7 @@ class Account(object):
             if terminal_info is None:
                 return None
         except Exception as e:
-            raise_mt5_error(e)
+            raise_mt5_error(str(e))
         return terminal_info
 
     def get_symbol_info(self, symbol: str) -> SymbolInfo | None:
@@ -206,12 +237,14 @@ class Account(object):
             MT5TerminalError: A specific exception based on the error code.
 
         """
+        if symbol in self._symbol_cache:
+            return self._symbol_cache[symbol]
         try:
             symbol_info = client.symbol_info(symbol)
             if symbol_info is None:
                 return None
-            else:
-                return symbol_info
+            self._symbol_cache[symbol] = symbol_info
+            return symbol_info
         except Exception as e:
             msg = self._symbol_info_msg(symbol)
             raise_mt5_error(message=f"{str(e)} {msg}")
@@ -248,7 +281,7 @@ class Account(object):
             msg = self._symbol_info_msg(symbol)
             raise_mt5_error(message=f"{str(e)} {msg}")
 
-    def get_currency_rates(self, symbol: str) -> Dict[str, str]:
+    def get_currency_rates(self, symbol: str) -> dict[str, str]:
         """
         Args:
             symbol (str): The symbol for which to get currencies
@@ -265,6 +298,8 @@ class Account(object):
             {'bc': 'EUR', 'mc': 'EUR', 'pc': 'USD', 'ac': 'USD'}
         """
         info = self.get_symbol_info(symbol)
+        if info is None:
+            raise_mt5_error(f"Symbol '{symbol}' not found in Market Watch")
         bc = info.currency_base
         pc = info.currency_profit
         mc = info.currency_margin
@@ -279,7 +314,7 @@ class Account(object):
         file_name="symbols",
         include_desc=False,
         display_total=False,
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Get all specified financial instruments from the MetaTrader 5 terminal.
 
@@ -337,13 +372,13 @@ class Account(object):
         return self.broker.get_symbol_type(symbol)
 
     def _get_symbols_by_category(
-        self, symbol_type: SymbolType | str, category: str, category_map: Dict[str, str]
-    ) -> List[str]:
+        self, symbol_type: SymbolType | str, category: str, category_map: dict[str, str]
+    ) -> list[str]:
         return self.broker.get_symbols_by_category(symbol_type, category, category_map)
 
     def get_stocks_from_country(
         self, country_code: str = "USA", etf=False
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Retrieves a list of stock symbols from a specific country.
 
@@ -397,7 +432,7 @@ class Account(object):
 
     def get_stocks_from_exchange(
         self, exchange_code: str = "XNYS", etf=True
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Get stock symbols from a specific exchange using the ISO Code for the exchange.
 
@@ -472,10 +507,10 @@ class Account(object):
 
     def get_positions(
         self,
-        symbol: Optional[str] = None,
-        group: Optional[str] = None,
-        ticket: Optional[int] = None,
-    ) -> Union[List[TradePosition] | None]:
+        symbol: str | None = None,
+        group: str | None = None,
+        ticket: int | None = None,
+    ) -> list[TradePosition] | None:
         """
         Get open positions with the ability to filter by symbol or ticket.
         There are four call options:
@@ -502,7 +537,7 @@ class Account(object):
 
 
         Returns:
-            [List[TradePosition] | None]:
+            list[TradePosition] | None:
             - List of `TradePosition`.
 
         Notes:
@@ -546,10 +581,10 @@ class Account(object):
 
     def get_orders(
         self,
-        symbol: Optional[str] = None,
-        group: Optional[str] = None,
-        ticket: Optional[int] = None,
-    ) -> Union[List[TradeOrder] | None]:
+        symbol: str | None = None,
+        group: str | None = None,
+        ticket: int | None = None,
+    ) -> list[TradeOrder] | None:
         """
         Get active orders with the ability to filter by symbol or ticket.
         There are four call options:
@@ -613,16 +648,14 @@ class Account(object):
         self,
         fetch_type: str,  # "deals" or "orders"
         date_from: datetime,
-        date_to: Optional[datetime],
-        group: Optional[str],
-        ticket: Optional[int],
-        position: Optional[int],
+        date_to: datetime | None,
+        group: str | None,
+        ticket: int | None,
+        position: int | None,
         to_df: bool,
-        drop_cols: List[str],
-        time_cols: List[str],
+        drop_cols: list[str],
+        time_cols: list[str],
     ) -> Any:
-        from zoneinfo import ZoneInfo
-
         tz = self.broker.get_terminal_timezone()
         date_to = date_to or datetime.now(tz=ZoneInfo(tz))
         date_from = date_from.astimezone(tz=ZoneInfo(tz))
@@ -654,8 +687,6 @@ class Account(object):
             return None
 
         if to_df:
-            from bbstrader.api import trade_object_to_df
-
             df = trade_object_to_df(data)
             for col in time_cols:
                 if col in df.columns:
@@ -671,12 +702,12 @@ class Account(object):
     def get_trades_history(
         self,
         date_from: datetime = datetime(2000, 1, 1),
-        date_to: Optional[datetime] = None,
-        group: Optional[str] = None,
-        ticket: Optional[int] = None,  # TradeDeal.ticket
-        position: Optional[int] = None,  # TradePosition.ticket
+        date_to: datetime | None = None,
+        group: str | None = None,
+        ticket: int | None = None,  # TradeDeal.ticket
+        position: int | None = None,  # TradePosition.ticket
         to_df: bool = True,
-    ) -> Union[pd.DataFrame, List[TradeDeal] | None]:
+    ) -> pd.DataFrame | list[TradeDeal] | None:
         """
         Get deals from trading history within the specified interval
         with the ability to filter by `ticket` or `position`.
@@ -755,12 +786,12 @@ class Account(object):
     def get_orders_history(
         self,
         date_from: datetime = datetime(2000, 1, 1),
-        date_to: Optional[datetime] = None,
-        group: Optional[str] = None,
-        ticket: Optional[int] = None,  # order ticket
-        position: Optional[int] = None,  # position ticket
+        date_to: datetime | None = None,
+        group: str | None = None,
+        ticket: int | None = None,  # order ticket
+        position: int | None = None,  # position ticket
         to_df: bool = True,
-    ) -> Union[pd.DataFrame, List[TradeOrder] | None]:
+    ) -> pd.DataFrame | list[TradeOrder] | None:
         """
         Get orders from trading history within the specified interval
         with the ability to filter by `ticket` or `position`.
@@ -846,29 +877,34 @@ class Account(object):
             ),
         )
 
-    def get_today_deals(self, id, group=None) -> List[TradeDeal]:
+    def get_today_deals(
+        self,
+        strategy_id: int,
+        group: str | None = None,
+        lookback_days: int = 3,
+    ) -> list[TradeDeal]:
         """
-        Get all today deals for a specific symbol or group of symbols
+        Get all today deals for a specific strategy magic number.
 
         Args:
-            id (int): strategy or expert id
-            group (str): Symbol or group or symbol
+            strategy_id (int): Strategy or expert magic number.
+            group (str | None): Symbol or group filter.
+            lookback_days (int): How many days back to search for open positions.
         Returns:
-            List[TradeDeal]: List of today deals
+            list[TradeDeal]: Deals closed today belonging to the strategy.
         """
-
-        from datetime import timedelta
-
-        from_date = datetime.now() - timedelta(days=3)
+        from_date = datetime.now() - timedelta(days=lookback_days)
         history = (
             self.get_trades_history(date_from=from_date, group=group, to_df=False) or []
         )
-        positions_ids = set([deal.position_id for deal in history if deal.magic == id])
+        positions_ids = {deal.position_id for deal in history if deal.magic == strategy_id}
         today_deals = []
         for position in positions_ids:
-            deal = self.get_trades_history(position=position, to_df=False) or []
-            if deal is not None and len(deal) == 2:
-                deal_time = datetime.fromtimestamp(deal[1].time)
-                if deal_time.date() == datetime.now().date():
-                    today_deals.append(deal[1])
+            deals = self.get_trades_history(position=position, to_df=False) or []
+            if not deals:
+                continue
+            last_deal = deals[-1]
+            deal_time = datetime.fromtimestamp(last_deal.time)
+            if deal_time.date() == datetime.now().date():
+                today_deals.append(last_deal)
         return today_deals
