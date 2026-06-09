@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional, Union
 
 import pandas as pd
 from exchange_calendars import get_calendar, get_calendar_names
@@ -58,7 +57,7 @@ SESSION_TIMEFRAMES = [
 ]
 
 
-class Rates(object):
+class Rates:
     """
     Provides methods to retrieve historical financial data from MetaTrader 5.
 
@@ -94,7 +93,7 @@ class Rates(object):
         symbol: str,
         timeframe: str = "D1",
         start_pos: int = 0,
-        count: Optional[int] = MAX_BARS,
+        count: int | None = MAX_BARS,
         **kwargs,
     ):
         """
@@ -169,11 +168,11 @@ class Rates(object):
 
     def _fetch_data(
         self,
-        start: Union[int, datetime, pd.Timestamp],
-        count: Union[int, datetime, pd.Timestamp],
+        start: int | datetime | pd.Timestamp,
+        count: int | datetime | pd.Timestamp,
         lower_colnames=False,
         utc=False,
-    ) -> Union[pd.DataFrame, None]:
+    ) -> pd.DataFrame | None:
         """Fetches data from MT5 and returns a DataFrame or None."""
         try:
             rates = None
@@ -193,7 +192,7 @@ class Rates(object):
             df = pd.DataFrame(rates)
             return self._format_dataframe(df, lower_colnames=lower_colnames, utc=utc)
         except Exception as e:
-            raise_mt5_error(e)
+            raise_mt5_error(str(e))
 
     def _format_dataframe(
         self, df: pd.DataFrame, lower_colnames=False, utc=False
@@ -270,7 +269,7 @@ class Rates(object):
 
     def get_rates_from_pos(
         self, filter=False, fill_na=False, lower_colnames=False, utc=False
-    ) -> Union[pd.DataFrame, None]:
+    ) -> pd.DataFrame | None:
         """
         Retrieves historical data starting from a specific position.
 
@@ -318,7 +317,7 @@ class Rates(object):
         fill_na=False,
         lower_colnames=False,
         utc=False,
-    ) -> Union[pd.DataFrame, None]:
+    ) -> pd.DataFrame | None:
         """
         Retrieves historical data within a specified date range.
 
@@ -351,11 +350,11 @@ class Rates(object):
         date_from: datetime | pd.Timestamp,
         date_to: datetime | pd.Timestamp = pd.Timestamp.now(),
         utc: bool = False,
-        filter: Optional[bool] = False,
-        fill_na: Optional[bool | str] = False,
-        lower_colnames: Optional[bool] = True,
-        save_csv: Optional[bool] = False,
-    ) -> Union[pd.DataFrame, None]:
+        filter: bool | None = False,
+        fill_na: bool | str | None = False,
+        lower_colnames: bool | None = True,
+        save_csv: bool | None = False,
+    ) -> pd.DataFrame | None:
         """
         Retrieves historical data within a specified date range.
 
@@ -463,7 +462,7 @@ def get_data_from_pos(
     """Get historical data from a specific position.
     See `Rates.get_rates_from_pos` for more details.
     """
-    rates = Rates(symbol, timeframe, start_pos, count, session_duration, **kwargs)
+    rates = Rates(symbol, timeframe, start_pos, count, **kwargs)
     data = rates.get_rates_from_pos(
         filter=filter, fill_na=fill_na, lower_colnames=lower_colnames, utc=utc
     )
