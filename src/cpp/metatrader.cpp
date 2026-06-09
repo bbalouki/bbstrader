@@ -436,40 +436,46 @@ PYBIND11_MODULE(client, m) {
         .def(py::init<>())
         .def(py::init([](const py::dict& dict) {
             auto req = std::make_unique<TradeRequest>();
-            if (dict.contains("action"))
-                req->action = dict["action"].cast<int32_t>();
-            if (dict.contains("magic"))
-                req->magic = dict["magic"].cast<int64_t>();
-            if (dict.contains("order"))
-                req->order = dict["order"].cast<int64_t>();
-            if (dict.contains("symbol"))
-                req->symbol = dict["symbol"].cast<std::string>();
-            if (dict.contains("volume"))
-                req->volume = dict["volume"].cast<double>();
-            if (dict.contains("price"))
-                req->price = dict["price"].cast<double>();
-            if (dict.contains("stoplimit"))
-                req->stoplimit = dict["stoplimit"].cast<double>();
-            if (dict.contains("sl"))
-                req->sl = dict["sl"].cast<double>();
-            if (dict.contains("tp"))
-                req->tp = dict["tp"].cast<double>();
-            if (dict.contains("deviation"))
-                req->deviation = dict["deviation"].cast<int64_t>();
-            if (dict.contains("type"))
-                req->type = dict["type"].cast<int32_t>();
-            if (dict.contains("type_filling"))
-                req->type_filling = dict["type_filling"].cast<int32_t>();
-            if (dict.contains("type_time"))
-                req->type_time = dict["type_time"].cast<int32_t>();
-            if (dict.contains("expiration"))
-                req->expiration = dict["expiration"].cast<int64_t>();
-            if (dict.contains("comment"))
-                req->comment = dict["comment"].cast<std::string>();
-            if (dict.contains("position"))
-                req->position = dict["position"].cast<int64_t>();
-            if (dict.contains("position_by"))
-                req->position_by = dict["position_by"].cast<int64_t>();
+            try {
+                if (dict.contains("action"))
+                    req->action = dict["action"].cast<int32_t>();
+                if (dict.contains("magic"))
+                    req->magic = dict["magic"].cast<int64_t>();
+                if (dict.contains("order"))
+                    req->order = dict["order"].cast<int64_t>();
+                if (dict.contains("symbol"))
+                    req->symbol = dict["symbol"].cast<std::string>();
+                if (dict.contains("volume"))
+                    req->volume = dict["volume"].cast<double>();
+                if (dict.contains("price"))
+                    req->price = dict["price"].cast<double>();
+                if (dict.contains("stoplimit"))
+                    req->stoplimit = dict["stoplimit"].cast<double>();
+                if (dict.contains("sl"))
+                    req->sl = dict["sl"].cast<double>();
+                if (dict.contains("tp"))
+                    req->tp = dict["tp"].cast<double>();
+                if (dict.contains("deviation"))
+                    req->deviation = dict["deviation"].cast<int64_t>();
+                if (dict.contains("type"))
+                    req->type = dict["type"].cast<int32_t>();
+                if (dict.contains("type_filling"))
+                    req->type_filling = dict["type_filling"].cast<int32_t>();
+                if (dict.contains("type_time"))
+                    req->type_time = dict["type_time"].cast<int32_t>();
+                if (dict.contains("expiration"))
+                    req->expiration = dict["expiration"].cast<int64_t>();
+                if (dict.contains("comment"))
+                    req->comment = dict["comment"].cast<std::string>();
+                if (dict.contains("position"))
+                    req->position = dict["position"].cast<int64_t>();
+                if (dict.contains("position_by"))
+                    req->position_by = dict["position_by"].cast<int64_t>();
+            } catch (const py::cast_error& exc) {
+                throw py::value_error(
+                    std::string("TradeRequest: type mismatch in request field: ") + exc.what()
+                );
+            }
             return req;
         }))
         .def_readwrite("action", &TradeRequest::action)
