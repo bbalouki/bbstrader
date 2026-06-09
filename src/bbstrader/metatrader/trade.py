@@ -3,7 +3,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from logging import Logger
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Literal, Optional, Tuple
+from collections.abc import Callable
+from typing import Any, Literal
 
 import pandas as pd
 import quantstats as qs
@@ -200,7 +201,7 @@ class Trade:
             print(f">>> Everything is OK, @{self.expert_name} is Running ...>>>\n")
 
     @property
-    def retcodes(self) -> List[int]:
+    def retcodes(self) -> list[int]:
         """Return all the retcodes"""
         return self._retcodes
 
@@ -244,15 +245,15 @@ class Trade:
             return self.break_even_status
         return None
 
-    def _get_logger(self, loger: Any, consol_log: bool):
+    def _get_logger(self, logger: Any, consol_log: bool):
         """Get the logger object"""
         global LOGGER
-        if loger is None:
+        if logger is None:
             ...  # Do nothing
-        elif isinstance(loger, (str, Path)):
-            LOGGER = config_logger(f"{BBSTRADER_DIR}/logs/{loger}", consol_log)
-        elif isinstance(loger, (Logger, type(log))):
-            LOGGER = loger
+        elif isinstance(logger, (str, Path)):
+            LOGGER = config_logger(f"{BBSTRADER_DIR}/logs/{logger}", consol_log)
+        elif isinstance(logger, (Logger, type(log))):
+            LOGGER = logger
 
     def initialize(self, **kwargs):
         """
@@ -462,16 +463,16 @@ class Trade:
     def open_position(
         self,
         action: Buys | Sells,
-        price: Optional[float] = None,
-        stoplimit: Optional[float] = None,
-        id: Optional[int] = None,
+        price: float | None = None,
+        stoplimit: float | None = None,
+        id: int | None = None,
         mm: bool = True,
         trail: bool = True,
-        comment: Optional[str] = None,
-        symbol: Optional[str] = None,
-        volume: Optional[float] = None,
-        sl: Optional[float] = None,
-        tp: Optional[float] = None,
+        comment: str | None = None,
+        symbol: str | None = None,
+        volume: float | None = None,
+        sl: float | None = None,
+        tp: float | None = None,
     ) -> bool:
         """Opens a Buy or Sell position (Market or Pending).
 
@@ -605,7 +606,7 @@ class Trade:
             _check(f"Profit target Reached !!! SYMBOL={self.symbol}")
         return True
 
-    def request_result(self, price: float, request: Dict[str, Any], type: Buys | Sells):
+    def request_result(self, price: float, request: dict[str, Any], type: Buys | Sells):
         """
         Check if a trading order has been sent correctly
 
@@ -667,7 +668,7 @@ class Trade:
         if result and result.retcode == Mt5.TRADE_RETCODE_DONE:
             msg = trade_retcode_message(result.retcode)
             LOGGER.info(f"Trade Order {msg}{addtionnal}")
-            if type != "BMKT" or type != "SMKT":
+            if type != "BMKT" and type != "SMKT":
                 self.opened_orders.append(result.order)
             long_msg = (
                 f"1. {pos} Order #{result.order} Sent, Symbol: {self.symbol}, Price: @{round(price, 5)}, "
@@ -708,8 +709,8 @@ class Trade:
             return False
 
     def get_filtered_tickets(
-        self, id: Optional[int] = None, filter_type: Optional[str] = None, th=None
-    ) -> List[int] | None:
+        self, id: int | None = None, filter_type: str | None = None, th=None
+    ) -> list[int] | None:
         """
         Get tickets for positions or orders based on filters.
 
@@ -789,48 +790,48 @@ class Trade:
                 filtered_tickets.append(item.ticket)
         return filtered_tickets
 
-    def get_current_orders(self, id: Optional[int] = None) -> List[int] | None:
+    def get_current_orders(self, id: int | None = None) -> list[int] | None:
         return self.get_filtered_tickets(id=id, filter_type="orders")
 
-    def get_current_buy_stops(self, id: Optional[int] = None) -> List[int] | None:
+    def get_current_buy_stops(self, id: int | None = None) -> list[int] | None:
         return self.get_filtered_tickets(id=id, filter_type="buy_stops")
 
-    def get_current_sell_stops(self, id: Optional[int] = None) -> List[int] | None:
+    def get_current_sell_stops(self, id: int | None = None) -> list[int] | None:
         return self.get_filtered_tickets(id=id, filter_type="sell_stops")
 
-    def get_current_buy_limits(self, id: Optional[int] = None) -> List[int] | None:
+    def get_current_buy_limits(self, id: int | None = None) -> list[int] | None:
         return self.get_filtered_tickets(id=id, filter_type="buy_limits")
 
-    def get_current_sell_limits(self, id: Optional[int] = None) -> List[int] | None:
+    def get_current_sell_limits(self, id: int | None = None) -> list[int] | None:
         return self.get_filtered_tickets(id=id, filter_type="sell_limits")
 
-    def get_current_buy_stop_limits(self, id: Optional[int] = None) -> List[int] | None:
+    def get_current_buy_stop_limits(self, id: int | None = None) -> list[int] | None:
         return self.get_filtered_tickets(id=id, filter_type="buy_stop_limits")
 
     def get_current_sell_stop_limits(
-        self, id: Optional[int] = None
-    ) -> List[int] | None:
+        self, id: int | None = None
+    ) -> list[int] | None:
         return self.get_filtered_tickets(id=id, filter_type="sell_stop_limits")
 
-    def get_current_positions(self, id: Optional[int] = None) -> List[int] | None:
+    def get_current_positions(self, id: int | None = None) -> list[int] | None:
         return self.get_filtered_tickets(id=id, filter_type="positions")
 
     def get_current_profitables(
-        self, id: Optional[int] = None, th=None
-    ) -> List[int] | None:
+        self, id: int | None = None, th=None
+    ) -> list[int] | None:
         return self.get_filtered_tickets(id=id, filter_type="profitables", th=th)
 
-    def get_current_losings(self, id: Optional[int] = None) -> List[int] | None:
+    def get_current_losings(self, id: int | None = None) -> list[int] | None:
         return self.get_filtered_tickets(id=id, filter_type="losings")
 
-    def get_current_buys(self, id: Optional[int] = None) -> List[int] | None:
+    def get_current_buys(self, id: int | None = None) -> list[int] | None:
         return self.get_filtered_tickets(id=id, filter_type="buys")
 
-    def get_current_sells(self, id: Optional[int] = None) -> List[int] | None:
+    def get_current_sells(self, id: int | None = None) -> list[int] | None:
         return self.get_filtered_tickets(id=id, filter_type="sells")
 
     def positive_profit(
-        self, th: Optional[float] = None, id: Optional[int] = None, account: bool = True
+        self, th: float | None = None, id: int | None = None, account: bool = True
     ) -> bool:
         """
         Check is the total profit on current open positions
@@ -885,11 +886,11 @@ class Trade:
     def break_even(
         self,
         mm=True,
-        id: Optional[int] = None,
-        trail: Optional[bool] = True,
+        id: int | None = None,
+        trail: bool | None = True,
         stop_trail: int | str = None,
         trail_after_points: int | str = None,
-        be_plus_points: Optional[int] = None,
+        be_plus_points: int | None = None,
     ):
         """
         Manages the break-even level of a trading position.
@@ -1013,8 +1014,8 @@ class Trade:
         self,
         position: TradePosition,
         be: int,
-        price: Optional[float] = None,
-        level: Optional[float] = None,
+        price: float | None = None,
+        level: float | None = None,
     ):
         """
         Sets the break-even level for a given trading position.
@@ -1112,7 +1113,7 @@ class Trade:
             return True
         return False
 
-    def win_trade(self, position: TradePosition, th: Optional[int] = None) -> bool:
+    def win_trade(self, position: TradePosition, th: int | None = None) -> bool:
         """
         Determines if a position has met the minimum 'win' threshold in points.
         """
@@ -1193,7 +1194,7 @@ class Trade:
                     result = client.order_send(request)
                     if result and result.retcode == Mt5.TRADE_RETCODE_DONE:
                         break
-            elif result and  result.retcode not in self._retcodes:
+            elif result and result.retcode not in self._retcodes:
                 self._retcodes.append(result.retcode)
                 msg = trade_retcode_message(result.retcode)
                 LOGGER.error(
@@ -1230,10 +1231,10 @@ class Trade:
     def modify_order(
         self,
         ticket: int,
-        price: Optional[float] = None,
-        stoplimit: Optional[float] = None,
-        sl: Optional[float] = None,
-        tp: Optional[float] = None,
+        price: float | None = None,
+        stoplimit: float | None = None,
+        sl: float | None = None,
+        tp: float | None = None,
     ):
         """
         Modify an open order by it ticket
@@ -1286,7 +1287,7 @@ class Trade:
             return False
 
     def close_order(
-        self, ticket: int, id: Optional[int] = None, comment: Optional[str] = None
+        self, ticket: int, id: int | None = None, comment: str | None = None
     ):
         """
         Close an open order by it ticket
@@ -1311,10 +1312,10 @@ class Trade:
     def close_position(
         self,
         ticket: int,
-        id: Optional[int] = None,
-        pct: Optional[float] = 1.0,
-        comment: Optional[str] = None,
-        symbol: Optional[str] = None,
+        id: int | None = None,
+        pct: float | None = 1.0,
+        comment: str | None = None,
+        symbol: str | None = None,
     ) -> bool:
         """
         Close an open position by it ticket
@@ -1353,12 +1354,12 @@ class Trade:
 
     def bulk_close(
         self,
-        tickets: List,
+        tickets: list,
         tikets_type: Literal["positions", "orders"],
         close_func: Callable,
         order_type: str,
-        id: Optional[int] = None,
-        comment: Optional[str] = None,
+        id: int | None = None,
+        comment: str | None = None,
     ):
         """
         Close multiple orders or positions at once.
@@ -1403,8 +1404,8 @@ class Trade:
     def close_orders(
         self,
         order_type: Orders,
-        id: Optional[int] = None,
-        comment: Optional[str] = None,
+        id: int | None = None,
+        comment: str | None = None,
     ):
         """
         Args:
@@ -1438,8 +1439,8 @@ class Trade:
     def close_positions(
         self,
         position_type: Positions,
-        id: Optional[int] = None,
-        comment: Optional[str] = None,
+        id: int | None = None,
+        comment: str | None = None,
     ):
         """
         Args:
@@ -1484,7 +1485,7 @@ class Trade:
         negative_deals = [deal for deal in today_deals if deal.profit < 0]
         return len(negative_deals) >= max_trades
 
-    def get_stats(self) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    def get_stats(self) -> tuple[dict[str, Any], dict[str, Any]]:
         """Retrieves aggregated session and historical trading performance."""
         today_deals = self.get_today_deals(group=self.symbol)
         stats1 = self._calculate_session_stats(today_deals)
@@ -1492,7 +1493,7 @@ class Trade:
 
         return stats1, stats2
 
-    def _calculate_session_stats(self, deals_list) -> Dict[str, Any]:
+    def _calculate_session_stats(self, deals_list) -> dict[str, Any]:
         stats = {
             "deals": len(deals_list),
             "profit": 0.0,
@@ -1537,7 +1538,7 @@ class Trade:
         fees = sum([p.swap + p.fee + p.commission for p in positions])
         return fees / len(positions) if len(positions) > 0 else 0.0
 
-    def _calculate_historical_stats(self) -> Dict[str, Any]:
+    def _calculate_historical_stats(self) -> dict[str, Any]:
         history = self.account.get_trades_history()
 
         if history is None or len(history) <= 1:
@@ -1636,13 +1637,13 @@ class Trade:
 
 
 def create_trade_instance(
-    symbols: List[str],
-    params: Dict[str, Any],
-    daily_risk: Optional[Dict[str, float]] = None,
-    max_risk: Optional[Dict[str, float]] = None,
-    pchange_sl: Optional[Dict[str, float] | float] = None,
+    symbols: list[str],
+    params: dict[str, Any],
+    daily_risk: dict[str, float] | None = None,
+    max_risk: dict[str, float] | None = None,
+    pchange_sl: dict[str, float] | float | None = None,
     **kwargs,
-) -> Dict[str, Trade]:
+) -> dict[str, Trade]:
     """
     Creates Trade instances for each symbol provided.
 
