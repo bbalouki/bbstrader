@@ -23,7 +23,7 @@ class PyMetaTraderClient : public MetaTraderClient {
     auto login(uint64_t account, str& pw, str& srv, uint32_t timeout) -> bool override {
         PYBIND11_OVERRIDE(bool, MetaTraderClient, login, account, pw, srv, timeout);
     }
-    auto shutdown() -> void override { PYBIND11_OVERRIDE(void, MetaTraderClient, shutdown); }
+    auto shutdown() noexcept -> void override { PYBIND11_OVERRIDE(void, MetaTraderClient, shutdown); }
     auto version() -> std::optional<VersionInfo> override {
         PYBIND11_OVERRIDE(std::optional<VersionInfo>, MetaTraderClient, version);
     }
