@@ -1,7 +1,12 @@
+import functools
+import time
+from collections.abc import Callable
 from enum import Enum
-from typing import NamedTuple, Optional
+from typing import NamedTuple, Optional, TypeVar
 
 import numpy as np
+
+_F = TypeVar("_F", bound=Callable)
 
 try:
     import MetaTrader5 as MT5
@@ -13,6 +18,7 @@ except ImportError:
 __all__ = [
     "TIMEFRAMES",
     "RateInfo",
+    "retry_on_disconnect",
     "RateDtype",
     "TimeFrame",
     "SymbolType",
@@ -318,6 +324,26 @@ def raise_mt5_error(message: Optional[str] = None):
         raise exception(f"{message or MT5.last_error()[1]}")
     else:
         raise Exception(f"{message or MT5.last_error()[1]}")
+
+
+def retry_on_disconnect(max_retries: int = 3, delay: float = 1.0) -> Callable[[_F], _F]:
+    """Decorator that retries a function on MT5 connection errors with exponential back-off.
+
+    Catches ``InternalFailConnect`` and ``InternalFailTimeout``, waits
+    ``delay * 2**attempt`` seconds between tries, then re-raises on the last attempt.
+    """
+    def decorator(func: _F) -> _F:
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            for attempt in range(max_retries):
+                try:
+                    return func(*args, **kwargs)
+                except (InternalFailConnect, InternalFailTimeout):
+                    if attempt == max_retries - 1:
+                        raise
+                    time.sleep(delay * (2 ** attempt))
+        return wrapper  # type: ignore[return-value]
+    return decorator  # type: ignore[return-value]
 
 
 _ORDER_FILLING_TYPE_ = "https://www.mql5.com/en/docs/constants/tradingconstants/orderproperties#enum_order_type_filling"
