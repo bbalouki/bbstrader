@@ -35,7 +35,8 @@ jobs:
           # Install deps
           CIBW_BEFORE_ALL_MANYLINUX_X86_64: "yum install -y openblas-devel pkgconf-pkg-config gcc-toolset-11"
           CIBW_BEFORE_ALL_MUSLLINUX_X86_64: "apk add --no-cache openblas-dev pkgconfig g++"
-          CIBW_ENVIRONMENT_LINUX: 'PATH="/opt/rh/gcc-toolset-11/root/usr/bin:$PATH"'
+          # Add CMAKE_ARGS to specify the BLAS vendor and enable pkg-config fallback
+          CIBW_ENVIRONMENT_LINUX: 'PATH="/opt/rh/gcc-toolset-11/root/usr/bin:$PATH" CMAKE_ARGS="-DBLA_VENDOR=OpenBLAS -DBLA_PREFER_PKGCONFIG=ON"'
 
           # 3. MACOS 
           CIBW_BEFORE_ALL_MACOS: "brew install openblas pkg-config"

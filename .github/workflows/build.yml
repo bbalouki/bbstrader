@@ -36,13 +36,13 @@ jobs:
       - name: Set up vcpkg
         uses: lukka/run-vcpkg@v11
 
-      - name: Cache CMake build
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.BUILD_DIR }}
-          key: ${{ runner.os }}-${{ matrix.build_type }}-cmake-${{ hashFiles('CMakeLists.txt', '**/CMakeLists.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ matrix.build_type }}-cmake-
+      # - name: Cache CMake build
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: ${{ env.BUILD_DIR }}
+      #     key: ${{ runner.os }}-${{ matrix.build_type }}-cmake-${{ hashFiles('CMakeLists.txt', '**/CMakeLists.txt') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-${{ matrix.build_type }}-cmake-
 
       - name: Install system packages (Linux)
         if: runner.os == 'Linux'
