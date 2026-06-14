@@ -32,12 +32,13 @@ jobs:
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
           CIBW_MUSLLINUX_X86_64_IMAGE: musllinux_1_2
 
-          # Install deps
+          # Install complete compilation toolchains and development libraries
           CIBW_BEFORE_ALL_MANYLINUX_X86_64: "yum install -y openblas-devel blas-devel lapack-devel pkgconf-pkg-config gcc-toolset-11 gcc-toolset-11-gcc-gfortran"
-          CIBW_BEFORE_ALL_MUSLLINUX_X86_64: "apk add --no-cache openblas-dev blas-dev lapack-dev pkgconfig gfortran g++"
+          CIBW_BEFORE_ALL_MUSLLINUX_X86_64: "apk add --no-cache build-base openblas-dev pkgconfig gfortran"
 
-          # Clean up CMAKE_ARGS from here since the physical library files and compilers are now present
-          CIBW_ENVIRONMENT_LINUX: 'PATH="/opt/rh/gcc-toolset-11/root/usr/bin:$PATH"'
+          # Configure the environment with paths and the critical CMake arguments
+          # CMAKE_ARGS is passed down to pip's isolated builds (like sparsediffpy)
+          CIBW_ENVIRONMENT_LINUX: 'PATH="/opt/rh/gcc-toolset-11/root/usr/bin:$PATH" CMAKE_ARGS="-DBLA_VENDOR=OpenBLAS -DBLA_PREFER_PKGCONFIG=ON"'
 
           # 3. MACOS
           CIBW_BEFORE_ALL_MACOS: "brew install openblas pkg-config"
