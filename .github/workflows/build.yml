@@ -53,7 +53,7 @@ jobs:
         if: runner.os == 'macOS'
         shell: bash
         run: brew install autoconf autoconf-archive automake libtool
-      
+
       - name: Set VCPKG Triplet
         shell: bash
         run: |
@@ -82,7 +82,7 @@ jobs:
       - name: Build
         shell: bash
         run: cmake --build $BUILD_DIR --config ${{ matrix.build_type }}
-        
+
       - name: Run tests
         shell: bash
         run: ctest --test-dir $BUILD_DIR --output-on-failure --build-config ${{ matrix.build_type }}
