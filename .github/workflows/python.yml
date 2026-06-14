@@ -36,9 +36,11 @@ jobs:
           CIBW_BEFORE_ALL_MANYLINUX_X86_64: "yum install -y openblas-devel blas-devel lapack-devel pkgconf-pkg-config gcc-toolset-11 gcc-toolset-11-gcc-gfortran"
           CIBW_BEFORE_ALL_MUSLLINUX_X86_64: "apk add --no-cache build-base openblas-dev pkgconfig gfortran"
 
-          # Configure the environment with paths and the critical CMake arguments
-          # CMAKE_ARGS is passed down to pip's isolated builds (like sparsediffpy)
+          # Active during the compilation of your own package (bbstrader)
           CIBW_ENVIRONMENT_LINUX: 'PATH="/opt/rh/gcc-toolset-11/root/usr/bin:$PATH" CMAKE_ARGS="-DBLA_VENDOR=OpenBLAS -DBLA_PREFER_PKGCONFIG=ON"'
+
+          # Active during the verification and pip installation of dependencies (sparsediffpy)
+          CIBW_TEST_ENVIRONMENT_LINUX: 'CMAKE_ARGS="-DBLA_VENDOR=OpenBLAS -DBLA_PREFER_PKGCONFIG=ON"'
 
           # 3. MACOS
           CIBW_BEFORE_ALL_MACOS: "brew install openblas pkg-config"
