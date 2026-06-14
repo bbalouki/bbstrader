@@ -1,7 +1,7 @@
 import random
 import re
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 from zoneinfo import ZoneInfo
 
 from bbstrader.api import Mt5client as client
@@ -146,14 +146,14 @@ def check_mt5_connection(
     return init
 
 
-class Broker(object):
+class Broker:
     def __init__(
         self,
         name: str,
-        timezone: Optional[str] = None,
-        custom_patterns: Optional[Dict[SymbolType, str]] = None,
-        custom_countries_stocks: Optional[Dict[str, str]] = None,
-        custom_exchanges: Optional[Dict[str, str]] = None,
+        timezone: str | None = None,
+        custom_patterns: dict[SymbolType, str] | None = None,
+        custom_countries_stocks: dict[str, str] | None = None,
+        custom_exchanges: dict[str, str] | None = None,
     ):
         self._name = name
         self._timezone = timezone
@@ -192,7 +192,7 @@ class Broker(object):
     def __hash__(self):
         return hash(self.name)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "name": self.name,
             "timezone": self.timezone,
@@ -266,7 +266,7 @@ class Broker(object):
         file_name: str = "symbols",
         include_desc: bool = False,
         display_total: bool = False,
-    ) -> List[str]:
+    ) -> list[str]:
         symbols = client.symbols_get()
         if not symbols:
             raise_mt5_error("Failed to get symbols")
@@ -334,8 +334,8 @@ class Broker(object):
             file.write(info.name + "\n")
 
     def get_symbols_by_category(
-        self, symbol_type: SymbolType | str, category: str, category_map: Dict[str, str]
-    ) -> List[str]:
+        self, symbol_type: SymbolType | str, category: str, category_map: dict[str, str]
+    ) -> list[str]:
         if category not in category_map:
             raise ValueError(
                 f"Unsupported category: {category}. Choose from: {', '.join(category_map)}"
@@ -373,7 +373,7 @@ class Broker(object):
         tick_value_loss: float,
         tick_value_profit: float,
         contract_size: float,
-    ) -> Tuple[float, float]:
+    ) -> tuple[float, float]:
         symbol_type = self.get_symbol_type(symbol)
         if (
             symbol_type == SymbolType.COMMODITIES

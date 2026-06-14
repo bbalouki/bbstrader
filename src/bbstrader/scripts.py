@@ -294,7 +294,7 @@ def RunMt5Terminal(args):
                 p.join()
         except Exception as e:
             print(f"Error in parallel execution: {e}")
-            raise e
+            raise
         except KeyboardInterrupt:
             print("\nTerminating Execution...")
             for p in processes:

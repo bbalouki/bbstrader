@@ -72,7 +72,8 @@ class FmpNews(object):
         params = {"start": "from", "end": "to", "page": "page", "limit": "limit"}
         base_url = f"https://financialmodelingprep.com/stable/news/{news_type}-latest?apikey={self.__api}"
         if news_type == "articles":
-            assert symbol is None, ValueError("symbol not supported for articles")
+            if symbol is not None:
+                raise ValueError("symbol not supported for articles")
             base_url = f"https://financialmodelingprep.com/stable/fmp-articles?apikey={self.__api}"
         elif symbol is not None:
             base_url = f"https://financialmodelingprep.com/stable/news/{news_type}?symbols={symbol}&apikey={self.__api}"

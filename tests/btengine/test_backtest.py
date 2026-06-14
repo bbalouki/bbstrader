@@ -7,7 +7,7 @@ from bbstrader.btengine.backtest import BacktestEngine
 class TestBacktestEngine(unittest.TestCase):
     def setUp(self):
         # Create mock classes with minimum expected interface
-        self.symbol_list = ['FAKE']
+        self.symbol_list = ["FAKE"]
         self.initial_capital = 100000.0
         self.heartbeat = 0.0
         self.start_date = datetime(2020, 1, 1)
@@ -49,10 +49,11 @@ class TestBacktestEngine(unittest.TestCase):
             self.mock_execution_handler_cls,
             self.mock_strategy_cls,
         )
-        engine.portfolio = self.mock_portfolio 
+        engine.portfolio = self.mock_portfolio
 
         result = engine.simulate_trading()
-        self.assertTrue(hasattr(result, '__class__')) 
-        
+        self.assertTrue(hasattr(result, "__class__"))
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -29,8 +29,10 @@
   - [2. `metatrader`: The C++/Python Bridge to MT5](#2-metatrader-the-cpython-bridge-to-mt5)
     - [Pattern 1: C++ Core, Python Orchestrator (Maximum Performance)](#pattern-1-c-core-python-orchestrator-maximum-performance)
     - [Pattern 2: Python-Driven with C++ Acceleration](#pattern-2-python-driven-with-c-acceleration)
+    - [Account API](#account-api)
   - [3. `trading`: Live Execution & Strategy Orchestrator](#3-trading-live-execution--strategy-orchestrator)
   - [4. `models`: Quant Toolkit for Signals & Risk](#4-models-quant-toolkit-for-signals--risk)
+- [What's New in 2.1.0](#whats-new-in-210)
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
 - [Installation](#installation)
@@ -226,6 +228,42 @@ if strategy.initialize():
     print(f"Retrieved {len(rates)} rates via the C++ bridge.")
 ```
 
+#### Account API
+
+The `Account` class provides a high-level, safe interface to live MT5 account data.
+
+**Context manager** — automatically shuts down the connection on exit:
+
+```python
+from bbstrader.metatrader import Account
+
+with Account() as acc:
+    print(acc)                  # Account #12345 on MyBroker | Balance: 10000.0 USD
+    print(repr(acc))            # Account(number=12345, server='MyBroker', balance=10000.0)
+    rates = acc.get_currency_rates("EURUSD")
+```
+
+**`refresh()`** — reload live account data mid-session without creating a new object:
+
+```python
+acc.refresh()   # re-fetches balance, equity, margin from the terminal
+print(acc.balance)
+```
+
+**Symbol info cache** — `get_symbol_info()` caches results to avoid repeated round-trips to the terminal. Call `clear_symbol_cache()` to invalidate when needed.
+
+**`retry_on_disconnect` decorator** — wrap any MT5 call to auto-retry on connection drops:
+
+```python
+from bbstrader.metatrader.utils import retry_on_disconnect
+
+@retry_on_disconnect(max_retries=3, delay=1.0)
+def fetch_tick(symbol):
+    return client.symbol_info_tick(symbol)
+```
+
+---
+
 ### 3. **`trading`: Live Execution & Strategy Orchestrator**
 
 - **Purpose**: Manages live sessions, coordinates signals from strategies, risk from models, and execution via metatrader.
@@ -251,6 +289,32 @@ if score > 0.7:  # Bullish? Buy!
 `core`: Utilities (data structs, logging).
 `config`: Manages JSON configs in ~/.bbstrader/.
 `api`: Handler injections for bridges.
+
+## What's New in 2.1.0
+
+### Python improvements
+
+| Area | Change |
+|---|---|
+| `Account` | New `refresh()` method, context manager (`with Account() as acc:`), `__repr__` / `__str__`, and symbol info cache with `clear_symbol_cache()` |
+| `utils` | New `retry_on_disconnect(max_retries, delay)` decorator for automatic retry on `InternalFailConnect` / `InternalFailTimeout` |
+| `trade` | Fixed `or` → `and` logic bug in market order type guard (was always `True`, skipped the guard) |
+| `rates` | Fixed `get_data_from_pos` passing `session_duration` as a positional argument to `Rates.__init__` (caused `TypeError` at runtime) |
+| `core/data` | Fixed `assert symbol is None, ValueError(...)` antipattern — `assert` does not raise the given exception; replaced with an explicit `if/raise` |
+| `api/handlers` | Fixed `_build_request` filter that silently dropped `magic=0`, `deviation=0`, and `sl/tp=0.0` from trade requests |
+| All modules | Modernized type hints to `X \| Y`, `X \| None`, `list[x]`, `dict[x, y]` (PEP 604/585); removed `Optional`, `Union`, `List`, `Dict` from `typing` |
+
+### C++ improvements
+
+| Area | Change |
+|---|---|
+| `metatrader.hpp` | Added `[[nodiscard]]` to all value-returning virtual methods (32 methods) |
+| `metatrader.hpp` | Fixed six methods returning `0` / empty struct instead of `std::nullopt` when the handler is missing: `orders_total`, `positions_total`, `order_check`, `order_send`, `history_orders_total`, `history_deals_total` |
+| `metatrader.hpp` | Added `noexcept` to `shutdown()` |
+| `metatrader.cpp` | `TradeRequest` dict constructor now catches `py::cast_error` and raises a Python `ValueError` with a descriptive field name, instead of propagating a raw C++ exception |
+| `objects.hpp` | Fixed invalid C++ identifier `int64_t_ONLY` → `LONG_ONLY` in the `PositionType` enum |
+
+---
 
 ## Getting Started
 

@@ -23,21 +23,32 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.16.5
         env:
-          # 1. CONFIGURATION 
+          # 1. CONFIGURATION
           CIBW_BUILD: "cp312-* cp313-*"
           # Skip 32-bit builds
           CIBW_ARCHS: "auto64"
 
           # 2. LINUX
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
-          CIBW_MUSLLINUX_X86_64_IMAGE: musllinux_1_2 
+          CIBW_MUSLLINUX_X86_64_IMAGE: musllinux_1_2
 
-          # Install deps
-          CIBW_BEFORE_ALL_MANYLINUX_X86_64: "yum install -y openblas-devel pkgconf-pkg-config gcc-toolset-11"
-          CIBW_BEFORE_ALL_MUSLLINUX_X86_64: "apk add --no-cache openblas-dev pkgconfig g++"
-          CIBW_ENVIRONMENT_LINUX: 'PATH="/opt/rh/gcc-toolset-11/root/usr/bin:$PATH"'
+          # Install complete compilation toolchains and development libraries
+          CIBW_BEFORE_ALL_LINUX: >
+            if command -v apk >/dev/null; then
+              apk add --no-cache build-base openblas-dev pkgconf gfortran;
+            elif command -v dnf >/dev/null; then
+              dnf install -y openblas-devel blas-devel lapack-devel pkgconf-pkg-config gcc-toolset-11 gcc-toolset-11-gcc-gfortran;
+            else
+              yum install -y openblas-devel blas-devel lapack-devel pkgconf-pkg-config gcc-toolset-11 gcc-toolset-11-gcc-gfortran;
+            fi
 
-          # 3. MACOS 
+          # Active during the compilation of your own package (bbstrader)
+          CIBW_ENVIRONMENT_LINUX: 'PATH="/opt/rh/gcc-toolset-11/root/usr/bin:$PATH" CMAKE_ARGS="-DBLA_VENDOR=OpenBLAS -DBLA_PREFER_PKGCONFIG=ON"'
+
+          # Active during the verification and pip installation of dependencies (sparsediffpy)
+          CIBW_TEST_ENVIRONMENT_LINUX: 'CMAKE_ARGS="-DBLA_VENDOR=OpenBLAS -DBLA_PREFER_PKGCONFIG=ON"'
+
+          # 3. MACOS
           CIBW_BEFORE_ALL_MACOS: "brew install openblas pkg-config"
           # Help the compiler find OpenBLAS on Mac
           CIBW_ENVIRONMENT_MACOS: >
@@ -48,8 +59,8 @@ jobs:
           # 4. TESTING
           CIBW_TEST_REQUIRES: "pytest pytest-mock spacy"
           CIBW_TEST_REQUIRES_WINDOWS: "pytest pytest-mock spacy MetaTrader5"
-          CIBW_TEST_COMMAND: "pip install -e {project} && python -m spacy download en_core_web_sm && pytest {project}/tests -k 'not test_metatrader_client'"
-          CIBW_TEST_COMMAND_WINDOWS: "pip install -e {project} && python -m spacy download en_core_web_sm && pytest {project}/tests -k \"not test_metatrader_client\""
+          CIBW_TEST_COMMAND: "python -m spacy download en_core_web_sm && pytest {project}/tests -k 'not test_metatrader_client'"
+          CIBW_TEST_COMMAND_WINDOWS: 'python -m spacy download en_core_web_sm && pytest {project}/tests -k "not test_metatrader_client"'
 
       - uses: actions/upload-artifact@v4
         with:
@@ -76,7 +87,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.12'
+          python-version: "3.12"
 
       - name: Install dependencies
         run: |
@@ -98,14 +109,13 @@ jobs:
 
       - name: Compile installer
         run: iscc tcopier.iss
-          
+
       - name: Upload installer artifact
         uses: actions/upload-artifact@v4
         with:
           name: installer
           path: "**/TradeCopier.exe"
-  
-  
+
   publish:
     needs: [build_wheels, build_sdist, build_installer]
     runs-on: ubuntu-latest

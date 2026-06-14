@@ -279,7 +279,7 @@ enum class TradeRetcode : int32_t {
     CLOSE_ORDER_EXIST    = 10039,  ///< A close order already exists for the specified position
     LIMIT_POSITIONS      = 10040,  ///< The number of open positions has reached the limit
     REJECT_CANCEL = 10041,  ///< The pending order is currently being activated, cancel is rejected
-    int64_t_ONLY  = 10042,  ///< The request is rejected, only long positions are allowed
+    LONG_ONLY     = 10042,  ///< The request is rejected, only long positions are allowed
     SHORT_ONLY    = 10043,  ///< The request is rejected, only short positions are allowed
     CLOSE_ONLY    = 10044,  ///< The request is rejected, only position closing is allowed
     FIFO_CLOSE    = 10045   ///< Position closing is allowed only by FIFO rule

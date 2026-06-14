@@ -53,7 +53,7 @@ class CustomFormatter(logging.Formatter):
     ) -> str:
         if hasattr(record, "custom_time"):
             # Use the custom time if provided
-            record.created = record.custom_time.timestamp() # type: ignore
+            record.created = record.custom_time.timestamp()  # type: ignore
         return super().formatTime(record, datefmt)
 
 

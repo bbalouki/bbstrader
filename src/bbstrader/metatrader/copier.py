@@ -7,7 +7,7 @@ from datetime import datetime
 from enum import Enum
 from multiprocessing.synchronize import Event
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional, Tuple, Union
+from typing import Any, Literal
 
 from loguru import logger as log
 
@@ -183,7 +183,7 @@ def calculate_copy_lot(
             raise ValueError("Invalid mode selected")
 
 
-def get_symbols_from_string(symbols_string: str) -> List[str] | Dict[str, str]:
+def get_symbols_from_string(symbols_string: str) -> list[str] | dict[str, str]:
     if not symbols_string:
         raise ValueError("Input Error", "Tickers string cannot be empty.")
     string = (
@@ -210,7 +210,7 @@ def get_symbols_from_string(symbols_string: str) -> List[str] | Dict[str, str]:
         symbols = * (copy all symbols) """)
 
 
-def get_lots_from_string(lots_string: str) -> Dict[str, float]:
+def get_lots_from_string(lots_string: str) -> dict[str, float]:
     if not lots_string:
         raise ValueError("Input Error", "Lots string cannot be empty.")
     string = lots_string.strip().replace("\n", "").replace(" ", "").replace('"""', "")
@@ -231,7 +231,7 @@ def get_lots_from_string(lots_string: str) -> Dict[str, float]:
         """)
 
 
-def get_copy_symbols(destination: dict, source: dict) -> List[str] | Dict[str, str]:
+def get_copy_symbols(destination: dict, source: dict) -> list[str] | dict[str, str]:
     symbols = destination.get("symbols", "all")
     if symbols == "all" or symbols == "*":
         src_account = Account(**source)
@@ -283,17 +283,17 @@ class TradeCopier(object):
         "_running",
     )
 
-    source: Dict
+    source: dict
     source_id: int
     source_isunique: bool
-    destinations: List[dict]
+    destinations: list[dict]
     shutdown_event: Event
     log_queue: mp.Queue
 
     def __init__(
         self,
-        source: Dict,
-        destinations: List[dict],
+        source: dict,
+        destinations: list[dict],
         /,
         sleeptime: float = 0.1,
         start_time: str = None,
@@ -324,7 +324,7 @@ class TradeCopier(object):
                         If Set to True, all destination accounts won't be allow to accept trades from other accounts even
                         manually opened positions or orders will be removed.
 
-            destinations (List[dict]):
+            destinations (list[dict]):
                 A list of dictionaries, where each dictionary represents a destination trading account to which
                 trades will be copied.  Each destination dictionary **must** contain the following keys
 
@@ -333,10 +333,10 @@ class TradeCopier(object):
                     ensuring a connection can be established to the destination account.
                     Refer to ``bbstrader.metatrader.check_mt5_connection``.
 
-                    - `symbols` (Union[List[str], Dict[str, str], str])
+                    - `symbols` (Union[list[str], Dict[str, str], str])
                     Specifies which symbols should be copied from the source
                     account to this destination account.  Possible values include
-                    `List[str]` A list of strings, where each string is a symbol to be copied.
+                    `list[str]` A list of strings, where each string is a symbol to be copied.
                         The same symbol will be traded on the destination account.  Example `["EURUSD", "GBPUSD"]`
                     `Dict[str, str]` A dictionary mapping source symbols to destination symbols.
                         This allows for trading a different symbol on the destination account than the one traded on the source.
@@ -755,7 +755,7 @@ class TradeCopier(object):
 
     def get_positions(
         self, destination: dict
-    ) -> Tuple[List[TradePosition], List[TradePosition]]:
+    ) -> tuple[list[TradePosition], list[TradePosition]]:
         source_positions = self.source_positions() or []
         dest_symbols = get_copy_symbols(destination, self.source)
         dest_positions = self.destination_positions(destination) or []
@@ -769,7 +769,7 @@ class TradeCopier(object):
 
     def get_orders(
         self, destination: dict
-    ) -> Tuple[List[TradeOrder], List[TradeOrder]]:
+    ) -> tuple[list[TradeOrder], list[TradeOrder]]:
         source_orders = self.source_orders() or []
         dest_symbols = get_copy_symbols(destination, self.source)
         dest_orders = self.destination_orders(destination) or []
@@ -796,7 +796,7 @@ class TradeCopier(object):
 
     def _get_new_orders(
         self, source_orders, destination_orders, destination
-    ) -> List[Tuple]:
+    ) -> list[tuple]:
         actions = []
         dest_ids = {order.magic for order in destination_orders}
         for source_order in source_orders:
@@ -807,7 +807,7 @@ class TradeCopier(object):
 
     def _get_modified_orders(
         self, source_orders, destination_orders, destination
-    ) -> List[Tuple]:
+    ) -> list[tuple]:
         actions = []
         dest_order_map = {order.magic: order for order in destination_orders}
 
@@ -825,7 +825,7 @@ class TradeCopier(object):
 
     def _get_closed_orders(
         self, source_orders, destination_orders, destination
-    ) -> List[Tuple]:
+    ) -> list[tuple]:
         actions = []
         source_ids = {self._get_magic(order.ticket) for order in source_orders}
         for destination_order in destination_orders:
@@ -843,7 +843,7 @@ class TradeCopier(object):
 
     def _get_orders_to_sync(
         self, source_orders, destination_positions, destination
-    ) -> List[Tuple]:
+    ) -> list[tuple]:
         actions = []
         source_order_map = {
             self._get_magic(order.ticket): order for order in source_orders
@@ -864,7 +864,7 @@ class TradeCopier(object):
                     actions.append((OrderAction.SYNC_ADD, source_order, destination))
         return actions
 
-    def _execute_order_action(self, action_item: Tuple):
+    def _execute_order_action(self, action_item: tuple):
         action_type, *args = action_item
         try:
             if action_type == OrderAction.COPY_NEW:
@@ -909,7 +909,7 @@ class TradeCopier(object):
 
     def _get_new_positions(
         self, source_positions, destination_positions, destination
-    ) -> List[Tuple]:
+    ) -> list[tuple]:
         actions = []
         dest_ids = {pos.magic for pos in destination_positions}
         for source_pos in source_positions:
@@ -920,7 +920,7 @@ class TradeCopier(object):
 
     def _get_modified_positions(
         self, source_positions, destination_positions, destination
-    ) -> List[Tuple]:
+    ) -> list[tuple]:
         actions = []
         dest_pos_map = {pos.magic: pos for pos in destination_positions}
 
@@ -942,7 +942,7 @@ class TradeCopier(object):
 
     def _get_closed_positions(
         self, source_positions, destination_positions, destination
-    ) -> List[Tuple]:
+    ) -> list[tuple]:
         actions = []
         source_ids = {self._get_magic(pos.ticket) for pos in source_positions}
         for dest_pos in destination_positions:
@@ -958,7 +958,7 @@ class TradeCopier(object):
 
     def _get_positions_to_sync(
         self, source_positions, destination_orders, destination
-    ) -> List[Tuple]:
+    ) -> list[tuple]:
         actions = []
         dest_order_map = {order.magic: order for order in destination_orders}
 
@@ -982,7 +982,7 @@ class TradeCopier(object):
                         actions.append((OrderAction.SYNC_ADD, source_pos, destination))
         return actions
 
-    def _execute_position_action(self, action_item: Tuple):
+    def _execute_position_action(self, action_item: tuple):
         """A single worker task that executes one action for either Orders or Positions."""
         action_type, *args = action_item
         try:
@@ -1258,7 +1258,7 @@ def RunCopier(
 
 
 def RunMultipleCopier(
-    accounts: List[dict],
+    accounts: list[dict],
     sleeptime: float = 0.01,
     start_delay: float = 1.0,
     start_time: str = None,
@@ -1358,7 +1358,7 @@ def RunMultipleCopier(
         process.join()
 
 
-def auto_convert(value: str) -> Union[bool, None, int, float, str]:
+def auto_convert(value: str) -> bool | None | int | float | str:
     """Convert string values to appropriate data types"""
     if value.lower() in {"true", "false"}:  # Boolean
         return value.lower() == "true"
@@ -1373,8 +1373,8 @@ def auto_convert(value: str) -> Union[bool, None, int, float, str]:
 
 
 def dict_from_ini(
-    file_path: str, sections: Optional[Union[str, List[str]]] = None
-) -> Dict[str, Any]:
+    file_path: str, sections: str | list[str] | None = None
+) -> dict[str, Any]:
     """Reads an INI file and converts it to a dictionary with proper data types.
     Args:
         file_path: Path to the INI file to read.
@@ -1382,12 +1382,9 @@ def dict_from_ini(
     Returns:
         A dictionary containing the INI file contents with proper data types.
     """
-    try:
-        config = configparser.ConfigParser(interpolation=None)
-        config.read(file_path)
-    except Exception:
-        raise
-    ini_dict: Dict[str, Any] = {}
+    config = configparser.ConfigParser(interpolation=None)
+    config.read(file_path)
+    ini_dict: dict[str, Any] = {}
     for section in config.sections():
         ini_dict[section] = {
             key: auto_convert(value) for key, value in config.items(section)
@@ -1399,7 +1396,7 @@ def dict_from_ini(
         except KeyError:
             raise KeyError(f"{sections} not found in the {file_path} file")
     if isinstance(sections, list):
-        sect_dict: Dict[str, Any] = {}
+        sect_dict: dict[str, Any] = {}
         for section in sections:
             try:
                 sect_dict[section] = ini_dict[section]
@@ -1429,19 +1426,19 @@ def _parse_lots(section):
 
 def config_copier(
     source_section: str = None,
-    dest_sections: str | List[str] = None,
+    dest_sections: str | list[str] = None,
     inifile: str | Path = None,
-) -> Tuple[dict, List[dict]]:
+) -> tuple[dict, list[dict]]:
     """
     Read the configuration file and return the source and destination account details.
 
     Args:
         inifile (str | Path): The path to the INI configuration file.
         source_section (str): The section name of the source account, defaults to "SOURCE".
-        dest_sections (str | List[str]): The section name(s) of the destination account(s).
+        dest_sections (str | list[str]): The section name(s) of the destination account(s).
 
     Returns:
-        Tuple[dict, List[dict]]: A tuple containing the source account and a list of destination accounts.
+        tuple[dict, list[dict]]: A tuple containing the source account and a list of destination accounts.
 
     Example:
         ```python

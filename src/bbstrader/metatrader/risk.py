@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any
 
 import numpy as np
 from loguru import logger
@@ -64,18 +64,18 @@ class RiskManagement:
         self,
         symbol: str,
         max_risk: float = 10.0,
-        daily_risk: Optional[float] = None,
-        max_trades: Optional[int] = None,
+        daily_risk: float | None = None,
+        max_trades: int | None = None,
         std_stop: bool = False,
-        pchange_sl: Optional[float] = None,
-        accountt_leverage: bool = True,
+        pchange_sl: float | None = None,
+        account_leverage: bool = True,
         time_frame: TimeFrame = "D1",
         start_time: str = "1:00",
         finishing_time: str = "23:00",
         broker_tz: bool = False,
-        sl: Optional[int] = None,
-        tp: Optional[int] = None,
-        be: Optional[int] = None,
+        sl: int | None = None,
+        tp: int | None = None,
+        be: int | None = None,
         rr: float = 3.0,
         **kwargs,
     ):
@@ -123,7 +123,7 @@ class RiskManagement:
         self.max_trades = max_trades
         self.std_stop = std_stop
         self.pchange = pchange_sl
-        self.act_leverage = accountt_leverage
+        self.act_leverage = account_leverage
         self.daily_dd = daily_risk
         self.max_risk = max_risk
         self.broker_tz = broker_tz
@@ -183,7 +183,7 @@ class RiskManagement:
         the starting of the session and the end of the session"""
         return self.get_minutes() // 60
 
-    def risk_level(self, balance_value=False) -> float | Tuple[float, float]:
+    def risk_level(self, balance_value=False) -> float | tuple[float, float]:
         """
         Calculates the risk level of a trade
 
@@ -268,7 +268,7 @@ class RiskManagement:
         std = np.std(self._get_returns())
         return self._get_stop(std)
 
-    def get_pchange_stop(self, pchange: Optional[float]) -> int:
+    def get_pchange_stop(self, pchange: float | None) -> int:
         """
         Calculate the percentage change-based stop loss level
         for a given financial instrument.
@@ -399,7 +399,7 @@ class RiskManagement:
             volume = round(lot * size * av_price)
         return trade_loss, trade_profit, lot, volume
 
-    def currency_risk(self) -> Dict[str, Union[int, float, Any]]:
+    def currency_risk(self) -> dict[str, int | float | Any]:
         """
         Calculates the currency risk of a trade.
 
