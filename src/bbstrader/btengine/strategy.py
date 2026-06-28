@@ -19,7 +19,7 @@ logger.add(
     format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {name} | {message}",
 )
 
-__all__ = ["BacktestStrategy"]
+__all__ = ["BacktestStrategy", "MultiStrategy"]
 
 
 class BacktestStrategy(BaseStrategy):
@@ -61,6 +61,11 @@ class BacktestStrategy(BaseStrategy):
         self.data = bars
         self.mode = TradingMode.BACKTEST
         self._portfolio_value = None
+        # Opt-in intrabar fills: when True, pending stop/limit orders are
+        # evaluated against the bar's high/low rather than only its close, so an
+        # order that the bar traded through still triggers. Default (False)
+        # preserves the close-only behavior exactly.
+        self._intrabar_fills = bool(kwargs.get("intrabar_fills", False))
         self._initialize_portfolio()
 
     def _initialize_portfolio(self) -> None:
@@ -496,10 +501,18 @@ class BacktestStrategy(BaseStrategy):
         for symbol in self.symbols:
             dtime = self.data.get_latest_bar_datetime(symbol)
             latest_close = self.data.get_latest_bar_value(symbol, "close")
+            # Reference prices for trigger tests. In intrabar mode an upside
+            # trigger uses the bar high and a downside trigger uses the bar low;
+            # otherwise both collapse to the close (original behavior).
+            if self._intrabar_fills:
+                up_ref = self.data.get_latest_bar_value(symbol, "high")
+                down_ref = self.data.get_latest_bar_value(symbol, "low")
+            else:
+                up_ref = down_ref = latest_close
 
             process_orders(
                 "BLMT",
-                lambda o: latest_close <= o.price,  # type: ignore
+                lambda o: down_ref <= o.price,  # type: ignore
                 lambda o: self.buy_mkt(
                     o.strategy_id,
                     symbol,
@@ -514,7 +527,7 @@ class BacktestStrategy(BaseStrategy):
 
             process_orders(
                 "SLMT",
-                lambda o: latest_close >= o.price,  # type: ignore
+                lambda o: up_ref >= o.price,  # type: ignore
                 lambda o: self.sell_mkt(
                     o.strategy_id,
                     symbol,
@@ -529,7 +542,7 @@ class BacktestStrategy(BaseStrategy):
 
             process_orders(
                 "BSTP",
-                lambda o: latest_close >= o.price,  # type: ignore
+                lambda o: up_ref >= o.price,  # type: ignore
                 lambda o: self.buy_mkt(
                     o.strategy_id,
                     symbol,
@@ -544,7 +557,7 @@ class BacktestStrategy(BaseStrategy):
 
             process_orders(
                 "SSTP",
-                lambda o: latest_close <= o.price,  # type: ignore
+                lambda o: down_ref <= o.price,  # type: ignore
                 lambda o: self.sell_mkt(
                     o.strategy_id,
                     symbol,
@@ -559,7 +572,7 @@ class BacktestStrategy(BaseStrategy):
 
             process_orders(
                 "BSTPLMT",
-                lambda o: latest_close >= o.price,  # type: ignore
+                lambda o: up_ref >= o.price,  # type: ignore
                 lambda o: self.buy_limit(
                     o.strategy_id,
                     symbol,
@@ -574,7 +587,7 @@ class BacktestStrategy(BaseStrategy):
 
             process_orders(
                 "SSTPLMT",
-                lambda o: latest_close <= o.price,  # type: ignore
+                lambda o: down_ref <= o.price,  # type: ignore
                 lambda o: self.sell_limit(
                     o.strategy_id,
                     symbol,
@@ -586,3 +599,54 @@ class BacktestStrategy(BaseStrategy):
                 symbol,
                 dtime,
             )
+
+
+class MultiStrategy:
+    """Runs several strategies against one shared portfolio, cash account and clock.
+
+    The engine sees a single strategy; this adapter fans every engine callback
+    out to each child strategy. All children post signals to the same event
+    queue, so the shared ``Portfolio`` nets their positions and allocates one
+    pool of capital -- enabling cross-strategy capital-allocation and netting
+    tests that a single-strategy engine cannot express.
+
+    Children are typically scoped to disjoint symbol sets; when they overlap,
+    positions net at the portfolio level and each child's trade counters track
+    its own fills for symbols it trades.
+    """
+
+    def __init__(self, strategies: List["BacktestStrategy"]) -> None:
+        if not strategies:
+            raise ValueError("MultiStrategy requires at least one strategy.")
+        self.strategies = list(strategies)
+        self.symbols = sorted({s for st in self.strategies for s in st.symbols})
+
+    @property
+    def cash(self) -> float:
+        return self.strategies[0].cash
+
+    @cash.setter
+    def cash(self, value: float) -> None:
+        for st in self.strategies:
+            st.cash = value
+
+    def calculate_signals(self, event: MarketEvent) -> None:
+        for st in self.strategies:
+            st.calculate_signals(event)
+
+    def check_pending_orders(self) -> None:
+        for st in self.strategies:
+            st.check_pending_orders()
+
+    def get_update_from_portfolio(
+        self, positions: Dict[str, float], holdings: Dict[str, float]
+    ) -> None:
+        for st in self.strategies:
+            st.get_update_from_portfolio(positions, holdings)
+
+    def update_trades_from_fill(self, event: FillEvent) -> None:
+        # Route a fill only to children that trade its symbol so per-strategy
+        # trade counters stay correct for disjoint symbol partitions.
+        for st in self.strategies:
+            if event.symbol in st.symbols:
+                st.update_trades_from_fill(event)
