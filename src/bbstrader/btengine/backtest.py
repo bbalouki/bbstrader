@@ -10,6 +10,7 @@ from bbstrader.btengine.data import DataHandler
 from bbstrader.btengine.event import Events
 from bbstrader.btengine.execution import ExecutionHandler, SimExecutionHandler
 from bbstrader.btengine.portfolio import Portfolio
+from bbstrader.btengine.strategy import MultiStrategy
 from bbstrader.core.strategy import Strategy
 
 __all__ = ["BacktestEngine", "run_backtest"]
@@ -111,11 +112,33 @@ class BacktestEngine:
             f"START DATE: {self.start_date} \n"
             f"INITIAL CAPITAL: {self.initial_capital}\n"
         )
-        self.data_handler: DataHandler = self.dh_cls(
-            self.events, self.symbol_list, **self.kwargs
+        # `data_handler` may be a class (constructed fresh, the default) or an
+        # already-built DataHandler instance. Reusing an instance lets a
+        # parameter sweep load the data once and replay it across runs via
+        # reset(), instead of re-reading/re-downloading for every combination.
+        if isinstance(self.dh_cls, DataHandler):
+            self.data_handler = self.dh_cls
+            self.data_handler.events = self.events
+            self.data_handler.reset()
+        else:
+            self.data_handler = self.dh_cls(
+                self.events, self.symbol_list, **self.kwargs
+            )
+        # `strategy` may be a single class (the default) or a list of classes
+        # sharing one portfolio and clock (multi-strategy simulation).
+        strat_classes = (
+            self.strategy_cls
+            if isinstance(self.strategy_cls, (list, tuple))
+            else [self.strategy_cls]
         )
-        self.strategy: Strategy = self.strategy_cls(
-            self.events, self.symbol_list, self.data_handler, **self.kwargs
+        self.strategies: List[Strategy] = [
+            cls(self.events, self.symbol_list, self.data_handler, **self.kwargs)
+            for cls in strat_classes
+        ]
+        self.strategy: Strategy = (
+            self.strategies[0]
+            if len(self.strategies) == 1
+            else MultiStrategy(self.strategies)
         )
         self.portfolio: Portfolio = Portfolio(
             self.data_handler,
@@ -135,10 +158,16 @@ class BacktestEngine:
         i = 0
         while True:
             i += 1
-            value = self.portfolio.all_holdings[-1]["Total"]
+            value = self.portfolio.last_holding["Total"]
             if self.data_handler.continue_backtest is True:
                 # Update the market bars
                 self.data_handler.update_bars()
+                # Fill any orders deferred to this bar (time-frontier mode).
+                process_pending = getattr(
+                    self.execution_handler, "process_pending", None
+                )
+                if callable(process_pending):
+                    process_pending()
                 self.strategy.check_pending_orders()
                 self.strategy.get_update_from_portfolio(
                     self.portfolio.current_positions, self.portfolio.current_holdings
@@ -178,7 +207,11 @@ class BacktestEngine:
                             self.portfolio.update_fill(event)
                             self.strategy.update_trades_from_fill(event)
 
-            time.sleep(self.heartbeat)
+            # Only pace the loop when a real heartbeat is requested (live/paper
+            # mode). Backtests run with heartbeat == 0.0 and must never pay a
+            # per-bar sleep syscall.
+            if self.heartbeat:
+                time.sleep(self.heartbeat)
 
     def _output_performance(self) -> None:
         """
