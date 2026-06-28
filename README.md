@@ -76,7 +76,7 @@ bbstrader's hybrid design is its secret weapon. At the heart is a bidirectional 
 3. **The Data Flow:** The result is a clean, efficient, and powerful execution loop:
    `Python (Orchestration & Analysis) -> C++ (High-Speed Signal Generation) -> Python (MT5 Communication) -> C++ (Receives Market Data)`
 
-This setup crushes performance ceilings: Run ML models in Python, execute trades in C++, and backtest millions of bars in minutes.
+This setup crushes performance ceilings: run ML models in Python and execute trades in C++. The backtester is an event-driven simulator with a replayable, columnar data feed built for fidelity (faithful order state and accounting) rather than raw throughput. A fully vectorized research fast-path for screening millions of bars per second is on the [roadmap](FEATURES.md#2-ultra-fast-hybrid-backtesting-engine-flagship).
 
 ### **Overcoming the MQL5 Bottleneck**
 
@@ -94,8 +94,8 @@ bbstrader is modular, with each component laser-focused.
 
 ### 1. **btengine**: Event-Driven Backtesting Beast
 
-- **Purpose**: Simulate strategies with historical data, including slippage, commissions, and multi-asset portfolios. Optimizes parameters and computes metrics like Sharpe Ratio, Drawdown, and CAGR.
-- **Features**: Event queue for ticks/orders, vectorized operations for speed, integration with models for signal generation.
+- **Purpose**: Simulate strategies with historical data across multi-asset portfolios, with commission modeling and metrics like Sharpe Ratio, Drawdown, and CAGR. Pluggable slippage/market-impact friction models are on the [roadmap](FEATURES.md#23-realistic-execution-institution-grade-friction).
+- **Features**: Event queue for ticks/orders, a replayable columnar data feed (re-run the same data for parameter sweeps and walk-forward), and integration with models for signal generation. Note: the engine is event-driven for fidelity today; a vectorized research mode is on the [roadmap](FEATURES.md#2-ultra-fast-hybrid-backtesting-engine-flagship).
 - **Example**: Backtest a StockIndexSTBOTrading from the example strategies.
 
 ```Python
@@ -105,6 +105,39 @@ if __name__ == '__main__':
     # Run backtesting for Stock Index Short Term Buy Only Strategy
     test_strategy(strategy='sistbo')
 ```
+
+#### Research & realism toolkit (btengine)
+
+The engine ships a batteries-included research stack on top of the shared
+strategy API:
+
+- **Execution realism (opt-in, defaults unchanged):** pluggable slippage
+  (fixed-spread, percent, volatility, volume-participation), square-root
+  **market impact**, commission models, partial fills, **time-frontier**
+  (next-bar) fills and order-to-fill **latency** — so backtests survive the jump
+  to live.
+- **Vectorized research fast-path:** `vectorized_backtest(...)` screens
+  entry/exit signal arrays across the whole history at once for fast "does this
+  have alpha?" hypothesis testing, alongside the high-fidelity event engine.
+- **Built-in indicators & strategy templates:** vectorized SMA/EMA/RSI/ATR/
+  Bollinger/MACD/z-score and ready-made trend / mean-reversion / breakout
+  templates on the same API used for live trading.
+- **Optimization & validation:** parallel `optimize(...)` parameter sweeps and
+  walk-forward (replayable columnar data + `reset()`), plus overfitting
+  diagnostics — **deflated/probabilistic Sharpe, PBO (CSCV), combinatorial
+  purged CV**.
+- **Risk analytics:** historical & parametric **VaR/CVaR**, **Monte Carlo**
+  equity-curve confidence bands, volatility-**regime** detection, and
+  **factor/beta** exposure.
+- **Multi-strategy & multi-timeframe:** several strategies sharing one
+  portfolio/clock, and on-the-fly higher-timeframe resampling (e.g. daily
+  signals on a 1m feed, no look-ahead).
+- **Reproducibility:** a cached **data catalog** (Parquet) and an
+  **experiment store** that persists params, metrics and equity curves for
+  leaderboard-style comparison. A `benchmarks/` script backs the performance
+  claims.
+- **Broker abstraction:** a venue-neutral `Broker` interface (with an in-memory
+  `PaperBroker`) so strategies can target MT5 today and other brokers later.
 
 ### Backtesting Results
 
@@ -338,10 +371,24 @@ python -m venv venv
 source venv/bin/activate  # on Linux/macOS
 venv\Scripts\activate     # on Windows
 
-# Install bbstrader
-pip install bbstrader[MT5] # Windows
-pip install bbstrader  # Linux/macOS
+# Install bbstrader (lean core: numpy/pandas/yfinance + the backtesting engine)
+pip install bbstrader
+
+# Add MetaTrader 5 live trading (Windows)
+pip install "bbstrader[mt5]"
+
+# Optional extras (install only what you need):
+#   nlp      -> NLP/sentiment stack (nltk, spacy, textblob, vaderSentiment, sumy)
+#   social   -> social-media feeds (tweepy, praw)
+#   viz      -> extra plotting (plotly, seaborn)
+#   catalog  -> Parquet-backed cached data catalog (pyarrow)
+#   all      -> everything above
+pip install "bbstrader[all]"
 ```
+
+> **Lean core:** as of the latest release the base install no longer pulls the
+> heavy NLP/social/viz stacks. If you use those modules, install the matching
+> extra (the code raises an actionable error telling you which one).
 
 ### For the C++ Developer
 
