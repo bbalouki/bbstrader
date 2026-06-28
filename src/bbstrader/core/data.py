@@ -7,14 +7,25 @@ from urllib.request import urlopen
 
 import certifi
 import pandas as pd
-import praw
 import requests
-import tweepy
 import yfinance as yf
 from bs4 import BeautifulSoup
 from financetoolkit import Toolkit
 
 __all__ = ["FmpData", "FmpNews", "FinancialNews"]
+
+
+def _require(module_name: str, extra: str):
+    """Import an optional dependency on demand with an actionable error."""
+    import importlib
+
+    try:
+        return importlib.import_module(module_name)
+    except ImportError as exc:
+        raise ImportError(
+            f"'{module_name}' is required for this feature. Install it with: "
+            f"pip install 'bbstrader[{extra}]'"
+        ) from exc
 
 
 def _get_search_query(query: str) -> str:
@@ -381,6 +392,7 @@ class FinancialNews(object):
             - Requires valid Reddit API credentials.
         """
 
+        praw = _require("praw", "social")
         reddit = praw.Reddit(
             client_id=client_id,
             client_secret=client_secret,
@@ -476,6 +488,7 @@ class FinancialNews(object):
             >>> get_twitter_posts(query="AAPL", asset_type="stock", bearer="YOUR_BEARER_TOKEN", n_posts=5)
             ["Apple stock surges after strong earnings!", "Is $AAPL a buy at this price?", ...]
         """
+        tweepy = _require("tweepy", "social")
         client = tweepy.Client(
             bearer_token=bearer,
             consumer_key=api_key,
