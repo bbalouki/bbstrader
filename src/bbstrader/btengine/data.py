@@ -1,4 +1,5 @@
 import os.path
+import time
 from abc import ABCMeta, abstractmethod
 from datetime import datetime
 from pathlib import Path
@@ -25,6 +26,22 @@ __all__ = [
     "EODHDataHandler",
     "FMPDataHandler",
 ]
+
+
+def _cache_is_fresh(
+    filepath: str, use_cache: bool, max_age_days: Optional[float]
+) -> bool:
+    """Return True if a cached file should be reused instead of re-downloading.
+
+    Opt-in via ``use_cache``; a ``max_age_days`` of None means the cache never
+    expires. Defaults keep the original always-download behavior.
+    """
+    if not use_cache or not os.path.exists(filepath):
+        return False
+    if max_age_days is None:
+        return True
+    age_seconds = time.time() - os.path.getmtime(filepath)
+    return age_seconds <= max_age_days * 86400.0
 
 
 class DataHandler(metaclass=ABCMeta):
@@ -144,6 +161,11 @@ class BaseCSVDataHandler(DataHandler):
         self.index_col = index_col
         self.symbol_data: Dict[str, Union[pd.DataFrame, Generator]] = {}
         self.latest_symbol_data: Dict[str, List[Any]] = {}
+        # Immutable, replayable per-symbol record lists of (timestamp, Series)
+        # tuples, plus a shared integer cursor. This lets a single handler be
+        # replayed (see reset()) for parameter sweeps or walk-forward folds.
+        self._records: Dict[str, List[Tuple[Any, pd.Series]]] = {}
+        self._cursor = 0
         self.continue_backtest = True
         self._index: Optional[Union[str, List[str]]] = None
         self._load_and_process_data()
@@ -220,14 +242,30 @@ class BaseCSVDataHandler(DataHandler):
             self._index = self.symbol_data[s].index.name  # type: ignore
             self.symbol_data[s].to_csv(os.path.join(self.csv_dir, f"{s}.csv"))  # type: ignore
             if self.events is not None:
-                self.symbol_data[s] = self.symbol_data[s].iterrows()  # type: ignore
+                # Materialize a replayable record list once. These tuples are
+                # identical to what DataFrame.iterrows() yielded, so all
+                # get_latest_* accessors are unchanged, but the data can now be
+                # replayed by resetting the cursor instead of being exhausted.
+                self._records[s] = list(self.symbol_data[s].iterrows())  # type: ignore
 
-    def _get_new_bar(self, symbol: str) -> Generator[Tuple[Any, Any], Any, None]:
+    @property
+    def n_bars(self) -> int:
+        """Total number of bars available in the replayable record set."""
+        if not self._records:
+            return 0
+        return len(self._records[self.symbol_list[0]])
+
+    def reset(self) -> None:
         """
-        Returns the latest bar from the data feed.
+        Rewinds the handler to the start so the same data can be replayed.
+
+        Enables parameter sweeps, walk-forward folds, and Monte Carlo passes
+        without reconstructing the handler.
         """
-        for b in self.symbol_data[symbol]:  # type: ignore
-            yield b
+        self._cursor = 0
+        self.continue_backtest = True
+        for s in self.symbol_list:
+            self.latest_symbol_data[s] = []
 
     def get_latest_bar(self, symbol: str) -> pd.Series:
         """
@@ -329,14 +367,15 @@ class BaseCSVDataHandler(DataHandler):
         Pushes the latest bar to the latest_symbol_data structure
         for all symbols in the symbol list.
         """
-        for s in self.symbol_list:
-            try:
-                bar = next(self._get_new_bar(s))
-            except StopIteration:
-                self.continue_backtest = False
-            else:
-                if bar is not None:
-                    self.latest_symbol_data[s].append(bar)
+        # A MarketEvent is emitted on every call, including the exhausting one,
+        # to preserve the original generator-based semantics exactly (the final
+        # event fires with no new bar appended).
+        if self._cursor >= self.n_bars:
+            self.continue_backtest = False
+        else:
+            for s in self.symbol_list:
+                self.latest_symbol_data[s].append(self._records[s][self._cursor])
+            self._cursor += 1
         self.events.put(MarketEvent())
 
 
@@ -419,6 +458,8 @@ class MT5DataHandler(BaseCSVDataHandler):
         self.fill_na = kwargs.get("fill_na", False)
         self.lower_cols = kwargs.get("lower_cols", True)
         self.data_dir = kwargs.get("data_dir")
+        self.use_cache = kwargs.get("use_cache", False)
+        self.cache_max_age_days = kwargs.get("cache_max_age_days")
         self.symbol_list = symbol_list
         self.kwargs = kwargs
         self.kwargs["backtest"] = (
@@ -440,6 +481,10 @@ class MT5DataHandler(BaseCSVDataHandler):
         )
         data_dir.mkdir(parents=True, exist_ok=True)
         for symbol in self.symbol_list:
+            if _cache_is_fresh(
+                str(data_dir / f"{symbol}.csv"), self.use_cache, self.cache_max_age_days
+            ):
+                continue
             try:
                 data = download_historical_data(
                     symbol=symbol,
@@ -490,6 +535,8 @@ class YFDataHandler(BaseCSVDataHandler):
         self.start_date = kwargs.get("yf_start")
         self.end_date = kwargs.get("yf_end", datetime.now())
         self.cache_dir = kwargs.get("data_dir")
+        self.use_cache = kwargs.get("use_cache", False)
+        self.cache_max_age_days = kwargs.get("cache_max_age_days")
 
         csv_dir = self._download_and_cache_data(self.cache_dir)
 
@@ -507,6 +554,8 @@ class YFDataHandler(BaseCSVDataHandler):
         os.makedirs(_cache_dir, exist_ok=True)
         for symbol in self.symbol_list:
             filepath = os.path.join(_cache_dir, f"{symbol}.csv")
+            if _cache_is_fresh(filepath, self.use_cache, self.cache_max_age_days):
+                continue
             try:
                 data = yf.download(
                     symbol,
@@ -556,6 +605,8 @@ class EODHDataHandler(BaseCSVDataHandler):
         self.end_date = kwargs.get("eodhd_end", datetime.now().strftime("%Y-%m-%d"))
         self.period = kwargs.get("eodhd_period", "d")
         self.cache_dir = kwargs.get("data_dir")
+        self.use_cache = kwargs.get("use_cache", False)
+        self.cache_max_age_days = kwargs.get("cache_max_age_days")
         self.__api_key = kwargs.get("eodhd_api_key", "demo")
 
         csv_dir = self._download_and_cache_data(self.cache_dir)
@@ -627,6 +678,8 @@ class EODHDataHandler(BaseCSVDataHandler):
         os.makedirs(_cache_dir, exist_ok=True)
         for symbol in self.symbol_list:
             filepath = os.path.join(_cache_dir, f"{symbol}.csv")
+            if _cache_is_fresh(filepath, self.use_cache, self.cache_max_age_days):
+                continue
             try:
                 data = self._get_data(symbol, self.period)
                 data = self._format_data(data)
@@ -669,6 +722,8 @@ class FMPDataHandler(BaseCSVDataHandler):
         self.end_date = kwargs.get("fmp_end", datetime.now().strftime("%Y-%m-%d"))
         self.period = kwargs.get("fmp_period", "daily")
         self.cache_dir = kwargs.get("data_dir")
+        self.use_cache = kwargs.get("use_cache", False)
+        self.cache_max_age_days = kwargs.get("cache_max_age_days")
         self.__api_key = kwargs.get("fmp_api_key")
 
         csv_dir = self._download_and_cache_data(self.cache_dir)
@@ -728,6 +783,8 @@ class FMPDataHandler(BaseCSVDataHandler):
         os.makedirs(_cache_dir, exist_ok=True)
         for symbol in self.symbol_list:
             filepath = os.path.join(_cache_dir, f"{symbol}.csv")
+            if _cache_is_fresh(filepath, self.use_cache, self.cache_max_age_days):
+                continue
             try:
                 data = self._get_data(symbol, self.period)
                 data = self._format_data(data, self.period)
