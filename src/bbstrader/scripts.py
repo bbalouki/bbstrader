@@ -13,11 +13,7 @@ from datetime import datetime, timedelta
 from types import ModuleType
 from typing import Any, Dict, List, Literal, Type
 
-import nltk
 from loguru import logger
-from sumy.nlp.tokenizers import Tokenizer
-from sumy.parsers.plaintext import PlaintextParser
-from sumy.summarizers.text_rank import TextRankSummarizer
 
 from bbstrader.btengine.backtest import run_backtest
 from bbstrader.btengine.data import (
@@ -514,10 +510,24 @@ def copy_trades(unknown):
 ############################################################
 
 
+def _require_nlp(module_name: str):
+    """Import an optional NLP dependency on demand with an actionable error."""
+    try:
+        return importlib.import_module(module_name)
+    except ImportError as exc:
+        raise ImportError(
+            f"'{module_name}' is required for this feature. Install it with: "
+            "pip install 'bbstrader[nlp]'"
+        ) from exc
+
+
 def summarize_text(text: str, sentences_count: int = 5) -> str:
     """
     Generate a summary using TextRank algorithm.
     """
+    Tokenizer = _require_nlp("sumy.nlp.tokenizers").Tokenizer
+    PlaintextParser = _require_nlp("sumy.parsers.plaintext").PlaintextParser
+    TextRankSummarizer = _require_nlp("sumy.summarizers.text_rank").TextRankSummarizer
     parser = PlaintextParser.from_string(text, Tokenizer("english"))
     summarizer = TextRankSummarizer()
     summary = summarizer(parser.document, sentences_count)
@@ -639,7 +649,7 @@ def send_news_feed(unknown: List[str]) -> None:
     )
     args = parser.parse_args(unknown)
 
-    nltk.download("punkt", quiet=True)
+    _require_nlp("nltk").download("punkt", quiet=True)
     news = FinancialNews()
     fmp_news = news.get_fmp_news(api=args.fmp) if args.fmp else None
     logger.info(f"Starting the News Feed on {args.interval} minutes")
