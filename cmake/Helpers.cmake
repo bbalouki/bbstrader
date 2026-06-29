@@ -132,10 +132,50 @@ function(build_documenation)
     find_package(Doxygen)
     if (Doxygen_FOUND)
         message(
-            STATUS 
-            "Found Doxygen Version " "${DOXYGEN_VERSION} " 
+            STATUS
+            "Found Doxygen Version " "${DOXYGEN_VERSION} "
             "at ${DOXYGEN_EXECUTABLE}"
         )
+
+        # Fetch the doxygen-awesome-css theme.
+        include(FetchContent)
+        FetchContent_Declare(
+            doxygen-awesome-css
+            GIT_REPOSITORY https://github.com/jothepro/doxygen-awesome-css.git
+            GIT_TAG        "v${DOXYGEN_AWESOME_VERSION}"
+            SOURCE_SUBDIR  "do-not-add-subdir"
+        )
+        FetchContent_MakeAvailable(doxygen-awesome-css)
+        set(DOXYGEN_AWESOME_DIR "${doxygen-awesome-css_SOURCE_DIR}")
+
+        # Generate a header from the active Doxygen version and inject the theme scripts before
+        # </head>. Generating against the real binary keeps the header in sync with whatever
+        # Doxygen produces, instead of committing a hand-written header that drifts per version.
+        set(DOXYGEN_DEFAULT_HEADER "${CMAKE_CURRENT_BINARY_DIR}/header.default.html")
+        set(DOXYGEN_HTML_HEADER "${CMAKE_CURRENT_BINARY_DIR}/header.html")
+        execute_process(
+            COMMAND "${DOXYGEN_EXECUTABLE}" -w html
+                    "${DOXYGEN_DEFAULT_HEADER}"
+                    "${CMAKE_CURRENT_BINARY_DIR}/footer.default.html"
+                    "${CMAKE_CURRENT_BINARY_DIR}/style.default.css"
+            WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+        )
+        file(READ "${DOXYGEN_DEFAULT_HEADER}" DOXYGEN_HEADER_CONTENT)
+        string(CONCAT DOXYGEN_THEME_SCRIPTS
+            "<script type=\"text/javascript\" src=\"$relpath^doxygen-awesome-darkmode-toggle.js\"></script>\n"
+            "<script type=\"text/javascript\" src=\"$relpath^doxygen-awesome-fragment-copy-button.js\"></script>\n"
+            "<script type=\"text/javascript\" src=\"$relpath^doxygen-awesome-paragraph-link.js\"></script>\n"
+            "<script type=\"text/javascript\" src=\"$relpath^doxygen-awesome-interactive-toc.js\"></script>\n"
+            "<script type=\"text/javascript\">\n"
+            "    DoxygenAwesomeDarkModeToggle.init()\n"
+            "    DoxygenAwesomeFragmentCopyButton.init()\n"
+            "    DoxygenAwesomeParagraphLink.init()\n"
+            "    DoxygenAwesomeInteractiveToc.init()\n"
+            "</script>\n"
+        )
+        string(REPLACE "</head>" "${DOXYGEN_THEME_SCRIPTS}</head>" DOXYGEN_HEADER_CONTENT "${DOXYGEN_HEADER_CONTENT}")
+        file(WRITE "${DOXYGEN_HTML_HEADER}" "${DOXYGEN_HEADER_CONTENT}")
+
         configure_file(
             "${PROJECT_SOURCE_DIR}/docs/Doxyfile.in"
             "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile"
@@ -147,6 +187,7 @@ function(build_documenation)
             COMMENT "Generating docs with Doxygen ..."
         )
         message(STATUS "Add 'docs' target")
+        message(STATUS "To build the documenation, run: cmake --build . --target docs")
     endif()
 endfunction()
 
