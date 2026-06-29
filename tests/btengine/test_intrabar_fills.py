@@ -9,7 +9,6 @@ from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
-import pytest
 
 from bbstrader.btengine.backtest import BacktestEngine
 from bbstrader.btengine.data import CSVDataHandler
@@ -17,7 +16,7 @@ from bbstrader.btengine.event import Events, MarketEvent
 from bbstrader.btengine.execution import SimExecutionHandler
 from bbstrader.btengine.strategy import BacktestStrategy
 
-# Bar 2 spikes up to a high of 130 but closes back at 105 -- a buy stop at 120
+# Bar 2 spikes up to a high of 130 but closes back at 105 a buy stop at 120
 # is touched intrabar but not on the close.
 DATA = {
     "Datetime": pd.date_range("2020-01-02", periods=4, freq="B"),
