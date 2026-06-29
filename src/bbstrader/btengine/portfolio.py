@@ -117,6 +117,9 @@ class Portfolio:
         self.output_dir = kwargs.get("output_dir", None)
         self.strategy_name = kwargs.get("strategy_name", "")
         self.print_stats = kwargs.get("print_stats", True)
+        # Optional per-bar carrying cost on open positions (swap/overnight
+        # financing). None keeps the original cost-free behavior.
+        self.funding_model = kwargs.get("funding_model")
         timeframe = kwargs.get("time_frame", "D1")
         if timeframe not in TIMEFRAMES:
             raise ValueError("Timeframe not supported")
@@ -141,11 +144,6 @@ class Portfolio:
         self.current_holdings: Dict[str, Any] = self.construct_current_holdings()
         self.equity_curve: Optional[pd.DataFrame] = None
 
-        # Preallocate the history so per-bar writes are O(1) indexed
-        # assignments instead of repeated list growth. There is one future
-        # MarketEvent per bar plus a trailing exhaustion event; the seed row
-        # already occupies index 0. When the bar count is unknown (e.g. a
-        # mocked DataHandler) update_timeindex falls back to append.
         n_bars = getattr(self.bars, "n_bars", 0)
         if n_bars:
             pad = [None] * (n_bars + 1)
@@ -191,6 +189,17 @@ class Portfolio:
         return self.all_holdings[self._history_idx - 1]
 
     def _get_price(self, symbol: str) -> float:
+        """Return the latest mark-to-market price for ``symbol``.
+
+        Prefers the adjusted close and falls back to the raw close, returning
+        ``0.0`` if neither is available.
+
+        Args:
+            symbol (str): The instrument to price.
+
+        Returns:
+            float: The latest price, or ``0.0`` when no price is available.
+        """
         try:
             price = self.bars.get_latest_bar_value(symbol, "adj_close")
             return price
@@ -201,6 +210,21 @@ class Portfolio:
             except (AttributeError, KeyError, ValueError):
                 return 0.0
 
+    def _apply_funding(self) -> None:
+        """Debit the configured per-bar carry of every open position from cash.
+
+        Iterates the current positions and asks ``funding_model.carry`` for the
+        cash flow of holding each one over this bar, subtracting the total from
+        ``current_holdings["Cash"]``. A no-op when no position is open.
+        """
+        total_carry = 0.0
+        for s in self.symbol_list:
+            quantity = self.current_positions[s]
+            if quantity == 0:
+                continue
+            total_carry += self.funding_model.carry(s, quantity, self._get_price(s))
+        self.current_holdings["Cash"] -= total_carry
+
     def update_timeindex(self, event: MarketEvent) -> None:
         """
         Adds a new record to the positions matrix for the current
@@ -209,6 +233,10 @@ class Portfolio:
         Makes use of a MarketEvent from the events queue.
         """
         latest_datetime = self.bars.get_latest_bar_datetime(self.symbol_list[0])
+        # Debit the carrying cost of every open position before booking this
+        # bar's holdings, so equity reflects swap/overnight financing.
+        if self.funding_model is not None:
+            self._apply_funding()
         # Update positions
         # ================
         dp = dict((k, v) for k, v in [(s, 0) for s in self.symbol_list])
@@ -273,9 +301,6 @@ class Portfolio:
         if fill.direction == "SELL":
             fill_dir = -1
 
-        # Update holdings list with new quantities. When the execution handler
-        # supplied a fill price (e.g. with slippage/impact applied), book that;
-        # otherwise fall back to the bar price, preserving the default behavior.
         price = (
             fill.fill_cost
             if fill.fill_cost is not None
