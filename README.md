@@ -76,7 +76,7 @@ bbstrader's hybrid design is its secret weapon. At the heart is a bidirectional 
 3. **The Data Flow:** The result is a clean, efficient, and powerful execution loop:
    `Python (Orchestration & Analysis) -> C++ (High-Speed Signal Generation) -> Python (MT5 Communication) -> C++ (Receives Market Data)`
 
-This setup crushes performance ceilings: Run ML models in Python, execute trades in C++, and backtest millions of bars in minutes.
+This setup crushes performance ceilings: run ML models in Python and execute trades in C++. The backtester is an event-driven simulator with a replayable, columnar data feed built for fidelity (faithful order state and accounting), paired with a fully vectorized research fast-path (`vectorized_backtest(...)`) that screens millions of bars per second for fast "does this have alpha?" hypothesis testing.
 
 ### **Overcoming the MQL5 Bottleneck**
 
@@ -94,8 +94,8 @@ bbstrader is modular, with each component laser-focused.
 
 ### 1. **btengine**: Event-Driven Backtesting Beast
 
-- **Purpose**: Simulate strategies with historical data, including slippage, commissions, and multi-asset portfolios. Optimizes parameters and computes metrics like Sharpe Ratio, Drawdown, and CAGR.
-- **Features**: Event queue for ticks/orders, vectorized operations for speed, integration with models for signal generation.
+- **Purpose**: Simulate strategies with historical data across multi-asset portfolios, with metrics like Sharpe Ratio, Drawdown, and CAGR and pluggable (commission, partial fills, latency, and per-bar swap/overnight funding).
+- **Features**: Event queue for ticks/orders, a replayable columnar data feed (re-run the same data for parameter sweeps and walk-forward), and integration with models for signal generation. The engine runs in two modes behind one strategy API: an event-driven path for fidelity and a`vectorized research fast-path` for high-throughput screening.
 - **Example**: Backtest a StockIndexSTBOTrading from the example strategies.
 
 ```Python
@@ -105,6 +105,39 @@ if __name__ == '__main__':
     # Run backtesting for Stock Index Short Term Buy Only Strategy
     test_strategy(strategy='sistbo')
 ```
+
+#### Research & realism toolkit (btengine)
+
+The engine ships a batteries-included research stack on top of the shared
+strategy API:
+
+- **Execution realism (opt-in, defaults unchanged):** pluggable slippage
+  (fixed-spread, percent, volatility, volume-participation), square-root
+  **market impact**, commission models, partial fills, **time-frontier**
+  (next-bar) fills, order-to-fill **latency**, and per-bar **swap/overnight
+  funding** costs — so backtests survive the jump to live.
+- **Vectorized research fast-path:** `vectorized_backtest(...)` screens
+  entry/exit signal arrays across the whole history at once for fast "does this
+  have alpha?" hypothesis testing, alongside the high-fidelity event engine.
+- **Built-in indicators & strategy templates:** vectorized SMA/EMA/RSI/ATR/
+  Bollinger/MACD/z-score and ready-made trend / mean-reversion / breakout
+  templates on the same API used for live trading.
+- **Optimization & validation:** parallel `optimize(...)` parameter sweeps and
+  walk-forward (replayable columnar data + `reset()`), plus overfitting
+  diagnostics — **deflated/probabilistic Sharpe, PBO (CSCV), combinatorial
+  purged CV**.
+- **Risk analytics:** historical & parametric **VaR/CVaR**, **Monte Carlo**
+  equity-curve confidence bands, volatility-**regime** detection, and
+  **factor/beta** exposure.
+- **Multi-strategy & multi-timeframe:** several strategies sharing one
+  portfolio/clock, and on-the-fly higher-timeframe resampling (e.g. daily
+  signals on a 1m feed, no look-ahead).
+- **Reproducibility:** a cached **data catalog** (Parquet) and an
+  **experiment store** that persists params, metrics and equity curves for
+  leaderboard-style comparison. A `benchmarks/` script backs the performance
+  claims.
+- **Broker abstraction:** a venue-neutral `Broker` interface (with an in-memory
+  `PaperBroker`) so strategies can target MT5 today and other brokers later.
 
 ### Backtesting Results
 
@@ -294,25 +327,25 @@ if score > 0.7:  # Bullish? Buy!
 
 ### Python improvements
 
-| Area | Change |
-|---|---|
-| `Account` | New `refresh()` method, context manager (`with Account() as acc:`), `__repr__` / `__str__`, and symbol info cache with `clear_symbol_cache()` |
-| `utils` | New `retry_on_disconnect(max_retries, delay)` decorator for automatic retry on `InternalFailConnect` / `InternalFailTimeout` |
-| `trade` | Fixed `or` → `and` logic bug in market order type guard (was always `True`, skipped the guard) |
-| `rates` | Fixed `get_data_from_pos` passing `session_duration` as a positional argument to `Rates.__init__` (caused `TypeError` at runtime) |
-| `core/data` | Fixed `assert symbol is None, ValueError(...)` antipattern — `assert` does not raise the given exception; replaced with an explicit `if/raise` |
-| `api/handlers` | Fixed `_build_request` filter that silently dropped `magic=0`, `deviation=0`, and `sl/tp=0.0` from trade requests |
-| All modules | Modernized type hints to `X \| Y`, `X \| None`, `list[x]`, `dict[x, y]` (PEP 604/585); removed `Optional`, `Union`, `List`, `Dict` from `typing` |
+| Area           | Change                                                                                                                                           |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `Account`      | New `refresh()` method, context manager (`with Account() as acc:`), `__repr__` / `__str__`, and symbol info cache with `clear_symbol_cache()`    |
+| `utils`        | New `retry_on_disconnect(max_retries, delay)` decorator for automatic retry on `InternalFailConnect` / `InternalFailTimeout`                     |
+| `trade`        | Fixed `or` → `and` logic bug in market order type guard (was always `True`, skipped the guard)                                                   |
+| `rates`        | Fixed `get_data_from_pos` passing `session_duration` as a positional argument to `Rates.__init__` (caused `TypeError` at runtime)                |
+| `core/data`    | Fixed `assert symbol is None, ValueError(...)` antipattern — `assert` does not raise the given exception; replaced with an explicit `if/raise`   |
+| `api/handlers` | Fixed `_build_request` filter that silently dropped `magic=0`, `deviation=0`, and `sl/tp=0.0` from trade requests                                |
+| All modules    | Modernized type hints to `X \| Y`, `X \| None`, `list[x]`, `dict[x, y]` (PEP 604/585); removed `Optional`, `Union`, `List`, `Dict` from `typing` |
 
 ### C++ improvements
 
-| Area | Change |
-|---|---|
-| `metatrader.hpp` | Added `[[nodiscard]]` to all value-returning virtual methods (32 methods) |
+| Area             | Change                                                                                                                                                                                                              |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `metatrader.hpp` | Added `[[nodiscard]]` to all value-returning virtual methods (32 methods)                                                                                                                                           |
 | `metatrader.hpp` | Fixed six methods returning `0` / empty struct instead of `std::nullopt` when the handler is missing: `orders_total`, `positions_total`, `order_check`, `order_send`, `history_orders_total`, `history_deals_total` |
-| `metatrader.hpp` | Added `noexcept` to `shutdown()` |
-| `metatrader.cpp` | `TradeRequest` dict constructor now catches `py::cast_error` and raises a Python `ValueError` with a descriptive field name, instead of propagating a raw C++ exception |
-| `objects.hpp` | Fixed invalid C++ identifier `int64_t_ONLY` → `LONG_ONLY` in the `PositionType` enum |
+| `metatrader.hpp` | Added `noexcept` to `shutdown()`                                                                                                                                                                                    |
+| `metatrader.cpp` | `TradeRequest` dict constructor now catches `py::cast_error` and raises a Python `ValueError` with a descriptive field name, instead of propagating a raw C++ exception                                             |
+| `objects.hpp`    | Fixed invalid C++ identifier `int64_t_ONLY` → `LONG_ONLY` in the `PositionType` enum                                                                                                                                |
 
 ---
 
@@ -338,10 +371,24 @@ python -m venv venv
 source venv/bin/activate  # on Linux/macOS
 venv\Scripts\activate     # on Windows
 
-# Install bbstrader
-pip install bbstrader[MT5] # Windows
-pip install bbstrader  # Linux/macOS
+# Install bbstrader (lean core: numpy/pandas/yfinance + the backtesting engine)
+pip install bbstrader
+
+# Add MetaTrader 5 live trading (Windows)
+pip install "bbstrader[mt5]"
+
+# Optional extras (install only what you need):
+#   nlp      -> NLP/sentiment stack (nltk, spacy, textblob, vaderSentiment, sumy)
+#   social   -> social-media feeds (tweepy, praw)
+#   viz      -> extra plotting (plotly, seaborn)
+#   catalog  -> Parquet-backed cached data catalog (pyarrow)
+#   all      -> everything above
+pip install "bbstrader[all]"
 ```
+
+> **Lean core:** as of the latest release the base install no longer pulls the
+> heavy NLP/social/viz stacks. If you use those modules, install the matching
+> extra (the code raises an actionable error telling you which one).
 
 ### For the C++ Developer
 
@@ -364,7 +411,7 @@ git clone https://github.com/microsoft/vcpkg
 | :----------------- | :-------------------------------------------------------------------------------------------------------------------- |
 | **Run Backtest**   | `python -m bbstrader --run backtest --strategy SMAStrategy --account MY_ACCOUNT --config backtest.json`               |
 | **Live Execution** | `python -m bbstrader --run execution --strategy KalmanFilter --account MY_ACCOUNT --config execution.json --parallel` |
-| **Copy Trades**    | `python -m bbstrader --run copier --source "S1" --destination "D1"`                             |
+| **Copy Trades**    | `python -m bbstrader --run copier --source "S1" --destination "D1"`                                                   |
 | **Get Help**       | `python -m bbstrader --help`                                                                                          |
 
 **Config Example** (`~/.bbstrader/execution/execution.json`):

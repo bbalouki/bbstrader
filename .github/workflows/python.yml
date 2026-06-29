@@ -57,8 +57,8 @@ jobs:
             CPPFLAGS="-I/usr/local/opt/openblas/include -I/opt/homebrew/opt/openblas/include"
 
           # 4. TESTING
-          CIBW_TEST_REQUIRES: "pytest pytest-mock spacy"
-          CIBW_TEST_REQUIRES_WINDOWS: "pytest pytest-mock spacy MetaTrader5"
+          CIBW_TEST_REQUIRES: "pytest pytest-mock spacy click"
+          CIBW_TEST_REQUIRES_WINDOWS: "pytest pytest-mock spacy click MetaTrader5"
           CIBW_TEST_COMMAND: "python -m spacy download en_core_web_sm && pytest {project}/tests -k 'not test_metatrader_client'"
           CIBW_TEST_COMMAND_WINDOWS: 'python -m spacy download en_core_web_sm && pytest {project}/tests -k "not test_metatrader_client"'
 

@@ -25,3 +25,6 @@ scripts.sh
 .so
 test_setup.py
 packaging/
+FEATURES.md
+IMPROVEMENTS.md
+prompts.txt

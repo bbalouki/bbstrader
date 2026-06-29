@@ -63,6 +63,7 @@ class TradeAction(Enum):
     EXIT_ALL_ORDERS = "EXIT_ALL_ORDERS"
 
     def __str__(self):
+        """Return the action's string value for user-facing output."""
         return self.value
 
 
@@ -95,6 +96,12 @@ class TradeSignal:
     comment: str = None
 
     def __post_init__(self):
+        """Validate the signal after construction.
+
+        Raises:
+            TypeError: If ``action`` is not a :class:`TradeAction`.
+            ValueError: If ``stoplimit`` is set without a ``price``.
+        """
         if not isinstance(self.action, TradeAction):
             raise TypeError(
                 f"action must be of type TradeAction, not {type(self.action)}"
@@ -103,6 +110,7 @@ class TradeSignal:
             raise ValueError("stoplimit cannot be set without price")
 
     def __repr__(self):
+        """Return an unambiguous developer representation of the signal."""
         return (
             f"TradeSignal(id={self.id}, symbol='{self.symbol}', action='{self.action.value}', "
             f"price={self.price}, stoplimit={self.stoplimit}, sl={self.sl}, tp={self.tp}, comment='{self.comment or ''}')"
@@ -152,9 +160,11 @@ class TradingMode(Enum):
     LIVE = "LIVE"
 
     def isbacktest(self) -> bool:
+        """Return True if this mode is :attr:`TradingMode.BACKTEST`."""
         return self == TradingMode.BACKTEST
 
     def islive(self) -> bool:
+        """Return True if this mode is :attr:`TradingMode.LIVE`."""
         return self == TradingMode.LIVE
 
 
@@ -182,12 +192,35 @@ class Strategy(metaclass=ABCMeta):
 
     @abstractmethod
     def calculate_signals(self, *args: Any, **kwargs: Any) -> List[TradeSignal] | None:
+        """Generate advisory trade signals from market data.
+
+        The single abstract method every strategy must implement; backtest and
+        live engines both call it.
+
+        Args:
+            args: Engine-supplied positional context (for example a market event).
+            kwargs: Engine-supplied keyword context.
+
+        Returns:
+            List[TradeSignal] | None: The signals to act on, or None.
+        """
         raise NotImplementedError("Should implement calculate_signals()")
 
-    def check_pending_orders(self, *args: Any, **kwargs: Any) -> None: ...
-    def get_update_from_portfolio(self, *args: Any, **kwargs: Any) -> None: ...
-    def update_trades_from_fill(self, *args: Any, **kwargs: Any) -> None: ...
-    def perform_period_end_checks(self, *args: Any, **kwargs: Any) -> None: ...
+    def check_pending_orders(self, *args: Any, **kwargs: Any) -> None:
+        """Evaluate any pending orders for the current bar (optional hook)."""
+        ...
+
+    def get_update_from_portfolio(self, *args: Any, **kwargs: Any) -> None:
+        """Receive the latest positions/holdings from the portfolio (optional hook)."""
+        ...
+
+    def update_trades_from_fill(self, *args: Any, **kwargs: Any) -> None:
+        """Update trade bookkeeping from a fill event (optional hook)."""
+        ...
+
+    def perform_period_end_checks(self, *args: Any, **kwargs: Any) -> None:
+        """Run end-of-period maintenance such as risk checks (optional hook)."""
+        ...
 
 
 class BaseStrategy(Strategy):
@@ -213,6 +246,14 @@ class BaseStrategy(Strategy):
         symbol_list: List[str],
         **kwargs: Any,
     ) -> None:
+        """Initialise shared strategy configuration.
+
+        Args:
+            symbol_list (List[str]): The symbols the strategy trades.
+            kwargs (Any): Common options, including ``risk_weights`` (risk
+                budget), ``max_trades`` (per-symbol trade cap, default 1),
+                ``time_frame`` (default ``"D1"``) and ``logger``.
+        """
         self.symbols = symbol_list
         self.risk_budget = self._check_risk_budget(**kwargs)
         self.max_trades = kwargs.get("max_trades", {s: 1 for s in self.symbols})
@@ -224,6 +265,20 @@ class BaseStrategy(Strategy):
     def _check_risk_budget(
         self, **kwargs: Any
     ) -> Optional[Union[Dict[str, float], str]]:
+        """Validate and return the configured risk budget.
+
+        Args:
+            kwargs (Any): May contain ``risk_weights`` as a per-symbol dict that
+                must cover every symbol and sum to 1, or a string strategy name.
+
+        Returns:
+            Optional[Union[Dict[str, float], str]]: The validated weights dict,
+            the string budget, or None when no budget is configured.
+
+        Raises:
+            ValueError: If a symbol is missing from the weights, or the weights
+                do not sum to 1.
+        """
         weights = kwargs.get("risk_weights")
         if weights is not None and isinstance(weights, dict):
             for asset in self.symbols:
@@ -400,6 +455,15 @@ class BaseStrategy(Strategy):
 
     @staticmethod
     def calculate_pct_change(current_price: float, lh_price: float) -> float:
+        """Return the percentage change from ``lh_price`` to ``current_price``.
+
+        Args:
+            current_price (float): The current price.
+            lh_price (float): The reference (look-back/historical) price.
+
+        Returns:
+            float: The change as a percentage (for example 5.0 for +5%).
+        """
         return ((current_price - lh_price) / lh_price) * 100
 
     @staticmethod
@@ -421,6 +485,14 @@ class BaseStrategy(Strategy):
 
     @staticmethod
     def get_current_dt(time_zone: str = "US/Eastern") -> datetime:
+        """Return the current time in the given timezone.
+
+        Args:
+            time_zone (str): The IANA timezone name (default ``"US/Eastern"``).
+
+        Returns:
+            datetime: The timezone-aware current datetime.
+        """
         return datetime.now(pytz.timezone(time_zone))
 
     @staticmethod
@@ -453,11 +525,34 @@ class BaseStrategy(Strategy):
 
     @staticmethod
     def stop_time(time_zone: str, stop_time: str) -> bool:
+        """Return True once the current time has reached ``stop_time``.
+
+        Args:
+            time_zone (str): The IANA timezone the times are evaluated in.
+            stop_time (str): The cut-off time as ``"HH:MM"``.
+
+        Returns:
+            bool: True if the current time is at or past ``stop_time``.
+        """
         now = datetime.now(pytz.timezone(time_zone)).time()
         stop_time_dt = datetime.strptime(stop_time, "%H:%M").time()
         return now >= stop_time_dt
 
 
 class TWSStrategy(Strategy):
+    """Placeholder strategy base for the Interactive Brokers (TWS) adapter."""
+
     def calculate_signals(self, *args: Any, **kwargs: Any) -> List[TradeSignal]:
+        """Generate trade signals for a TWS strategy (must be implemented).
+
+        Args:
+            args: Engine-supplied positional context.
+            kwargs: Engine-supplied keyword context.
+
+        Returns:
+            List[TradeSignal]: The signals to act on.
+
+        Raises:
+            NotImplementedError: Always, until a concrete subclass implements it.
+        """
         raise NotImplementedError("Should implement calculate_signals()")

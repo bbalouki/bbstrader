@@ -117,6 +117,9 @@ class Portfolio:
         self.output_dir = kwargs.get("output_dir", None)
         self.strategy_name = kwargs.get("strategy_name", "")
         self.print_stats = kwargs.get("print_stats", True)
+        # Optional per-bar carrying cost on open positions (swap/overnight
+        # financing). None keeps the original cost-free behavior.
+        self.funding_model = kwargs.get("funding_model")
         timeframe = kwargs.get("time_frame", "D1")
         if timeframe not in TIMEFRAMES:
             raise ValueError("Timeframe not supported")
@@ -140,6 +143,13 @@ class Portfolio:
         self.all_holdings: List[Dict[str, Any]] = self.construct_all_holdings()
         self.current_holdings: Dict[str, Any] = self.construct_current_holdings()
         self.equity_curve: Optional[pd.DataFrame] = None
+
+        n_bars = getattr(self.bars, "n_bars", 0)
+        if n_bars:
+            pad = [None] * (n_bars + 1)
+            self.all_positions.extend(pad)  # type: ignore[arg-type]
+            self.all_holdings.extend(pad)  # type: ignore[arg-type]
+        self._history_idx = 1  # Next write slot; index 0 holds the seed row.
 
     def construct_all_positions(self) -> List[Dict[str, Any]]:
         """
@@ -173,7 +183,23 @@ class Portfolio:
         d["Total"] = self.initial_capital
         return d
 
+    @property
+    def last_holding(self) -> Dict[str, Any]:
+        """The most recently recorded holdings row (mark-to-market equity)."""
+        return self.all_holdings[self._history_idx - 1]
+
     def _get_price(self, symbol: str) -> float:
+        """Return the latest mark-to-market price for ``symbol``.
+
+        Prefers the adjusted close and falls back to the raw close, returning
+        ``0.0`` if neither is available.
+
+        Args:
+            symbol (str): The instrument to price.
+
+        Returns:
+            float: The latest price, or ``0.0`` when no price is available.
+        """
         try:
             price = self.bars.get_latest_bar_value(symbol, "adj_close")
             return price
@@ -184,6 +210,21 @@ class Portfolio:
             except (AttributeError, KeyError, ValueError):
                 return 0.0
 
+    def _apply_funding(self) -> None:
+        """Debit the configured per-bar carry of every open position from cash.
+
+        Iterates the current positions and asks ``funding_model.carry`` for the
+        cash flow of holding each one over this bar, subtracting the total from
+        ``current_holdings["Cash"]``. A no-op when no position is open.
+        """
+        total_carry = 0.0
+        for s in self.symbol_list:
+            quantity = self.current_positions[s]
+            if quantity == 0:
+                continue
+            total_carry += self.funding_model.carry(s, quantity, self._get_price(s))
+        self.current_holdings["Cash"] -= total_carry
+
     def update_timeindex(self, event: MarketEvent) -> None:
         """
         Adds a new record to the positions matrix for the current
@@ -192,14 +233,16 @@ class Portfolio:
         Makes use of a MarketEvent from the events queue.
         """
         latest_datetime = self.bars.get_latest_bar_datetime(self.symbol_list[0])
+        # Debit the carrying cost of every open position before booking this
+        # bar's holdings, so equity reflects swap/overnight financing.
+        if self.funding_model is not None:
+            self._apply_funding()
         # Update positions
         # ================
         dp = dict((k, v) for k, v in [(s, 0) for s in self.symbol_list])
         dp["Datetime"] = latest_datetime
         for s in self.symbol_list:
             dp[s] = self.current_positions[s]
-        # Append the current positions
-        self.all_positions.append(dp)
 
         # Update holdings
         # ===============
@@ -215,8 +258,15 @@ class Portfolio:
             dh[s] = market_value
             dh["Total"] += market_value
 
-        # Append the current holdings
-        self.all_holdings.append(dh)
+        # Write into the preallocated history by cursor, falling back to append
+        # when the bar count was unknown at construction time.
+        if self._history_idx < len(self.all_holdings):
+            self.all_positions[self._history_idx] = dp
+            self.all_holdings[self._history_idx] = dh
+        else:
+            self.all_positions.append(dp)
+            self.all_holdings.append(dh)
+        self._history_idx += 1
 
     def update_positions_from_fill(self, fill: FillEvent) -> None:
         """
@@ -251,8 +301,11 @@ class Portfolio:
         if fill.direction == "SELL":
             fill_dir = -1
 
-        # Update holdings list with new quantities
-        price = self._get_price(fill.symbol)
+        price = (
+            fill.fill_cost
+            if fill.fill_cost is not None
+            else self._get_price(fill.symbol)
+        )
         cost = fill_dir * price * fill.quantity
         self.current_holdings[fill.symbol] += cost
         self.current_holdings["Commission"] += fill.commission
@@ -328,7 +381,8 @@ class Portfolio:
         Creates a pandas DataFrame from the all_holdings
         list of dictionaries.
         """
-        curve = pd.DataFrame(self.all_holdings)
+        # Drop any unused preallocated tail (None slots) before building the frame.
+        curve = pd.DataFrame([h for h in self.all_holdings if h is not None])
         curve["Datetime"] = pd.to_datetime(curve["Datetime"], utc=True)
         curve.set_index("Datetime", inplace=True)
         curve["Returns"] = curve["Total"].pct_change(fill_method=None)

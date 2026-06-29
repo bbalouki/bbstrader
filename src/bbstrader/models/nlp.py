@@ -5,17 +5,38 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Dict, List, Tuple
 
 import matplotlib.pyplot as plt
-import nltk
 import pandas as pd
-import plotly.express as px
-import spacy
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
-from spacy.cli import download
-from textblob import TextBlob
-from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 from bbstrader.core.data import FinancialNews
+
+# The NLP stack is optional (the [nlp] and [viz] extras). Import it lazily so
+# that `import bbstrader` keeps working in a lean install; the concrete classes
+# below raise an actionable error if the extras are missing.
+try:
+    import nltk
+    import plotly.express as px
+    import spacy
+    from nltk.corpus import stopwords
+    from nltk.tokenize import word_tokenize
+    from spacy.cli import download
+    from textblob import TextBlob
+    from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+
+    _NLP_IMPORT_ERROR: Exception | None = None
+except ImportError as _exc:  # pragma: no cover - exercised only without extras
+    nltk = px = spacy = stopwords = word_tokenize = None
+    download = TextBlob = SentimentIntensityAnalyzer = None
+    _NLP_IMPORT_ERROR = _exc
+
+
+def _require_nlp() -> None:
+    """Raise an actionable error if the optional NLP extras are not installed."""
+    if _NLP_IMPORT_ERROR is not None:
+        raise ImportError(
+            "NLP features require extra dependencies. Install them with: "
+            "pip install 'bbstrader[nlp,viz]'"
+        ) from _NLP_IMPORT_ERROR
+
 
 __all__ = [
     "TopicModeler",
@@ -342,6 +363,7 @@ LEXICON = {
 
 class TopicModeler(object):
     def __init__(self):
+        _require_nlp()
         nltk.download("punkt", quiet=True)
         nltk.download("stopwords", quiet=True)
 
@@ -397,6 +419,7 @@ class SentimentAnalyzer(object):
         - Initializes VADER's SentimentIntensityAnalyzer for sentiment scoring.
 
         """
+        _require_nlp()
         nltk.download("punkt", quiet=True)
         nltk.download("punkt_tab", quiet=True)
         nltk.download("stopwords", quiet=True)

@@ -46,10 +46,19 @@ Notes
 See `bbstrader.btengine.backtest.run_backtest` for more details on the backtesting process and its parameters.
 """
 
+from bbstrader.btengine.analytics import *  # noqa: F403
 from bbstrader.btengine.backtest import *  # noqa: F403
+from bbstrader.btengine.catalog import *  # noqa: F403
 from bbstrader.btengine.data import *  # noqa: F403
 from bbstrader.btengine.event import *  # noqa: F403
 from bbstrader.btengine.execution import *  # noqa: F403
+from bbstrader.btengine.experiment import *  # noqa: F403
+from bbstrader.btengine.friction import *  # noqa: F403
+from bbstrader.btengine.optimize import *  # noqa: F403
+from bbstrader.btengine.overfitting import *  # noqa: F403
 from bbstrader.btengine.performance import *  # noqa: F403
 from bbstrader.btengine.portfolio import *  # noqa: F403
 from bbstrader.btengine.strategy import *  # noqa: F403
+from bbstrader.btengine.timeframe import *  # noqa: F403
+from bbstrader.btengine.vectorized import *  # noqa: F403
+from bbstrader.btengine.templates import *  # noqa: F403

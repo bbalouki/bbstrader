@@ -14,11 +14,9 @@ dependencies = [
     "exchange_calendars>=4.11.1",
     "financetoolkit>=2.0.4",
     "ipython>=9.5.0",
-    "nltk>=3.9.1",
     "notify_py>=0.3.43",
     "numpy>=2.2.6",
-    "plotly>=5.24.1",
-    "praw>=7.8.1",
+    "pandas>=2.0",
     "pybind11>=3.0.1",
     "pyfiglet>=1.0.4",
     "pyportfolioopt>=1.5.6",
@@ -26,13 +24,7 @@ dependencies = [
     "python-telegram-bot>=22.3",
     "PyYAML>=6.0.2",
     "QuantStats>=0.0.77",
-    "seaborn>=0.13.2",
-    "spacy>=3.8.11",
-    "sumy>=0.11.0",
     "tabulate>=0.9.0",
-    "textblob>=0.19.0",
-    "tweepy>=4.16.0",
-    "vaderSentiment>=3.3.2",
     "yfinance>=0.2.65",
 ]
 authors = [
@@ -70,7 +62,31 @@ classifiers = [
 bbstrader = "bbstrader.__main__:main"
 
 [project.optional-dependencies]
+mt5 = ["MetaTrader5"]
+# Backwards-compatible alias for the original extra name.
 MT5 = ["MetaTrader5"]
+nlp = [
+    "nltk>=3.9.1",
+    "spacy>=3.8.11",
+    "sumy>=0.11.0",
+    "textblob>=0.19.0",
+    "vaderSentiment>=3.3.2",
+]
+social = [
+    "praw>=7.8.1",
+    "tweepy>=4.16.0",
+]
+viz = [
+    "plotly>=5.24.1",
+    "seaborn>=0.13.2",
+]
+# Parquet/Arrow store for the data catalog (falls back to CSV when absent).
+catalog = [
+    "pyarrow>=14.0",
+]
+all = [
+    "bbstrader[mt5,nlp,social,viz,catalog]",
+]
 
 # Scikit-Build-Core Configuration
 [tool.scikit-build]
@@ -85,3 +101,30 @@ regex = '(?P<value>\d+\.\d+\.\d+)'
 
 [tool.scikit-build.sdist]
 include = ["src/bbstrader/assets/*"]
+
+# Static typing. 
+[tool.mypy]
+python_version = "3.12"
+files = ["src/bbstrader"]
+ignore_missing_imports = true
+follow_imports = "silent"
+warn_unused_ignores = false
+warn_redundant_casts = true
+no_implicit_optional = true
+show_error_codes = true
+exclude = "(?x)(^src/bbstrader/api/|^build/)"
+
+[[tool.mypy.overrides]]
+module = [
+    "bbstrader.btengine.friction",
+    "bbstrader.btengine.vectorized",
+    "bbstrader.btengine.analytics",
+    "bbstrader.btengine.overfitting",
+    "bbstrader.btengine.timeframe",
+    "bbstrader.btengine.experiment",
+    "bbstrader.core.broker",
+    "bbstrader.core.indicators",
+]
+# The newly added research modules are written to a stricter standard.
+disallow_untyped_defs = false
+check_untyped_defs = true

@@ -149,9 +149,10 @@ class TestMT5DataHandler(unittest.TestCase):
         self.assertTrue(expected_filepath.exists())
 
         # 3. Was the data loaded correctly into the handler?
-        # The data is stored as a generator, so we check by consuming one item.
+        # Data is now kept as a DataFrame with a replayable list of
+        # (timestamp, Series) records; check the first record.
         self.assertIn("EURUSD", handler.data)
-        first_bar_tuple = next(handler.symbol_data["EURUSD"])
+        first_bar_tuple = handler._records["EURUSD"][0]
 
         # The first element of the tuple is the timestamp
         self.assertEqual(first_bar_tuple[0], pd.Timestamp("2023-01-01"))

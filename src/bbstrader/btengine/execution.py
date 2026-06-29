@@ -1,11 +1,12 @@
 from abc import ABCMeta, abstractmethod
 from queue import Queue
-from typing import Any, Union
+from typing import Any, Optional, Union
 
 from loguru import logger
 
 from bbstrader.btengine.data import DataHandler
 from bbstrader.btengine.event import Events, FillEvent, OrderEvent
+from bbstrader.btengine.friction import apply_friction
 from bbstrader.config import BBSTRADER_DIR
 from bbstrader.metatrader.account import Account
 from bbstrader.metatrader.utils import SymbolType
@@ -81,16 +82,45 @@ class SimExecutionHandler(ExecutionHandler):
         self.commissions = kwargs.get("commission")
         self.exchange = kwargs.get("exchange", "ARCA")
 
-    def execute_order(self, event: OrderEvent) -> None:
-        """
-        Simply converts Order objects into Fill objects naively,
-        i.e. without any latency, slippage or fill ratio problems.
+        self.slippage_model = kwargs.get("slippage_model")
+        self.impact_model = kwargs.get("impact_model")
+        self.commission_model = kwargs.get("commission_model")
+        fill_ratio = kwargs.get("fill_ratio", 1.0)
+        if not 0.0 < fill_ratio <= 1.0:
+            raise ValueError("fill_ratio must be in the interval (0, 1].")
+        self.fill_ratio = float(fill_ratio)
 
-        Args:
-            event (OrderEvent): Contains an Event object with order information.
+        self.time_frontier = bool(kwargs.get("time_frontier", False))
+        self.latency = int(kwargs.get("latency", 0))
+        if self.latency < 0:
+            raise ValueError("latency must be a non-negative number of bars.")
+        self.fill_on = kwargs.get("fill_on", "open")
+        # Each pending item is [order, bars_remaining].
+        self._pending: list[list] = []
+
+    def _fill_delay(self) -> int:
+        """Number of bars to defer a fill (0 = immediate, same-bar)."""
+        return max(self.latency, 1 if self.time_frontier else 0)
+
+    def _has_friction(self) -> bool:
+        """Return True if any friction model or partial-fill ratio is configured."""
+        return (
+            self.slippage_model is not None
+            or self.impact_model is not None
+            or self.commission_model is not None
+            or self.fill_ratio < 1.0
+        )
+
+    def _emit_fill(self, event: OrderEvent, base_price: Optional[float]) -> None:
+        """Build and queue a FillEvent for ``event`` at ``base_price``.
+
+        When ``base_price`` is None and there is no friction, the fill price is
+        left unset (``fill_cost=None``) so the portfolio books the bar price --
+        the original default behavior. Otherwise the friction-adjusted execution
+        price is carried on the fill.
         """
-        if event.type == Events.ORDER:
-            dtime = self.bardata.get_latest_bar_datetime(event.symbol)
+        dtime = self.bardata.get_latest_bar_datetime(event.symbol)
+        if base_price is None and not self._has_friction():
             fill_event = FillEvent(
                 timeindex=dtime,  # type: ignore
                 symbol=event.symbol,
@@ -102,12 +132,106 @@ class SimExecutionHandler(ExecutionHandler):
                 order=event.signal,
             )
             self.events.put(fill_event)
-            price = event.price or 0.0
-            self.logger.info(
-                f"{event.direction} ORDER FILLED: SYMBOL={event.symbol}, "
-                f"QUANTITY={event.quantity}, PRICE @{round(price, 5)} EXCHANGE={fill_event.exchange}",
-                custom_time=fill_event.timeindex,
+            self._log_fill(
+                event.direction, event.symbol, event.quantity, event.price or 0.0, dtime
             )
+            return
+
+        if base_price is None:
+            base_price = self.bardata.get_latest_bar_value(event.symbol, "close")
+        quantity = event.quantity * self.fill_ratio
+        fill_price = apply_friction(
+            float(base_price),
+            event.direction,
+            quantity,
+            event.symbol,
+            self.bardata,
+            self.slippage_model,
+            self.impact_model,
+        )
+        commission = self.commissions
+        if self.commission_model is not None:
+            commission = self.commission_model.commission(
+                event.symbol, quantity, fill_price
+            )
+        fill_event = FillEvent(
+            timeindex=dtime,  # type: ignore
+            symbol=event.symbol,
+            exchange=self.exchange,
+            quantity=quantity,
+            direction=event.direction,
+            fill_cost=fill_price,
+            commission=commission,
+            order=event.signal,
+        )
+        self.events.put(fill_event)
+        self._log_fill(event.direction, event.symbol, quantity, fill_price, dtime)
+
+    def _log_fill(self, direction, symbol, quantity, price, dtime) -> None:
+        """Log a filled order at INFO level.
+
+        Args:
+            direction (str): The fill direction, ``"BUY"`` or ``"SELL"``.
+            symbol (str): The instrument filled.
+            quantity (float): The filled quantity.
+            price (float): The fill price.
+            dtime (datetime): The bar timestamp of the fill, used as the log time.
+        """
+        self.logger.info(
+            f"{direction} ORDER FILLED: SYMBOL={symbol}, "
+            f"QUANTITY={quantity}, PRICE @{round(price, 5)} EXCHANGE={self.exchange}",
+            custom_time=dtime,
+        )
+
+    def process_pending(self) -> None:
+        """Fill orders held under time-frontier mode at the current (next) bar.
+
+        Called by the engine once per bar after new data arrives. Orders placed
+        on the previous bar fill here at this bar's ``fill_on`` price.
+        """
+        if not self._pending:
+            return
+        still_pending: list[list] = []
+        ready: list[OrderEvent] = []
+        for item in self._pending:
+            item[1] -= 1
+            if item[1] <= 0:
+                ready.append(item[0])
+            else:
+                still_pending.append(item)
+        self._pending = still_pending
+        for event in ready:
+            try:
+                base_price = self.bardata.get_latest_bar_value(
+                    event.symbol, self.fill_on
+                )
+            except (AttributeError, KeyError, ValueError):
+                base_price = self.bardata.get_latest_bar_value(event.symbol, "close")
+            self._emit_fill(event, float(base_price))
+
+    def execute_order(self, event: OrderEvent) -> None:
+        """
+        Converts Order objects into Fill objects, optionally applying the
+        configured slippage, market-impact, commission, partial-fill and
+        time-frontier (next-bar) models.
+
+        Args:
+            event (OrderEvent): Contains an Event object with order information.
+        """
+        if event.type != Events.ORDER:
+            return
+        delay = self._fill_delay()
+        if delay >= 1:
+            # Defer the fill by `delay` bars; process_pending() fills it.
+            self._pending.append([event, delay])
+            self.logger.info(
+                f"{event.direction} ORDER QUEUED (delay={delay} bars): "
+                f"SYMBOL={event.symbol}, QUANTITY={event.quantity}",
+                custom_time=self.bardata.get_latest_bar_datetime(event.symbol),
+            )
+            return
+        base_price = event.price if self._has_friction() else None
+        self._emit_fill(event, base_price)
 
 
 class MT5ExecutionHandler(ExecutionHandler):
@@ -157,6 +281,19 @@ class MT5ExecutionHandler(ExecutionHandler):
     def _calculate_lot(
         self, symbol: str, quantity: Union[int, float], price: Union[int, float]
     ) -> float:
+        """Convert a share/unit quantity into a broker lot size for ``symbol``.
+
+        The conversion depends on the instrument's asset class and contract
+        size, then is validated against the broker's lot-size constraints.
+
+        Args:
+            symbol (str): The instrument being traded.
+            quantity (Union[int, float]): The order size in shares/units.
+            price (Union[int, float]): The trade price, used for FOREX notional.
+
+        Returns:
+            float: The broker-validated lot size.
+        """
         symbol_type = self.__account.get_symbol_type(symbol)
         symbol_info = self.__account.get_symbol_info(symbol)
         contract_size = symbol_info.trade_contract_size
@@ -181,6 +318,21 @@ class MT5ExecutionHandler(ExecutionHandler):
         qty: Union[int, float],
         price: Union[int, float],
     ) -> float:
+        """Estimate the total commission for a fill by asset class.
+
+        Dispatches to the per-asset-class commission estimator matching the
+        instrument's type.
+
+        Args:
+            symbol (str): The instrument being traded.
+            lot (float): The order size in broker lots.
+            qty (Union[int, float]): The order size in shares/units.
+            price (Union[int, float]): The trade price.
+
+        Returns:
+            float: The estimated commission in account currency, ``0.0`` for
+            unrecognised asset classes.
+        """
         symbol_type = self.__account.get_symbol_type(symbol)
         if symbol_type in (SymbolType.STOCKS, SymbolType.ETFs):
             return self._estimate_stock_commission(symbol, qty, price)
@@ -200,6 +352,20 @@ class MT5ExecutionHandler(ExecutionHandler):
     def _estimate_stock_commission(
         self, symbol: str, qty: Union[int, float], price: Union[int, float]
     ) -> float:
+        """Estimate the commission for a stock or ETF fill by listing country.
+
+        Applies the Admiral Markets ``Trade.MT5`` schedule: a per-share fee for
+        US listings and a percentage of notional elsewhere, each with a
+        currency-specific minimum.
+
+        Args:
+            symbol (str): The stock or ETF symbol.
+            qty (Union[int, float]): The number of shares filled.
+            price (Union[int, float]): The fill price per share.
+
+        Returns:
+            float: The estimated commission in account currency.
+        """
         # https://admiralmarkets.com/start-trading/contract-specifications?regulator=jsc
         min_com = 1.0
         min_aud = 8.0
@@ -235,18 +401,52 @@ class MT5ExecutionHandler(ExecutionHandler):
                 return max(min_com, qty * price * eu_asia_cm)
 
     def _estimate_forex_commission(self, lot: float) -> float:
+        """Return the FOREX commission for ``lot`` lots (3.0 per lot).
+
+        Args:
+            lot (float): The order size in lots.
+
+        Returns:
+            float: The estimated commission in account currency.
+        """
         return 3.0 * lot
 
     def _estimate_commodity_commission(self, lot: float) -> float:
+        """Return the commodity commission for ``lot`` lots (3.0 per lot).
+
+        Args:
+            lot (float): The order size in lots.
+
+        Returns:
+            float: The estimated commission in account currency.
+        """
         return 3.0 * lot
 
     def _estimate_index_commission(self, lot: float) -> float:
+        """Return the index commission for ``lot`` lots (0.25 per lot).
+
+        Args:
+            lot (float): The order size in lots.
+
+        Returns:
+            float: The estimated commission in account currency.
+        """
         return 0.25 * lot
 
     def _estimate_futures_commission(self) -> float:
+        """Return the futures commission, which is zero on this account model.
+
+        Returns:
+            float: Always ``0.0``.
+        """
         return 0.0
 
     def _estimate_crypto_commission(self) -> float:
+        """Return the crypto commission, which is zero on this account model.
+
+        Returns:
+            float: Always ``0.0``.
+        """
         return 0.0
 
     def execute_order(self, event: OrderEvent) -> None:

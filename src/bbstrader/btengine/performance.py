@@ -5,12 +5,30 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import quantstats as qs
-import seaborn as sns
 import yfinance as yf
 
 warnings.filterwarnings("ignore")
 
-sns.set_theme()
+# seaborn is only needed for the optional plotting helpers, so it is imported
+# lazily to keep `import bbstrader.btengine` light and avoid a hard dependency
+# on the [viz] extra.
+sns = None
+
+
+def _require_seaborn():
+    """Import seaborn on first use, with an actionable error if it is missing."""
+    global sns
+    if sns is None:
+        try:
+            import seaborn as _sns
+        except ImportError as exc:
+            raise ImportError(
+                "seaborn is required for plotting. Install it with: "
+                "pip install 'bbstrader[viz]'"
+            ) from exc
+        sns = _sns
+    return sns
+
 
 __all__ = [
     "create_drawdowns",
@@ -244,7 +262,7 @@ def plot_performance(df: pd.DataFrame, title: str) -> None:
     fig.suptitle(f"{title} Strategy Performance", fontsize=16)
 
     # Set the outer colour to white
-    sns.set_theme()
+    _require_seaborn().set_theme()
 
     # Plot the equity curve
     ax1 = fig.add_subplot(311, ylabel="Portfolio value, %")
@@ -401,7 +419,7 @@ def plot_monthly_yearly_returns(df: pd.DataFrame, title: str) -> None:
     )
 
     # Set the aesthetics for the plots
-    sns.set_theme(style="darkgrid")
+    _require_seaborn().set_theme(style="darkgrid")
 
     # Initialize the matplotlib figure,
     # adjust the height_ratios to give more space to the yearly returns
