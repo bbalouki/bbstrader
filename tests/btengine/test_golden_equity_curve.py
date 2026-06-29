@@ -2,8 +2,8 @@
 
 These run a real ``BacktestEngine`` end-to-end on a small deterministic fixture
 (no mocking of the engine, per the project's testing conventions) so that the
-replayable-data and preallocated-portfolio refactors -- and any future
-vectorization -- cannot silently change results.
+replayable-data and preallocated-portfolio refactors and any future
+vectorization cannot silently change results.
 """
 
 from datetime import datetime
