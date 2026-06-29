@@ -4,10 +4,35 @@ PROJECT_NUMBER   = "@PROJECT_VERSION@"
 OUTPUT_DIRECTORY = "@CMAKE_CURRENT_BINARY_DIR@/docs"
 
 # Which files should be documented?
-INPUT     = "@PROJECT_SOURCE_DIR@/include/bbstrader"
+INPUT     = "@PROJECT_SOURCE_DIR@/include/bbstrader" "@PROJECT_SOURCE_DIR@/README.md"
 RECURSIVE = YES
 
+# Use the project README as the documentation landing page.
+USE_MDFILE_AS_MAINPAGE = "@PROJECT_SOURCE_DIR@/README.md"
+
 # Styling
-HTML_COLORSTYLE     = TOGGLE
+# The doxygen-awesome dark-mode toggle (injected via the generated header) owns
+# theme switching, so Doxygen must render a single LIGHT palette; TOGGLE would
+# fight the extension. HTML_COLORSTYLE_SAT is a no-op once the awesome CSS drives
+# the palette, but is harmless to keep.
+HTML_COLORSTYLE     = LIGHT
 HTML_COLORSTYLE_SAT = 80
 SHOW_INCLUDE_FILES  = NO
+
+# Sidebar-only navigation: a single left tree, no legacy top tab bar.
+GENERATE_TREEVIEW   = YES
+DISABLE_INDEX       = NO
+FULL_SIDEBAR        = NO
+
+# Wire up the doxygen-awesome-css theme fetched and prepared in cmake/Helpers.cmake.
+# header.html carries the theme's JS extension <script> tags; the extra stylesheets
+# apply the modern look (sidebar-only variant plus its dark-mode companion sheet);
+# the extra files copy the extension JS into the output so those scripts resolve.
+HTML_HEADER           = "@CMAKE_CURRENT_BINARY_DIR@/header.html"
+HTML_EXTRA_STYLESHEET = "@DOXYGEN_AWESOME_DIR@/doxygen-awesome.css" \
+                        "@DOXYGEN_AWESOME_DIR@/doxygen-awesome-sidebar-only.css" \
+                        "@DOXYGEN_AWESOME_DIR@/doxygen-awesome-sidebar-only-darkmode-toggle.css"
+HTML_EXTRA_FILES      = "@DOXYGEN_AWESOME_DIR@/doxygen-awesome-darkmode-toggle.js" \
+                        "@DOXYGEN_AWESOME_DIR@/doxygen-awesome-fragment-copy-button.js" \
+                        "@DOXYGEN_AWESOME_DIR@/doxygen-awesome-paragraph-link.js" \
+                        "@DOXYGEN_AWESOME_DIR@/doxygen-awesome-interactive-toc.js"
