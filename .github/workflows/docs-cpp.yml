@@ -2,9 +2,6 @@ name: C++ Docs
 
 on:
   push:
-    tags:
-      - "v*"
-  pull_request:
     branches:
       - main
   workflow_dispatch:
@@ -39,7 +36,6 @@ jobs:
 
   deploy:
     needs: build
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
       pages: write
