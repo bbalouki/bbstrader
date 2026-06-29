@@ -47,7 +47,7 @@ def test_pbo_low_when_one_config_truly_dominant():
 
 def test_pbo_high_for_demeaned_noise():
     # Demeaning each column over the full sample forces IS gains to be OOS
-    # losses -- the textbook overfitting scenario, so PBO should be high.
+    # losses the textbook overfitting scenario, so PBO should be high.
     rng = np.random.default_rng(1)
     noise = rng.normal(0, 0.01, size=(400, 12))
     noise = noise - noise.mean(axis=0, keepdims=True)
