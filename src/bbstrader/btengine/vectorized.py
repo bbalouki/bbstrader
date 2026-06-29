@@ -3,8 +3,8 @@
 This is the "does this even have alpha?" loop: it evaluates entry/exit signal
 arrays across the entire history with NumPy, with no event queue and no
 path-dependent order state. It is for fast hypothesis screening over many
-parameter combinations -- orders of magnitude faster than the event-driven
-engine -- not for faithful order-state simulation (use ``BacktestEngine`` for
+parameter combinations orders of magnitude faster than the event-driven
+engine not for faithful order-state simulation (use ``BacktestEngine`` for
 that). The two share the same data: feed it the columnar arrays from a
 ``DataHandler`` (or any price series).
 
@@ -27,6 +27,19 @@ ArrayLike = Union[Sequence[float], NDArray[np.float64], pd.Series]
 
 
 def _as_bool(values: Optional[ArrayLike], n: int) -> NDArray[np.bool_]:
+    """Coerce an optional signal array to a boolean array of length ``n``.
+
+    Args:
+        values (Optional[ArrayLike]): The signal array, or None for an all-false
+            array (the model is simply not used).
+        n (int): The required length, matching the price series.
+
+    Returns:
+        NDArray[np.bool_]: A boolean array of length ``n``.
+
+    Raises:
+        ValueError: If ``values`` is provided but not of shape ``(n,)``.
+    """
     if values is None:
         return np.zeros(n, dtype=bool)
     arr = np.asarray(values, dtype=bool)
@@ -103,12 +116,14 @@ class VectorizedResult:
 
     @property
     def total_return(self) -> float:
+        """The total return over the run as a fraction of initial capital."""
         return (
             float(self.equity[-1] / self.init_cash - 1.0) if self.equity.size else 0.0
         )
 
     @property
     def num_trades(self) -> int:
+        """The number of completed round-trip trades."""
         return len(self.trades)
 
     @property
@@ -118,6 +133,7 @@ class VectorizedResult:
 
     @property
     def sharpe(self) -> float:
+        """The Sharpe ratio of bar returns, annualised by ``periods``."""
         r = self.returns
         sd = r.std()
         if sd == 0 or np.isnan(sd):
@@ -135,6 +151,7 @@ class VectorizedResult:
 
     @property
     def win_rate(self) -> float:
+        """The fraction of trades whose equity rose between entry and exit."""
         if not self.trades:
             return 0.0
         wins = 0
@@ -144,6 +161,15 @@ class VectorizedResult:
         return wins / len(self.trades)
 
     def to_frame(self, index: Optional[pd.Index] = None) -> pd.DataFrame:
+        """Return the run as a DataFrame of position, returns and equity.
+
+        Args:
+            index (Optional[pd.Index]): An optional index (for example the price
+                series' DatetimeIndex) to label the rows.
+
+        Returns:
+            pd.DataFrame: Columns ``Position``, ``Returns`` and ``Equity``.
+        """
         df = pd.DataFrame(
             {"Position": self.position, "Returns": self.returns, "Equity": self.equity}
         )
@@ -152,6 +178,12 @@ class VectorizedResult:
         return df
 
     def summary(self) -> dict:
+        """Return a dict of the headline metrics for the run.
+
+        Returns:
+            dict: ``total_return``, ``sharpe``, ``max_drawdown``, ``num_trades``,
+            ``win_rate`` and ``exposure``.
+        """
         return {
             "total_return": self.total_return,
             "sharpe": self.sharpe,

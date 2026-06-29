@@ -46,6 +46,17 @@ class DataCatalog:
     """
 
     def __init__(self, base_dir: Optional[str] = None, fmt: str = "auto") -> None:
+        """Initialise the catalog and ensure its base directory exists.
+
+        Args:
+            base_dir (Optional[str]): Root directory for the store. Defaults to
+                ``~/.bbstrader/data/catalog``.
+            fmt (str): One of ``"parquet"``, ``"csv"`` or ``"auto"`` (Parquet
+                when pyarrow is installed, else CSV).
+
+        Raises:
+            ValueError: If ``fmt`` is not one of the accepted values.
+        """
         if fmt not in ("auto", "parquet", "csv"):
             raise ValueError(f"fmt must be 'auto', 'parquet' or 'csv', got {fmt!r}.")
         self.base_dir = Path(base_dir or BBSTRADER_DIR / "data" / "catalog")
@@ -62,14 +73,44 @@ class DataCatalog:
         return "parquet" if has_pyarrow() else "csv"
 
     def _key(self, source: str, symbol: str, timeframe: str) -> str:
+        """Return the filesystem-safe cache key for a dataset.
+
+        Args:
+            source (str): The data source identifier (for example ``"yf"``).
+            symbol (str): The instrument symbol; path separators are escaped.
+            timeframe (str): The bar timeframe (for example ``"D1"``).
+
+        Returns:
+            str: A unique key combining the three fields.
+        """
         safe_symbol = symbol.replace("/", "_").replace("\\", "_")
         return f"{source}__{safe_symbol}__{timeframe}"
 
     def _data_path(self, source: str, symbol: str, timeframe: str) -> Path:
+        """Return the on-disk path of a dataset's data file.
+
+        Args:
+            source (str): The data source identifier.
+            symbol (str): The instrument symbol.
+            timeframe (str): The bar timeframe.
+
+        Returns:
+            Path: The Parquet or CSV path for the dataset.
+        """
         ext = "parquet" if self.fmt == "parquet" else "csv"
         return self.base_dir / f"{self._key(source, symbol, timeframe)}.{ext}"
 
     def _meta_path(self, source: str, symbol: str, timeframe: str) -> Path:
+        """Return the on-disk path of a dataset's metadata file.
+
+        Args:
+            source (str): The data source identifier.
+            symbol (str): The instrument symbol.
+            timeframe (str): The bar timeframe.
+
+        Returns:
+            Path: The ``.meta.json`` path for the dataset.
+        """
         return self.base_dir / f"{self._key(source, symbol, timeframe)}.meta.json"
 
     def has(self, source: str, symbol: str, timeframe: str) -> bool:

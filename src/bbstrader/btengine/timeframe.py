@@ -4,7 +4,7 @@ A common institutional pattern is to *execute* on a fast timeframe (e.g. 1m)
 while computing *signals* on a slower one (e.g. H1 or daily). Rather than
 rearchitecting the event loop into a full multi-clock model, this module lets a
 strategy resample the base-timeframe bars it already receives into completed
-higher-timeframe (HTF) bars on demand -- inside ``calculate_signals`` -- with no
+higher-timeframe (HTF) bars on demand inside ``calculate_signals`` with no
 look-ahead.
 
 ``MultiTimeFrame`` wraps a ``DataHandler``; ``resample_ohlcv`` is the underlying
@@ -80,10 +80,26 @@ class MultiTimeFrame:
     """
 
     def __init__(self, data: DataHandler, lookback: int = 1000) -> None:
+        """Wrap a base-timeframe DataHandler for higher-timeframe access.
+
+        Args:
+            data (DataHandler): The base-timeframe data feed to resample from.
+            lookback (int): Default number of base bars to pull when resampling.
+        """
         self.data = data
         self.lookback = lookback
 
     def _base_bars(self, symbol: str, lookback: Optional[int]) -> pd.DataFrame:
+        """Return the most recent base-timeframe bars as a DataFrame.
+
+        Args:
+            symbol (str): The instrument to read.
+            lookback (Optional[int]): Number of base bars to pull; falls back to
+                the instance default when None.
+
+        Returns:
+            pd.DataFrame: The latest base-timeframe OHLCV bars.
+        """
         bars = self.data.get_latest_bars(symbol, N=lookback or self.lookback)
         if not isinstance(bars, pd.DataFrame):
             bars = pd.DataFrame([b[1] for b in bars])
@@ -100,7 +116,7 @@ class MultiTimeFrame:
         """Return resampled HTF bars for ``symbol``.
 
         With ``drop_partial`` (default) the final, possibly still-forming bucket
-        is dropped so only completed HTF bars are visible -- preventing
+        is dropped so only completed HTF bars are visible preventing
         look-ahead. ``n`` limits the result to the most recent ``n`` bars.
         """
         base = self._base_bars(symbol, lookback)

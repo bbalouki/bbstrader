@@ -2,8 +2,8 @@
 
 These functions extend the quantstats-backed :mod:`bbstrader.btengine.performance`
 metrics with ex-ante risk and attribution tools. They operate on plain return
-series (NumPy arrays or pandas Series) and are deterministic -- the Monte Carlo
-routines take an explicit seed -- so they are safe for reproducible research.
+series (NumPy arrays or pandas Series) and are deterministic the Monte Carlo
+routines take an explicit seed so they are safe for reproducible research.
 """
 
 from __future__ import annotations
@@ -33,6 +33,14 @@ ReturnsLike = Union[NDArray[np.float64], pd.Series, list]
 
 
 def _clean(returns: ReturnsLike) -> NDArray[np.float64]:
+    """Return ``returns`` as a float array with NaNs dropped.
+
+    Args:
+        returns (ReturnsLike): A return series as an array, Series or list.
+
+    Returns:
+        NDArray[np.float64]: The finite return values.
+    """
     arr = np.asarray(returns, dtype=np.float64)
     return arr[~np.isnan(arr)]
 
@@ -86,14 +94,24 @@ class MonteCarloResult:
     horizon: int
 
     def quantile(self, q: float) -> float:
+        """Return the ``q``-quantile of the simulated terminal returns.
+
+        Args:
+            q (float): Quantile in the interval [0, 1].
+
+        Returns:
+            float: The terminal return at quantile ``q``.
+        """
         return float(np.quantile(self.terminal_returns, q))
 
     @property
     def mean_terminal(self) -> float:
+        """The mean simulated terminal return."""
         return float(self.terminal_returns.mean())
 
     @property
     def prob_loss(self) -> float:
+        """The simulated probability of a negative terminal return."""
         return float(np.mean(self.terminal_returns < 0.0))
 
 

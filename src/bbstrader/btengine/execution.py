@@ -81,8 +81,7 @@ class SimExecutionHandler(ExecutionHandler):
         self.logger = kwargs.get("logger") or logger
         self.commissions = kwargs.get("commission")
         self.exchange = kwargs.get("exchange", "ARCA")
-        # Opt-in friction models. When all are None the handler behaves exactly
-        # as before (instant fill at the bar price, no slippage/impact).
+
         self.slippage_model = kwargs.get("slippage_model")
         self.impact_model = kwargs.get("impact_model")
         self.commission_model = kwargs.get("commission_model")
@@ -90,10 +89,7 @@ class SimExecutionHandler(ExecutionHandler):
         if not 0.0 < fill_ratio <= 1.0:
             raise ValueError("fill_ratio must be in the interval (0, 1].")
         self.fill_ratio = float(fill_ratio)
-        # Opt-in time-frontier / latency: orders from bar t are held and filled
-        # `delay` bars later at `fill_on` (open by default). time_frontier is a
-        # 1-bar delay; latency sets an explicit bar count. Both eliminate
-        # same-bar look-ahead.
+
         self.time_frontier = bool(kwargs.get("time_frontier", False))
         self.latency = int(kwargs.get("latency", 0))
         if self.latency < 0:
@@ -107,6 +103,7 @@ class SimExecutionHandler(ExecutionHandler):
         return max(self.latency, 1 if self.time_frontier else 0)
 
     def _has_friction(self) -> bool:
+        """Return True if any friction model or partial-fill ratio is configured."""
         return (
             self.slippage_model is not None
             or self.impact_model is not None
@@ -171,6 +168,15 @@ class SimExecutionHandler(ExecutionHandler):
         self._log_fill(event.direction, event.symbol, quantity, fill_price, dtime)
 
     def _log_fill(self, direction, symbol, quantity, price, dtime) -> None:
+        """Log a filled order at INFO level.
+
+        Args:
+            direction (str): The fill direction, ``"BUY"`` or ``"SELL"``.
+            symbol (str): The instrument filled.
+            quantity (float): The filled quantity.
+            price (float): The fill price.
+            dtime (datetime): The bar timestamp of the fill, used as the log time.
+        """
         self.logger.info(
             f"{direction} ORDER FILLED: SYMBOL={symbol}, "
             f"QUANTITY={quantity}, PRICE @{round(price, 5)} EXCHANGE={self.exchange}",
@@ -275,6 +281,19 @@ class MT5ExecutionHandler(ExecutionHandler):
     def _calculate_lot(
         self, symbol: str, quantity: Union[int, float], price: Union[int, float]
     ) -> float:
+        """Convert a share/unit quantity into a broker lot size for ``symbol``.
+
+        The conversion depends on the instrument's asset class and contract
+        size, then is validated against the broker's lot-size constraints.
+
+        Args:
+            symbol (str): The instrument being traded.
+            quantity (Union[int, float]): The order size in shares/units.
+            price (Union[int, float]): The trade price, used for FOREX notional.
+
+        Returns:
+            float: The broker-validated lot size.
+        """
         symbol_type = self.__account.get_symbol_type(symbol)
         symbol_info = self.__account.get_symbol_info(symbol)
         contract_size = symbol_info.trade_contract_size
@@ -299,6 +318,21 @@ class MT5ExecutionHandler(ExecutionHandler):
         qty: Union[int, float],
         price: Union[int, float],
     ) -> float:
+        """Estimate the total commission for a fill by asset class.
+
+        Dispatches to the per-asset-class commission estimator matching the
+        instrument's type.
+
+        Args:
+            symbol (str): The instrument being traded.
+            lot (float): The order size in broker lots.
+            qty (Union[int, float]): The order size in shares/units.
+            price (Union[int, float]): The trade price.
+
+        Returns:
+            float: The estimated commission in account currency, ``0.0`` for
+            unrecognised asset classes.
+        """
         symbol_type = self.__account.get_symbol_type(symbol)
         if symbol_type in (SymbolType.STOCKS, SymbolType.ETFs):
             return self._estimate_stock_commission(symbol, qty, price)
@@ -318,6 +352,20 @@ class MT5ExecutionHandler(ExecutionHandler):
     def _estimate_stock_commission(
         self, symbol: str, qty: Union[int, float], price: Union[int, float]
     ) -> float:
+        """Estimate the commission for a stock or ETF fill by listing country.
+
+        Applies the Admiral Markets ``Trade.MT5`` schedule: a per-share fee for
+        US listings and a percentage of notional elsewhere, each with a
+        currency-specific minimum.
+
+        Args:
+            symbol (str): The stock or ETF symbol.
+            qty (Union[int, float]): The number of shares filled.
+            price (Union[int, float]): The fill price per share.
+
+        Returns:
+            float: The estimated commission in account currency.
+        """
         # https://admiralmarkets.com/start-trading/contract-specifications?regulator=jsc
         min_com = 1.0
         min_aud = 8.0
@@ -353,18 +401,52 @@ class MT5ExecutionHandler(ExecutionHandler):
                 return max(min_com, qty * price * eu_asia_cm)
 
     def _estimate_forex_commission(self, lot: float) -> float:
+        """Return the FOREX commission for ``lot`` lots (3.0 per lot).
+
+        Args:
+            lot (float): The order size in lots.
+
+        Returns:
+            float: The estimated commission in account currency.
+        """
         return 3.0 * lot
 
     def _estimate_commodity_commission(self, lot: float) -> float:
+        """Return the commodity commission for ``lot`` lots (3.0 per lot).
+
+        Args:
+            lot (float): The order size in lots.
+
+        Returns:
+            float: The estimated commission in account currency.
+        """
         return 3.0 * lot
 
     def _estimate_index_commission(self, lot: float) -> float:
+        """Return the index commission for ``lot`` lots (0.25 per lot).
+
+        Args:
+            lot (float): The order size in lots.
+
+        Returns:
+            float: The estimated commission in account currency.
+        """
         return 0.25 * lot
 
     def _estimate_futures_commission(self) -> float:
+        """Return the futures commission, which is zero on this account model.
+
+        Returns:
+            float: Always ``0.0``.
+        """
         return 0.0
 
     def _estimate_crypto_commission(self) -> float:
+        """Return the crypto commission, which is zero on this account model.
+
+        Returns:
+            float: Always ``0.0``.
+        """
         return 0.0
 
     def execute_order(self, event: OrderEvent) -> None:

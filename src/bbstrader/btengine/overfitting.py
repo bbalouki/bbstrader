@@ -3,11 +3,11 @@
 Implements the Bailey & Lopez de Prado toolkit for distinguishing real alpha
 from selection bias:
 
-* Probabilistic and Deflated Sharpe ratios -- adjust an observed Sharpe for
+* Probabilistic and Deflated Sharpe ratios adjust an observed Sharpe for
   sample length, non-normality, and the number of trials that produced it.
-* CSCV PBO -- the probability of backtest overfitting from combinatorially
+* CSCV PBO the probability of backtest overfitting from combinatorially
   symmetric cross-validation.
-* Combinatorial purged cross-validation splits -- multiple train/test folds
+* Combinatorial purged cross-validation splits multiple train/test folds
   with purging/embargo for leakage-free out-of-sample evaluation.
 
 All routines are deterministic and pure NumPy/SciPy.
@@ -35,6 +35,15 @@ _EULER_MASCHERONI = 0.5772156649015329
 
 
 def _sharpe(returns: NDArray[np.float64]) -> float:
+    """Return the per-period Sharpe ratio of a return series.
+
+    Args:
+        returns (NDArray[np.float64]): The periodic returns. Uses the sample
+            standard deviation (``ddof=1``); returns 0 for degenerate inputs.
+
+    Returns:
+        float: The unannualised Sharpe ratio, or ``0.0`` when undefined.
+    """
     sd = returns.std(ddof=1) if returns.size > 1 else 0.0
     if sd == 0 or np.isnan(sd):
         return 0.0

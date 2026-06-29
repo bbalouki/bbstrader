@@ -61,14 +61,16 @@ class BacktestStrategy(BaseStrategy):
         self.data = bars
         self.mode = TradingMode.BACKTEST
         self._portfolio_value = None
-        # Opt-in intrabar fills: when True, pending stop/limit orders are
-        # evaluated against the bar's high/low rather than only its close, so an
-        # order that the bar traded through still triggers. Default (False)
-        # preserves the close-only behavior exactly.
+
         self._intrabar_fills = bool(kwargs.get("intrabar_fills", False))
         self._initialize_portfolio()
 
     def _initialize_portfolio(self) -> None:
+        """Reset per-symbol order, position, trade and holdings bookkeeping.
+
+        Seeds empty long/short position and trade counters and per-order-type
+        pending-order lists for every traded symbol.
+        """
         self._orders = {}
         self._positions = {}
         self._trades = {}
@@ -85,26 +87,36 @@ class BacktestStrategy(BaseStrategy):
 
     @property
     def cash(self) -> float:
+        """The latest portfolio value (cash) reported by the engine."""
         return self._portfolio_value or 0.0
 
     @cash.setter
     def cash(self, value: float) -> None:
+        """Set the portfolio value (cash) pushed in from the engine.
+
+        Args:
+            value (float): The current portfolio cash value.
+        """
         self._portfolio_value = value
 
     @property
     def orders(self) -> Dict[str, Dict[str, List[SignalEvent]]]:
+        """The pending orders per symbol, keyed by order type."""
         return self._orders
 
     @property
     def trades(self) -> Dict[str, Dict[str, int]]:
+        """The executed trade counts per symbol, keyed by side."""
         return self._trades
 
     @property
     def positions(self) -> Dict[str, Dict[str, Union[int, float]]]:
+        """The open position sizes per symbol, keyed by ``LONG``/``SHORT``."""
         return self._positions
 
     @property
     def holdings(self) -> Dict[str, float]:
+        """The current mark-to-market holdings value per symbol."""
         return self._holdings
 
     def get_update_from_portfolio(
@@ -153,6 +165,22 @@ class BacktestStrategy(BaseStrategy):
         array: bool = True,
         **kwargs,
     ) -> Optional[Dict[str, Union[np.typing.NDArray, pd.Series]]]:
+        """Return the last ``window`` values of ``value_type`` for each symbol.
+
+        Args:
+            symbol_list (List[str]): The symbols to fetch values for.
+            window (int): The number of most-recent bars required per symbol.
+            value_type (str): The bar field to read (for example ``"returns"``,
+                ``"close"``, ``"high"``).
+            array (bool): When True return NumPy arrays (NaNs dropped); when
+                False return pandas Series sliced from the bar DataFrame.
+            kwargs: Unused; accepted for forward compatibility.
+
+        Returns:
+            Optional[Dict[str, Union[NDArray, pd.Series]]]: A mapping of symbol
+            to its last ``window`` values, or None if any symbol has fewer than
+            ``window`` values available.
+        """
         asset_values = {}
         for asset in symbol_list:
             if array:
@@ -168,7 +196,16 @@ class BacktestStrategy(BaseStrategy):
         return None
 
     @abstractmethod
-    def calculate_signals(self, event: MarketEvent) -> None: ...
+    def calculate_signals(self, event: MarketEvent) -> None:
+        """Compute trading signals for the current bar.
+
+        Subclasses implement their strategy logic here, placing orders via the
+        ``buy_mkt``/``sell_mkt``/``close_positions`` helpers.
+
+        Args:
+            event (MarketEvent): The market event for the current bar.
+        """
+        ...
 
     def _send_order(
         self,
@@ -180,6 +217,18 @@ class BacktestStrategy(BaseStrategy):
         quantity: int,
         dtime: Union[datetime, pd.Timestamp],
     ) -> None:
+        """Build a SignalEvent and enqueue it, respecting per-symbol trade caps.
+
+        Args:
+            id (int): The strategy/order identifier carried on the signal.
+            symbol (str): The instrument to trade.
+            signal (str): The signal type (for example ``"LONG"``, ``"SHORT"``,
+                ``"EXIT"`` or a pending-order type).
+            strength (float): The signal strength used for position sizing.
+            price (float): The reference price for the order.
+            quantity (int): The order size in units; must be positive to send.
+            dtime (Union[datetime, pd.Timestamp]): The bar timestamp of the signal.
+        """
         position = SignalEvent(
             id,
             symbol,
@@ -472,6 +521,14 @@ class BacktestStrategy(BaseStrategy):
             symbol: str,
             dtime: Union[datetime, pd.Timestamp],
         ) -> None:
+            """Log a triggered pending order at INFO level.
+
+            Args:
+                order (SignalEvent): The pending order that was triggered.
+                type (str): A label for the order type, used in the message.
+                symbol (str): The instrument the order is for.
+                dtime (Union[datetime, pd.Timestamp]): The trigger bar timestamp.
+            """
             self.logger.info(
                 f"{type} ORDER EXECUTED: SYMBOL={symbol}, QUANTITY={order.quantity}, "
                 f"PRICE @ {round(order.price, 5)}",  # type: ignore
@@ -486,6 +543,19 @@ class BacktestStrategy(BaseStrategy):
             symbol: str,
             dtime: Union[datetime, pd.Timestamp],
         ) -> None:
+            """Trigger and remove pending orders of one type whose condition holds.
+
+            Args:
+                order_type (str): The pending-order bucket to scan (for example
+                    ``"BLMT"``, ``"SSTP"``).
+                condition (Callable[[SignalEvent], bool]): Predicate deciding
+                    whether an order should trigger this bar.
+                execute_fn (Callable[[SignalEvent], None]): Callback that turns a
+                    triggered order into a market order.
+                log_label (str): Label passed to :func:`logmsg` for the fill log.
+                symbol (str): The instrument whose orders are processed.
+                dtime (Union[datetime, pd.Timestamp]): The current bar timestamp.
+            """
             for order in self._orders[symbol][order_type].copy():
                 if condition(order):
                     execute_fn(order)
@@ -501,9 +571,7 @@ class BacktestStrategy(BaseStrategy):
         for symbol in self.symbols:
             dtime = self.data.get_latest_bar_datetime(symbol)
             latest_close = self.data.get_latest_bar_value(symbol, "close")
-            # Reference prices for trigger tests. In intrabar mode an upside
-            # trigger uses the bar high and a downside trigger uses the bar low;
-            # otherwise both collapse to the close (original behavior).
+
             if self._intrabar_fills:
                 up_ref = self.data.get_latest_bar_value(symbol, "high")
                 down_ref = self.data.get_latest_bar_value(symbol, "low")
@@ -607,7 +675,7 @@ class MultiStrategy:
     The engine sees a single strategy; this adapter fans every engine callback
     out to each child strategy. All children post signals to the same event
     queue, so the shared ``Portfolio`` nets their positions and allocates one
-    pool of capital -- enabling cross-strategy capital-allocation and netting
+    pool of capital enabling cross-strategy capital-allocation and netting
     tests that a single-strategy engine cannot express.
 
     Children are typically scoped to disjoint symbol sets; when they overlap,
@@ -616,6 +684,16 @@ class MultiStrategy:
     """
 
     def __init__(self, strategies: List["BacktestStrategy"]) -> None:
+        """Wrap one or more child strategies behind a single engine interface.
+
+        Args:
+            strategies (List[BacktestStrategy]): The child strategies to run
+                against the shared portfolio. The union of their symbols becomes
+                this adapter's symbol set.
+
+        Raises:
+            ValueError: If ``strategies`` is empty.
+        """
         if not strategies:
             raise ValueError("MultiStrategy requires at least one strategy.")
         self.strategies = list(strategies)
@@ -623,30 +701,51 @@ class MultiStrategy:
 
     @property
     def cash(self) -> float:
+        """The shared portfolio cash, read from the first child strategy."""
         return self.strategies[0].cash
 
     @cash.setter
     def cash(self, value: float) -> None:
+        """Propagate the portfolio cash value to every child strategy.
+
+        Args:
+            value (float): The current portfolio cash value.
+        """
         for st in self.strategies:
             st.cash = value
 
     def calculate_signals(self, event: MarketEvent) -> None:
+        """Fan the market event out to every child strategy.
+
+        Args:
+            event (MarketEvent): The market event for the current bar.
+        """
         for st in self.strategies:
             st.calculate_signals(event)
 
     def check_pending_orders(self) -> None:
+        """Ask every child strategy to evaluate its pending orders."""
         for st in self.strategies:
             st.check_pending_orders()
 
     def get_update_from_portfolio(
         self, positions: Dict[str, float], holdings: Dict[str, float]
     ) -> None:
+        """Push the latest portfolio positions and holdings to each child.
+
+        Args:
+            positions (Dict[str, float]): Current position sizes per symbol.
+            holdings (Dict[str, float]): Current holdings value per symbol.
+        """
         for st in self.strategies:
             st.get_update_from_portfolio(positions, holdings)
 
     def update_trades_from_fill(self, event: FillEvent) -> None:
-        # Route a fill only to children that trade its symbol so per-strategy
-        # trade counters stay correct for disjoint symbol partitions.
+        """Route a fill to the child strategies that trade its symbol.
+
+        Args:
+            event (FillEvent): The fill to apply to matching child strategies.
+        """
         for st in self.strategies:
             if event.symbol in st.symbols:
                 st.update_trades_from_fill(event)

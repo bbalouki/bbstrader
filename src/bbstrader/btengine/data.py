@@ -66,18 +66,22 @@ class DataHandler(metaclass=ABCMeta):
 
     @property
     def symbols(self) -> List[str]:
+        """The list of symbols this handler serves."""
         pass
 
     @property
     def data(self) -> Dict[str, pd.DataFrame]:
+        """The loaded market data, keyed by symbol."""
         pass
 
     @property
     def labels(self) -> List[str]:
+        """The OHLCV column labels exposed by the handler."""
         pass
 
     @property
     def index(self) -> Union[str, List[str]]:
+        """The name(s) of the datetime index column(s)."""
         pass
 
     @abstractmethod
@@ -172,22 +176,27 @@ class BaseCSVDataHandler(DataHandler):
 
     @property
     def symbols(self) -> List[str]:
+        """The list of symbols this handler serves."""
         return self.symbol_list
 
     @property
     def data(self) -> Dict[str, pd.DataFrame]:
+        """The loaded market data, keyed by symbol."""
         return self.symbol_data  # type: ignore
 
     @property
     def datadir(self) -> str:
+        """The directory the CSV files are read from."""
         return self.csv_dir
 
     @property
     def labels(self) -> List[str]:
+        """The OHLCV column labels exposed by the handler."""
         return self.columns  # type: ignore
 
     @property
     def index(self) -> Union[str, List[str]]:
+        """The name(s) of the datetime index column(s)."""
         return self._index  # type: ignore
 
     def _load_and_process_data(self) -> None:
@@ -476,6 +485,18 @@ class MT5DataHandler(BaseCSVDataHandler):
         )
 
     def _download_and_cache_data(self, cache_dir: Optional[str]) -> Path:
+        """Download MT5 historical data per symbol and cache it as CSV.
+
+        Honors the handler's ``use_cache``/``cache_max_age_days`` settings to
+        skip downloads whose cache is still fresh.
+
+        Args:
+            cache_dir (Optional[str]): Directory to cache CSVs in. Defaults to
+                ``~/.bbstrader/data/mt5/<timeframe>``.
+
+        Returns:
+            Path: The directory the CSV files were written to.
+        """
         data_dir = (
             Path(cache_dir) if cache_dir else BBSTRADER_DIR / "data" / "mt5" / self.tf
         )
@@ -622,6 +643,20 @@ class EODHDataHandler(BaseCSVDataHandler):
     def _get_data(
         self, symbol: str, period: str
     ) -> Union[pd.DataFrame, List[Dict[str, Any]]]:
+        """Fetch raw EODHD price data for one symbol at a given period.
+
+        Args:
+            symbol (str): The instrument to fetch.
+            period (str): The bar period code (for example ``"d"``, ``"w"``,
+                ``"m"`` for daily/weekly/monthly, or an intraday code).
+
+        Returns:
+            Union[pd.DataFrame, List[Dict[str, Any]]]: The raw response, as a
+            DataFrame for end-of-day periods or a list of dicts for intraday.
+
+        Raises:
+            ValueError: If no API key is configured.
+        """
         if not self.__api_key:
             raise ValueError("API key is required for EODHD data.")
         client = APIClient(api_key=self.__api_key)
@@ -652,6 +687,18 @@ class EODHDataHandler(BaseCSVDataHandler):
     def _format_data(
         self, data: Union[List[Dict[str, Any]], pd.DataFrame]
     ) -> pd.DataFrame:
+        """Normalise raw EODHD data into the standard OHLCV frame.
+
+        Args:
+            data (Union[List[Dict[str, Any]], pd.DataFrame]): The raw response
+                from :meth:`_get_data`.
+
+        Returns:
+            pd.DataFrame: A DataFrame with the handler's OHLCV columns.
+
+        Raises:
+            ValueError: If ``data`` is empty.
+        """
         if isinstance(data, pd.DataFrame):
             if data.empty or len(data) == 0:
                 raise ValueError("No data found.")
@@ -737,6 +784,19 @@ class FMPDataHandler(BaseCSVDataHandler):
         )
 
     def _get_data(self, symbol: str, period: str) -> pd.DataFrame:
+        """Fetch raw FMP price data for one symbol at a given period.
+
+        Args:
+            symbol (str): The instrument to fetch.
+            period (str): The bar period (for example ``"1d"`` or a financetoolkit
+                interval code).
+
+        Returns:
+            pd.DataFrame: The raw price history for the symbol.
+
+        Raises:
+            ValueError: If no API key is configured.
+        """
         if not self.__api_key:
             raise ValueError("API key is required for FMP data.")
         toolkit = Toolkit(
@@ -754,6 +814,19 @@ class FMPDataHandler(BaseCSVDataHandler):
         raise ValueError(f"Unsupported period: {period}")
 
     def _format_data(self, data: pd.DataFrame, period: str) -> pd.DataFrame:
+        """Normalise raw FMP data into the standard OHLCV frame.
+
+        Args:
+            data (pd.DataFrame): The raw price history from :meth:`_get_data`.
+            period (str): The bar period, used to decide which auxiliary columns
+                (return/volatility) to drop.
+
+        Returns:
+            pd.DataFrame: A DataFrame with the handler's OHLCV columns.
+
+        Raises:
+            ValueError: If ``data`` is empty.
+        """
         if data.empty or len(data) == 0:
             raise ValueError("No data found.")
         if period[0].isnumeric():

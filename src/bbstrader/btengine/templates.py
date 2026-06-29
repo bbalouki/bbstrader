@@ -5,7 +5,7 @@ common archetypes: trend following (SMA crossover), mean reversion (RSI), and
 breakout (Donchian channel). They are built entirely on the shared strategy API
 -- `get_asset_values` for data, the vectorized
 :mod:`bbstrader.core.indicators` for signals, and the `buy_mkt`/`close_positions`
-order helpers -- so they are also natural targets for
+order helpers so they are also natural targets for
 :func:`bbstrader.btengine.optimize.optimize`.
 
 Each template trades a single long position per symbol and is long-only, which
@@ -36,12 +36,29 @@ class _TemplateBase(BacktestStrategy):
         bars: Any,
         **kwargs: Any,
     ) -> None:
+        """Initialise shared template state (strategy id and per-symbol size).
+
+        Args:
+            events (Any): The engine event queue.
+            symbol_list (List[str]): The symbols traded by the strategy.
+            bars (Any): The DataHandler providing market data.
+            kwargs (Any): Template options; ``strategy_id`` (default 1) and
+                ``quantity`` (units per trade, default 100).
+        """
         super().__init__(events, symbol_list, bars, **kwargs)
         self.strategy_id = int(kwargs.get("strategy_id", 1))
         quantity = kwargs.get("quantity", 100)
         self.qty = {s: int(quantity) for s in self.symbols}
 
     def _is_long(self, symbol: str) -> bool:
+        """Return True if a long position is currently open in ``symbol``.
+
+        Args:
+            symbol (str): The instrument to check.
+
+        Returns:
+            bool: Whether the long quantity is positive.
+        """
         return self._positions[symbol]["LONG"] > 0
 
     def _closes(self, symbol: str, window: int):
@@ -65,6 +82,18 @@ class SMACrossoverStrategy(_TemplateBase):
     """
 
     def __init__(self, events, symbol_list, bars, **kwargs) -> None:
+        """Initialise the SMA crossover with fast/slow windows.
+
+        Args:
+            events (Any): The engine event queue.
+            symbol_list (List[str]): The symbols traded by the strategy.
+            bars (Any): The DataHandler providing market data.
+            kwargs (Any): ``fast`` (default 10) and ``slow`` (default 30) SMA
+                windows, plus the shared template options.
+
+        Raises:
+            ValueError: If ``fast`` is not strictly less than ``slow``.
+        """
         super().__init__(events, symbol_list, bars, **kwargs)
         self.fast = int(kwargs.get("fast", 10))
         self.slow = int(kwargs.get("slow", 30))
@@ -72,6 +101,12 @@ class SMACrossoverStrategy(_TemplateBase):
             raise ValueError(f"fast ({self.fast}) must be < slow ({self.slow}).")
 
     def calculate_signals(self, event: MarketEvent) -> None:
+        """Enter long on an up-cross and exit on a down-cross of the SMAs.
+
+        Args:
+            event (MarketEvent): The market event driving the bar; ignored unless
+                it is a MARKET event.
+        """
         if event.type != Events.MARKET:
             return
         for symbol in self.symbols:
@@ -106,12 +141,28 @@ class RSIMeanReversionStrategy(_TemplateBase):
     """
 
     def __init__(self, events, symbol_list, bars, **kwargs) -> None:
+        """Initialise the RSI mean-reversion thresholds.
+
+        Args:
+            events (Any): The engine event queue.
+            symbol_list (List[str]): The symbols traded by the strategy.
+            bars (Any): The DataHandler providing market data.
+            kwargs (Any): ``period`` (RSI lookback, default 14), ``oversold``
+                (entry threshold, default 30) and ``exit_level`` (exit threshold,
+                default 55), plus the shared template options.
+        """
         super().__init__(events, symbol_list, bars, **kwargs)
         self.period = int(kwargs.get("period", 14))
         self.oversold = float(kwargs.get("oversold", 30.0))
         self.exit_level = float(kwargs.get("exit_level", 55.0))
 
     def calculate_signals(self, event: MarketEvent) -> None:
+        """Buy when RSI is oversold and exit when it recovers above the level.
+
+        Args:
+            event (MarketEvent): The market event driving the bar; ignored unless
+                it is a MARKET event.
+        """
         if event.type != Events.MARKET:
             return
         for symbol in self.symbols:
@@ -146,10 +197,25 @@ class DonchianBreakoutStrategy(_TemplateBase):
     """
 
     def __init__(self, events, symbol_list, bars, **kwargs) -> None:
+        """Initialise the Donchian breakout channel lookback.
+
+        Args:
+            events (Any): The engine event queue.
+            symbol_list (List[str]): The symbols traded by the strategy.
+            bars (Any): The DataHandler providing market data.
+            kwargs (Any): ``window`` (channel lookback, default 20), plus the
+                shared template options.
+        """
         super().__init__(events, symbol_list, bars, **kwargs)
         self.window = int(kwargs.get("window", 20))
 
     def calculate_signals(self, event: MarketEvent) -> None:
+        """Go long on a close above the prior N-bar high; exit below the low.
+
+        Args:
+            event (MarketEvent): The market event driving the bar; ignored unless
+                it is a MARKET event.
+        """
         if event.type != Events.MARKET:
             return
         for symbol in self.symbols:
