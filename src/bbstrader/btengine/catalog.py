@@ -135,12 +135,19 @@ class DataCatalog:
     ) -> bool:
         """Return True if the cached dataset exists and is within ``max_age_days``.
 
-        A ``max_age_days`` of None means "never expires" (any cached copy is fresh).
+        A ``max_age_days`` of None means "never expires" (any cached copy is
+        fresh); a value of 0 (or negative) means the cache is always stale,
+        independent of clock resolution.
         """
         if not self.has(source, symbol, timeframe):
             return False
         if max_age_days is None:
             return True
+        # A zero/negative budget means "always reload". Handle it explicitly so
+        # the result does not hinge on sub-millisecond timestamp resolution
+        # (Windows clocks can read an age of exactly 0 for a just-written file).
+        if max_age_days <= 0:
+            return False
         meta = self.metadata(source, symbol, timeframe)
         if not meta or "fetched_at" not in meta:
             return False
