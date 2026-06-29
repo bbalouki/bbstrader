@@ -92,7 +92,8 @@
 
 ## Functions & Classes
 
-- One logical operation per function; always use trailing return types.
+- One logical operation per function.
+- Always use trailing return types for all member and non member functions.
 - Pass non-trivial types as `const T&`; return by value (rely on NRVO/RVO).
 - Mark `[[nodiscard]]` where return values must not be ignored; mark `noexcept` when applicable.
 - Single-argument constructors must be `explicit`; keep members `private`; use `override`/`final` on overrides.
