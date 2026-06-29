@@ -30,7 +30,7 @@ import pandas as pd
 
 from bbstrader.btengine.backtest import BacktestEngine
 from bbstrader.btengine.data import CSVDataHandler
-from bbstrader.btengine.event import Events, MarketEvent
+from bbstrader.btengine.event import MarketEvent
 from bbstrader.btengine.execution import SimExecutionHandler
 from bbstrader.btengine.strategy import BacktestStrategy
 
