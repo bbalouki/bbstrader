@@ -207,9 +207,7 @@ class BacktestEngine:
                             self.portfolio.update_fill(event)
                             self.strategy.update_trades_from_fill(event)
 
-            # Only pace the loop when a real heartbeat is requested (live/paper
-            # mode). Backtests run with heartbeat == 0.0 and must never pay a
-            # per-bar sleep syscall.
+
             if self.heartbeat:
                 time.sleep(self.heartbeat)
 
