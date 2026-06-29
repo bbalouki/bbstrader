@@ -7,7 +7,7 @@ research tooling:
 - :func:`optimize` runs a grid or random search over strategy parameters,
   optionally across processes, and returns a ranked results table. Each worker
   loads its data **once** and replays it across every parameter combination via
-  ``reset()`` -- no re-reading or re-downloading per run.
+  ``reset()`` no re-reading or re-downloading per run.
 - :func:`walk_forward` performs anchored or rolling walk-forward validation by
   slicing the in-memory columnar ``_records``, fitting parameters in-sample and
   scoring them out-of-sample.
