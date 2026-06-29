@@ -76,7 +76,7 @@ bbstrader's hybrid design is its secret weapon. At the heart is a bidirectional 
 3. **The Data Flow:** The result is a clean, efficient, and powerful execution loop:
    `Python (Orchestration & Analysis) -> C++ (High-Speed Signal Generation) -> Python (MT5 Communication) -> C++ (Receives Market Data)`
 
-This setup crushes performance ceilings: run ML models in Python and execute trades in C++. The backtester is an event-driven simulator with a replayable, columnar data feed built for fidelity (faithful order state and accounting) rather than raw throughput. A fully vectorized research fast-path for screening millions of bars per second is on the [roadmap](FEATURES.md#2-ultra-fast-hybrid-backtesting-engine-flagship).
+This setup crushes performance ceilings: run ML models in Python and execute trades in C++. The backtester is an event-driven simulator with a replayable, columnar data feed built for fidelity (faithful order state and accounting), paired with a fully vectorized research fast-path (`vectorized_backtest(...)`) that screens millions of bars per second for fast "does this have alpha?" hypothesis testing. See the [hybrid engine reference](FEATURES.md#2-ultra-fast-hybrid-backtesting-engine-flagship).
 
 ### **Overcoming the MQL5 Bottleneck**
 
@@ -94,8 +94,8 @@ bbstrader is modular, with each component laser-focused.
 
 ### 1. **btengine**: Event-Driven Backtesting Beast
 
-- **Purpose**: Simulate strategies with historical data across multi-asset portfolios, with commission modeling and metrics like Sharpe Ratio, Drawdown, and CAGR. Pluggable slippage/market-impact friction models are on the [roadmap](FEATURES.md#23-realistic-execution-institution-grade-friction).
-- **Features**: Event queue for ticks/orders, a replayable columnar data feed (re-run the same data for parameter sweeps and walk-forward), and integration with models for signal generation. Note: the engine is event-driven for fidelity today; a vectorized research mode is on the [roadmap](FEATURES.md#2-ultra-fast-hybrid-backtesting-engine-flagship).
+- **Purpose**: Simulate strategies with historical data across multi-asset portfolios, with metrics like Sharpe Ratio, Drawdown, and CAGR and pluggable [slippage/market-impact friction models](FEATURES.md#23-realistic-execution-institution-grade-friction) (commission, partial fills, latency, and per-bar swap/overnight funding).
+- **Features**: Event queue for ticks/orders, a replayable columnar data feed (re-run the same data for parameter sweeps and walk-forward), and integration with models for signal generation. The engine runs in two modes behind one strategy API: an event-driven path for fidelity and a [vectorized research fast-path](FEATURES.md#2-ultra-fast-hybrid-backtesting-engine-flagship) for high-throughput screening.
 - **Example**: Backtest a StockIndexSTBOTrading from the example strategies.
 
 ```Python
@@ -114,8 +114,8 @@ strategy API:
 - **Execution realism (opt-in, defaults unchanged):** pluggable slippage
   (fixed-spread, percent, volatility, volume-participation), square-root
   **market impact**, commission models, partial fills, **time-frontier**
-  (next-bar) fills and order-to-fill **latency** — so backtests survive the jump
-  to live.
+  (next-bar) fills, order-to-fill **latency**, and per-bar **swap/overnight
+  funding** costs — so backtests survive the jump to live.
 - **Vectorized research fast-path:** `vectorized_backtest(...)` screens
   entry/exit signal arrays across the whole history at once for fast "does this
   have alpha?" hypothesis testing, alongside the high-fidelity event engine.
