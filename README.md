@@ -76,7 +76,7 @@ bbstrader's hybrid design is its secret weapon. At the heart is a bidirectional 
 3. **The Data Flow:** The result is a clean, efficient, and powerful execution loop:
    `Python (Orchestration & Analysis) -> C++ (High-Speed Signal Generation) -> Python (MT5 Communication) -> C++ (Receives Market Data)`
 
-This setup crushes performance ceilings: run ML models in Python and execute trades in C++. The backtester is an event-driven simulator with a replayable, columnar data feed built for fidelity (faithful order state and accounting), paired with a fully vectorized research fast-path (`vectorized_backtest(...)`) that screens millions of bars per second for fast "does this have alpha?" hypothesis testing. See the [hybrid engine reference](FEATURES.md#2-ultra-fast-hybrid-backtesting-engine-flagship).
+This setup crushes performance ceilings: run ML models in Python and execute trades in C++. The backtester is an event-driven simulator with a replayable, columnar data feed built for fidelity (faithful order state and accounting), paired with a fully vectorized research fast-path (`vectorized_backtest(...)`) that screens millions of bars per second for fast "does this have alpha?" hypothesis testing.
 
 ### **Overcoming the MQL5 Bottleneck**
 
@@ -94,8 +94,8 @@ bbstrader is modular, with each component laser-focused.
 
 ### 1. **btengine**: Event-Driven Backtesting Beast
 
-- **Purpose**: Simulate strategies with historical data across multi-asset portfolios, with metrics like Sharpe Ratio, Drawdown, and CAGR and pluggable [slippage/market-impact friction models](FEATURES.md#23-realistic-execution-institution-grade-friction) (commission, partial fills, latency, and per-bar swap/overnight funding).
-- **Features**: Event queue for ticks/orders, a replayable columnar data feed (re-run the same data for parameter sweeps and walk-forward), and integration with models for signal generation. The engine runs in two modes behind one strategy API: an event-driven path for fidelity and a [vectorized research fast-path](FEATURES.md#2-ultra-fast-hybrid-backtesting-engine-flagship) for high-throughput screening.
+- **Purpose**: Simulate strategies with historical data across multi-asset portfolios, with metrics like Sharpe Ratio, Drawdown, and CAGR and pluggable (commission, partial fills, latency, and per-bar swap/overnight funding).
+- **Features**: Event queue for ticks/orders, a replayable columnar data feed (re-run the same data for parameter sweeps and walk-forward), and integration with models for signal generation. The engine runs in two modes behind one strategy API: an event-driven path for fidelity and a`vectorized research fast-path` for high-throughput screening.
 - **Example**: Backtest a StockIndexSTBOTrading from the example strategies.
 
 ```Python
@@ -327,25 +327,25 @@ if score > 0.7:  # Bullish? Buy!
 
 ### Python improvements
 
-| Area | Change |
-|---|---|
-| `Account` | New `refresh()` method, context manager (`with Account() as acc:`), `__repr__` / `__str__`, and symbol info cache with `clear_symbol_cache()` |
-| `utils` | New `retry_on_disconnect(max_retries, delay)` decorator for automatic retry on `InternalFailConnect` / `InternalFailTimeout` |
-| `trade` | Fixed `or` → `and` logic bug in market order type guard (was always `True`, skipped the guard) |
-| `rates` | Fixed `get_data_from_pos` passing `session_duration` as a positional argument to `Rates.__init__` (caused `TypeError` at runtime) |
-| `core/data` | Fixed `assert symbol is None, ValueError(...)` antipattern — `assert` does not raise the given exception; replaced with an explicit `if/raise` |
-| `api/handlers` | Fixed `_build_request` filter that silently dropped `magic=0`, `deviation=0`, and `sl/tp=0.0` from trade requests |
-| All modules | Modernized type hints to `X \| Y`, `X \| None`, `list[x]`, `dict[x, y]` (PEP 604/585); removed `Optional`, `Union`, `List`, `Dict` from `typing` |
+| Area           | Change                                                                                                                                           |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `Account`      | New `refresh()` method, context manager (`with Account() as acc:`), `__repr__` / `__str__`, and symbol info cache with `clear_symbol_cache()`    |
+| `utils`        | New `retry_on_disconnect(max_retries, delay)` decorator for automatic retry on `InternalFailConnect` / `InternalFailTimeout`                     |
+| `trade`        | Fixed `or` → `and` logic bug in market order type guard (was always `True`, skipped the guard)                                                   |
+| `rates`        | Fixed `get_data_from_pos` passing `session_duration` as a positional argument to `Rates.__init__` (caused `TypeError` at runtime)                |
+| `core/data`    | Fixed `assert symbol is None, ValueError(...)` antipattern — `assert` does not raise the given exception; replaced with an explicit `if/raise`   |
+| `api/handlers` | Fixed `_build_request` filter that silently dropped `magic=0`, `deviation=0`, and `sl/tp=0.0` from trade requests                                |
+| All modules    | Modernized type hints to `X \| Y`, `X \| None`, `list[x]`, `dict[x, y]` (PEP 604/585); removed `Optional`, `Union`, `List`, `Dict` from `typing` |
 
 ### C++ improvements
 
-| Area | Change |
-|---|---|
-| `metatrader.hpp` | Added `[[nodiscard]]` to all value-returning virtual methods (32 methods) |
+| Area             | Change                                                                                                                                                                                                              |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `metatrader.hpp` | Added `[[nodiscard]]` to all value-returning virtual methods (32 methods)                                                                                                                                           |
 | `metatrader.hpp` | Fixed six methods returning `0` / empty struct instead of `std::nullopt` when the handler is missing: `orders_total`, `positions_total`, `order_check`, `order_send`, `history_orders_total`, `history_deals_total` |
-| `metatrader.hpp` | Added `noexcept` to `shutdown()` |
-| `metatrader.cpp` | `TradeRequest` dict constructor now catches `py::cast_error` and raises a Python `ValueError` with a descriptive field name, instead of propagating a raw C++ exception |
-| `objects.hpp` | Fixed invalid C++ identifier `int64_t_ONLY` → `LONG_ONLY` in the `PositionType` enum |
+| `metatrader.hpp` | Added `noexcept` to `shutdown()`                                                                                                                                                                                    |
+| `metatrader.cpp` | `TradeRequest` dict constructor now catches `py::cast_error` and raises a Python `ValueError` with a descriptive field name, instead of propagating a raw C++ exception                                             |
+| `objects.hpp`    | Fixed invalid C++ identifier `int64_t_ONLY` → `LONG_ONLY` in the `PositionType` enum                                                                                                                                |
 
 ---
 
@@ -411,7 +411,7 @@ git clone https://github.com/microsoft/vcpkg
 | :----------------- | :-------------------------------------------------------------------------------------------------------------------- |
 | **Run Backtest**   | `python -m bbstrader --run backtest --strategy SMAStrategy --account MY_ACCOUNT --config backtest.json`               |
 | **Live Execution** | `python -m bbstrader --run execution --strategy KalmanFilter --account MY_ACCOUNT --config execution.json --parallel` |
-| **Copy Trades**    | `python -m bbstrader --run copier --source "S1" --destination "D1"`                             |
+| **Copy Trades**    | `python -m bbstrader --run copier --source "S1" --destination "D1"`                                                   |
 | **Get Help**       | `python -m bbstrader --help`                                                                                          |
 
 **Config Example** (`~/.bbstrader/execution/execution.json`):
