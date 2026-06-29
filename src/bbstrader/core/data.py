@@ -29,6 +29,17 @@ def _require(module_name: str, extra: str):
 
 
 def _get_search_query(query: str) -> str:
+    """Expand a bare ticker into a richer news-search query.
+
+    For a single-word query, appends the instrument's short name (looked up via
+    yfinance) to broaden matches; multi-word or empty queries pass through.
+
+    Args:
+        query (str): The raw search query or ticker.
+
+    Returns:
+        str: The (possibly expanded) search query.
+    """
     if " " in query or query == "":
         return query
     try:
@@ -39,6 +50,16 @@ def _get_search_query(query: str) -> str:
 
 
 def _find_news(query: Union[str, List[str]], text: str) -> bool:
+    """Return True if ``text`` contains any whole word from ``query``.
+
+    Args:
+        query (Union[str, List[str]]): A search term (space-separated) or list
+            of terms to match as whole words, case-insensitively.
+        text (str): The text to search.
+
+    Returns:
+        bool: Whether any query term appears in ``text``.
+    """
     if isinstance(query, str):
         query = query.split(" ")
     pattern = r"\b(?:" + "|".join(map(re.escape, query)) + r")\b"
@@ -48,6 +69,15 @@ def _find_news(query: Union[str, List[str]], text: str) -> bool:
 
 
 def _filter_news(news: List[str], query: Union[str, List[str]]) -> List[str]:
+    """Return the news items that match ``query``.
+
+    Args:
+        news (List[str]): The candidate news texts.
+        query (Union[str, List[str]]): The search term(s) to match.
+
+    Returns:
+        List[str]: The items containing a query term.
+    """
     return [text for text in news if _find_news(query, text)]
 
 
@@ -72,6 +102,14 @@ class FmpNews(object):
         self.__api = api
 
     def _jsonparsed_data(self, url: str) -> Any:
+        """Fetch ``url`` over a verified TLS connection and parse the JSON body.
+
+        Args:
+            url (str): The fully-formed FMP endpoint URL including the API key.
+
+        Returns:
+            Any: The decoded JSON payload.
+        """
         context = ssl.create_default_context(cafile=certifi.where())
         with urlopen(url, context=context) as response:
             data = response.read().decode("utf-8")
@@ -80,6 +118,22 @@ class FmpNews(object):
     def _load_news(
         self, news_type: str, symbol: Optional[str] = None, **kwargs: Any
     ) -> List[Dict[str, Any]]:
+        """Fetch a page of FMP news/articles of a given type.
+
+        Args:
+            news_type (str): The FMP feed (for example ``"stock"``, ``"crypto"``,
+                ``"forex"``, ``"press-releases"`` or ``"articles"``).
+            symbol (Optional[str]): Restrict to one symbol; not allowed for
+                ``"articles"``.
+            kwargs (Any): Optional ``start``, ``end``, ``page`` and ``limit``
+                query parameters.
+
+        Returns:
+            List[Dict[str, Any]]: The raw news records.
+
+        Raises:
+            ValueError: If ``symbol`` is given for the ``"articles"`` feed.
+        """
         params = {"start": "from", "end": "to", "page": "page", "limit": "limit"}
         base_url = f"https://financialmodelingprep.com/stable/news/{news_type}-latest?apikey={self.__api}"
         if news_type == "articles":
@@ -96,7 +150,25 @@ class FmpNews(object):
         return self._jsonparsed_data(base_url)
 
     def get_articles(self, **kwargs: Any) -> List[Dict[str, Any]]:
+        """Fetch FMP articles with their HTML content stripped to plain text.
+
+        Args:
+            kwargs (Any): Optional ``page``/``limit`` paging parameters.
+
+        Returns:
+            List[Dict[str, Any]]: Records with ``title``, ``date``, ``content``
+            (plain text) and ``tickers``.
+        """
+
         def html_parser(content: str) -> str:
+            """Strip HTML markup from ``content`` to a single line of text.
+
+            Args:
+                content (str): The raw HTML article body.
+
+            Returns:
+                str: The extracted text with newlines removed.
+            """
             soup = BeautifulSoup(content, "html.parser")
             text = soup.get_text(separator="\n")
             return text.replace("\n", "")
@@ -110,34 +182,100 @@ class FmpNews(object):
     def get_releases(
         self, symbol: Optional[str] = None, **kwargs: Any
     ) -> List[Dict[str, Any]]:
+        """Fetch the latest FMP press releases, optionally for one symbol.
+
+        Args:
+            symbol (Optional[str]): Restrict to a single symbol.
+            kwargs (Any): Optional paging/date parameters (see :meth:`_load_news`).
+
+        Returns:
+            List[Dict[str, Any]]: The press-release records.
+        """
         return self._load_news("press-releases", symbol, **kwargs)
 
     def get_stock_news(
         self, symbol: Optional[str] = None, **kwargs: Any
     ) -> List[Dict[str, Any]]:
+        """Fetch the latest FMP stock news, optionally for one symbol.
+
+        Args:
+            symbol (Optional[str]): Restrict to a single symbol.
+            kwargs (Any): Optional paging/date parameters (see :meth:`_load_news`).
+
+        Returns:
+            List[Dict[str, Any]]: The stock-news records.
+        """
         return self._load_news("stock", symbol, **kwargs)
 
     def get_crypto_news(
         self, symbol: Optional[str] = None, **kwargs: Any
     ) -> List[Dict[str, Any]]:
+        """Fetch the latest FMP crypto news, optionally for one symbol.
+
+        Args:
+            symbol (Optional[str]): Restrict to a single symbol.
+            kwargs (Any): Optional paging/date parameters (see :meth:`_load_news`).
+
+        Returns:
+            List[Dict[str, Any]]: The crypto-news records.
+        """
         return self._load_news("crypto", symbol, **kwargs)
 
     def get_forex_news(
         self, symbol: Optional[str] = None, **kwargs: Any
     ) -> List[Dict[str, Any]]:
+        """Fetch the latest FMP forex news, optionally for one symbol.
+
+        Args:
+            symbol (Optional[str]): Restrict to a single symbol.
+            kwargs (Any): Optional paging/date parameters (see :meth:`_load_news`).
+
+        Returns:
+            List[Dict[str, Any]]: The forex-news records.
+        """
         return self._load_news("forex", symbol, **kwargs)
 
     def _last_date(self, date: str) -> datetime:
+        """Parse an FMP ``YYYY-MM-DD HH:MM:SS`` timestamp into a datetime.
+
+        Args:
+            date (str): The timestamp string to parse.
+
+        Returns:
+            datetime: The parsed datetime.
+        """
         return datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
 
     def parse_news(
         self, news: List[Dict[str, Any]], symbol: Optional[str] = None, **kwargs: Any
     ) -> List[str]:
+        """Flatten and date-filter raw news records into text strings.
+
+        Keeps records published within the ``start``/``end`` window and, when a
+        ``symbol`` is given, only those mentioning it.
+
+        Args:
+            news (List[Dict[str, Any]]): The raw records to parse.
+            symbol (Optional[str]): Restrict to records mentioning this symbol.
+            kwargs (Any): Optional ``start`` and ``end`` date bounds as
+                ``YYYY-MM-DD HH:MM:SS`` strings.
+
+        Returns:
+            List[str]: One flattened text string per matching record.
+        """
         start = kwargs.get("start")
         end = kwargs.get("end")
         end_date = self._last_date(end) if end is not None else datetime.now().date()
 
         def parse_record(record: Dict[str, Any]) -> str:
+            """Flatten a news record's text fields into a single string.
+
+            Args:
+                record (Dict[str, Any]): A raw news record.
+
+            Returns:
+                str: The symbol, title, text, content and tickers joined by spaces.
+            """
             return " ".join(
                 [
                     record.pop("symbol", ""),
@@ -171,6 +309,21 @@ class FmpNews(object):
         save: bool = False,
         **kwargs: Any,
     ) -> List[Dict[str, Any]]:
+        """Return the latest FMP articles, using a local CSV cache when fresh.
+
+        Reads ``latest_fmp_articles.csv`` if present and recent enough; otherwise
+        downloads fresh articles and, when ``save`` is set, refreshes the cache.
+
+        Args:
+            articles (Optional[List[Dict[str, Any]]]): Pre-fetched articles to
+                use instead of reading the cache or downloading.
+            save (bool): When True, persist the fetched articles to the cache CSV.
+            kwargs (Any): Optional ``end`` bound and paging parameters forwarded
+                to :meth:`get_articles`.
+
+        Returns:
+            List[Dict[str, Any]]: The latest article records.
+        """
         end = kwargs.get("end")
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         end_date = self._last_date(end) if end is not None else self._last_date(now)
@@ -250,6 +403,21 @@ class FinancialNews(object):
     def _fetch_news(
         self, url: str, query: str, n_news: int, headline_tag: str
     ) -> List[str]:
+        """Scrape and filter headlines from a news web page.
+
+        Fetches ``url``, extracts headlines from the given HTML tag and returns
+        up to ``n_news`` that match the (query-expanded) search terms. Returns an
+        empty list on any request failure.
+
+        Args:
+            url (str): The page URL to scrape.
+            query (str): The search query or ticker used to filter headlines.
+            n_news (int): The maximum number of headlines to return.
+            headline_tag (str): The HTML tag holding headline text.
+
+        Returns:
+            List[str]: The matching headlines, at most ``n_news`` items.
+        """
         headers = {"User-Agent": "Mozilla/5.0"}
         try:
             response = requests.get(url, headers=headers)
@@ -519,6 +687,14 @@ class FinancialNews(object):
             return []
 
     def get_fmp_news(self, api: str | None = None) -> FmpNews:
+        """Return an :class:`FmpNews` client for the given API key.
+
+        Args:
+            api (str | None): The Financial Modeling Prep API key.
+
+        Returns:
+            FmpNews: A news client bound to ``api``.
+        """
         return FmpNews(api=api)  # type: ignore
 
     def get_coindesk_news(
@@ -636,6 +812,12 @@ class FmpData(Toolkit):
     """
 
     def __init__(self, api_key: str = "", symbols: str | list = "AAPL"):
+        """Initialise the FMP-backed toolkit for the given symbols.
+
+        Args:
+            api_key (str): The Financial Modeling Prep API key.
+            symbols (str | list): One symbol or a list of symbols to load.
+        """
         super().__init__(tickers=symbols, api_key=api_key)
 
 

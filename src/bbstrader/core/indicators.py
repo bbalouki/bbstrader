@@ -48,6 +48,15 @@ def _as_float_array(values: ArrayLike) -> NDArray[np.float64]:
 
 
 def _check_window(window: int, name: str = "window") -> None:
+    """Validate that a rolling-window length is a positive integer.
+
+    Args:
+        window (int): The window length to validate.
+        name (str): The parameter name used in the error message.
+
+    Raises:
+        ValueError: If ``window`` is less than 1.
+    """
     if window < 1:
         raise ValueError(f"{name} must be a positive integer, got {window}.")
 
@@ -156,6 +165,15 @@ def rsi(values: ArrayLike, window: int = 14) -> NDArray[np.float64]:
     avg_loss = losses[:window].mean()
 
     def _rsi_from(avg_gain: float, avg_loss: float) -> float:
+        """Return the RSI value for a smoothed average gain and loss.
+
+        Args:
+            avg_gain (float): The smoothed average up-move over the window.
+            avg_loss (float): The smoothed average down-move over the window.
+
+        Returns:
+            float: The RSI in [0, 100]; 100 when there are no losses.
+        """
         if avg_loss == 0:
             return 100.0
         rs = avg_gain / avg_loss
