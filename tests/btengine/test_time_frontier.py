@@ -11,7 +11,6 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from bbstrader.btengine.backtest import run_backtest
 from bbstrader.btengine.data import CSVDataHandler
 from bbstrader.btengine.event import Events, MarketEvent
 from bbstrader.btengine.execution import SimExecutionHandler
