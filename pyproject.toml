@@ -102,8 +102,7 @@ regex = '(?P<value>\d+\.\d+\.\d+)'
 [tool.scikit-build.sdist]
 include = ["src/bbstrader/assets/*"]
 
-# Static typing. Lenient toward the heavy third-party surface (many libs ship no
-# stubs) while still type-checking bbstrader's own public modules.
+# Static typing. 
 [tool.mypy]
 python_version = "3.12"
 files = ["src/bbstrader"]
