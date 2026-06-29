@@ -5,8 +5,6 @@ The CSV-fallback path is tested unconditionally; the Parquet path is gated on
 loader is not called a second time.
 """
 
-from pathlib import Path
-
 import pandas as pd
 import pytest
 
