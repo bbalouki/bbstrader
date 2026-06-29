@@ -1,9 +1,25 @@
 import warnings
 
+import scipy.cluster.hierarchy as _sch
 from pypfopt import expected_returns, risk_models
 from pypfopt.efficient_frontier import EfficientFrontier
 from pypfopt.hierarchical_portfolio import HRPOpt
 from pypfopt.black_litterman import BlackLittermanModel
+
+# PyPortfolioOpt 1.5.6 (the latest release) validates the linkage method against
+# the private ``scipy.cluster.hierarchy._LINKAGE_METHODS`` dict, which newer
+# SciPy releases removed. Restore the canonical mapping so HRP keeps working
+# across SciPy versions without pinning users to an old SciPy.
+if not hasattr(_sch, "_LINKAGE_METHODS"):
+    _sch._LINKAGE_METHODS = {
+        "single": 0,
+        "complete": 1,
+        "average": 2,
+        "weighted": 3,
+        "centroid": 4,
+        "median": 5,
+        "ward": 6,
+    }
 
 __all__ = [
     "markowitz_weights",
