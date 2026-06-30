@@ -30,6 +30,26 @@ __all__ = [
 ]
 
 
+def _normalize_weights(weights):
+    """Rescale a weights mapping so its values sum to exactly 1.0.
+
+    PyPortfolioOpt's ``clean_weights`` rounds to a fixed number of decimals,
+    which can leave the sum a hair off 1.0 (e.g. 1.00002). Rescaling restores an
+    exact budget so downstream sizing is consistent.
+
+    Args:
+        weights (Mapping[str, float]): Asset-to-weight mapping to rescale.
+
+    Returns:
+        dict: The weights scaled to sum to 1.0, preserving order. Returned
+        unchanged (as a plain dict) when the weights sum to zero.
+    """
+    total = sum(weights.values())
+    if total == 0:
+        return dict(weights)
+    return {asset: weight / total for asset, weight in weights.items()}
+
+
 def markowitz_weights(prices=None, rfr=0.0, freq=252, min_vol=False):
     """
     Calculates optimal portfolio weights using Markowitz's mean-variance optimization (Max Sharpe Ratio or Min Volatility) with multiple solvers.
@@ -79,11 +99,11 @@ def markowitz_weights(prices=None, rfr=0.0, freq=252, min_vol=False):
                 ef.min_volatility()
             else:
                 ef.max_sharpe(risk_free_rate=rfr)
-            return ef.clean_weights()
+            return _normalize_weights(ef.clean_weights())
         except Exception as e:
             print(f"Solver {solver} failed with error: {e}")
     # Default to equal weighted if all solvers fail
-    return equal_weighted(prices=prices)
+    return _normalize_weights(equal_weighted(prices=prices))
 
 
 def hierarchical_risk_parity(prices=None, returns=None, freq=252):
@@ -124,7 +144,7 @@ def hierarchical_risk_parity(prices=None, returns=None, freq=252):
     returns = returns.loc[:, ~returns.columns.duplicated()]
     returns = returns.loc[~returns.index.duplicated(keep="first")]
     hrp = HRPOpt(returns=returns.iloc[-freq:])
-    return hrp.optimize()
+    return _normalize_weights(hrp.optimize())
 
 
 def equal_weighted(prices=None, returns=None, round_digits=5):
@@ -221,7 +241,7 @@ def black_litterman_weights(
     ret_bl = bl.bl_returns()
     ef = EfficientFrontier(ret_bl, cov_matrix)
     ef.max_sharpe(risk_free_rate=rfr)
-    return ef.clean_weights()
+    return _normalize_weights(ef.clean_weights())
 
 
 def optimized_weights(

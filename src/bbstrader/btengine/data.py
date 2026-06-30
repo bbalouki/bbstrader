@@ -146,6 +146,7 @@ class BaseCSVDataHandler(DataHandler):
         csv_dir: str,
         columns: Optional[List[str]] = None,
         index_col: Union[str, int, List[str], List[int]] = 0,
+        persist_normalized: bool = True,
     ) -> None:
         """
         Initialises the data handler by requesting the location of the CSV files
@@ -157,12 +158,18 @@ class BaseCSVDataHandler(DataHandler):
             csv_dir : Absolute directory path to the CSV files.
             columns : List of column names to use for the data.
             index_col : Column to use as the index.
+            persist_normalized : Whether to write the normalized frame back to
+                ``csv_dir``. True for handlers that own ``csv_dir`` as a cache
+                (the download handlers); False when ``csv_dir`` is the user's
+                source directory, to avoid mutating it and to keep parallel
+                workers that share one directory from racing on the same file.
         """
         self.events = events
         self.symbol_list = symbol_list
         self.csv_dir = csv_dir
         self.columns = columns
         self.index_col = index_col
+        self._persist_normalized = persist_normalized
         self.symbol_data: Dict[str, Union[pd.DataFrame, Generator]] = {}
         self.latest_symbol_data: Dict[str, List[Any]] = {}
         # Immutable, replayable per-symbol record lists of (timestamp, Series)
@@ -249,7 +256,14 @@ class BaseCSVDataHandler(DataHandler):
                 .dropna()
             )
             self._index = self.symbol_data[s].index.name  # type: ignore
-            self.symbol_data[s].to_csv(os.path.join(self.csv_dir, f"{s}.csv"))  # type: ignore
+            # Persist the normalized frame only for handlers that own csv_dir as
+            # a cache. For a plain CSVDataHandler csv_dir is the user's source,
+            # so writing back mutates their data and races when parallel optimize
+            # workers share one directory (concurrent read/write corrupts it).
+            if self._persist_normalized:
+                self.symbol_data[s].to_csv(  # type: ignore
+                    os.path.join(self.csv_dir, f"{s}.csv")
+                )
             if self.events is not None:
                 # Materialize a replayable record list once. These tuples are
                 # identical to what DataFrame.iterrows() yielded, so all
@@ -425,6 +439,8 @@ class CSVDataHandler(BaseCSVDataHandler):
             str(csv_dir),
             columns=kwargs.get("columns"),
             index_col=kwargs.get("index_col", 0),
+            # csv_dir is the user's own data directory; never rewrite it.
+            persist_normalized=False,
         )
 
 
