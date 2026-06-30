@@ -1,15 +1,10 @@
 bbstrader.trading package
 =========================
 
-
-Module contents
----------------
-
 .. automodule:: bbstrader.trading
    :members:
    :show-inheritance:
    :undoc-members:
-
 
 Submodules
 ----------
