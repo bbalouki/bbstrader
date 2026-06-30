@@ -1,7 +1,8 @@
 # Simplified Investment & Trading Toolkit with Python & C++
 
 [![Build](https://github.com/bbalouki/bbstrader/actions/workflows/build.yml/badge.svg)](https://github.com/bbalouki/bbstrader/actions/workflows/build.yml)
-[![Documentation Status](https://readthedocs.org/projects/bbstrader/badge/?version=latest)](https://bbstrader.readthedocs.io/en/latest/?badge=latest)
+[![C++ Docs](https://github.com/bbalouki/bbstrader/actions/workflows/docs-cpp.yml/badge.svg)](https://github.com/bbalouki/bbstrader/actions/workflows/docs-cpp.yml)
+[![Py Status](https://readthedocs.org/projects/bbstrader/badge/?version=latest)](https://bbstrader.readthedocs.io/en/latest/?badge=latest)
 [![PyPi status](https://img.shields.io/pypi/status/bbstrader.svg?maxAge=60)](https://pypi.python.org/pypi/bbstrader)
 ![Linux](https://img.shields.io/badge/Linux-FCC624?logo=linux&logoColor=black)
 ![macOS](https://img.shields.io/badge/macOS-000000?logo=apple&logoColor=white)
@@ -15,7 +16,7 @@
 [![CodeFactor](https://www.codefactor.io/repository/github/bbalouki/bbstrader/badge)](https://www.codefactor.io/repository/github/bbalouki/bbstrader)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-grey?logo=Linkedin&logoColor=white)](https://www.linkedin.com/in/bertin-balouki-s-15b17a1a6)
 
-## Welcome to `bbstrader` – The Ultimate C++ & Python Trading Powerhouse!
+## Welcome to bbstrader, The Ultimate C++ & Python Trading Powerhouse!
 
 ## Table of Contents
 
@@ -32,7 +33,7 @@
     - [Account API](#account-api)
   - [3. `trading`: Live Execution & Strategy Orchestrator](#3-trading-live-execution--strategy-orchestrator)
   - [4. `models`: Quant Toolkit for Signals & Risk](#4-models-quant-toolkit-for-signals--risk)
-- [What's New in 2.1.0](#whats-new-in-210)
+- [What's New in 2.3.0](#whats-new-in-230)
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
 - [Installation](#installation)
@@ -44,18 +45,18 @@
 
 ### Overview
 
-Imagine having the raw, blistering speed of C++ for your high-frequency trades, combined with Python's ecosystem for lightning-fast prototyping, advanced AI models, and seamless data analysis. That's `bbstrader` – not just a library, but a game-changing toolkit designed for quants, algo traders, and institutional pros who demand an edge in volatile markets. Whether you're scalping forex pairs, backtesting complex strategies, or copying trades across accounts in real-time, `bbstrader` empowers you to build, test, and deploy with unmatched efficiency.
+Imagine having the raw, blistering speed of C++ for your high-frequency trades, combined with Python's ecosystem for lightning-fast prototyping, advanced AI models, and seamless data analysis. That's `bbstrader`, not just a library, but a game-changing toolkit designed for quants, algo traders, and institutional pros who demand an edge in volatile markets. Whether you're scalping forex pairs, backtesting complex strategies, or copying trades across accounts in real-time, `bbstrader` empowers you to build, test, and deploy with unmatched efficiency.
 
 Forget the frustrations of slow Python bottlenecks or MQL5's rigid sandbox. `bbstrader` bridges worlds: C++ for mission-critical performance and Python for intelligent orchestration. It's open-source, battle-tested across platforms, and ready to supercharge your trading arsenal.
 
-## **Why `bbstrader` Stands Out**
+## Why bbstrader Stands Out
 
 In a crowded field of trading libraries, `bbstrader` is architected to solve the most challenging problems in algorithmic trading: performance, flexibility, and platform limitations.
 
 - **Blazing Speed with C++ Core**: Compile your strategy logic in native C++ for deterministic, low-latency execution. Perfect for HFT, arbitrage, or compute-heavy models that Python alone can't handle.
-- **Python's Powerhouse Ecosystem**: Leverage `NumPy`, `pandas`, `scikit-learn`, `TensorFlow`, and more for research, ML-driven signals, and backtesting – all seamlessly integrated with your C++ core.
+- **Python's Powerhouse Ecosystem**: Leverage `NumPy`, `pandas`, `scikit-learn`, `TensorFlow`, and more for research, ML-driven signals, and backtesting, all seamlessly integrated with your C++ core.
 - **Institutional-Grade Architecture:** From its event-driven backtester to its modular design, `bbstrader` is built with the principles of professional trading systems in mind, providing a robust foundation for serious strategy development.
-  In today's hyper-fast financial landscape, every microsecond counts. `bbstrader` isn't another lightweight wrapper – it's an institutional-grade powerhouse engineered to tackle real-world trading challenges head-on.
+  In today's hyper-fast financial landscape, every microsecond counts. `bbstrader` isn't another lightweight wrapper, it's an institutional-grade powerhouse engineered to tackle real-world trading challenges head-on.
 - **Break Free from MQL5 Limits**: Ditch interpreted code and ecosystem constraints. Build multi-threaded, AI-infused strategies that execute orders in microseconds via MetaTrader 5 (MT5) integration.
   **Flexible Interface**: CLI & GUI
   `bbstrader` adapts to your workflow.
@@ -63,11 +64,11 @@ In a crowded field of trading libraries, `bbstrader` is architected to solve the
   - **Visual Traders**: Launch the Desktop GUI (currently for Copy Trading) to monitor your master and slave accounts, check replication status, and manage connections visually.
   - **Cross-Platform & Future-Proof**: Works on Windows, macOS, Linux. (IBKR integration in development).
 
-## **Trusted by Traders Worldwide**
+## Trusted by Traders Worldwide
 
-With thousands of downloads, `bbstrader` is trusted by traders worldwide. It's not just code – it's your ticket to profitable, scalable strategies.
+With thousands of downloads, `bbstrader` is trusted by traders worldwide. It's not just code, it's your ticket to profitable, scalable strategies.
 
-## **The `bbstrader` Edge: Uniting C++ Speed with Python Flexibility**
+## The bbstrader Edge: Uniting C++ Speed with Python Flexibility
 
 bbstrader's hybrid design is its secret weapon. At the heart is a bidirectional C++/Python bridge via `client` module:
 
@@ -78,7 +79,7 @@ bbstrader's hybrid design is its secret weapon. At the heart is a bidirectional 
 
 This setup crushes performance ceilings: run ML models in Python and execute trades in C++. The backtester is an event-driven simulator with a replayable, columnar data feed built for fidelity (faithful order state and accounting), paired with a fully vectorized research fast-path (`vectorized_backtest(...)`) that screens millions of bars per second for fast "does this have alpha?" hypothesis testing.
 
-### **Overcoming the MQL5 Bottleneck**
+### Overcoming the MQL5 Bottleneck
 
 MetaTrader 5 is a world-class trading platform, but its native MQL5 language presents significant limitations for complex, high-frequency strategies:
 
@@ -88,11 +89,11 @@ MetaTrader 5 is a world-class trading platform, but its native MQL5 language pre
 
 `bbstrader` eradicates these barriers. By moving your core strategy logic to C++, you can unlock the full potential of your trading ideas, executing them with the microsecond-level precision demanded by institutional trading.
 
-## **Key Modules**
+## Key Modules
 
 bbstrader is modular, with each component laser-focused.
 
-### 1. **btengine**: Event-Driven Backtesting Beast
+### 1. btengine: Event-Driven Backtesting Beast
 
 - **Purpose**: Simulate strategies with historical data across multi-asset portfolios, with metrics like Sharpe Ratio, Drawdown, and CAGR and pluggable (commission, partial fills, latency, and per-bar swap/overnight funding).
 - **Features**: Event queue for ticks/orders, a replayable columnar data feed (re-run the same data for parameter sweeps and walk-forward), and integration with models for signal generation. The engine runs in two modes behind one strategy API: an event-driven path for fidelity and a`vectorized research fast-path` for high-throughput screening.
@@ -115,7 +116,7 @@ strategy API:
   (fixed-spread, percent, volatility, volume-participation), square-root
   **market impact**, commission models, partial fills, **time-frontier**
   (next-bar) fills, order-to-fill **latency**, and per-bar **swap/overnight
-  funding** costs — so backtests survive the jump to live.
+  funding** costs, so backtests survive the jump to live.
 - **Vectorized research fast-path:** `vectorized_backtest(...)` screens
   entry/exit signal arrays across the whole history at once for fast "does this
   have alpha?" hypothesis testing, alongside the high-fidelity event engine.
@@ -124,7 +125,7 @@ strategy API:
   templates on the same API used for live trading.
 - **Optimization & validation:** parallel `optimize(...)` parameter sweeps and
   walk-forward (replayable columnar data + `reset()`), plus overfitting
-  diagnostics — **deflated/probabilistic Sharpe, PBO (CSCV), combinatorial
+  diagnostics, **deflated/probabilistic Sharpe, PBO (CSCV), combinatorial
   purged CV**.
 - **Risk analytics:** historical & parametric **VaR/CVaR**, **Monte Carlo**
   equity-curve confidence bands, volatility-**regime** detection, and
@@ -141,10 +142,10 @@ strategy API:
 
 ### Backtesting Results
 
-![Backtesting Results1](https://github.com/bbalouki/bbstrader/blob/main/bbstrader/assets/bbs_.png?raw=true)
-![Backtesting Results2](https://github.com/bbalouki/bbstrader/blob/main/bbstrader/assets/qs_metrics_1.png?raw=true)
+![Backtesting Results1](https://github.com/bbalouki/bbstrader/blob/main/src/bbstrader/assets/bbs_.png?raw=true)
+![Backtesting Results2](https://github.com/bbalouki/bbstrader/blob/main/src/bbstrader/assets/qs_metrics_1.png?raw=true)
 
-### 2. **metatrader**: The C++/Python Bridge to MT5
+### 2. metatrader: The C++/Python Bridge to MT5
 
 - **Purpose**: High-speed MT5 integration. C++ MetaTraderClient mirrors MT5 API for orders, rates, and account management.
 - **Features**: Bidirectional callbacks, error handling, real-time tick processing.
@@ -265,7 +266,7 @@ if strategy.initialize():
 
 The `Account` class provides a high-level, safe interface to live MT5 account data.
 
-**Context manager** — automatically shuts down the connection on exit:
+**Context manager**, automatically shuts down the connection on exit:
 
 ```python
 from bbstrader.metatrader import Account
@@ -276,16 +277,16 @@ with Account() as acc:
     rates = acc.get_currency_rates("EURUSD")
 ```
 
-**`refresh()`** — reload live account data mid-session without creating a new object:
+**`refresh()`**, reload live account data mid-session without creating a new object:
 
 ```python
 acc.refresh()   # re-fetches balance, equity, margin from the terminal
 print(acc.balance)
 ```
 
-**Symbol info cache** — `get_symbol_info()` caches results to avoid repeated round-trips to the terminal. Call `clear_symbol_cache()` to invalidate when needed.
+**Symbol info cache**, `get_symbol_info()` caches results to avoid repeated round-trips to the terminal. Call `clear_symbol_cache()` to invalidate when needed.
 
-**`retry_on_disconnect` decorator** — wrap any MT5 call to auto-retry on connection drops:
+**`retry_on_disconnect` decorator**, wrap any MT5 call to auto-retry on connection drops:
 
 ```python
 from bbstrader.metatrader.utils import retry_on_disconnect
@@ -297,12 +298,12 @@ def fetch_tick(symbol):
 
 ---
 
-### 3. **`trading`: Live Execution & Strategy Orchestrator**
+### 3. trading: Live Execution & Strategy Orchestrator
 
 - **Purpose**: Manages live sessions, coordinates signals from strategies, risk from models, and execution via metatrader.
 - **Features**: Multi-account support, position hedging, trailing stops.
 
-### 4. `models`: Quant Toolkit for Signals & Risk
+### 4. models: Quant Toolkit for Signals & Risk
 
 - **Purpose**: Build/test models like NLP sentiment, VaR/CVaR risk, optimization.
 - **Features**: Currently Sentiment analysis, and Topic Modeling.
@@ -312,40 +313,52 @@ def fetch_tick(symbol):
 from bbstrader.models import SentimenSentimentAnalyzer
 
 model = SentimenSentimentAnalyzer()  # Loads pre-trained NLP
-score = model.analyze_sentiment("Fed hikes rates – markets soar!")
+score = model.analyze_sentiment("Fed hikes rates, markets soar!")
 if score > 0.7:  # Bullish? Buy!
     print("Go long!")
 ```
 
-### **Other Modules:**
+### Other Modules:
 
 `core`: Utilities (data structs, logging).
 `config`: Manages JSON configs in ~/.bbstrader/.
 `api`: Handler injections for bridges.
 
-## What's New in 2.1.0
+## What's New in 2.3.0
 
-### Python improvements
+Version 2.3.0 turns `btengine` into a full research-to-production backtesting stack: new modules for
+risk analytics, parameter optimization, overfitting diagnostics, execution realism, and reproducible
+experiments, plus a broker-neutral execution layer and a built-in indicator library.
 
-| Area           | Change                                                                                                                                           |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `Account`      | New `refresh()` method, context manager (`with Account() as acc:`), `__repr__` / `__str__`, and symbol info cache with `clear_symbol_cache()`    |
-| `utils`        | New `retry_on_disconnect(max_retries, delay)` decorator for automatic retry on `InternalFailConnect` / `InternalFailTimeout`                     |
-| `trade`        | Fixed `or` → `and` logic bug in market order type guard (was always `True`, skipped the guard)                                                   |
-| `rates`        | Fixed `get_data_from_pos` passing `session_duration` as a positional argument to `Rates.__init__` (caused `TypeError` at runtime)                |
-| `core/data`    | Fixed `assert symbol is None, ValueError(...)` antipattern — `assert` does not raise the given exception; replaced with an explicit `if/raise`   |
-| `api/handlers` | Fixed `_build_request` filter that silently dropped `magic=0`, `deviation=0`, and `sl/tp=0.0` from trade requests                                |
-| All modules    | Modernized type hints to `X \| Y`, `X \| None`, `list[x]`, `dict[x, y]` (PEP 604/585); removed `Optional`, `Union`, `List`, `Dict` from `typing` |
+### New btengine modules
 
-### C++ improvements
+| Module        | What it adds                                                                                                       |
+| ------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `analytics`   | Risk analytics: VaR/CVaR, Monte Carlo simulation, volatility-regime detection, and factor/beta exposure           |
+| `optimize`    | Parameter optimization with parallel sweeps and walk-forward evaluation                                           |
+| `overfitting` | Overfitting diagnostics: deflated/probabilistic Sharpe, PBO via CSCV, and combinatorial purged cross-validation   |
+| `friction`    | Pluggable execution realism: slippage, market impact, commissions, partial fills, latency, and per-bar swap/funding |
+| `catalog`     | Cached, Parquet-backed data catalog (falls back to CSV when `pyarrow` is absent)                                  |
+| `vectorized`  | Vectorized research fast-path that screens millions of bars per second for quick alpha hypothesis testing         |
+| `templates`   | Ready-made strategy templates (trend, mean-reversion, breakout)                                                    |
+| `timeframe`   | On-the-fly higher-timeframe (HTF) resampling                                                                       |
+| `experiment`  | Experiment/results store persisting parameters, metrics, and equity curves for reproducible runs                 |
 
-| Area             | Change                                                                                                                                                                                                              |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `metatrader.hpp` | Added `[[nodiscard]]` to all value-returning virtual methods (32 methods)                                                                                                                                           |
-| `metatrader.hpp` | Fixed six methods returning `0` / empty struct instead of `std::nullopt` when the handler is missing: `orders_total`, `positions_total`, `order_check`, `order_send`, `history_orders_total`, `history_deals_total` |
-| `metatrader.hpp` | Added `noexcept` to `shutdown()`                                                                                                                                                                                    |
-| `metatrader.cpp` | `TradeRequest` dict constructor now catches `py::cast_error` and raises a Python `ValueError` with a descriptive field name, instead of propagating a raw C++ exception                                             |
-| `objects.hpp`    | Fixed invalid C++ identifier `int64_t_ONLY` → `LONG_ONLY` in the `PositionType` enum                                                                                                                                |
+### Engine & core improvements
+
+| Area           | Change                                                                                                          |
+| -------------- | ------------------------------------------------------------------------------------------------------------- |
+| `btengine`     | Multi-strategy support over a shared portfolio, multi-timeframe feeds, walk-forward replay, intrabar OHLC fills |
+| `core/broker`  | New broker-neutral execution abstraction with a `PaperBroker` implementation                                   |
+| `core/indicators` | Built-in vectorized indicators: SMA, EMA, RSI, ATR, Bollinger Bands, MACD, and z-score                       |
+
+### Tooling & docs
+
+| Area       | Change                                                                              |
+| ---------- | ----------------------------------------------------------------------------------- |
+| C++ docs   | New Doxygen documentation workflow with automatic GitHub Pages deployment           |
+| Benchmarks | Reproducible engine benchmark suite for tracking performance                         |
+| Tests      | Greatly expanded coverage across the new btengine modules and the broker abstraction |
 
 ---
 
@@ -405,7 +418,7 @@ git clone https://github.com/microsoft/vcpkg
 
 ## CLI workflow
 
-`bbstrader` shines via CLI – launch everything from one command!
+`bbstrader` shines via CLI, launch everything from one command!
 
 | Action             | Command                                                                                                               |
 | :----------------- | :-------------------------------------------------------------------------------------------------------------------- |
