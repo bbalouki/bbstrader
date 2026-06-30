@@ -61,18 +61,38 @@ extensions = [
     "sphinx.ext.todo",
 ]
 
-# Heavy or platform-specific dependencies imported at module top level. Mocking
-# them keeps the ReadTheDocs build fast and avoids compiling/installing them.
+# Every third-party package imported at module top level must be either
+# installed (see docs/requirements.txt) or mocked here; otherwise autodoc fails
+# to import the module and renders an empty section. A failure inside any
+# submodule also cascades through its package __init__ star-imports, blanking
+# the whole package. Mocking keeps the ReadTheDocs build fast and avoids
+# compiling/installing heavy or platform-specific dependencies.
+#
+# This list must cover the full set of third-party imports in src/bbstrader,
+# minus the few installed for real (numpy, pandas, pytz). Use *import* names,
+# not distribution names (e.g. bs4 not beautifulsoup4, telegram not
+# python-telegram-bot, notifypy not notify_py, pypfopt not pyportfolioopt).
 autodoc_mock_imports = [
+    # Platform-specific.
     "MetaTrader5",
-    "scipy",  # analytics.py / overfitting.py: `from scipy import stats`
-    "matplotlib",  # performance.py: `import matplotlib.pyplot as plt`
-    "financetoolkit",
+    # Networking / scraping (core/data, etc.).
+    "requests",
+    "certifi",
+    "bs4",
+    # Market data and quant libraries.
     "eodhd",
-    "pypfopt",
-    "exchange_calendars",
-    "quantstats",
+    "financetoolkit",
     "yfinance",
+    "exchange_calendars",
+    "pypfopt",
+    "quantstats",
+    "scipy",
+    # Plotting.
+    "matplotlib",
+    "plotly",
+    "seaborn",
+    "PIL",
+    # NLP / social (optional extras).
     "spacy",
     "nltk",
     "sumy",
@@ -80,12 +100,18 @@ autodoc_mock_imports = [
     "vaderSentiment",
     "praw",
     "tweepy",
-    "plotly",
-    "seaborn",
+    # CLI / notifications / misc.
+    "tabulate",
+    "telegram",
+    "notifypy",
+    "loguru",
+    "colorama",
+    "pyfiglet",
 ]
 # NB: pyarrow is intentionally NOT mocked. The real pandas imports pyarrow and
 # reads pyarrow.__version__ at import time, which a mock breaks; leaving it
-# absent is safe because bbstrader's catalog falls back to CSV without it.
+# absent is safe because catalog.py imports it lazily inside a function and
+# falls back to CSV when it is missing.
 
 
 templates_path = ["_templates"]
