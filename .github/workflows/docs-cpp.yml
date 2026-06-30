@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - bbs-dev
   workflow_dispatch:
 
 permissions:
@@ -37,8 +36,6 @@ jobs:
 
   deploy:
     needs: build
-    # The github-pages environment only permits deploys from the default branch,
-    # so skip deploy on other branches (the build above still runs as a check).
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
