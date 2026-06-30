@@ -1,15 +1,10 @@
 bbstrader.btengine package
 ==========================
 
-
-Module contents
----------------
-
 .. automodule:: bbstrader.btengine
    :members:
    :show-inheritance:
    :undoc-members:
-
 
 Submodules
 ----------

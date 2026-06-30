@@ -28,7 +28,7 @@ __all__ = ["DataCatalog", "has_pyarrow"]
 def has_pyarrow() -> bool:
     """Return True if a Parquet engine (pyarrow) is importable."""
     try:
-        import pyarrow  # noqa: F401
+        import pyarrow  # type: ignore # noqa: F401
 
         return True
     except ImportError:

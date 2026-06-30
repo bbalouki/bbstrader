@@ -65,6 +65,8 @@ extensions = [
 # them keeps the ReadTheDocs build fast and avoids compiling/installing them.
 autodoc_mock_imports = [
     "MetaTrader5",
+    "scipy",  # analytics.py / overfitting.py: `from scipy import stats`
+    "matplotlib",  # performance.py: `import matplotlib.pyplot as plt`
     "financetoolkit",
     "eodhd",
     "pypfopt",

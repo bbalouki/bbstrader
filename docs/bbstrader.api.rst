@@ -1,14 +1,10 @@
 bbstrader.api package
 =====================
 
-Module contents
----------------
-
 .. automodule:: bbstrader.api
    :members:
    :show-inheritance:
    :undoc-members:
-
 
 Submodules
 ----------
@@ -20,4 +16,3 @@ bbstrader.api.handlers module
    :members:
    :show-inheritance:
    :undoc-members:
-
