@@ -1,11 +1,6 @@
 bbstrader.models package
 ========================
 
-.. automodule:: bbstrader.models
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
 Submodules
 ----------
 
@@ -21,6 +16,14 @@ bbstrader.models.optimization module
 ------------------------------------
 
 .. automodule:: bbstrader.models.optimization
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: bbstrader.models
    :members:
    :show-inheritance:
    :undoc-members:

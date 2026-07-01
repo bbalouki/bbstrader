@@ -1,5 +1,0 @@
-sphinx
-sphinx-rtd-theme
-pandas
-numpy
-pytz
