@@ -1,11 +1,6 @@
 bbstrader.trading package
 =========================
 
-.. automodule:: bbstrader.trading
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
 Submodules
 ----------
 
@@ -29,6 +24,14 @@ bbstrader.trading.utils module
 ------------------------------
 
 .. automodule:: bbstrader.trading.utils
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: bbstrader.trading
    :members:
    :show-inheritance:
    :undoc-members:

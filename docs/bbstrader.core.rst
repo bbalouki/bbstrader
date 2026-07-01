@@ -1,11 +1,6 @@
 bbstrader.core package
 ======================
 
-.. automodule:: bbstrader.core
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
 Submodules
 ----------
 
@@ -37,6 +32,14 @@ bbstrader.core.strategy module
 ------------------------------
 
 .. automodule:: bbstrader.core.strategy
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: bbstrader.core
    :members:
    :show-inheritance:
    :undoc-members:

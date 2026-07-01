@@ -1,11 +1,6 @@
 bbstrader.metatrader package
 ============================
 
-.. automodule:: bbstrader.metatrader
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
 Submodules
 ----------
 
@@ -61,6 +56,14 @@ bbstrader.metatrader.utils module
 ---------------------------------
 
 .. automodule:: bbstrader.metatrader.utils
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: bbstrader.metatrader
    :members:
    :show-inheritance:
    :undoc-members:

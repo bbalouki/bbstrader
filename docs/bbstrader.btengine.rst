@@ -1,11 +1,6 @@
 bbstrader.btengine package
 ==========================
 
-.. automodule:: bbstrader.btengine
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
 Submodules
 ----------
 
@@ -133,6 +128,14 @@ bbstrader.btengine.vectorized module
 ------------------------------------
 
 .. automodule:: bbstrader.btengine.vectorized
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: bbstrader.btengine
    :members:
    :show-inheritance:
    :undoc-members:

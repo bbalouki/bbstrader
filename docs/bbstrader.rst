@@ -1,11 +1,6 @@
 bbstrader package
 =================
 
-.. automodule:: bbstrader
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
 Subpackages
 -----------
 
@@ -42,6 +37,14 @@ bbstrader.scripts module
 ------------------------
 
 .. automodule:: bbstrader.scripts
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: bbstrader
    :members:
    :show-inheritance:
    :undoc-members:
